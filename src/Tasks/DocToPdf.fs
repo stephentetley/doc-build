@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module Tasks.DocToPdf
+module DocMake.Tasks.DocToPdf
 
 open Microsoft.Office.Interop.Word
 

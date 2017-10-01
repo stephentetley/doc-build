@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module Tasks.DocFindReplace
+module DocMake.Tasks.DocFindReplace
 
 open Microsoft.Office.Interop.Word
 

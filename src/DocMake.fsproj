@@ -51,6 +51,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Utils\Common.fs" />
     <Compile Include="Tasks\DocFindReplace.fs" />
     <Compile Include="Tasks\DocPhotos.fs" />
     <Compile Include="Tasks\DocToPdf.fs" />

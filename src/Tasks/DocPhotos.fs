@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module Tasks.DocPhotos
+module DocMake.Tasks.DocPhotos
 
 // Add a reference via the COM tab 
 // All that PIA stuff is outdated for Office 365 / .Net 4.5 / VS2015 
