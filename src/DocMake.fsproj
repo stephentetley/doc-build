@@ -51,11 +51,11 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Utils\Common.fs" />
-    <Compile Include="Tasks\DocFindReplace.fs" />
-    <Compile Include="Tasks\DocPhotos.fs" />
-    <Compile Include="Tasks\DocToPdf.fs" />
-    <Compile Include="Tasks\PdfConcat.fs" />
+    <Compile Include="DocMake\Utils\Common.fs" />
+    <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
+    <Compile Include="DocMake\Tasks\DocPhotos.fs" />
+    <Compile Include="DocMake\Tasks\DocToPdf.fs" />
+    <Compile Include="DocMake\Tasks\PdfConcat.fs" />
     <None Include="BuildScript.fsx" />
     <None Include="UseJson.fsx" />
     <Content Include="packages.config" />
@@ -77,9 +77,8 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Data">
-      <HintPath>..\packages\FSharp.Data.2.4.0\lib\net40\FSharp.Data.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="FakeLib">
+      <HintPath>..\packages\FAKE.5.0.0-beta003\tools\FakeLib.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
