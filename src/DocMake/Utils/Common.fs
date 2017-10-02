@@ -1,5 +1,6 @@
-﻿[<AutoOpen>]
-module DocMake.Utils.Common
+﻿namespace DocMake.Utils
 
-let doubleQuote s = "\"" + s + "\""
+module Common = 
+
+    let doubleQuote s = "\"" + s + "\""
 
