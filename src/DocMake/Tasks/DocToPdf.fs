@@ -46,7 +46,6 @@ let processFolder (app:Application) (infolder:DirectoryInfo) (outroot:string) : 
     
 
 let processMany (inroot:string) (outroot:string) : unit = 
-    let app = new ApplicationClass (Visible = false)
     match Directory.Exists inroot with
     | false -> printfn "Missing dir: %s" inroot
     | true -> let app = new ApplicationClass (Visible = false)
