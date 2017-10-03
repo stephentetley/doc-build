@@ -5,7 +5,8 @@ open System.IO
 open System.Text.RegularExpressions
 
 // open Fake
-// open Fake.Core.Process
+open Fake.Core
+open Fake.Core.Process
 open DocMake.Utils.Common
 
  
@@ -52,13 +53,13 @@ let makeCmd (setPdfConcatParams: PdfConcatParams -> PdfConcatParams) (inputFiles
     unlinesC <| first :: rest
 
 
-//    let private run toolPath command = 
-//        if 0 <> ExecProcess (fun info -> 
-//                    info.FileName <- toolPath
-//                    info.Arguments <- command) System.TimeSpan.MaxValue
-//        then failwithf "PdfConcat %s failed." command
+let private run toolPath command = 
+    if 0 <> ExecProcess (fun info -> 
+                info.FileName <- toolPath
+                info.Arguments <- command) System.TimeSpan.MaxValue
+    then failwithf "PdfConcat %s failed." command
 
-
+let teststring = "TEST_STRING"
     // TODO run as a process...
 
 
