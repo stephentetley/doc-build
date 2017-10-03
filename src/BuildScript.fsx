@@ -1,7 +1,7 @@
 ﻿
 
 // We have got this path by executing DummyInterop.fsx in F# Interactive
-// Clearly this isn't a portable solution, but it allows me to continue development
+// Clearly this isn't a portable solution, but it allows me to continue development...
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 
 #r "Microsoft.Office.Interop.Word"
@@ -28,6 +28,12 @@ Target.Create "MyBuild" (fun _ ->
 Target.Create "Other" (fun _ ->
     printfn "Target: Other"
     printfn "%s" teststring
+)
+
+Target.Create "Concat" (fun _ -> 
+    let parameters = fun p -> { p with Output = "output.pdf" }
+    let files = [ "..\data\One.pdf"; "..\data\Two.pdf"; "..\data\Three.pdf" ]
+    PdfConcat parameters files
 )
 
 

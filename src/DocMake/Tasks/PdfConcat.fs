@@ -34,23 +34,23 @@ type PdfConcatParams =
 
 let PdfConcatDefaults = 
     { Output = "concat.pdf"
-      ToolPath = "C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      ToolPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       GsOptions = @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress" }
 
 
 let line1 (opts:PdfConcatParams) : string =
-    sprintf "%s %s -sOutputFile=%s" (doubleQuote opts.ToolPath) opts.GsOptions (doubleQuote opts.Output)
+    sprintf "%s -sOutputFile=%s" opts.GsOptions (doubleQuote opts.Output)
 
 let lineK (name:string) : string = sprintf " \"%s\"" name
 
 let unlines (lines: string list) : string = String.concat "\n" lines
 let unlinesC (lines: string list) : string = String.concat "^\n" lines
+let unlinesS (lines: string list) : string = String.concat " " lines
 
-let makeCmd (setPdfConcatParams: PdfConcatParams -> PdfConcatParams) (inputFiles: string list) : string = 
-    let parameters = PdfConcatDefaults |> setPdfConcatParams
+let makeCmd (parameters: PdfConcatParams) (inputFiles: string list) : string = 
     let first = line1 parameters
     let rest = List.map lineK inputFiles
-    unlinesC <| first :: rest
+    unlinesS <| first :: rest
 
 
 let private run toolPath command = 
@@ -58,6 +58,12 @@ let private run toolPath command =
                 info.FileName <- toolPath
                 info.Arguments <- command) System.TimeSpan.MaxValue
     then failwithf "PdfConcat %s failed." command
+
+let PdfConcat (setPdfConcatParams: PdfConcatParams -> PdfConcatParams) (inputFiles: string list) : unit =
+    let parameters = PdfConcatDefaults |> setPdfConcatParams
+    let command = makeCmd parameters inputFiles
+    run parameters.ToolPath command
+  
 
 let teststring = "TEST_STRING"
     // TODO run as a process...
