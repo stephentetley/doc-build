@@ -1,18 +1,15 @@
 ﻿[<AutoOpen>]
 module DocMake.Tasks.DocPhotos
 
-// Add a reference via the COM tab 
-// All that PIA stuff is outdated for Office 365 / .Net 4.5 / VS2015 
-open Microsoft.Office.Interop
 
 open System
+open Microsoft.Office.Interop
 
-// This is implemented as an object but actually a Writer monad-like API might be better
-
-
-let rbox (v : 'a) : obj ref = ref (box v)
+open DocMake.Utils.Office
 
 
+// This is implemented as an object (because it is mutable) but actually 
+// a Writer monad-like API might be better
 
 type DocBuilder =
     val mutable private rnglast : Word.Range
@@ -38,7 +35,7 @@ type DocBuilder =
         match x.rnglast with
         | null -> ()
         | _ -> x.GotoEnd ()
-               ignore <| x.rnglast.InsertBreak(Type = rbox Word.WdBreakType.wdPageBreak)   // wdPageBreak
+               ignore <| x.rnglast.InsertBreak(Type = refobj Word.WdBreakType.wdPageBreak)   // wdPageBreak
 
 
     member public x.AppendTextParagraph (s : string) = 
@@ -51,7 +48,7 @@ type DocBuilder =
         match x.rnglast with
         | null -> ()
         | _ -> x.GotoEnd ()
-               ignore <| x.rnglast.Style <- rbox sty
+               ignore <| x.rnglast.Style <- refobj sty
                ignore <| x.rnglast.Text <- s
 
     

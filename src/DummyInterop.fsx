@@ -6,5 +6,6 @@
 
 
 #r "Microsoft.Office.Interop.Word"
+#r "Microsoft.Office.Interop.Excel"
 
 let main () = printfn "hello"

@@ -1,12 +1,11 @@
 ﻿[<AutoOpen>]
 module DocMake.Tasks.DocToPdf
 
-open Microsoft.Office.Interop.Word
-
 open System.IO
 open System.Text.RegularExpressions
+open Microsoft.Office.Interop.Word
 
-let refobj (x:'a) : ref<obj> = ref (x :> obj)
+open DocMake.Utils.Office
 
 
 let outputFolderName (inpath:string) (outroot:string) : string =

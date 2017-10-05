@@ -4,9 +4,11 @@ module DocMake.Tasks.PdfConcat
 open System.IO
 open System.Text.RegularExpressions
 
-// open Fake
+// open Fake - intellisense not working properly, but we can run this 
+// with Fake.exe in PowerShell
 open Fake.Core
 open Fake.Core.Process
+
 open DocMake.Utils.Common
 
  
@@ -52,20 +54,23 @@ let makeCmd (parameters: PdfConcatParams) (inputFiles: string list) : string =
     let rest = List.map lineK inputFiles
     unlinesS <| first :: rest
 
-
+// Run as a process...
 let private run toolPath command = 
     if 0 <> ExecProcess (fun info -> 
                 info.FileName <- toolPath
                 info.Arguments <- command) System.TimeSpan.MaxValue
     then failwithf "PdfConcat %s failed." command
 
+
+
 let PdfConcat (setPdfConcatParams: PdfConcatParams -> PdfConcatParams) (inputFiles: string list) : unit =
     let parameters = PdfConcatDefaults |> setPdfConcatParams
     let command = makeCmd parameters inputFiles
     run parameters.ToolPath command
   
+// TEMP - because intellisense is not working we put a test string in the module
+// to check compilation is "successful".
+let PdfConcat_Teststring = "PDF_CONCAT"
 
-let teststring = "TEST_STRING"
-    // TODO run as a process...
 
 
