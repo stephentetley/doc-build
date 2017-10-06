@@ -53,17 +53,36 @@
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
     <Compile Include="DocMake\Utils\Common.fs" />
+    <Compile Include="DocMake\Utils\Office.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocToPdf.fs" />
     <Compile Include="DocMake\Tasks\PdfConcat.fs" />
+    <Compile Include="DocMake\Tasks\XlsToPdf.fs" />
+    <Compile Include="DocMake\Tasks\PptToPdf.fs" />
     <None Include="BuildScript.fsx" />
     <None Include="UseJson.fsx" />
     <None Include="DummyInterop.fsx" />
+    <COMReference Include="Microsoft Excel 16.0 Object Library">
+      <Guid>{00020813-0000-0000-c000-000000000046}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>9</VersionMinor>
+      <Lcid>0</Lcid>
+      <Isolated>False</Isolated>
+      <WrapperTool>primary</WrapperTool>
+    </COMReference>
     <COMReference Include="Microsoft Office 16.0 Object Library">
       <Guid>{2df8d04c-5bfa-101b-bde5-00aa0044de52}</Guid>
       <VersionMajor>2</VersionMajor>
       <VersionMinor>8</VersionMinor>
+      <Lcid>0</Lcid>
+      <Isolated>False</Isolated>
+      <WrapperTool>primary</WrapperTool>
+    </COMReference>
+    <COMReference Include="Microsoft PowerPoint 16.0 Object Library">
+      <Guid>{91493440-5a91-11cf-8700-00aa0060263b}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>12</VersionMinor>
       <Lcid>0</Lcid>
       <Isolated>False</Isolated>
       <WrapperTool>primary</WrapperTool>

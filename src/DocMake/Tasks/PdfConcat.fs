@@ -19,8 +19,8 @@ open DocMake.Utils.Common
 [<CLIMutable>]
 type PdfConcatParams = 
     { 
-        Output : string
-        ToolPath : string
+        OutputFile : string
+        AppPath : string
         GsOptions : string
     }
 
@@ -35,13 +35,13 @@ type PdfConcatParams =
 // FscHelper includes output file name in the params
 
 let PdfConcatDefaults = 
-    { Output = "concat.pdf"
-      ToolPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+    { OutputFile = "concat.pdf"
+      AppPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       GsOptions = @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress" }
 
 
 let line1 (opts:PdfConcatParams) : string =
-    sprintf "%s -sOutputFile=%s" opts.GsOptions (doubleQuote opts.Output)
+    sprintf "%s -sOutputFile=%s" opts.GsOptions (doubleQuote opts.OutputFile)
 
 let lineK (name:string) : string = sprintf " \"%s\"" name
 
@@ -66,11 +66,7 @@ let private run toolPath command =
 let PdfConcat (setPdfConcatParams: PdfConcatParams -> PdfConcatParams) (inputFiles: string list) : unit =
     let parameters = PdfConcatDefaults |> setPdfConcatParams
     let command = makeCmd parameters inputFiles
-    run parameters.ToolPath command
+    run parameters.AppPath command
   
-// TEMP - because intellisense is not working we put a test string in the module
-// to check compilation is "successful".
-let PdfConcat_Teststring = "PDF_CONCAT"
-
 
 
