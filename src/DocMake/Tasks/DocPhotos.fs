@@ -49,7 +49,16 @@ let getJPEGs (dir:string)  : string [] =
     let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
     Directory.GetFiles(dir) |> Array.filter (fun s -> re.Match(s).Success)
 
-let processPhotos (doc:Word.Document) (action1:Word.Document->string->unit) (files:string list) : unit =
+type StepFun = Word.Document -> string -> unit
+
+
+let stepWithoutLabel : StepFun = appendPicture
+
+let stepWithLabel : StepFun = 
+    fun doc filename -> appendPicture doc filename
+                        appendText doc <| Path.GetFileName filename
+
+let processPhotos (doc:Word.Document) (action1:StepFun) (files:string list) : unit =
     let rec work zs = 
         match zs with 
         | [] -> ()
@@ -64,11 +73,10 @@ let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
     let opts = DocPhotosDefaults |> setDocPhotosParams
     let jpegs = Array.toList <| getJPEGs opts.InputPath
     let app = new Word.ApplicationClass (Visible = true)
+    let stepFun = if opts.ShowFileName then stepWithLabel else stepWithoutLabel
     try 
         let doc = app.Documents.Add()
-        processPhotos doc (fun d name -> appendPicture d name
-                                         appendText d <| Path.GetFileName name)
-                          jpegs
+        processPhotos doc stepFun jpegs
         doc.SaveAs(FileName= refobj opts.OutputFile)
         doc.Close(SaveChanges = refobj false)
     finally 

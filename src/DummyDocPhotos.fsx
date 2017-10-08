@@ -36,6 +36,6 @@ let test02 () =
         { p with 
             InputPath = @"G:\work\photos1\TestFolder"
             OutputFile = @"E:\coding\fsharp\DocMake\data\photos1.docx"
-            ShowFileName = false }
+            ShowFileName = true }
     DocPhotos opts
 
