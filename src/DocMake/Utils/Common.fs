@@ -10,3 +10,7 @@ module Common =
         let bads = ['\\'; '/'; ':']
         List.fold (fun s c -> s.Replace(c,'_')) input bads
 
+    let zeroPad (width:int) (value:int) = 
+        let ss = value.ToString ()
+        let diff = width - ss.Length
+        String.replicate diff "0" + ss
