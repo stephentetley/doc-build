@@ -57,8 +57,8 @@ Target.Create "Concat" (fun _ ->
 Target.Create "FindReplace" (fun _ -> 
     let opts = fun p -> 
         { p with 
-            InputFile = @"D:\coding\fsharp\DocMake\data\findreplace1.docx"
-            OutputFile = @"D:\coding\fsharp\DocMake\data\FR-output2.docx" 
+            InputFile = @"E:\coding\fsharp\DocMake\data\findreplace1.docx"
+            OutputFile = @"E:\coding\fsharp\DocMake\data\FR-output2.docx" 
             Searches  = [ ("#before", "after") ] }
     DocFindReplace opts
 )
@@ -66,21 +66,21 @@ Target.Create "FindReplace" (fun _ ->
 Target.Create "DocToPdf" (fun _ -> 
     let (opts:DocToPdfParams->DocToPdfParams) = fun p -> 
         { p with 
-            InputFile = @"D:\coding\fsharp\DocMake\data\somedoc.docx" }
+            InputFile = @"E:\coding\fsharp\DocMake\data\somedoc.docx" }
     DocToPdf opts
 )
 
 Target.Create "XlsToPdf" (fun _ -> 
     let (opts:XlsToPdfParams->XlsToPdfParams) = fun p -> 
         { p with 
-            InputFile = @"D:\coding\fsharp\DocMake\data\sheet1.xlsx" }
+            InputFile = @"E:\coding\fsharp\DocMake\data\sheet1.xlsx" }
     XlsToPdf opts
 )
 
 Target.Create "PptToPdf" (fun _ -> 
     let (opts:PptToPdfParams->PptToPdfParams) = fun p -> 
         { p with 
-            InputFile = @"D:\coding\fsharp\DocMake\data\slides1.pptx" }
+            InputFile = @"E:\coding\fsharp\DocMake\data\slides1.pptx" }
     PptToPdf opts
 )
 
