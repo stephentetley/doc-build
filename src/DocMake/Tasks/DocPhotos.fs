@@ -2,7 +2,8 @@
 module DocMake.Tasks.DocPhotos
 
 
-open System
+open System.IO
+open System.Text.RegularExpressions
 open Microsoft.Office.Interop
 
 open DocMake.Utils.Office
@@ -43,61 +44,36 @@ let appendStyledText (doc:Word.Document) (sty : Word.WdBuiltinStyle) (text : str
     rng.Text <- text
 
 
-
-// This is implemented as an object (because it is mutable) but actually 
-// a Writer monad-like API might be better
-
-type DocBuilder =
-    val mutable private rnglast : Word.Range
-    
-    member private x.GotoEnd () = 
-        match x.rnglast with
-        | null -> ()
-        | _ -> x.rnglast.InsertParagraphAfter ()
-               let parent = x.rnglast.Document
-               let pcount = parent.Paragraphs.Count 
-               x.rnglast <- parent.Paragraphs.Item(pcount).Range
-               
-
-    member public x.Document  with get () : Word.Document = x.rnglast.Document
-
-    member public x.AppendPicture (filename : string) = 
-        match x.rnglast with
-        | null -> ()
-        | _ -> x.GotoEnd ()
-               ignore <| x.rnglast.InlineShapes.AddPicture(FileName = filename)
-
-    member public x.AppendPageBreak () = 
-        match x.rnglast with
-        | null -> ()
-        | _ -> x.GotoEnd ()
-               ignore <| x.rnglast.InsertBreak(Type = refobj Word.WdBreakType.wdPageBreak)   // wdPageBreak
-
-
-    member public x.AppendTextParagraph (s : string) = 
-        match x.rnglast with
-        | null -> ()
-        | _ -> x.GotoEnd ()
-               ignore <| x.rnglast.Text <- s
-
-    member public x.AppendStyledParagraph (sty : Word.WdBuiltinStyle) (s : string) = 
-        match x.rnglast with
-        | null -> ()
-        | _ -> x.GotoEnd ()
-               ignore <| x.rnglast.Style <- refobj sty
-               ignore <| x.rnglast.Text <- s
-
-    
-    new (odoc : Word.Document) = 
-        let ix = odoc.Paragraphs.Count
-        let r1 : Word.Range = if ix > 0 then odoc.Paragraphs.Item(ix).Range
-                              else odoc.Range(Start = ref (0 :> obj)) 
-        { rnglast = r1 }
         
+let getJPEGs (dir:string)  : string [] = 
+    let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
+    Directory.GetFiles(dir) |> Array.filter (fun s -> re.Match(s).Success)
+
+let processPhotos (doc:Word.Document) (action1:Word.Document->string->unit) (files:string list) : unit =
+    let rec work zs = 
+        match zs with 
+        | [] -> ()
+        | [x] -> action1 doc x
+        | x :: xs -> action1 doc x
+                     appendPageBreak doc
+                     work xs
+    work files
+                            
 
 let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
     let opts = DocPhotosDefaults |> setDocPhotosParams
-    ()
+    let jpegs = Array.toList <| getJPEGs opts.InputPath
+    let app = new Word.ApplicationClass (Visible = true)
+    try 
+        let doc = app.Documents.Add()
+        processPhotos doc (fun d name -> appendPicture d name
+                                         appendText d <| Path.GetFileName name)
+                          jpegs
+        doc.SaveAs(FileName= refobj opts.OutputFile)
+        doc.Close(SaveChanges = refobj false)
+    finally 
+        app.Quit ()
+    
 
 
 

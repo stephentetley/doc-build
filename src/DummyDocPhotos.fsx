@@ -31,3 +31,11 @@ let test01 () =
     finally 
         app.Quit ()
 
+let test02 () = 
+    let (opts: DocPhotosParams -> DocPhotosParams) = fun p -> 
+        { p with 
+            InputPath = @"G:\work\photos1\TestFolder"
+            OutputFile = @"E:\coding\fsharp\DocMake\data\photos1.docx"
+            ShowFileName = false }
+    DocPhotos opts
+
