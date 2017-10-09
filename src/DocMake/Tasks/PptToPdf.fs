@@ -37,7 +37,7 @@ let process1 (app:PowerPoint.Application) (inpath:string) (outpath:string) : uni
                    EmbedTrueTypeFonts = Core.MsoTriState.msoFalse)
         ppt.Close()
     with
-    | ex -> printfn "Some error occured - %s - %s" inpath ex.Message
+    | ex -> printfn "Some error occured for %s - '%s'" inpath ex.Message
 
 
 

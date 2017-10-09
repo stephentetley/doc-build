@@ -15,10 +15,14 @@ let test02 () =
     Array.iter (fun a -> printfn "%s" a) files
 
 let test03 () =
+    let fmt1 = Printf.StringFormat<int->string> "DSCF%04i.jpg" 
     let (opts: UniformRenameParams -> UniformRenameParams) = fun p -> 
         { p with 
             InputFolder = @"G:\work\photos1\TestFolder"
             MatchPattern = "\.jpg$"
             MatchIgnoreCase = true
-            NameTemplate = "DSCF%04i.jpg" }
+            MakeName = sprintf fmt1 }
     UniformRename opts
+
+
+

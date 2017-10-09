@@ -1,4 +1,4 @@
-﻿
+﻿// To work with Fake, we should be using net4.6...
 #I @"..\packages\FSharp.Data.2.4.0\lib\net40"
 #r "FSharp.Data.dll"
 
@@ -23,3 +23,5 @@ let demo02 () =
     use input = new StreamReader ( __SOURCE_DIRECTORY__ + @"\..\data\site1.json")
     let info2 = JsonValue.Parse(input.ReadToEnd() )
     printfn "%s:%s" (info2?siteName.AsString ()) (info2?saiNumber.AsString ())
+
+

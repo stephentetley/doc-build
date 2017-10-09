@@ -1,6 +1,4 @@
-﻿
-
-// We have got this path by executing DummyInterop.fsx in F# Interactive
+﻿// We have got this path by executing DummyInterop.fsx in F# Interactive
 // Clearly this isn't a portable solution, but it allows me to continue development...
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.Word"
@@ -10,7 +8,6 @@
 
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.PowerPoint\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.PowerPoint"
-
 
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
@@ -30,15 +27,19 @@
 #load @"DocMake\Tasks\XlsToPdf.fs"
 
 // Run in PowerShell not fsi:
-// PS <path-to-src> ..\packages\FAKE.5.0.0-beta005\tools\FAKE.exe .\BuildScript.fsx Other
+// PS> cd <path-to-src>
+// PS> ..\packages\FAKE.5.0.0-beta005\tools\FAKE.exe .\BuildScript.fsx Other
 
-// open Microsoft.Office.Interop.Word
 open Fake.Core
 open DocMake.Tasks.PdfConcat
 open DocMake.Tasks.DocFindReplace
 open DocMake.Tasks.DocToPdf
 open DocMake.Tasks.PptToPdf
 open DocMake.Tasks.XlsToPdf
+
+let relativeToProject (suffix:string) : string = 
+    System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", suffix)
+
 
 Target.Create "MyBuild" (fun _ ->
     printfn "message from MyBuild target"
@@ -49,7 +50,9 @@ Target.Create "Other" (fun _ ->
 )
 
 Target.Create "Concat" (fun _ -> 
-    let (opts:PdfConcatParams->PdfConcatParams) = fun p -> { p with OutputFile = "..\data\output.pdf" }
+    let (opts:PdfConcatParams->PdfConcatParams) = fun p -> 
+        { p with 
+            OutputFile = relativeToProject @"data\output.pdf" }
     let files = [ "..\data\One.pdf"; "..\data\Two.pdf"; "..\data\Three.pdf" ]
     PdfConcat opts files
 )
@@ -57,8 +60,8 @@ Target.Create "Concat" (fun _ ->
 Target.Create "FindReplace" (fun _ -> 
     let opts = fun p -> 
         { p with 
-            InputFile = @"E:\coding\fsharp\DocMake\data\findreplace1.docx"
-            OutputFile = @"E:\coding\fsharp\DocMake\data\FR-output2.docx" 
+            InputFile = relativeToProject @"data\findreplace1.docx"
+            OutputFile = relativeToProject @"data\FR-output2.docx" 
             Searches  = [ ("#before", "after") ] }
     DocFindReplace opts
 )
@@ -66,21 +69,21 @@ Target.Create "FindReplace" (fun _ ->
 Target.Create "DocToPdf" (fun _ -> 
     let (opts:DocToPdfParams->DocToPdfParams) = fun p -> 
         { p with 
-            InputFile = @"E:\coding\fsharp\DocMake\data\somedoc.docx" }
+            InputFile = relativeToProject @"data\somedoc.docx" }
     DocToPdf opts
 )
 
 Target.Create "XlsToPdf" (fun _ -> 
     let (opts:XlsToPdfParams->XlsToPdfParams) = fun p -> 
         { p with 
-            InputFile = @"E:\coding\fsharp\DocMake\data\sheet1.xlsx" }
+            InputFile = relativeToProject @"data\sheet1.xlsx" }
     XlsToPdf opts
 )
 
 Target.Create "PptToPdf" (fun _ -> 
     let (opts:PptToPdfParams->PptToPdfParams) = fun p -> 
         { p with 
-            InputFile = @"E:\coding\fsharp\DocMake\data\slides1.pptx" }
+            InputFile = relativeToProject @"data\slides1.pptx" }
     PptToPdf opts
 )
 

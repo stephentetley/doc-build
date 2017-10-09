@@ -12,13 +12,13 @@ open DocMake.Utils.Office
 [<CLIMutable>]
 type DocPhotosParams = 
     { 
-        InputPath : string
+        InputPaths : string list
         OutputFile : string
         ShowFileName : bool
     }
 
 let DocPhotosDefaults = 
-    { InputPath = @""
+    { InputPaths = []
       OutputFile = @"photos.docx"
       ShowFileName = true }
 
@@ -45,9 +45,14 @@ let appendStyledText (doc:Word.Document) (sty : Word.WdBuiltinStyle) (text : str
 
 
         
-let getJPEGs (dir:string)  : string [] = 
+let getJPEGs (dirs:string list) : string list = 
     let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
-    Directory.GetFiles(dir) |> Array.filter (fun s -> re.Match(s).Success)
+    let get1 = fun dir -> 
+        Directory.GetFiles(dir) 
+        |> Array.filter (fun s -> re.Match(s).Success)
+        |> Array.toList
+    List.collect get1 dirs
+    
 
 type StepFun = Word.Document -> string -> unit
 
@@ -71,7 +76,7 @@ let processPhotos (doc:Word.Document) (action1:StepFun) (files:string list) : un
 
 let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
     let opts = DocPhotosDefaults |> setDocPhotosParams
-    let jpegs = Array.toList <| getJPEGs opts.InputPath
+    let jpegs = getJPEGs opts.InputPaths
     let app = new Word.ApplicationClass (Visible = true)
     let stepFun = if opts.ShowFileName then stepWithLabel else stepWithoutLabel
     try 
