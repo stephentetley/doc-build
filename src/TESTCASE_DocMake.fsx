@@ -103,8 +103,7 @@ Target.Create "CoverSheet" (fun _ ->
 )
 
 Target.Create "SurveyPPT" (fun _ -> 
-    // TODO - Fake has file globs, we should use globs abstract the pptx name
-    let infile = relativeToSite @"1_Survey\Bedale.pptx"
+    let infile = !! (relativeToSite @"1_Survey\*.pptx") |> unique
     let outfile = makeSiteOutputName "%s Survey PPT.pdf" 
     PptToPdf (fun p -> 
         { p with 
@@ -114,10 +113,9 @@ Target.Create "SurveyPPT" (fun _ ->
 )
 
 Target.Create "SurveySheet" (fun _ ->
-    // TODO - use globs
-    let infile = relativeToSite @"1_Survey\BEDALE STW - UWW Sampler survey.xlsx"
+    let infile = !! (relativeToSite @"1_Survey\*Sampler survey.xlsx") |> unique
     let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
-    XlsToPdf(fun p -> 
+    XlsToPdf (fun p -> 
         { p with 
             InputFile = infile
             OutputFile = Some <| outfile
@@ -125,10 +123,9 @@ Target.Create "SurveySheet" (fun _ ->
 )
 
 Target.Create "InstallSheet" (fun _ ->
-    // TODO - use globs
-    let infile = relativeToSite @"2_Site_works\Bedale STW UWW Samplers YW Wookbook.xls"
+    let infile = !! (relativeToSite @"2_Site_works\* Wookbook.xls*") |> unique
     let outfile = makeSiteOutputName "%s Install Sheet.pdf" 
-    XlsToPdf(fun p -> 
+    XlsToPdf (fun p -> 
         { p with 
             InputFile = infile
             OutputFile = Some <| outfile
@@ -139,14 +136,33 @@ Target.Create "SurveyPhotos" (fun _ ->
     let inletpath = (outputRoot @@ "SurveyPhotos\Inlet")
     maybeCreateDirectory inletpath 
     !! (relativeToSite "1_Survey\Inlet\*.jpg") |> FileHelper.Copy inletpath
-    renamePhotos inletpath "%s Inlet %06i.jpg"
+    renamePhotos inletpath "%s Inlet %03i.jpg"
 
     let outletpath = (outputRoot @@ "SurveyPhotos\Outlet")
     maybeCreateDirectory outletpath
     !! (relativeToSite "1_Survey\Outlet\*.jpg") |> FileHelper.Copy outletpath 
+    renamePhotos outletpath "%s Outlet %03i.jpg"
 
+    let docname = makeSiteOutputName "%s Survey Photos.docx" 
+    DocPhotos (fun p -> 
+        { p with 
+            InputPaths = [ inletpath; outletpath]            
+            OutputFile = docname
+            ShowFileName = true 
+        })
+
+    let pdfname = makeSiteOutputName "%s Survey Photos.pdf"
+    DocToPdf (fun p -> 
+        { p with 
+            InputFile = docname
+            OutputFile = Some <| pdfname 
+        })
 )
 
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 // ----- OLD -----
 // The functions below confused targets with tasks...

@@ -2,6 +2,7 @@
 
 open System.IO
 open System.Text
+open Fake.Core.Globbing.Operators
 
 module Common = 
 
@@ -22,3 +23,11 @@ module Common =
             ignore <| Directory.CreateDirectory(dirpath)
         else 
             ()
+
+    let unique (xs:seq<'a>) : 'a = 
+        let next zs = match zs with
+                      | [] -> failwith "unique - no matches."
+                      | [z] -> z
+                      | _ -> failwithf "unique - %i matches" zs.Length
+
+        Seq.toList xs |> next
