@@ -18,11 +18,9 @@ module Common =
         String.replicate diff "0" + ss
 
     let maybeCreateDirectory (dirpath:string) : unit = 
-        if not <| Directory.Exists(dirpath)
-        then 
+        if not <| Directory.Exists(dirpath) then 
             ignore <| Directory.CreateDirectory(dirpath)
-        else 
-            ()
+        else ()
 
     let unique (xs:seq<'a>) : 'a = 
         let next zs = match zs with

@@ -35,6 +35,7 @@ open Fake
 open Fake.Core
 open Fake.Core.Environment
 open Fake.Core.Globbing.Operators
+open Fake.Core.TargetOperators
 // open Fake.Core.Trace
 // open Fake opens Fake.EnvironmentHelper     // for (@@) etc.
 
@@ -47,23 +48,23 @@ open DocMake.Tasks.PptToPdf
 open DocMake.Tasks.UniformRename
 open DocMake.Tasks.XlsToPdf
 
-let filestoreRoot = @"G:\work\DocMake_TEST"
-let templateRoot = @"G:\work\DocMake_TEST\__Templates"
-let siteName = environVarOrDefault "sitename" @"BEDALE/STW"
-let saiNumber = @"SAI00001647"
 
-let cleanName = safeName siteName
-let sitePath = System.IO.Path.Combine(filestoreRoot,cleanName)
-let outputRoot = sitePath @@ "__DM_OUTPUT"
 
-let relativeToTemplateRoot (suffix:string) : string = 
-    System.IO.Path.Combine(templateRoot, suffix)
+let _filestoreRoot  = @"G:\work\DocMake_DATA"
+let _outputRoot     = @"G:\work\DocMake_OUTPUT"
+let _templateRoot   = @"G:\work\DocMake_OUTPUT\__Templates"
 
-let relativeToSite (suffix:string) : string = 
-    System.IO.Path.Combine(sitePath, suffix)
+let siteName = environVarOrDefault "sitename" @"CATTERICK VILLAGE/STW"
+let saiNumber = environVarOrDefault "uid" @"SAI00001681"
+
+let cleanName       = safeName siteName
+let siteData        = _filestoreRoot @@ cleanName
+let siteOutput      = _outputRoot @@ cleanName
+
+
 
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-    outputRoot @@ sprintf fmt cleanName
+    siteOutput @@ sprintf fmt cleanName
 
 let renamePhotos (jpegPath:string) (fmt:Printf.StringFormat<string->int->string>) : unit =
     let mkName = fun i -> sprintf fmt cleanName i
@@ -75,14 +76,20 @@ let renamePhotos (jpegPath:string) (fmt:Printf.StringFormat<string->int->string>
             MakeName = mkName 
         })
 
+Target.Create "Clean" (fun _ -> 
+    if Directory.Exists(siteOutput) then 
+        Trace.tracefn " --- Clean folder: '%s' ---" siteOutput
+        Fake.IO.Directory.delete siteOutput
+    else ()
+)
 
 Target.Create "OutputDirectory" (fun _ -> 
-    Trace.tracefn " --- Output folder: '%s' ---" outputRoot
-    maybeCreateDirectory(outputRoot)
+    Trace.tracefn " --- Output folder: '%s' ---" siteOutput
+    maybeCreateDirectory(siteOutput)
 )
 
 Target.Create "CoverSheet" (fun _ ->
-    let template = relativeToTemplateRoot "TEMPLATE Samps Cover Sheet.docx"
+    let template = _templateRoot @@ "TEMPLATE Samps Cover Sheet.docx"
     let docname = makeSiteOutputName "%s Cover Sheet.docx"
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
     
@@ -102,18 +109,9 @@ Target.Create "CoverSheet" (fun _ ->
         })
 )
 
-Target.Create "SurveyPPT" (fun _ -> 
-    let infile = !! (relativeToSite @"1_Survey\*.pptx") |> unique
-    let outfile = makeSiteOutputName "%s Survey PPT.pdf" 
-    PptToPdf (fun p -> 
-        { p with 
-            InputFile = infile
-            OutputFile = Some <| outfile
-        })
-)
 
 Target.Create "SurveySheet" (fun _ ->
-    let infile = !! (relativeToSite @"1_Survey\*Sampler survey.xlsx") |> unique
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Sampler survey.xlsx" (siteData @@ "1_Survey")
     let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
     XlsToPdf (fun p -> 
         { p with 
@@ -122,31 +120,22 @@ Target.Create "SurveySheet" (fun _ ->
         })
 )
 
-Target.Create "InstallSheet" (fun _ ->
-    let infile = !! (relativeToSite @"2_Site_works\* Wookbook.xls*") |> unique
-    let outfile = makeSiteOutputName "%s Install Sheet.pdf" 
-    XlsToPdf (fun p -> 
-        { p with 
-            InputFile = infile
-            OutputFile = Some <| outfile
-        })
-)
 
 Target.Create "SurveyPhotos" (fun _ ->
-    let inletpath = (outputRoot @@ "SurveyPhotos\Inlet")
-    maybeCreateDirectory inletpath 
-    !! (relativeToSite "1_Survey\Inlet\*.jpg") |> FileHelper.Copy inletpath
-    renamePhotos inletpath "%s Inlet %03i.jpg"
+    let inletCopyPath = siteOutput @@ "SurveyPhotos\Inlet"
+    maybeCreateDirectory inletCopyPath 
+    !! (siteData @@ "1_Survey\Inlet\*.jpg") |> Fake.IO.Shell.Copy inletCopyPath
+    renamePhotos inletCopyPath "%s Inlet %03i.jpg"
 
-    let outletpath = (outputRoot @@ "SurveyPhotos\Outlet")
-    maybeCreateDirectory outletpath
-    !! (relativeToSite "1_Survey\Outlet\*.jpg") |> FileHelper.Copy outletpath 
-    renamePhotos outletpath "%s Outlet %03i.jpg"
+    let outletCopyPath = siteOutput @@ "SurveyPhotos\Outlet"
+    maybeCreateDirectory outletCopyPath
+    !! (siteData @@ "1_Survey\Outlet\*.jpg") |> Fake.IO.Shell.Copy outletCopyPath 
+    renamePhotos outletCopyPath "%s Outlet %03i.jpg"
 
     let docname = makeSiteOutputName "%s Survey Photos.docx" 
     DocPhotos (fun p -> 
         { p with 
-            InputPaths = [ inletpath; outletpath]            
+            InputPaths = [ inletCopyPath; outletCopyPath]            
             OutputFile = docname
             ShowFileName = true 
         })
@@ -159,58 +148,74 @@ Target.Create "SurveyPhotos" (fun _ ->
         })
 )
 
-
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-// ----- OLD -----
-// The functions below confused targets with tasks...
-
-// TODO - Should be a parametric target, because there are two photos folders
-Target.Create "RenamePhotos" (fun _ -> 
-    let shouldBeParam = @"1_Survey\Inlet"
-    let jpegPath = System.IO.Path.Combine(sitePath, shouldBeParam)
-    let mkName = fun i -> sprintf "%s Inlet %03i.jpg" cleanName i
-    let (opts: UniformRenameParams -> UniformRenameParams) = fun p -> 
+// findFirstMatchingFile is an alternative to unique
+Target.Create "SurveyPPT" (fun _ -> 
+    let infile = Fake.IO.Directory.findFirstMatchingFile "*.pptx" (siteData @@ "1_Survey") 
+    let outfile = makeSiteOutputName "%s Survey PPT.pdf" 
+    Trace.tracef "Input: %s" infile
+    PptToPdf (fun p -> 
         { p with 
-            InputFolder = jpegPath
-            MatchPattern = @"\.jpg$"
-            MatchIgnoreCase = true
-            MakeName = mkName }
-    UniformRename opts
+            InputFile = infile
+            OutputFile = Some <| outfile
+        })
+)
+
+Target.Create "CircuitDiag" (fun _ -> 
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Circuit Diagram.pdf" (siteData @@ "2_Site_works") 
+    let dest = makeSiteOutputName "%s Circuit Diagram.pdf" 
+    Trace.tracef "Input: %s" infile
+    Fake.IO.Shell.CopyFile dest infile
 )
 
 
-Target.Create "PhotoDoc" (fun _ -> 
-    let (opts: DocPhotosParams -> DocPhotosParams) = fun p -> 
+Target.Create "ElectricalWork" (fun _ ->
+    // let infile = !! (relativeToSite @"2_Site_works\* Wookbook.xls*") |> unique
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Wookbook.xls*" (siteData @@ "2_Site_works") 
+    let outfile = makeSiteOutputName "%s Electrical Worksheet.pdf" 
+    XlsToPdf (fun p -> 
         { p with 
-            InputPaths = [ relativeToSite @"1_Survey\Inlet";
-                            relativeToSite @"1_Survey\Outlet" ]            
-            OutputFile = outputRoot @@ (sprintf "%s Survey Photos.docx" cleanName)
-            ShowFileName = true }
-    DocPhotos opts
+            InputFile = infile
+            OutputFile = Some <| outfile
+        })
 )
 
+let finalGlobs : string list = 
+    [ "* Cover Sheet.pdf" ;
+      "* Survey Sheet.pdf" ;
+      "* Survey Photos.pdf" ;
+      "* Survey PPT.pdf" ;
+      "* Circuit Diagram.pdf" ;
+      "* Electrical Worksheet.pdf" ]
 
-// Is this really a task or should it be a function?
-// Answer - it is a task not a target...
-Target.Create "FileCopy" (fun _ -> 
-    let srcfile = sitePath @@ "2_Site_works" @@ "Bedale STW Circuit Diagram.pdf"
-    let destfile = makeSiteOutputName "%s Circuit Diagram.pdf"
-    File.Copy(srcfile,destfile)
-)
+//      // For Testing...
+//let finalGlobs : string list = 
+//    [ "* Install Sheet.pdf" ]
 
-Target.Create "ConcatFinal" (fun _ ->
-    let (opts:PdfConcatParams->PdfConcatParams) = fun p -> 
+Target.Create "Final" (fun _ ->
+    let get1 = fun glob -> Fake.IO.Directory.tryFindFirstMatchingFile glob siteOutput
+    let files = List.map get1 finalGlobs |> List.choose id
+    PdfConcat (fun p -> 
         { p with 
-            OutputFile = makeSiteOutputName "%s UWW Samplers OM Manual.pdf" }
-    let files = [ "..\data\One.pdf"; "..\data\Two.pdf"; "..\data\Three.pdf" ]
-    PdfConcat opts files
+            OutputFile = makeSiteOutputName "%s UWW Samplers OM Manual.pdf" })
+                files
 )
 
-Target.Create "Dummy" (fun _ ->
-    Trace.tracefn "Dummy, sitename is %s" siteName
+Target.Create "Blank" (fun _ ->
+    Trace.tracefn "Blank, sitename is %s" siteName
 )
 
-Target.RunOrDefault "Dummy"
+
+// *** Dependencies ***
+"Clean"
+    ==> "OutputDirectory"
+
+"OutputDirectory"
+    ==> "CoverSheet"
+    ==> "SurveySheet"
+    ==> "SurveyPhotos"
+    ==> "SurveyPPT"
+    ==> "CircuitDiag"
+    ==> "ElectricalWork"
+    ==> "Final"
+
+Target.RunOrDefault "Blank"
