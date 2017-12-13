@@ -39,7 +39,9 @@ let replacer (x:Word.Document) (search:string) (replace:string) : bool =
     let dend = x.Content.End
     let rangeall = x.Range(refobj dstart, refobj dend)
     rangeall.Find.ClearFormatting ()
-    rangeall.Find.Execute (FindText = refobj search, ReplaceWith = refobj replace)
+    rangeall.Find.Execute (FindText = refobj search, 
+                            ReplaceWith = refobj replace,
+                            Replace = refobj Word.WdReplace.wdReplaceAll)
 
 let replaces (x:Word.Document) (zs:SearchList) : unit = 
     for z in zs do

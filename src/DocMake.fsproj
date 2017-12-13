@@ -68,6 +68,8 @@
     <None Include="DummyRename.fsx" />
     <None Include="DummyDocPhotos.fsx" />
     <None Include="TESTCASE_DocMake.fsx" />
+    <None Include="RTU_Final_Build.fsx" />
+    <None Include="GEN_Invoke_dot_bat.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
       <Guid>{00020813-0000-0000-c000-000000000046}</Guid>
       <VersionMajor>1</VersionMajor>
