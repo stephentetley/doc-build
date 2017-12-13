@@ -49,10 +49,10 @@ open DocMake.Tasks.UniformRename
 open DocMake.Tasks.XlsToPdf
 
 
-
 let _filestoreRoot  = @"G:\work\DocMake_DATA"
 let _outputRoot     = @"G:\work\DocMake_OUTPUT"
 let _templateRoot   = @"G:\work\DocMake_OUTPUT\__Templates"
+
 
 let siteName = environVarOrDefault "sitename" @"CATTERICK VILLAGE/STW"
 let saiNumber = environVarOrDefault "uid" @"SAI00001681"
@@ -219,3 +219,4 @@ Target.Create "Blank" (fun _ ->
     ==> "Final"
 
 Target.RunOrDefault "Blank"
+

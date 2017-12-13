@@ -4,8 +4,6 @@ open FSharp.ExcelProvider
 
 open System
 
-#load "StringUtils.fs"
-open StringUtils
 
 type SitesTable = 
     ExcelFile< @"G:\work\Projects\rtu\Final_Docs\year3-batch2-manuals-todo.xlsx",
@@ -17,6 +15,8 @@ type SitesRow = SitesTable.Row
 let pathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
 let pathToScript = @"D:\coding\fsharp\DocMake\src\RTU_Final_Build.fsx"
 let outputBat = @"G:\work\Projects\rtu\Final_Docs\fake-make.bat"
+
+let doubleQuote (s:string) : string = sprintf "\"%s\"" s
 
 let genInvoke1 (sw:IO.StreamWriter) (row:SitesRow) : unit = 
     fprintf sw "REM %s ...\n"  row.sitename
