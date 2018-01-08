@@ -22,13 +22,13 @@ let DocToPdfDefaults =
       OutputFile = None }
 
 
-let getOutputName (opts:DocToPdfParams) : string =
+let private getOutputName (opts:DocToPdfParams) : string =
     match opts.OutputFile with
     | None -> System.IO.Path.ChangeExtension(opts.InputFile, "pdf")
     | Some(s) -> s
 
 
-let process1 (app:Word.Application) (inpath:string) (outpath:string) : unit = 
+let private process1 (app:Word.Application) (inpath:string) (outpath:string) : unit = 
     try 
         let doc = app.Documents.Open(FileName = refobj inpath)
         doc.ExportAsFixedFormat (OutputFileName = outpath, ExportFormat = Word.WdExportFormat.wdExportFormatPDF)

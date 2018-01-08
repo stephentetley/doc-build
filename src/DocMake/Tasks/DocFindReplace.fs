@@ -34,7 +34,7 @@ let DocFindReplaceDefaults =
 
 
 
-let replacer (x:Word.Document) (search:string) (replace:string) : bool = 
+let private replacer (x:Word.Document) (search:string) (replace:string) : bool = 
     let dstart = x.Content.Start
     let dend = x.Content.End
     let rangeall = x.Range(refobj dstart, refobj dend)
@@ -43,12 +43,12 @@ let replacer (x:Word.Document) (search:string) (replace:string) : bool =
                             ReplaceWith = refobj replace,
                             Replace = refobj Word.WdReplace.wdReplaceAll)
 
-let replaces (x:Word.Document) (zs:SearchList) : unit = 
+let private replaces (x:Word.Document) (zs:SearchList) : unit = 
     for z in zs do
         match z with | (a,b) -> ignore <| replacer x a b
 
 
-let process1 (app:Word.Application) (inpath:string) (outpath:string) (ss:SearchList) = 
+let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss:SearchList) = 
     let doc = app.Documents.Open(FileName = refobj inpath)
     replaces doc ss
     // This should be wrapped in try...

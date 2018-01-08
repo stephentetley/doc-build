@@ -39,7 +39,7 @@ open Fake.Core.TargetOperators
 // open Fake.Core.Trace
 // open Fake opens Fake.EnvironmentHelper     // for (@@) etc.
 
-open DocMake.Utils.Common
+open DocMake.Base.Common
 open DocMake.Tasks.DocFindReplace
 open DocMake.Tasks.DocPhotos
 open DocMake.Tasks.DocToPdf
@@ -49,9 +49,9 @@ open DocMake.Tasks.UniformRename
 open DocMake.Tasks.XlsToPdf
 
 
-let _filestoreRoot  = @"G:\work\DocMake_DATA"
-let _outputRoot     = @"G:\work\DocMake_OUTPUT"
-let _templateRoot   = @"G:\work\DocMake_OUTPUT\__Templates"
+let _filestoreRoot  = @"G:\work\Projects\samps\Final_Docs\Jan2018_batch06"
+let _outputRoot     = @"G:\work\Projects\samps\Final_Docs\Jan18_OUTPUT"
+let _templateRoot   = @"G:\work\Projects\samps\Final_Docs\__Templates"
 
 
 let siteName = environVarOrDefault "sitename" @"CATTERICK VILLAGE/STW"
@@ -70,7 +70,7 @@ let renamePhotos (jpegPath:string) (fmt:Printf.StringFormat<string->int->string>
     let mkName = fun i -> sprintf fmt cleanName i
     UniformRename (fun p -> 
         { p with 
-            InputFolder = jpegPath
+            InputFolder = Some <| jpegPath
             MatchPattern = @"\.je?pg$"
             MatchIgnoreCase = true
             MakeName = mkName 
@@ -111,7 +111,7 @@ Target.Create "CoverSheet" (fun _ ->
 
 
 Target.Create "SurveySheet" (fun _ ->
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Sampler survey.xlsx" (siteData @@ "1_Survey")
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Sampler survey.xlsx" (siteData)
     let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
     XlsToPdf (fun p -> 
         { p with 
@@ -150,7 +150,7 @@ Target.Create "SurveyPhotos" (fun _ ->
 
 // findFirstMatchingFile is an alternative to unique
 Target.Create "SurveyPPT" (fun _ -> 
-    let infile = Fake.IO.Directory.findFirstMatchingFile "*.pptx" (siteData @@ "1_Survey") 
+    let infile = Fake.IO.Directory.findFirstMatchingFile "*.ppt*" (siteData) 
     let outfile = makeSiteOutputName "%s Survey PPT.pdf" 
     Trace.tracef "Input: %s" infile
     PptToPdf (fun p -> 
@@ -161,7 +161,7 @@ Target.Create "SurveyPPT" (fun _ ->
 )
 
 Target.Create "CircuitDiag" (fun _ -> 
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Circuit Diagram.pdf" (siteData @@ "2_Site_works") 
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Circuit Diagram.pdf" (siteData) 
     let dest = makeSiteOutputName "%s Circuit Diagram.pdf" 
     Trace.tracef "Input: %s" infile
     Fake.IO.Shell.CopyFile dest infile
@@ -169,8 +169,7 @@ Target.Create "CircuitDiag" (fun _ ->
 
 
 Target.Create "ElectricalWork" (fun _ ->
-    // let infile = !! (relativeToSite @"2_Site_works\* Wookbook.xls*") |> unique
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Wookbook.xls*" (siteData @@ "2_Site_works") 
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* YW Workbook.xls*" (siteData) 
     let outfile = makeSiteOutputName "%s Electrical Worksheet.pdf" 
     XlsToPdf (fun p -> 
         { p with 
@@ -196,7 +195,7 @@ Target.Create "Final" (fun _ ->
     let files = List.map get1 finalGlobs |> List.choose id
     PdfConcat (fun p -> 
         { p with 
-            OutputFile = makeSiteOutputName "%s UWW Samplers OM Manual.pdf" })
+            OutputFile = makeSiteOutputName "%s S3820 Sampler Asset Replacement.pdf" })
                 files
 )
 

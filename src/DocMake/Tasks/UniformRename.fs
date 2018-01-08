@@ -18,18 +18,14 @@ type NameFormatter = int->string
 [<CLIMutable>]
 type UniformRenameParams = 
     { 
-        InputFolder : string
+        InputFolder : string option
         MatchPattern : string
         MatchIgnoreCase : bool
         MakeName : NameFormatter
     }
 
-
-
-
-
 let UniformRenameDefaults = 
-    { InputFolder = "aux"
+    { InputFolder = None 
       MatchPattern = ""
       MatchIgnoreCase = false
       MakeName = sprintf @"output-%i"}
@@ -37,13 +33,13 @@ let UniformRenameDefaults =
 // Use... System.IO.File.Move (oldname,newname)
 // System.IO.Directory.GetFiles(directory)
 
-let matchFiles (dir:string) (search:string) (ignoreCase:bool) : string [] = 
+let private matchFiles (dir:string) (search:string) (ignoreCase:bool) : string [] = 
     let re = if ignoreCase then new Regex(search, RegexOptions.IgnoreCase) else new Regex(search)
     Directory.GetFiles(dir) |> Array.filter (fun s -> re.Match(s).Success)
 
 
 
-let renameFiles (files:string []) (fmt:NameFormatter) : unit = 
+let private renameFiles (files:string []) (fmt:NameFormatter) : unit = 
     let rename1 count oldpath = 
         let dirname = Path.GetDirectoryName(oldpath)
         let newpath = Path.Combine(dirname, fmt count)
@@ -55,8 +51,11 @@ let renameFiles (files:string []) (fmt:NameFormatter) : unit =
     
 let UniformRename (setUniformRenameParams: UniformRenameParams -> UniformRenameParams) : unit =
     let opts  = UniformRenameDefaults |> setUniformRenameParams
-    let worklist = matchFiles opts.InputFolder opts.MatchPattern opts.MatchIgnoreCase
-    renameFiles worklist opts.MakeName
+    match opts.InputFolder with
+    | None -> printfn "UniformRename - InputFolder must be specified"
+    | Some inpath -> 
+        let worklist = matchFiles inpath opts.MatchPattern opts.MatchIgnoreCase
+        renameFiles worklist opts.MakeName
 
     
 

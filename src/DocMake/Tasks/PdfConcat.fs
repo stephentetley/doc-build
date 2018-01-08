@@ -40,16 +40,16 @@ let PdfConcatDefaults =
       GsOptions = @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress" }
 
 
-let line1 (opts:PdfConcatParams) : string =
+let private line1 (opts:PdfConcatParams) : string =
     sprintf "%s -sOutputFile=%s" opts.GsOptions (doubleQuote opts.OutputFile)
 
-let lineK (name:string) : string = sprintf " \"%s\"" name
+let private lineK (name:string) : string = sprintf " \"%s\"" name
 
-let unlines (lines: string list) : string = String.concat "\n" lines
-let unlinesC (lines: string list) : string = String.concat "^\n" lines
-let unlinesS (lines: string list) : string = String.concat " " lines
+let private unlines (lines: string list) : string = String.concat "\n" lines
+let private unlinesC (lines: string list) : string = String.concat "^\n" lines
+let private unlinesS (lines: string list) : string = String.concat " " lines
 
-let makeCmd (parameters: PdfConcatParams) (inputFiles: string list) : string = 
+let private makeCmd (parameters: PdfConcatParams) (inputFiles: string list) : string = 
     let first = line1 parameters
     let rest = List.map lineK inputFiles
     unlinesS <| first :: rest

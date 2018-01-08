@@ -65,10 +65,9 @@
     <Compile Include="DocMake\Tasks\CopyFile.fs" />
     <None Include="BuildScript.fsx" />
     <None Include="DummyInterop.fsx" />
-    <None Include="UseJson.fsx" />
     <None Include="DummyRename.fsx" />
     <None Include="DummyDocPhotos.fsx" />
-    <None Include="TESTCASE_DocMake.fsx" />
+    <None Include="RTU_Final_Build.fsx" />
     <None Include="SAMPS_Final_Build.fsx" />
     <None Include="GEN_Invoke_dot_bat.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
@@ -103,7 +102,6 @@
       <Isolated>False</Isolated>
       <WrapperTool>primary</WrapperTool>
     </COMReference>
-    <None Include="RTU_Final_Build.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Excel">

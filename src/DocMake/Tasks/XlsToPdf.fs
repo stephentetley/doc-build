@@ -22,13 +22,13 @@ let XlsToPdfDefaults =
       OutputFile = None }
 
 
-let getOutputName (opts:XlsToPdfParams) : string =
+let private getOutputName (opts:XlsToPdfParams) : string =
     match opts.OutputFile with
     | None -> System.IO.Path.ChangeExtension(opts.InputFile, "pdf")
     | Some(s) -> s
 
 
-let process1 (app:Excel.Application) (inpath:string) (outpath:string) : unit = 
+let private process1 (app:Excel.Application) (inpath:string) (outpath:string) : unit = 
     try 
         let xls = app.Workbooks.Open(inpath)
         xls.ExportAsFixedFormat (Type=Excel.XlFixedFormatType.xlTypePDF,

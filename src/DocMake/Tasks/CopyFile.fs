@@ -22,7 +22,7 @@ let CopyFileDefaults =
 
 
 
-let isEmpty (s:string) : bool = 
+let private isEmpty (s:string) : bool = 
     match s with 
     | null -> true
     | "" -> true

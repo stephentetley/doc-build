@@ -23,21 +23,27 @@ let PptToPdfDefaults =
       OutputFile = None }
 
 
-let getOutputName (opts:PptToPdfParams) : string =
+let private getOutputName (opts:PptToPdfParams) : string =
     match opts.OutputFile with
     | None -> System.IO.Path.ChangeExtension(opts.InputFile, "pdf")
     | Some(s) -> s
 
-
-let process1 (app:PowerPoint.Application) (inpath:string) (outpath:string) : unit = 
+// This has been leaving a copy of Powerpoint open...
+let private process1 (app:PowerPoint.Application) (inpath:string) (outpath:string) : unit = 
     try 
-        let ppt = app.Presentations.Open(inpath)
-        ppt.SaveAs(FileName=outpath, 
-                   FileFormat=PowerPoint.PpSaveAsFileType.ppSaveAsPDF,
-                   EmbedTrueTypeFonts = Core.MsoTriState.msoFalse)
-        ppt.Close()
+        if File.Exists(inpath) then
+            let ppt = app.Presentations.Open(inpath)
+            try 
+                ppt.SaveAs(FileName=outpath, 
+                           FileFormat=PowerPoint.PpSaveAsFileType.ppSaveAsPDF,
+                           EmbedTrueTypeFonts = Core.MsoTriState.msoFalse)
+                ppt.Close();
+            with
+            | ex -> ppt.Close(); raise ex
+        else 
+            printfn "PptToPdf - missing PPT file '%s'" inpath 
     with
-    | ex -> printfn "Some error occured for %s - '%s'" inpath ex.Message
+    | ex -> printfn "PptToPdf - Some error occured for %s - '%s'" inpath ex.Message
 
 
 
