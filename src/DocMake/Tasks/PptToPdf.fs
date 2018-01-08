@@ -28,20 +28,15 @@ let private getOutputName (opts:PptToPdfParams) : string =
     | None -> System.IO.Path.ChangeExtension(opts.InputFile, "pdf")
     | Some(s) -> s
 
-// This has been leaving a copy of Powerpoint open...
+
 let private process1 (app:PowerPoint.Application) (inpath:string) (outpath:string) : unit = 
     try 
-        if File.Exists(inpath) then
-            let ppt = app.Presentations.Open(inpath)
-            try 
-                ppt.SaveAs(FileName=outpath, 
-                           FileFormat=PowerPoint.PpSaveAsFileType.ppSaveAsPDF,
-                           EmbedTrueTypeFonts = Core.MsoTriState.msoFalse)
-                ppt.Close();
-            with
-            | ex -> ppt.Close(); raise ex
-        else 
-            printfn "PptToPdf - missing PPT file '%s'" inpath 
+        // File already exists
+        let prez = app.Presentations.Open(inpath)
+        prez.SaveAs(FileName=outpath, 
+                    FileFormat=PowerPoint.PpSaveAsFileType.ppSaveAsPDF,
+                    EmbedTrueTypeFonts = Core.MsoTriState.msoFalse)
+        prez.Close();
     with
     | ex -> printfn "PptToPdf - Some error occured for %s - '%s'" inpath ex.Message
 
@@ -52,10 +47,12 @@ let PptToPdf (setPptToPdfParams: PptToPdfParams -> PptToPdfParams) : unit =
     let opts = PptToPdfDefaults |> setPptToPdfParams
     if File.Exists(opts.InputFile) 
     then
+        // This has been leaving a copy of Powerpoint open...
         let app = new PowerPoint.ApplicationClass()
         try 
             app.Visible <- Core.MsoTriState.msoTrue
             process1 app opts.InputFile (getOutputName opts)
-        finally 
             app.Quit ()
+        with 
+        | ex -> printfn "PptToPdf - Some error occured for %s - '%s'" opts.InputFile ex.Message    
     else ()
