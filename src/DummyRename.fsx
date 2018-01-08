@@ -1,8 +1,8 @@
-﻿
-// For Fsi, remember to load the "trail" of modules not just the module you want, otherwise
-// you get athe error: "The namespace or module 'Xyz' is not defined".
+﻿// FAKE is local to the project file
+#I @"..\packages\FAKE.5.0.0-beta005\tools"
+#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
-#load @"DocMake\Utils\Common.fs"
+#load @"DocMake\Base\Common.fs"
 #load @"DocMake\Tasks\UniformRename.fs"
 open DocMake.Tasks.UniformRename
 

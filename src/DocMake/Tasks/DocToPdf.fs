@@ -7,7 +7,7 @@ open System.Text.RegularExpressions
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-open DocMake.Utils.Office
+open DocMake.Base.Office
 
 [<CLIMutable>]
 type DocToPdfParams = 

@@ -9,7 +9,7 @@ open System.Text.RegularExpressions
 open Fake.Core
 open Fake.Core.Process
 
-open DocMake.Utils.Common
+open DocMake.Base.Common
 
  
 

@@ -1,4 +1,4 @@
-﻿namespace DocMake.Utils
+﻿namespace DocMake.Base
 
 open System.IO
 open System.Text

@@ -18,8 +18,8 @@
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
 
-#load @"DocMake\Utils\Common.fs"
-#load @"DocMake\Utils\Office.fs"
+#load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\Office.fs"
 #load @"DocMake\Tasks\PdfConcat.fs"
 #load @"DocMake\Tasks\DocFindReplace.fs"
 #load @"DocMake\Tasks\DocToPdf.fs"

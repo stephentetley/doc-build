@@ -53,22 +53,23 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
-    <Compile Include="DocMake\Utils\Common.fs" />
-    <Compile Include="DocMake\Utils\Office.fs" />
+    <Compile Include="DocMake\Base\Common.fs" />
+    <Compile Include="DocMake\Base\Office.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocToPdf.fs" />
     <Compile Include="DocMake\Tasks\PdfConcat.fs" />
     <Compile Include="DocMake\Tasks\XlsToPdf.fs" />
-    <Compile Include="DocMake\Tasks\PptToPdf.fs" />
     <Compile Include="DocMake\Tasks\UniformRename.fs" />
+    <Compile Include="DocMake\Tasks\PptToPdf.fs" />
+    <Compile Include="DocMake\Tasks\CopyFile.fs" />
     <None Include="BuildScript.fsx" />
     <None Include="DummyInterop.fsx" />
     <None Include="UseJson.fsx" />
     <None Include="DummyRename.fsx" />
     <None Include="DummyDocPhotos.fsx" />
     <None Include="TESTCASE_DocMake.fsx" />
-    <None Include="RTU_Final_Build.fsx" />
+    <None Include="SAMPS_Final_Build.fsx" />
     <None Include="GEN_Invoke_dot_bat.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
       <Guid>{00020813-0000-0000-c000-000000000046}</Guid>
@@ -102,6 +103,7 @@
       <Isolated>False</Isolated>
       <WrapperTool>primary</WrapperTool>
     </COMReference>
+    <None Include="RTU_Final_Build.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Excel">

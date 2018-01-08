@@ -6,8 +6,8 @@ open System.IO
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-open DocMake.Utils.Common
-open DocMake.Utils.Office
+open DocMake.Base.Common
+open DocMake.Base.Office
 
 // Ideally Tasks want error (warning) logging...
 

@@ -5,7 +5,7 @@ open System.IO
 open System.Text.RegularExpressions
 
 
-open DocMake.Utils.Common
+open DocMake.Base.Common
 
  
 // Rename files in a folder matching a pattern. 

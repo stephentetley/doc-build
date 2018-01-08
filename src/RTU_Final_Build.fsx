@@ -27,10 +27,10 @@ open Fake.Core.Globbing.Operators
 open Fake.Core.TargetOperators
 
 
-#load @"DocMake\Utils\Common.fs"
-open DocMake.Utils.Common
+#load @"DocMake\Base\Common.fs"
+open DocMake.Base.Common
 
-#load @"DocMake\Utils\Office.fs"
+#load @"DocMake\Base\Office.fs"
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Tasks.DocFindReplace
