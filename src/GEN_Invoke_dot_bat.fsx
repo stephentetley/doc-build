@@ -6,7 +6,7 @@ open System
 
 
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
+    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018-B02.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
@@ -22,9 +22,8 @@ let genInvoke1 (sw:IO.StreamWriter) (row:SitesRow) : unit =
     fprintf sw "REM %s ...\n"  row.Site
     fprintf sw "%s ^\n"  (doubleQuote pathToFake)
     fprintf sw "    %s ^\n"  (doubleQuote pathToScript)
-    fprintf sw "    Final --envar sitename=%s --envar uid=%s\n\n"
-               (doubleQuote row.Site)
-               (doubleQuote row.Uid)
+    fprintf sw "    Final --envar sitename=%s\n\n"  (doubleQuote row.Site)
+
 
 let main () : unit = 
     let masterData = new SitesTable()

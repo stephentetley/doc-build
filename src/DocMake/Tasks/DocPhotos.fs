@@ -60,8 +60,10 @@ type PictureFun = Word.Document -> string -> unit
 let stepWithoutLabel : PictureFun = appendPicture
 
 let stepWithLabel : PictureFun = 
+    let makeCaption (fileName:string) : string = 
+        sprintf "\n%s" (Path.GetFileName fileName)
     fun doc filename -> appendPicture doc filename
-                        appendText doc <| Path.GetFileName filename
+                        appendText doc <| makeCaption filename
 
 let private processPhotos (doc:Word.Document) (action1:PictureFun) (files:string list) : unit =
     let rec work zs = 
@@ -82,6 +84,7 @@ let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
     try 
         let doc = app.Documents.Add()
         processPhotos doc stepFun jpegs
+        // File must not exist...
         doc.SaveAs(FileName= refobj opts.OutputFile)
         doc.Close(SaveChanges = refobj false)
     finally 

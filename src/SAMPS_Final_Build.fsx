@@ -15,11 +15,16 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
+#I @"..\packages\Newtonsoft.Json.10.0.2\lib\net45"
+#r "Newtonsoft.Json"
+open Newtonsoft.Json
+
 // FAKE is local to the project file
 #I @"..\packages\FAKE.5.0.0-beta005\tools"
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\Json.fs"
 #load @"DocMake\Base\Office.fs"
 #load @"DocMake\Tasks\PdfConcat.fs"
 #load @"DocMake\Tasks\DocPhotos.fs"
@@ -49,13 +54,14 @@ open DocMake.Tasks.UniformRename
 open DocMake.Tasks.XlsToPdf
 
 
-let _filestoreRoot  = @"G:\work\Projects\samps\Final_Docs\Jan2018_batch06"
+let _filestoreRoot  = @"G:\work\Projects\samps\Final_Docs\Jan2018_batch02"
 let _outputRoot     = @"G:\work\Projects\samps\Final_Docs\Jan18_OUTPUT"
 let _templateRoot   = @"G:\work\Projects\samps\Final_Docs\__Templates"
+let _jsonRoot       = @"G:\work\Projects\samps\Final_Docs\__Json"
 
-
+// siteName is an envVar so we can use this build script to build many 
+// sites (they all follow the same directory/file structure).
 let siteName = environVarOrDefault "sitename" @"CATTERICK VILLAGE/STW"
-let saiNumber = environVarOrDefault "uid" @"SAI00001681"
 
 let cleanName       = safeName siteName
 let siteData        = _filestoreRoot @@ cleanName
@@ -88,17 +94,19 @@ Target.Create "OutputDirectory" (fun _ ->
     maybeCreateDirectory(siteOutput)
 )
 
+
 Target.Create "CoverSheet" (fun _ ->
     let template = _templateRoot @@ "TEMPLATE Samps Cover Sheet.docx"
+    let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
     let docname = makeSiteOutputName "%s Cover Sheet.docx"
+
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
     
     DocFindReplace (fun p -> 
         { p with 
-            InputFile = template
+            TemplateFile = template
             OutputFile = docname
-            Searches  = [ ("#SITENAME", siteName);
-                          ("#SAINUM", saiNumber) ] 
+            JsonMatchesFile  = jsonSource
         }) 
     
     let pdfname = makeSiteOutputName "%s Cover Sheet.pdf"
@@ -124,12 +132,12 @@ Target.Create "SurveySheet" (fun _ ->
 Target.Create "SurveyPhotos" (fun _ ->
     let inletCopyPath = siteOutput @@ "SurveyPhotos\Inlet"
     maybeCreateDirectory inletCopyPath 
-    !! (siteData @@ "1_Survey\Inlet\*.jpg") |> Fake.IO.Shell.Copy inletCopyPath
+    !! (siteData @@ "Inlet\*.jpg") |> Fake.IO.Shell.Copy inletCopyPath
     renamePhotos inletCopyPath "%s Inlet %03i.jpg"
 
     let outletCopyPath = siteOutput @@ "SurveyPhotos\Outlet"
     maybeCreateDirectory outletCopyPath
-    !! (siteData @@ "1_Survey\Outlet\*.jpg") |> Fake.IO.Shell.Copy outletCopyPath 
+    !! (siteData @@ "Outlet\*.jpg") |> Fake.IO.Shell.Copy outletCopyPath 
     renamePhotos outletCopyPath "%s Outlet %03i.jpg"
 
     let docname = makeSiteOutputName "%s Survey Photos.docx" 
@@ -207,8 +215,6 @@ Target.Create "Blank" (fun _ ->
 // *** Dependencies ***
 "Clean"
     ==> "OutputDirectory"
-
-"OutputDirectory"
     ==> "CoverSheet"
     ==> "SurveySheet"
     ==> "SurveyPhotos"

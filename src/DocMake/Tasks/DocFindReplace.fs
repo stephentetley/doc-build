@@ -7,6 +7,7 @@ open System.IO
 open Microsoft.Office.Interop
 
 open DocMake.Base.Common
+open DocMake.Base.Json
 open DocMake.Base.Office
 
 // Ideally Tasks want error (warning) logging...
@@ -21,16 +22,16 @@ type SearchList = List<string*string>
 [<CLIMutable>]
 type DocFindReplaceParams = 
     { 
-        InputFile : string
+        TemplateFile : string
+        JsonMatchesFile : string
         OutputFile : string
-        Searches : SearchList
     }
 
 
 let DocFindReplaceDefaults = 
-    { InputFile = @""
-      OutputFile = @"findreplace.docx"
-      Searches = [] }
+    { TemplateFile = @""
+      JsonMatchesFile = @""
+      OutputFile = @"findreplace.docx" }
 
 
 
@@ -61,12 +62,13 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss
 
 
 let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
-    let opts = DocFindReplaceDefaults |> setDocFindReplaceParams
-    if File.Exists(opts.InputFile) 
+    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
+    if File.Exists(options.TemplateFile) && File.Exists(options.JsonMatchesFile)
     then
         let app = new Word.ApplicationClass (Visible = true)
         try 
-            process1 app opts.InputFile opts.OutputFile opts.Searches
+            let matches = readJsonStringPairs options.JsonMatchesFile
+            process1 app options.TemplateFile options.OutputFile matches
         finally 
             app.Quit ()
     else ()

@@ -15,6 +15,10 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
+#I @"..\packages\Newtonsoft.Json.10.0.2\lib\net45"
+#r "Newtonsoft.Json"
+open Newtonsoft.Json
+
 open System.IO
 
 // FAKE is local to the project file
@@ -28,6 +32,7 @@ open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\Json.fs"
 open DocMake.Base.Common
 
 #load @"DocMake\Base\Office.fs"
@@ -52,9 +57,12 @@ open DocMake.Tasks.PdfConcat
 let _filestoreRoot  = @"G:\work\Projects\rtu\Final_Docs\batch2_input"
 let _outputRoot     = @"G:\work\Projects\rtu\Final_Docs\batch2_output"
 let _templateRoot   = @"G:\work\Projects\rtu\Final_Docs\__Templates"
+let _jsonRoot       = @"G:\work\Projects\rtu\Final_Docs\__Json"
 
+// siteName is an envVar so we can use this build script to build many 
+// sites (they all follow the same directory/file structure).
 let siteName = environVarOrDefault "sitename" @"CUDWORTH/NO 2 STW"
-let saiNumber = environVarOrDefault "uid" @"SAI00217033"
+
 
 let cleanName       = safeName siteName
 let siteData        = _filestoreRoot @@ cleanName
@@ -79,15 +87,15 @@ Target.Create "OutputDirectory" (fun _ ->
 
 Target.Create "CoverSheet" (fun _ ->
     let template = _templateRoot @@ "MM3x-to-MMIM RTU Cover Sheet.docx"
+    let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
     let docname = makeSiteOutputName "%s Cover Sheet.docx"
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
     
     DocFindReplace (fun p -> 
         { p with 
-            InputFile = template
+            TemplateFile = template
             OutputFile = docname
-            Searches  = [ ("#SITENAME", siteName);
-                          ("#SAINUM", saiNumber) ] 
+            JsonMatchesFile  = jsonSource 
         }) 
     
     let pdfname = makeSiteOutputName "%s Cover Sheet.pdf"
