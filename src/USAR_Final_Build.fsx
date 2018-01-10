@@ -54,10 +54,10 @@ open DocMake.Tasks.PdfConcat
 // Fake is to make one agglomerate out of many parts.
 // Generating a batch file that invokes Fake for each site solves this.
 
-let _filestoreRoot  = @"G:\work\Projects\rtu\Final_Docs\batch2_input"
-let _outputRoot     = @"G:\work\Projects\rtu\Final_Docs\batch2_output"
-let _templateRoot   = @"G:\work\Projects\rtu\Final_Docs\__Templates"
-let _jsonRoot       = @"G:\work\Projects\rtu\Final_Docs\__Json"
+let _filestoreRoot  = @""
+let _outputRoot     = @"G:\work\Projects\usar\Final_Docs\output"
+let _templateRoot   = @"G:\work\Projects\usar\Final_Docs\__Templates"
+let _jsonRoot       = @"G:\work\Projects\usar\Final_Docs\__Json"
 
 // siteName is an envVar so we can use this build script to build many 
 // sites (they all follow the same directory/file structure).
@@ -86,7 +86,7 @@ Target.Create "OutputDirectory" (fun _ ->
 )
 
 Target.Create "CoverSheet" (fun _ ->
-    let template = _templateRoot @@ "MM3x-to-MMIM RTU Cover Sheet.docx"
+    let template = _templateRoot @@ "USAR Cover Sheet.docx"
     let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
     let docname = makeSiteOutputName "%s Cover Sheet.docx"
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
@@ -208,11 +208,9 @@ Target.Create "None" (fun _ ->
 
 "OutputDirectory"
     ==> "CoverSheet"
-    ==> "SurveySheet"
-    ==> "SurveyPhotos"
-    ==> "InstallSheet"
-    ==> "InstallPhotos"
-    ==> "Final"
+    //==> "SurveySheet"
+    //==> "InstallSheet"
+    //==> "Final"
 
 // Note seemingly Fake files must end with this...
 Target.RunOrDefault "None"

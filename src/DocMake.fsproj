@@ -72,6 +72,7 @@
     <None Include="DummyDocPhotos.fsx" />
     <None Include="RTU_Final_Build.fsx" />
     <None Include="SAMPS_Final_Build.fsx" />
+    <None Include="USAR_Final_Build.fsx" />
     <None Include="GEN_Invoke_dot_bat.fsx" />
     <None Include="GEN_json_matches.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
@@ -120,16 +121,15 @@
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\ExcelProvider.0.8.2\lib\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="Magick.NET-Q8-x64">
-      <HintPath>..\packages\Magick.NET-Q8-x64.7.3.0\lib\net40\Magick.NET-Q8-x64.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Magick.NET-Q8-AnyCPU">
+      <HintPath>..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40\Magick.NET-Q8-AnyCPU.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -137,13 +137,6 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
-  <Import Project="..\packages\Magick.NET-Q8-x64.7.3.0\build\net40\Magick.NET-Q8-x64.targets" Condition="Exists('..\packages\Magick.NET-Q8-x64.7.3.0\build\net40\Magick.NET-Q8-x64.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Magick.NET-Q8-x64.7.3.0\build\net40\Magick.NET-Q8-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Magick.NET-Q8-x64.7.3.0\build\net40\Magick.NET-Q8-x64.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

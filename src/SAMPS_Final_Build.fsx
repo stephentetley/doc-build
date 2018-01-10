@@ -15,7 +15,7 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
-#I @"..\packages\Newtonsoft.Json.10.0.2\lib\net45"
+#I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
