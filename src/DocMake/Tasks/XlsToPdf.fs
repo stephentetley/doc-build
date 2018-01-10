@@ -6,6 +6,9 @@ open System.Text.RegularExpressions
 
 open Microsoft.Office.Interop
 
+open Fake
+open Fake.Core
+
 open DocMake.Base.Office
 
 
@@ -50,4 +53,6 @@ let XlsToPdf (setXlsToPdfParams: XlsToPdfParams -> XlsToPdfParams) : unit =
             process1 app opts.InputFile (getOutputName opts)
         finally 
             app.Quit ()
-    else ()
+    else 
+        Trace.traceError <| sprintf "XlsToPdf --- missing input file"
+        failwith "XlsToPdf --- missing input file"

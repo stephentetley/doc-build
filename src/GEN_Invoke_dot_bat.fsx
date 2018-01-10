@@ -6,7 +6,7 @@ open System
 
 
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018-B02.xlsx",
+    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 

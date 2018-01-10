@@ -19,29 +19,29 @@ open DocMake.Base.Json
 
 
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\usar\NSWC-site-list.xlsx",
+    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
 type SitesRow = SitesTable.Row
 
-let jsonFolder = @"G:\work\Projects\usar\Final_Docs\__Json"
+let jsonFolder = @"G:\work\Projects\samps\Final_Docs\__Json"
 
 
 let makeDict (row:SitesRow) : Dict = 
-    Map.ofList [ "#SITENAME", row.``Site Name``
-               ; "#SAINUM" , row.``SAI Ref (Site)``
+    Map.ofList [ "#SITENAME", row.Site
+               ; "#SAINUM" , row.Uid
                ]
 
 let processRow (row:SitesRow) : unit = 
-    let name1 = sprintf "%s_findreplace.json" (safeName row.``Site Name``)
+    let name1 = sprintf "%s_findreplace.json" (safeName row.Site)
     let fileName = System.IO.Path.Combine(jsonFolder, name1)
     let dict = makeDict row
     writeJsonDict fileName dict
 
 let main () : unit = 
     let masterData = new SitesTable()
-    let nullPred (row:SitesRow) = match row.``Site Name`` with null -> false | _ -> true
+    let nullPred (row:SitesRow) = match row.Site with null -> false | _ -> true
 
     masterData.Data 
         |> Seq.filter nullPred

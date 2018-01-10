@@ -43,7 +43,6 @@ let private renameFiles (files:string []) (fmt:NameFormatter) : unit =
     let rename1 count oldpath = 
         let dirname = Path.GetDirectoryName(oldpath)
         let newpath = Path.Combine(dirname, fmt count)
-        printfn "Rename: %s\n    => %s" oldpath newpath
         Directory.Move(oldpath, newpath)
         count+1
     ignore <| Array.fold rename1 1 files

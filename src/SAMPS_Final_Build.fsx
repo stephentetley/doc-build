@@ -16,6 +16,9 @@
 #r "office"
 
 
+open System.IO
+
+
 #I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
@@ -27,6 +30,13 @@ open Newtonsoft.Json
 // FAKE is local to the project file
 #I @"..\packages\FAKE.5.0.0-beta005\tools"
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+
+open Fake
+open Fake.Core
+open Fake.Core.Environment
+open Fake.Core.Globbing.Operators
+open Fake.Core.TargetOperators
+
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\ImageMagick.fs"
@@ -40,13 +50,7 @@ open Newtonsoft.Json
 #load @"DocMake\Tasks\UniformRename.fs"
 #load @"DocMake\Tasks\XlsToPdf.fs"
 
-open System.IO
 
-open Fake
-open Fake.Core
-open Fake.Core.Environment
-open Fake.Core.Globbing.Operators
-open Fake.Core.TargetOperators
 // open Fake.Core.Trace
 // open Fake opens Fake.EnvironmentHelper     // for (@@) etc.
 
@@ -61,7 +65,7 @@ open DocMake.Tasks.UniformRename
 open DocMake.Tasks.XlsToPdf
 
 
-let _filestoreRoot  = @"G:\work\Projects\samps\Final_Docs\Jan2018_batch02"
+let _filestoreRoot  = @"G:\work\Projects\samps\Final_Docs\Jan2018_batch01"
 let _outputRoot     = @"G:\work\Projects\samps\Final_Docs\Jan18_OUTPUT"
 let _templateRoot   = @"G:\work\Projects\samps\Final_Docs\__Templates"
 let _jsonRoot       = @"G:\work\Projects\samps\Final_Docs\__Json"
@@ -201,13 +205,25 @@ Target.Create "ElectricalWork" (fun _ ->
         })
 )
 
+
+Target.Create "InstallSheet" (fun _ ->
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Replacement Record.pdf" siteData
+    Trace.tracefn " --- Install sheet is: %s --- " infile
+    let outfile = makeSiteOutputName "%s Install Sheet.pdf" 
+    if System.IO.File.Exists(infile) then
+        Fake.IO.Shell.CopyFile outfile infile 
+    else Trace.tracefn " --- NO INSTALL SHEET --- "
+)
+
+
 let finalGlobs : string list = 
     [ "* Cover Sheet.pdf" ;
       "* Survey Sheet.pdf" ;
       "* Survey Photos.pdf" ;
       "* Survey PPT.pdf" ;
       "* Circuit Diagram.pdf" ;
-      "* Electrical Worksheet.pdf" ]
+      "* Electrical Worksheet.pdf"
+      "* Install Sheet.pdf" ]
 
 //      // For Testing...
 //let finalGlobs : string list = 
@@ -236,6 +252,7 @@ Target.Create "Blank" (fun _ ->
     ==> "SurveyPPT"
     ==> "CircuitDiag"
     ==> "ElectricalWork"
+    ==> "InstallSheet"
     ==> "Final"
 
 Target.RunOrDefault "Blank"

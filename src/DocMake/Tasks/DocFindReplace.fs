@@ -6,6 +6,9 @@ open System.IO
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
+open Fake
+open Fake.Core
+
 open DocMake.Base.Common
 open DocMake.Base.Json
 open DocMake.Base.Office
@@ -90,6 +93,8 @@ let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindRepl
             process1 app options.TemplateFile options.OutputFile matches
         finally 
             app.Quit ()
-    else ()
+    else 
+        Trace.traceError <| sprintf "DocFindReplace --- missing input file"
+        failwith "DocFindReplace --- missing input file"
 
 
