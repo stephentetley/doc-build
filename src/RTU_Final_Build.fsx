@@ -15,6 +15,10 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
+#r @"Magick.NET-Q8-AnyCPU.dll"
+open ImageMagick
+
 #I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
@@ -32,6 +36,7 @@ open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\ImageMagick.fs"
 #load @"DocMake\Base\Json.fs"
 open DocMake.Base.Common
 

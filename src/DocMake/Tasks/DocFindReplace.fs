@@ -33,7 +33,7 @@ let DocFindReplaceDefaults =
       JsonMatchesFile = @""
       OutputFile = @"findreplace.docx" }
 
-let private getAllHFBySection (doc:Word.Document) (proj:Word.Section -> Word.HeadersFooters) : Word.HeaderFooter list = 
+let private getHeadersOrFooters (doc:Word.Document) (proj:Word.Section -> Word.HeadersFooters) : Word.HeaderFooter list = 
     Seq.foldBack (fun (section:Word.Section) (ac:Word.HeaderFooter list) ->
            let headers1 = proj section |> Seq.cast<Word.HeaderFooter>
            Seq.foldBack (fun x xs -> x::xs) headers1 ac)
@@ -42,18 +42,15 @@ let private getAllHFBySection (doc:Word.Document) (proj:Word.Section -> Word.Hea
 
 let private replaceRange (range:Word.Range) (search:string) (replace:string) : unit =
     range.Find.ClearFormatting ()
-    //let len = min 60 (range.Text.Length)
-    //printfn "Range.Text: '%s'" range.Text
-    //printfn "Range Chars (first %i): %A" len (List.take len << Seq.toList <| range.Text)
     ignore <| range.Find.Execute (FindText = refobj search, 
-                            ReplaceWith = refobj replace,
-                            Replace = refobj Word.WdReplace.wdReplaceAll)
+                                    ReplaceWith = refobj replace,
+                                    Replace = refobj Word.WdReplace.wdReplaceAll)
 
 let private replacer (doc:Word.Document) (search:string, replace:string) : unit =                      
     let rngAll = doc.Range()
     replaceRange rngAll search replace
-    let headers = getAllHFBySection doc (fun section -> section.Headers)
-    let footers = getAllHFBySection doc (fun section -> section.Footers)
+    let headers = getHeadersOrFooters doc (fun section -> section.Headers)
+    let footers = getHeadersOrFooters doc (fun section -> section.Footers)
     List.iter (fun (header:Word.HeaderFooter) -> replaceRange header.Range search replace)
               (headers @ footers)
     

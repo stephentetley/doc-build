@@ -56,6 +56,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
     <Compile Include="DocMake\Base\Common.fs" />
+    <Compile Include="DocMake\Base\ImageMagick.fs" />
     <Compile Include="DocMake\Base\Json.fs" />
     <Compile Include="DocMake\Base\Office.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />

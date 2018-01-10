@@ -15,6 +15,11 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
+
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
+#r @"Magick.NET-Q8-AnyCPU.dll"
+open ImageMagick
+
 #I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
@@ -24,6 +29,7 @@ open Newtonsoft.Json
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\ImageMagick.fs"
 #load @"DocMake\Base\Json.fs"
 #load @"DocMake\Base\Office.fs"
 #load @"DocMake\Tasks\PdfConcat.fs"
@@ -45,6 +51,7 @@ open Fake.Core.TargetOperators
 // open Fake opens Fake.EnvironmentHelper     // for (@@) etc.
 
 open DocMake.Base.Common
+open DocMake.Base.ImageMagick
 open DocMake.Tasks.DocFindReplace
 open DocMake.Tasks.DocPhotos
 open DocMake.Tasks.DocToPdf
@@ -72,15 +79,21 @@ let siteOutput      = _outputRoot @@ cleanName
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
     siteOutput @@ sprintf fmt cleanName
 
-let renamePhotos (jpegPath:string) (fmt:Printf.StringFormat<string->int->string>) : unit =
+let renamePhotos (jpegFolderPath:string) (fmt:Printf.StringFormat<string->int->string>) : unit =
     let mkName = fun i -> sprintf fmt cleanName i
     UniformRename (fun p -> 
         { p with 
-            InputFolder = Some <| jpegPath
+            InputFolder = Some <| jpegFolderPath
             MatchPattern = @"\.je?pg$"
             MatchIgnoreCase = true
             MakeName = mkName 
         })
+
+let optimizePhotos (jpegFolderPath:string) : unit =
+    let jpegs = !! (jpegFolderPath @@ "*.jpg") |> Seq.toList
+    List.iter optimizeForMsWord jpegs
+    
+
 
 Target.Create "Clean" (fun _ -> 
     if Directory.Exists(siteOutput) then 
@@ -134,12 +147,14 @@ Target.Create "SurveyPhotos" (fun _ ->
     maybeCreateDirectory inletCopyPath 
     !! (siteData @@ "Inlet\*.jpg") |> Fake.IO.Shell.Copy inletCopyPath
     renamePhotos inletCopyPath "%s Inlet %03i.jpg"
+    optimizePhotos inletCopyPath
 
     let outletCopyPath = siteOutput @@ "SurveyPhotos\Outlet"
     maybeCreateDirectory outletCopyPath
     !! (siteData @@ "Outlet\*.jpg") |> Fake.IO.Shell.Copy outletCopyPath 
     renamePhotos outletCopyPath "%s Outlet %03i.jpg"
-
+    optimizePhotos outletCopyPath
+    
     let docname = makeSiteOutputName "%s Survey Photos.docx" 
     DocPhotos (fun p -> 
         { p with 
