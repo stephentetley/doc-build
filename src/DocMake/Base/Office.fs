@@ -8,17 +8,17 @@ module Office =
 
     let refobj (x:'a) : ref<obj> = ref (x :> obj)
 
-    let wordPrintQuality (quality:PrintQuality) : Word.WdExportOptimizeFor = 
+    let wordPrintQuality (quality:DocMakePrintQuality) : Word.WdExportOptimizeFor = 
         match quality with
         | PqScreen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
         | PqPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
 
-    let excelPrintQuality (quality:PrintQuality) : Excel.XlFixedFormatQuality = 
+    let excelPrintQuality (quality:DocMakePrintQuality) : Excel.XlFixedFormatQuality = 
         match quality with
         | PqScreen -> Excel.XlFixedFormatQuality.xlQualityMinimum
         | PqPrint -> Excel.XlFixedFormatQuality.xlQualityStandard
 
-    let powerpointPrintQuality (quality:PrintQuality) : PowerPoint.PpFixedFormatIntent = 
+    let powerpointPrintQuality (quality:DocMakePrintQuality) : PowerPoint.PpFixedFormatIntent = 
         match quality with
         | PqScreen -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentScreen
         | PqPrint -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentPrint

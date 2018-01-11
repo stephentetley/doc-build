@@ -23,12 +23,8 @@ type PdfConcatParams =
     { 
         OutputFile : string
         AppPath : string
-        GsOptions : string
+        PrintQuality : DocMakePrintQuality
     }
-
-// Note input files are supplied as arguments to the top level "Command".
-// e.g CscHelper.fs
-// Csc : (CscParams -> CscParams) * string list -> unit
 
 
 
@@ -41,11 +37,17 @@ type PdfConcatParams =
 let PdfConcatDefaults = 
     { OutputFile = "concat.pdf"
       AppPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      GsOptions = @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/screen" }
+      PrintQuality = PqScreen }
 
 
-let private line1 (opts:PdfConcatParams) : string =
-    sprintf "%s -sOutputFile=%s" opts.GsOptions (doubleQuote opts.OutputFile)
+let private makeGsOptions (quality:DocMakePrintQuality) =
+    sprintf @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=%s" 
+            (ghostscriptPrintQuality quality) 
+
+
+let private line1 (options:PdfConcatParams) : string =
+    sprintf "%s -sOutputFile=%s" 
+        (makeGsOptions options.PrintQuality)  (doubleQuote options.OutputFile)
 
 let private lineK (name:string) : string = sprintf " \"%s\"" name
 

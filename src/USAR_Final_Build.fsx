@@ -63,7 +63,7 @@ open DocMake.Tasks.PdfConcat
 // Fake is to make one agglomerate out of many parts.
 // Generating a batch file that invokes Fake for each site solves this.
 
-let _filestoreRoot  = @"G:\work\Projects\usar\Jan2018_INPUT_batch01"
+let _filestoreRoot  = @"G:\work\Projects\usar\Final_Docs\Jan2018_INPUT_batch01"
 let _outputRoot     = @"G:\work\Projects\usar\Final_Docs\output"
 let _templateRoot   = @"G:\work\Projects\usar\Final_Docs\__Templates"
 let _jsonRoot       = @"G:\work\Projects\usar\Final_Docs\__Json"
@@ -115,53 +115,50 @@ Target.Create "CoverSheet" (fun _ ->
         })
 )
 
+let docToPdfAction (message:string) (infile:string) : unit =
+    let outfile = pathChangeExtension (pathChangeDirectory infile siteOutput) "pdf"
+    Trace.trace message
+    DocToPdf (fun p -> 
+        { p with 
+            InputFile = infile
+            OutputFile = Some <| outfile
+        })
+
 
 // Multiple survey sheets
 Target.Create "SurveySheets" (fun _ ->
-    let action (infile:string) : unit =
-        let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
-        Trace.tracefn " --- Survey sheet is: %s --- " infile
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = infile
-                OutputFile = Some <| outfile
-            })
-
-    let inOpt = Fake.IO.Directory.tryFindFirstMatchingFile "* survey.doc" siteData
-    match inOpt with
-    | Some(infile) -> action infile
-    | None -> Trace.tracefn " --- NO SURVEY SHEET --- "
+    // Note - matching is with globs not regexs. Cannot use [Ss] to match capital or lower s.
+    match tryFindSomeMatchingFiles "*urvey.doc*" siteData with
+    | Some inputs -> 
+        List.iter (fun file -> docToPdfAction (sprintf "Survey: %s" file) file) inputs
+    | None -> 
+        failwith " --- NO SURVEY SHEETS --- "
 )
 
 
 
 Target.Create "InstallSheets" (fun _ ->
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Site Works*.doc*" siteData
-    Trace.tracefn " --- Install sheet is: %s --- " infile
-    let outfile = makeSiteOutputName "%s Install Sheet.pdf" 
-    if System.IO.File.Exists(infile) then
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = infile
-                OutputFile = Some <| outfile
-            })
-    else Trace.tracefn " --- NO INSTALL SHEET --- "
+    match tryFindSomeMatchingFiles "*nstall.doc*" siteData with
+    | Some inputs -> 
+        List.iter (fun file -> docToPdfAction (sprintf "Install: %s" file) file) inputs
+    | None -> 
+        failwith " --- NO INSTALL SHEETS --- "
 )
 
 
 
 let finalGlobs : string list = 
     [ "* Cover Sheet.pdf" ;
-      "* Survey Sheet.pdf" ;
-      "* Install Sheet.pdf" ]
+      "*Survey*.pdf" ;
+      "*Install*.pdf" ]
 
 Target.Create "Final" (fun _ ->
-    let get1 (glob:string) : option<string> = 
-        Fake.IO.Directory.tryFindFirstMatchingFile glob siteOutput
-    let outfile = makeSiteOutputName "%s S3820 Ultrasonic Asset Replacement.pdf"
-    let files = List.map get1 finalGlobs |> List.choose id
-    PdfConcat (fun p ->  { p with OutputFile = outfile })
-              files
+    let files:string list= 
+        List.collect (fun glob -> findAllMatchingFiles glob siteOutput) finalGlobs
+    PdfConcat (fun p -> 
+        { p with 
+            OutputFile = makeSiteOutputName "%s S3820 Ultrasonic Asset Replacement.pdf" })
+                files
 )
 // *** Dummy cases
 
@@ -180,8 +177,8 @@ Target.Create "None" (fun _ ->
 
 "OutputDirectory"
     ==> "CoverSheet"
-    //==> "SurveySheets"
-    //==> "InstallSheets"
+    ==> "SurveySheets"
+    ==> "InstallSheets"
     ==> "Final"
 
 // Note seemingly Fake files must end with this...

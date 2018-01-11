@@ -6,9 +6,9 @@ open Fake.Core.Globbing.Operators
 
 module Common = 
     
-    type PrintQuality = PqScreen | PqPrint
+    type DocMakePrintQuality = PqScreen | PqPrint
 
-    let ghostscriptPrintQuality (quality:PrintQuality) : string = 
+    let ghostscriptPrintQuality (quality:DocMakePrintQuality) : string = 
         match quality with
         | PqScreen -> @"/screen"
         | PqPrint -> @"/preprint"
@@ -37,3 +37,11 @@ module Common =
                       | _ -> failwithf "unique - %i matches" zs.Length
 
         Seq.toList xs |> next
+
+    let pathChangeExtension (path:string) (extension:string) : string = 
+        Path.ChangeExtension(path,extension)
+
+    let pathChangeDirectory (path:string) (outputdir:string) : string = 
+        let justfile = Path.GetFileName path
+        Path.Combine(outputdir,justfile)
+ 
