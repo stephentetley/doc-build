@@ -36,10 +36,6 @@ let private process1 (app:PowerPoint.Application) (inpath:string) (outpath:strin
         prez.ExportAsFixedFormat (Path = outpath,
                                     FixedFormatType = PowerPoint.PpFixedFormatType.ppFixedFormatTypePDF,
                                     Intent = PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentScreen) 
-                                
-        //prez.SaveAs(FileName=outpath, 
-        //            FileFormat=PowerPoint.PpSaveAsFileType.ppSaveAsPDF,
-        //            EmbedTrueTypeFonts = Core.MsoTriState.msoFalse)
         prez.Close();
     with
     | ex -> printfn "PptToPdf - Some error occured for %s - '%s'" inpath ex.Message

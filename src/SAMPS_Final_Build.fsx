@@ -39,6 +39,7 @@ open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\Fake.fs"
 #load @"DocMake\Base\ImageMagick.fs"
 #load @"DocMake\Base\Json.fs"
 #load @"DocMake\Base\Office.fs"
@@ -55,6 +56,7 @@ open Fake.Core.TargetOperators
 // open Fake opens Fake.EnvironmentHelper     // for (@@) etc.
 
 open DocMake.Base.Common
+open DocMake.Base.Fake
 open DocMake.Base.ImageMagick
 open DocMake.Tasks.DocFindReplace
 open DocMake.Tasks.DocPhotos
@@ -198,29 +200,32 @@ Target.Create "CircuitDiag" (fun _ ->
     Fake.IO.Shell.CopyFile dest infile
 )
 
-
+// Not mandatory
 Target.Create "ElectricalWork" (fun _ ->
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* YW Workbook.xls*" (siteData) 
-    let outfile = makeSiteOutputName "%s Electrical Worksheet.pdf" 
-    XlsToPdf (fun p -> 
-        { p with 
-            InputFile = infile
-            OutputFile = Some <| outfile
-        })
+    match tryFindExactlyOneMatchingFile "* YW Workbook.xls*" siteData with
+    | Some infile -> 
+        let outfile = makeSiteOutputName "%s Electrical Worksheet.pdf" 
+        XlsToPdf (fun p -> 
+            { p with 
+                InputFile = infile
+                OutputFile = Some <| outfile
+            })
+    | None ->
+        Trace.tracefn "No Electrical Work sheets" 
 )
 
-// Maybe multiple sheets...
+// Maybe multiple sheets - must find at least 1...
 // TODO - potentially "skeletons" to work with multiple files would be nice
 Target.Create "InstallSheets" (fun _ ->
-    let (infiles:string list) = !! (siteData @@ "* Replacement Record.pdf") |> Seq.toList
-    if not (List.isEmpty infiles) then
+    match tryFindSomeMatchingFiles "* Replacement Record.pdf" siteData with
+    | Some infiles ->
         List.iteri (fun ix infile -> 
                         Trace.tracefn " --- Install sheet %i is: %s --- " (ix+1) infile
                         let outfile = makeSiteOutputNamei "%s Install Sheet %i.pdf" (ix+1)
                         if System.IO.File.Exists(infile) then
                             Fake.IO.Shell.CopyFile outfile infile 
                         else Trace.tracefn " --- NO INSTALL SHEET --- ") infiles
-    else
+    | None -> 
         failwith "No Install sheets"
                 
     
@@ -236,13 +241,10 @@ let finalGlobs : string list =
       "* Electrical Worksheet.pdf"
       "* Install Sheet *.pdf" ]
 
-//      // For Testing...
-//let finalGlobs : string list = 
-//    [ "* Install Sheet.pdf" ]
 
 Target.Create "Final" (fun _ ->
-    let (globMatches:string -> string list) = fun glob -> !! (siteOutput @@ glob) |> Seq.toList
-    let files:string list= List.collect globMatches finalGlobs
+    let files:string list= 
+        List.collect (fun glob -> findAllMatchingFiles glob siteOutput) finalGlobs
     PdfConcat (fun p -> 
         { p with 
             OutputFile = makeSiteOutputName "%s S3820 Sampler Asset Replacement.pdf" })

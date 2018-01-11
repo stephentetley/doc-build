@@ -37,11 +37,14 @@ open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\Fake.fs"
 #load @"DocMake\Base\ImageMagick.fs"
 #load @"DocMake\Base\Json.fs"
-open DocMake.Base.Common
-
 #load @"DocMake\Base\Office.fs"
+open DocMake.Base.Common
+open DocMake.Base.Fake
+
+
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Tasks.DocFindReplace
@@ -60,7 +63,7 @@ open DocMake.Tasks.PdfConcat
 // Fake is to make one agglomerate out of many parts.
 // Generating a batch file that invokes Fake for each site solves this.
 
-let _filestoreRoot  = @""
+let _filestoreRoot  = @"G:\work\Projects\usar\Jan2018_INPUT_batch01"
 let _outputRoot     = @"G:\work\Projects\usar\Final_Docs\output"
 let _templateRoot   = @"G:\work\Projects\usar\Final_Docs\__Templates"
 let _jsonRoot       = @"G:\work\Projects\usar\Final_Docs\__Json"
@@ -112,7 +115,9 @@ Target.Create "CoverSheet" (fun _ ->
         })
 )
 
-Target.Create "SurveySheet" (fun _ ->
+
+// Multiple survey sheets
+Target.Create "SurveySheets" (fun _ ->
     let action (infile:string) : unit =
         let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
         Trace.tracefn " --- Survey sheet is: %s --- " infile
@@ -129,27 +134,8 @@ Target.Create "SurveySheet" (fun _ ->
 )
 
 
-Target.Create "SurveyPhotos" (fun _ ->
-    let photosPath = siteData @@ "Survey Photos"
-    let docname = makeSiteOutputName "%s Survey Photos.docx" 
-    let pdfname = makeSiteOutputName "%s Survey Photos.pdf"
 
-    if System.IO.Directory.Exists(photosPath) then
-        DocPhotos (fun p -> 
-            { p with 
-                InputPaths = [photosPath]            
-                OutputFile = docname
-                ShowFileName = true 
-            })
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = docname
-                OutputFile = Some <| pdfname 
-            })
-    else Trace.tracefn " --- NO SURVEY PHOTOS --- "
-)
-
-Target.Create "InstallSheet" (fun _ ->
+Target.Create "InstallSheets" (fun _ ->
     let infile = Fake.IO.Directory.findFirstMatchingFile "* Site Works*.doc*" siteData
     Trace.tracefn " --- Install sheet is: %s --- " infile
     let outfile = makeSiteOutputName "%s Install Sheet.pdf" 
@@ -162,37 +148,17 @@ Target.Create "InstallSheet" (fun _ ->
     else Trace.tracefn " --- NO INSTALL SHEET --- "
 )
 
-Target.Create "InstallPhotos" (fun _ ->
-    let photosPath = siteData @@ "install photos"
-    let docname = makeSiteOutputName "%s Install Photos.docx" 
-    let pdfname = makeSiteOutputName "%s Install Photos.pdf"
 
-    if System.IO.Directory.Exists(photosPath) then
-        DocPhotos (fun p -> 
-            { p with 
-                InputPaths = [photosPath]            
-                OutputFile = docname
-                ShowFileName = true 
-            })
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = docname
-                OutputFile = Some <| pdfname 
-            })
-    else Trace.tracefn " --- NO INSTALL PHOTOS --- "
-)
 
 let finalGlobs : string list = 
     [ "* Cover Sheet.pdf" ;
       "* Survey Sheet.pdf" ;
-      "* Survey Photos.pdf" ;
-      "* Install Sheet.pdf" ;
-      "* Install Photos.pdf" ]
+      "* Install Sheet.pdf" ]
 
 Target.Create "Final" (fun _ ->
     let get1 (glob:string) : option<string> = 
         Fake.IO.Directory.tryFindFirstMatchingFile glob siteOutput
-    let outfile = makeSiteOutputName "%s S3953 RTU Asset Replacement.pdf"
+    let outfile = makeSiteOutputName "%s S3820 Ultrasonic Asset Replacement.pdf"
     let files = List.map get1 finalGlobs |> List.choose id
     PdfConcat (fun p ->  { p with OutputFile = outfile })
               files
@@ -214,9 +180,9 @@ Target.Create "None" (fun _ ->
 
 "OutputDirectory"
     ==> "CoverSheet"
-    //==> "SurveySheet"
-    //==> "InstallSheet"
-    //==> "Final"
+    //==> "SurveySheets"
+    //==> "InstallSheets"
+    ==> "Final"
 
 // Note seemingly Fake files must end with this...
 Target.RunOrDefault "None"

@@ -5,6 +5,14 @@ open System.Text
 open Fake.Core.Globbing.Operators
 
 module Common = 
+    
+    type PrintQuality = PqScreen | PqPrint
+
+    let ghostscriptPrintQuality (quality:PrintQuality) : string = 
+        match quality with
+        | PqScreen -> @"/screen"
+        | PqPrint -> @"/preprint"
+
 
     let doubleQuote (s:string) : string = "\"" + s + "\""
 
