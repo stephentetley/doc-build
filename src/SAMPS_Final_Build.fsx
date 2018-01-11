@@ -234,15 +234,15 @@ let finalGlobs : string list =
       "* Survey PPT.pdf" ;
       "* Circuit Diagram.pdf" ;
       "* Electrical Worksheet.pdf"
-      "* Install Sheet*.pdf" ]
+      "* Install Sheet *.pdf" ]
 
 //      // For Testing...
 //let finalGlobs : string list = 
 //    [ "* Install Sheet.pdf" ]
 
 Target.Create "Final" (fun _ ->
-    let get1 = fun glob -> Fake.IO.Directory.tryFindFirstMatchingFile glob siteOutput
-    let files = List.map get1 finalGlobs |> List.choose id
+    let (globMatches:string -> string list) = fun glob -> !! (siteOutput @@ glob) |> Seq.toList
+    let files:string list= List.collect globMatches finalGlobs
     PdfConcat (fun p -> 
         { p with 
             OutputFile = makeSiteOutputName "%s S3820 Sampler Asset Replacement.pdf" })
