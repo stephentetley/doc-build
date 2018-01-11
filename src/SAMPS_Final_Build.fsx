@@ -76,17 +76,17 @@ let _jsonRoot       = @"G:\work\Projects\samps\Final_Docs\__Json"
 // sites (they all follow the same directory/file structure).
 let siteName = environVarOrDefault "sitename" @"CATTERICK VILLAGE/STW"
 
-let cleanName       = safeName siteName
-let siteData        = _filestoreRoot @@ cleanName
-let siteOutput      = _outputRoot @@ cleanName
+let cleanName           = safeName siteName
+let siteInputDir        = _filestoreRoot @@ cleanName
+let siteOutputDir       = _outputRoot @@ cleanName
 
 
 
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-    siteOutput @@ sprintf fmt cleanName
+    siteOutputDir @@ sprintf fmt cleanName
 
 let makeSiteOutputNamei (fmt:Printf.StringFormat<string->int->string>) (ix:int) : string = 
-    siteOutput @@ sprintf fmt cleanName ix
+    siteOutputDir @@ sprintf fmt cleanName ix
 
 
 let renamePhotos (jpegFolderPath:string) (fmt:Printf.StringFormat<string->int->string>) : unit =
@@ -106,15 +106,15 @@ let optimizePhotos (jpegFolderPath:string) : unit =
 
 
 Target.Create "Clean" (fun _ -> 
-    if Directory.Exists(siteOutput) then 
-        Trace.tracefn " --- Clean folder: '%s' ---" siteOutput
-        Fake.IO.Directory.delete siteOutput
+    if Directory.Exists siteOutputDir then 
+        Trace.tracefn " --- Clean folder: '%s' ---" siteOutputDir
+        Fake.IO.Directory.delete siteOutputDir
     else ()
 )
 
 Target.Create "OutputDirectory" (fun _ -> 
-    Trace.tracefn " --- Output folder: '%s' ---" siteOutput
-    maybeCreateDirectory(siteOutput)
+    Trace.tracefn " --- Output folder: '%s' ---" siteOutputDir
+    maybeCreateDirectory siteOutputDir
 )
 
 
@@ -142,7 +142,7 @@ Target.Create "CoverSheet" (fun _ ->
 
 
 Target.Create "SurveySheet" (fun _ ->
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Sampler survey.xlsx" (siteData)
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Sampler survey.xlsx" (siteInputDir)
     let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
     XlsToPdf (fun p -> 
         { p with 
@@ -153,22 +153,22 @@ Target.Create "SurveySheet" (fun _ ->
 
 
 Target.Create "SurveyPhotos" (fun _ ->
-    let inletCopyPath = siteOutput @@ "SurveyPhotos\Inlet"
-    maybeCreateDirectory inletCopyPath 
-    !! (siteData @@ "Inlet\*.jpg") |> Fake.IO.Shell.Copy inletCopyPath
-    renamePhotos inletCopyPath "%s Inlet %03i.jpg"
-    optimizePhotos inletCopyPath
+    let inletCopiesPath = siteOutputDir @@ "SurveyPhotos\Inlet"
+    maybeCreateDirectory inletCopiesPath 
+    !! (siteInputDir @@ "Inlet\*.jpg") |> Fake.IO.Shell.Copy inletCopiesPath
+    renamePhotos inletCopiesPath "%s Inlet %03i.jpg"
+    optimizePhotos inletCopiesPath
 
-    let outletCopyPath = siteOutput @@ "SurveyPhotos\Outlet"
-    maybeCreateDirectory outletCopyPath
-    !! (siteData @@ "Outlet\*.jpg") |> Fake.IO.Shell.Copy outletCopyPath 
-    renamePhotos outletCopyPath "%s Outlet %03i.jpg"
-    optimizePhotos outletCopyPath
+    let outletCopiesPath = siteOutputDir @@ "SurveyPhotos\Outlet"
+    maybeCreateDirectory outletCopiesPath
+    !! (siteInputDir @@ "Outlet\*.jpg") |> Fake.IO.Shell.Copy outletCopiesPath 
+    renamePhotos outletCopiesPath "%s Outlet %03i.jpg"
+    optimizePhotos outletCopiesPath
     
     let docname = makeSiteOutputName "%s Survey Photos.docx" 
     DocPhotos (fun p -> 
         { p with 
-            InputPaths = [ inletCopyPath; outletCopyPath]            
+            InputPaths = [ inletCopiesPath; outletCopiesPath ]            
             OutputFile = docname
             ShowFileName = true 
         })
@@ -183,7 +183,7 @@ Target.Create "SurveyPhotos" (fun _ ->
 
 // findFirstMatchingFile is an alternative to unique
 Target.Create "SurveyPPT" (fun _ -> 
-    let infile = Fake.IO.Directory.findFirstMatchingFile "*.ppt*" (siteData) 
+    let infile = Fake.IO.Directory.findFirstMatchingFile "*.ppt*" (siteInputDir) 
     let outfile = makeSiteOutputName "%s Survey PPT.pdf" 
     Trace.tracef "Input: %s" infile
     PptToPdf (fun p -> 
@@ -194,7 +194,7 @@ Target.Create "SurveyPPT" (fun _ ->
 )
 
 Target.Create "CircuitDiag" (fun _ -> 
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Circuit Diagram.pdf" (siteData) 
+    let infile = Fake.IO.Directory.findFirstMatchingFile "* Circuit Diagram.pdf" (siteInputDir) 
     let dest = makeSiteOutputName "%s Circuit Diagram.pdf" 
     Trace.tracef "Input: %s" infile
     Fake.IO.Shell.CopyFile dest infile
@@ -202,7 +202,7 @@ Target.Create "CircuitDiag" (fun _ ->
 
 // Not mandatory
 Target.Create "ElectricalWork" (fun _ ->
-    match tryFindExactlyOneMatchingFile "* YW Workbook.xls*" siteData with
+    match tryFindExactlyOneMatchingFile "* YW Workbook.xls*" siteInputDir with
     | Some infile -> 
         let outfile = makeSiteOutputName "%s Electrical Worksheet.pdf" 
         XlsToPdf (fun p -> 
@@ -217,7 +217,7 @@ Target.Create "ElectricalWork" (fun _ ->
 // Maybe multiple sheets - must find at least 1...
 // TODO - potentially "skeletons" to work with multiple files would be nice
 Target.Create "InstallSheets" (fun _ ->
-    match tryFindSomeMatchingFiles "* Replacement Record.pdf" siteData with
+    match tryFindSomeMatchingFiles "* Replacement Record.pdf" siteInputDir with
     | Some infiles ->
         List.iteri (fun ix infile -> 
                         Trace.tracefn " --- Install sheet %i is: %s --- " (ix+1) infile
@@ -244,11 +244,11 @@ let finalGlobs : string list =
 
 Target.Create "Final" (fun _ ->
     let files:string list= 
-        List.collect (fun glob -> findAllMatchingFiles glob siteOutput) finalGlobs
+        List.collect (fun glob -> findAllMatchingFiles glob siteOutputDir) finalGlobs
     PdfConcat (fun p -> 
         { p with 
             OutputFile = makeSiteOutputName "%s S3820 Sampler Asset Replacement.pdf" })
-                files
+        files
 )
 
 Target.Create "Blank" (fun _ ->

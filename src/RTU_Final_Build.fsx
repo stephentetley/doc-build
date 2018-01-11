@@ -70,25 +70,26 @@ let _jsonRoot       = @"G:\work\Projects\rtu\Final_Docs\__Json"
 let siteName = environVarOrDefault "sitename" @"CUDWORTH/NO 2 STW"
 
 
-let cleanName       = safeName siteName
-let siteData        = _filestoreRoot @@ cleanName
-let siteOutput      = _outputRoot @@ cleanName
+let cleanName           = safeName siteName
+let siteInputDir        = _filestoreRoot @@ cleanName
+let siteOutputDir       = _outputRoot @@ cleanName
 
 
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-    siteOutput @@ sprintf fmt cleanName
+    siteOutputDir @@ sprintf fmt cleanName
 
 Target.Create "Clean" (fun _ -> 
-    if Directory.Exists(siteOutput) then 
-        Trace.tracefn " --- Clean folder: '%s' ---" siteOutput
-        Fake.IO.Directory.delete siteOutput
-    else ()
+    if Directory.Exists siteOutputDir then 
+        Trace.tracefn " --- Clean folder: '%s' ---" siteOutputDir
+        Fake.IO.Directory.delete siteOutputDir
+    else 
+        Trace.tracefn " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
 )
 
 
 Target.Create "OutputDirectory" (fun _ -> 
-    Trace.tracefn " --- Output folder: '%s' ---" siteOutput
-    maybeCreateDirectory(siteOutput)
+    Trace.tracefn " --- Output folder: '%s' ---" siteOutputDir
+    maybeCreateDirectory siteOutputDir
 )
 
 Target.Create "CoverSheet" (fun _ ->
@@ -112,25 +113,27 @@ Target.Create "CoverSheet" (fun _ ->
         })
 )
 
-Target.Create "SurveySheet" (fun _ ->
-    let action (infile:string) : unit =
-        let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
-        Trace.tracefn " --- Survey sheet is: %s --- " infile
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = infile
-                OutputFile = Some <| outfile
-            })
+// All file are created in the siteOutputDir...
+let docToPdfAction (message:string) (infile:string) (outfile:string) : unit =
+    Trace.trace message
+    DocToPdf (fun p -> 
+        { p with 
+            InputFile = infile
+            OutputFile = Some <| outfile
+        })
 
-    let inOpt = Fake.IO.Directory.tryFindFirstMatchingFile "* survey.doc" siteData
-    match inOpt with
-    | Some(infile) -> action infile
-    | None -> Trace.tracefn " --- NO SURVEY SHEET --- "
+Target.Create "SurveySheet" (fun _ ->
+    match tryFindExactlyOneMatchingFile "*urvey.doc*" siteInputDir with
+    | Some inputFile -> 
+        let outputFile = makeSiteOutputName "%s Survey Sheet.pdf" 
+        docToPdfAction (sprintf "Survey: %s" inputFile) inputFile outputFile
+    | None -> 
+        Trace.tracefn " --- NO SURVEY SHEET --- "
 )
 
 
 Target.Create "SurveyPhotos" (fun _ ->
-    let photosPath = siteData @@ "Survey Photos"
+    let photosPath = siteInputDir @@ "Survey Photos"
     let docname = makeSiteOutputName "%s Survey Photos.docx" 
     let pdfname = makeSiteOutputName "%s Survey Photos.pdf"
 
@@ -150,20 +153,16 @@ Target.Create "SurveyPhotos" (fun _ ->
 )
 
 Target.Create "InstallSheet" (fun _ ->
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Site Works*.doc*" siteData
-    Trace.tracefn " --- Install sheet is: %s --- " infile
-    let outfile = makeSiteOutputName "%s Install Sheet.pdf" 
-    if System.IO.File.Exists(infile) then
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = infile
-                OutputFile = Some <| outfile
-            })
-    else Trace.tracefn " --- NO INSTALL SHEET --- "
+    match tryFindExactlyOneMatchingFile "*Site Works*.doc*" siteInputDir with
+    | Some inputFile -> 
+        let outputFile = makeSiteOutputName "%s Install Sheet.pdf" 
+        docToPdfAction (sprintf "Survey: %s" inputFile) inputFile outputFile
+    | None -> 
+        Trace.tracefn " --- NO INSTALL SHEET --- "
 )
 
 Target.Create "InstallPhotos" (fun _ ->
-    let photosPath = siteData @@ "install photos"
+    let photosPath = siteInputDir @@ "install photos"
     let docname = makeSiteOutputName "%s Install Photos.docx" 
     let pdfname = makeSiteOutputName "%s Install Photos.pdf"
 
@@ -191,11 +190,11 @@ let finalGlobs : string list =
 
 Target.Create "Final" (fun _ ->
     let files:string list= 
-        List.collect (fun glob -> findAllMatchingFiles glob siteOutput) finalGlobs
+        List.collect (fun glob -> findAllMatchingFiles glob siteOutputDir) finalGlobs
     PdfConcat (fun p -> 
         { p with 
             OutputFile = makeSiteOutputName "%s S3953 RTU Asset Replacement.pdf" })
-                files
+        files
 )
 // *** Dummy cases
 

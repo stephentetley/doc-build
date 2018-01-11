@@ -73,25 +73,26 @@ let _jsonRoot       = @"G:\work\Projects\usar\Final_Docs\__Json"
 let siteName = environVarOrDefault "sitename" @"CUDWORTH/NO 2 STW"
 
 
-let cleanName       = safeName siteName
-let siteData        = _filestoreRoot @@ cleanName
-let siteOutput      = _outputRoot @@ cleanName
+let cleanName           = safeName siteName
+let siteInputDir        = _filestoreRoot @@ cleanName
+let siteOutputDir       = _outputRoot @@ cleanName
 
 
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-    siteOutput @@ sprintf fmt cleanName
+    siteOutputDir @@ sprintf fmt cleanName
 
 Target.Create "Clean" (fun _ -> 
-    if Directory.Exists(siteOutput) then 
-        Trace.tracefn " --- Clean folder: '%s' ---" siteOutput
-        Fake.IO.Directory.delete siteOutput
-    else ()
+    if Directory.Exists(siteOutputDir) then 
+        Trace.tracefn " --- Clean folder: '%s' ---" siteOutputDir
+        Fake.IO.Directory.delete siteOutputDir
+    else 
+        Trace.tracefn " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
 )
 
 
 Target.Create "OutputDirectory" (fun _ -> 
-    Trace.tracefn " --- Output folder: '%s' ---" siteOutput
-    maybeCreateDirectory(siteOutput)
+    Trace.tracefn " --- Output folder: '%s' ---" siteOutputDir
+    maybeCreateDirectory siteOutputDir 
 )
 
 Target.Create "CoverSheet" (fun _ ->
@@ -115,8 +116,9 @@ Target.Create "CoverSheet" (fun _ ->
         })
 )
 
+// All file are created in the siteOutputDir...
 let docToPdfAction (message:string) (infile:string) : unit =
-    let outfile = pathChangeExtension (pathChangeDirectory infile siteOutput) "pdf"
+    let outfile = pathChangeExtension (pathChangeDirectory infile siteOutputDir) "pdf"
     Trace.trace message
     DocToPdf (fun p -> 
         { p with 
@@ -128,7 +130,7 @@ let docToPdfAction (message:string) (infile:string) : unit =
 // Multiple survey sheets
 Target.Create "SurveySheets" (fun _ ->
     // Note - matching is with globs not regexs. Cannot use [Ss] to match capital or lower s.
-    match tryFindSomeMatchingFiles "*urvey.doc*" siteData with
+    match tryFindSomeMatchingFiles "*urvey.doc*" siteInputDir with
     | Some inputs -> 
         List.iter (fun file -> docToPdfAction (sprintf "Survey: %s" file) file) inputs
     | None -> 
@@ -138,7 +140,7 @@ Target.Create "SurveySheets" (fun _ ->
 
 
 Target.Create "InstallSheets" (fun _ ->
-    match tryFindSomeMatchingFiles "*nstall.doc*" siteData with
+    match tryFindSomeMatchingFiles "*nstall.doc*" siteInputDir with
     | Some inputs -> 
         List.iter (fun file -> docToPdfAction (sprintf "Install: %s" file) file) inputs
     | None -> 
@@ -154,11 +156,11 @@ let finalGlobs : string list =
 
 Target.Create "Final" (fun _ ->
     let files:string list= 
-        List.collect (fun glob -> findAllMatchingFiles glob siteOutput) finalGlobs
+        List.collect (fun glob -> findAllMatchingFiles glob siteOutputDir) finalGlobs
     PdfConcat (fun p -> 
         { p with 
             OutputFile = makeSiteOutputName "%s S3820 Ultrasonic Asset Replacement.pdf" })
-                files
+        files
 )
 // *** Dummy cases
 
