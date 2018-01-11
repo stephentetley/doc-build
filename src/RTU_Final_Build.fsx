@@ -37,10 +37,11 @@ open Fake.Core.TargetOperators
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\ImageMagick.fs"
+#load @"DocMake\Base\Fake.fs"
 #load @"DocMake\Base\Json.fs"
-open DocMake.Base.Common
-
 #load @"DocMake\Base\Office.fs"
+open DocMake.Base.Common
+open DocMake.Base.Fake
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Tasks.DocFindReplace
@@ -189,12 +190,12 @@ let finalGlobs : string list =
       "* Install Photos.pdf" ]
 
 Target.Create "Final" (fun _ ->
-    let get1 (glob:string) : option<string> = 
-        Fake.IO.Directory.tryFindFirstMatchingFile glob siteOutput
-    let outfile = makeSiteOutputName "%s S3953 RTU Asset Replacement.pdf"
-    let files = List.map get1 finalGlobs |> List.choose id
-    PdfConcat (fun p ->  { p with OutputFile = outfile })
-              files
+    let files:string list= 
+        List.collect (fun glob -> findAllMatchingFiles glob siteOutput) finalGlobs
+    PdfConcat (fun p -> 
+        { p with 
+            OutputFile = makeSiteOutputName "%s S3953 RTU Asset Replacement.pdf" })
+                files
 )
 // *** Dummy cases
 

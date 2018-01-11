@@ -7,6 +7,10 @@ open System.Text.RegularExpressions
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
+open Fake
+open Fake.Core
+
+open DocMake.Base.Common
 open DocMake.Base.Office
 
 [<CLIMutable>]
@@ -15,11 +19,13 @@ type DocToPdfParams =
         InputFile : string
         // If output file is not specified just change extension to .pdf
         OutputFile : string option
+        PrintQuality : DocMakePrintQuality
     }
 
 let DocToPdfDefaults = 
     { InputFile = @""
-      OutputFile = None }
+      OutputFile = None
+      PrintQuality = PqScreen }
 
 
 let private getOutputName (opts:DocToPdfParams) : string =
@@ -28,12 +34,12 @@ let private getOutputName (opts:DocToPdfParams) : string =
     | Some(s) -> s
 
 
-let private process1 (app:Word.Application) (inpath:string) (outpath:string) : unit = 
+let private process1 (app:Word.Application) (inpath:string) (outpath:string) (quality:DocMakePrintQuality) : unit = 
     try 
         let doc = app.Documents.Open(FileName = refobj inpath)
         doc.ExportAsFixedFormat (OutputFileName = outpath, 
                                   ExportFormat = Word.WdExportFormat.wdExportFormatPDF,
-                                  OptimizeFor = Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen)
+                                  OptimizeFor = wordPrintQuality quality)
         doc.Close (SaveChanges = refobj false)
     with
     | ex -> printfn "Some error occured - %s - %s" inpath ex.Message
@@ -42,12 +48,14 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) : u
 
 
 let DocToPdf (setDocToPdfParams: DocToPdfParams -> DocToPdfParams) : unit =
-    let opts = DocToPdfDefaults |> setDocToPdfParams
-    if File.Exists(opts.InputFile) 
+    let options = DocToPdfDefaults |> setDocToPdfParams
+    if File.Exists(options.InputFile) 
     then
         let app = new Word.ApplicationClass (Visible = true)
         try 
-            process1 app opts.InputFile (getOutputName opts)
+            process1 app options.InputFile (getOutputName options) options.PrintQuality
         finally 
             app.Quit ()
-    else ()
+    else 
+        Trace.traceError <| sprintf "DocToPdf --- missing input file"
+        failwith "DocToPdf --- missing input file"

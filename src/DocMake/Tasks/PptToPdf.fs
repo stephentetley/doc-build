@@ -7,7 +7,11 @@ open System.Text.RegularExpressions
 open Microsoft.Office
 open Microsoft.Office.Interop
 
-// open DocMake.Base.Office
+open Fake
+open Fake.Core
+
+open DocMake.Base.Common
+open DocMake.Base.Office
 
 
 [<CLIMutable>]
@@ -16,11 +20,13 @@ type PptToPdfParams =
         InputFile : string
         // If output file is not specified just change extension to .pdf
         OutputFile : string option
+        PrintQuality : DocMakePrintQuality
     }
 
 let PptToPdfDefaults = 
     { InputFile = @""
-      OutputFile = None }
+      OutputFile = None 
+      PrintQuality = PqScreen }
 
 
 let private getOutputName (opts:PptToPdfParams) : string =
@@ -29,13 +35,12 @@ let private getOutputName (opts:PptToPdfParams) : string =
     | Some(s) -> s
 
 
-let private process1 (app:PowerPoint.Application) (inpath:string) (outpath:string) : unit = 
+let private process1 (app:PowerPoint.Application) (inpath:string) (outpath:string) (quality:DocMakePrintQuality) : unit = 
     try 
-        // File already exists
         let prez = app.Presentations.Open(inpath)
         prez.ExportAsFixedFormat (Path = outpath,
                                     FixedFormatType = PowerPoint.PpFixedFormatType.ppFixedFormatTypePDF,
-                                    Intent = PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentScreen) 
+                                    Intent = powerpointPrintQuality quality) 
         prez.Close();
     with
     | ex -> printfn "PptToPdf - Some error occured for %s - '%s'" inpath ex.Message
@@ -51,9 +56,10 @@ let PptToPdf (setPptToPdfParams: PptToPdfParams -> PptToPdfParams) : unit =
         let app = new PowerPoint.ApplicationClass()
         try 
             app.Visible <- Core.MsoTriState.msoTrue
-            process1 app options.InputFile (getOutputName options)
+            process1 app options.InputFile (getOutputName options) options.PrintQuality
             app.Quit ()
         with 
-        | ex -> printfn "PptToPdf - Some error occured for %s - '%s'" options.InputFile ex.Message    
+        | ex -> failwithf "PptToPdf - Some error occured for %s - '%s'" options.InputFile ex.Message    
     else 
+        Trace.traceError <| sprintf "PptToPdf --- missing input file"
         failwithf "PptToPdf - missing input file '%s'" options.InputFile
