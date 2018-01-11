@@ -83,6 +83,10 @@ let siteOutput      = _outputRoot @@ cleanName
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
     siteOutput @@ sprintf fmt cleanName
 
+let makeSiteOutputNamei (fmt:Printf.StringFormat<string->int->string>) (ix:int) : string = 
+    siteOutput @@ sprintf fmt cleanName ix
+
+
 let renamePhotos (jpegFolderPath:string) (fmt:Printf.StringFormat<string->int->string>) : unit =
     let mkName = fun i -> sprintf fmt cleanName i
     UniformRename (fun p -> 
@@ -205,14 +209,21 @@ Target.Create "ElectricalWork" (fun _ ->
         })
 )
 
-
-Target.Create "InstallSheet" (fun _ ->
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Replacement Record.pdf" siteData
-    Trace.tracefn " --- Install sheet is: %s --- " infile
-    let outfile = makeSiteOutputName "%s Install Sheet.pdf" 
-    if System.IO.File.Exists(infile) then
-        Fake.IO.Shell.CopyFile outfile infile 
-    else Trace.tracefn " --- NO INSTALL SHEET --- "
+// Maybe multiple sheets...
+// TODO - potentially "skeletons" to work with multiple files would be nice
+Target.Create "InstallSheets" (fun _ ->
+    let (infiles:string list) = !! (siteData @@ "* Replacement Record.pdf") |> Seq.toList
+    if not (List.isEmpty infiles) then
+        List.iteri (fun ix infile -> 
+                        Trace.tracefn " --- Install sheet %i is: %s --- " (ix+1) infile
+                        let outfile = makeSiteOutputNamei "%s Install Sheet %i.pdf" (ix+1)
+                        if System.IO.File.Exists(infile) then
+                            Fake.IO.Shell.CopyFile outfile infile 
+                        else Trace.tracefn " --- NO INSTALL SHEET --- ") infiles
+    else
+        failwith "No Install sheets"
+                
+    
 )
 
 
@@ -223,7 +234,7 @@ let finalGlobs : string list =
       "* Survey PPT.pdf" ;
       "* Circuit Diagram.pdf" ;
       "* Electrical Worksheet.pdf"
-      "* Install Sheet.pdf" ]
+      "* Install Sheet*.pdf" ]
 
 //      // For Testing...
 //let finalGlobs : string list = 
@@ -252,7 +263,7 @@ Target.Create "Blank" (fun _ ->
     ==> "SurveyPPT"
     ==> "CircuitDiag"
     ==> "ElectricalWork"
-    ==> "InstallSheet"
+    ==> "InstallSheets"
     ==> "Final"
 
 Target.RunOrDefault "Blank"

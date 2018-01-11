@@ -31,7 +31,9 @@ let private getOutputName (opts:DocToPdfParams) : string =
 let private process1 (app:Word.Application) (inpath:string) (outpath:string) : unit = 
     try 
         let doc = app.Documents.Open(FileName = refobj inpath)
-        doc.ExportAsFixedFormat (OutputFileName = outpath, ExportFormat = Word.WdExportFormat.wdExportFormatPDF)
+        doc.ExportAsFixedFormat (OutputFileName = outpath, 
+                                  ExportFormat = Word.WdExportFormat.wdExportFormatPDF,
+                                  OptimizeFor = Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen)
         doc.Close (SaveChanges = refobj false)
     with
     | ex -> printfn "Some error occured - %s - %s" inpath ex.Message

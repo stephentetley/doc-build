@@ -36,7 +36,8 @@ let private process1 (app:Excel.Application) (inpath:string) (outpath:string) : 
         let xls = app.Workbooks.Open(inpath)
         xls.ExportAsFixedFormat (Type=Excel.XlFixedFormatType.xlTypePDF,
                                  Filename=outpath,
-                                 IncludeDocProperties=true)
+                                 IncludeDocProperties=true,
+                                 Quality = Excel.XlFixedFormatQuality.xlQualityMinimum)
         xls.Close (SaveChanges = false)
     with
     | ex -> printfn "Some error occured - %s - %s" inpath ex.Message

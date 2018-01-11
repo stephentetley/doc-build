@@ -14,7 +14,9 @@ open DocMake.Base.Common
  
 
 // Concat PDFs
-    
+
+// Potentially we could shell out to pdftk, but the space savings don't seem so great:
+// > pdftk Input.pdf output Output.pdf compress    
 
 [<CLIMutable>]
 type PdfConcatParams = 
@@ -34,10 +36,12 @@ type PdfConcatParams =
 // DotCover.fs includes output file name in the params
 // FscHelper includes output file name in the params
 
+
+// TODO - GsOptions should be more user friendly
 let PdfConcatDefaults = 
     { OutputFile = "concat.pdf"
       AppPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      GsOptions = @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress" }
+      GsOptions = @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/screen" }
 
 
 let private line1 (opts:PdfConcatParams) : string =
