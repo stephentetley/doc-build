@@ -19,13 +19,13 @@ open DocMake.Base.Json
 
 
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
+    ExcelFile< @"G:\work\Projects\flow2\sitelist-for-gen-jan2018.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
 type SitesRow = SitesTable.Row
 
-let jsonFolder = @"G:\work\Projects\samps\Final_Docs\__Json"
+let jsonFolder = @"G:\work\Projects\flow2\final-docs\__Json"
 
 
 let makeDict (row:SitesRow) : Dict = 

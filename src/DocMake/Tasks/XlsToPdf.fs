@@ -20,12 +20,14 @@ type XlsToPdfParams =
         // If output file is not specified just change extension to .pdf
         OutputFile : string option
         PrintQuality : DocMakePrintQuality
+        FitWidth : bool
     }
 
 let XlsToPdfDefaults = 
     { InputFile = @""
       OutputFile = None
-      PrintQuality = PqScreen }
+      PrintQuality = PqScreen
+      FitWidth = true }
 
 
 let private getOutputName (opts:XlsToPdfParams) : string =
@@ -34,16 +36,25 @@ let private getOutputName (opts:XlsToPdfParams) : string =
     | Some(s) -> s
 
 
-let private process1 (app:Excel.Application) (inpath:string) (outpath:string) (quality:DocMakePrintQuality) : unit = 
+let private process1 (app:Excel.Application) (inpath:string) (outpath:string) (quality:DocMakePrintQuality) (fitWidth:bool) : unit = 
     try 
-        let xls = app.Workbooks.Open(inpath)
-        xls.ExportAsFixedFormat (Type=Excel.XlFixedFormatType.xlTypePDF,
-                                 Filename=outpath,
-                                 IncludeDocProperties=true,
-                                 Quality = excelPrintQuality quality)
-        xls.Close (SaveChanges = false)
+        let workbook : Excel.Workbook = app.Workbooks.Open(inpath)
+        if fitWidth then 
+            workbook.Sheets 
+                |> Seq.cast<Excel.Worksheet>
+                |> Seq.iter (fun (sheet:Excel.Worksheet) -> 
+                    sheet.PageSetup.Zoom <- false
+                    sheet.PageSetup.FitToPagesWide <- 1)
+        else ()
+
+        workbook.ExportAsFixedFormat (Type=Excel.XlFixedFormatType.xlTypePDF,
+                                         Filename=outpath,
+                                         IncludeDocProperties=true,
+                                         Quality = excelPrintQuality quality
+                                         )
+        workbook.Close (SaveChanges = false)
     with
-    | ex -> printfn "Some error occured - %s - %s" inpath ex.Message
+    | ex -> Trace.traceError (sprintf "Some error occured - %s - %s" inpath ex.Message)
 
 
 
@@ -54,7 +65,7 @@ let XlsToPdf (setXlsToPdfParams: XlsToPdfParams -> XlsToPdfParams) : unit =
     then
         let app = new Excel.ApplicationClass(Visible = true) 
         try 
-            process1 app options.InputFile (getOutputName options) options.PrintQuality
+            process1 app options.InputFile (getOutputName options) options.PrintQuality options.FitWidth
         finally 
             app.Quit ()
     else 

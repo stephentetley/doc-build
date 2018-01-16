@@ -74,6 +74,7 @@
     <None Include="RTU_Final_Build.fsx" />
     <None Include="SAMPS_Final_Build.fsx" />
     <None Include="USAR_Final_Build.fsx" />
+    <None Include="FC2_Final_Build.fsx" />
     <None Include="GEN_Invoke_dot_bat.fsx" />
     <None Include="GEN_json_matches.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
