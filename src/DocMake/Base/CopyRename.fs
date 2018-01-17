@@ -34,3 +34,17 @@ let multiCopyRegexRename  (srcDir:string, srcRegex:string, ignoreCase:bool) (des
     List.iteri (fun ix srcFile ->
                     let destFile = destDir @@ destNamer ix
                     Fake.IO.Shell.CopyFile destFile srcFile) inputs
+
+// Throws error if the source is not found...
+let mandatoryCopyFile (destPath:string) (source:string) : unit = 
+    if IO.File.exists(source) then
+        Fake.IO.Shell.CopyFile destPath source
+    else 
+        failwithf "mandatoryCopyFile - source not found '%s'" source
+
+// Prints warning if the source is not found...
+let optionalCopyFile (destPath:string) (source:string) : unit = 
+    if IO.File.exists(source) then
+        Fake.IO.Shell.CopyFile destPath source
+    else 
+        Trace.tracefn "optionalCopyFile: WARNING - not copied, source not found '%s'" source

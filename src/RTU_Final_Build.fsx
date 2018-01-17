@@ -95,90 +95,90 @@ Target.Create "OutputDirectory" (fun _ ->
 Target.Create "CoverSheet" (fun _ ->
     let template = _templateRoot @@ "MM3x-to-MMIM RTU Cover Sheet.docx"
     let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
-    let docname = makeSiteOutputName "%s Cover Sheet.docx"
+    let docName = makeSiteOutputName "%s Cover Sheet.docx"
+    let pdfName = pathChangeExtension docName "pdf"
+
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
     
     DocFindReplace (fun p -> 
         { p with 
             TemplateFile = template
-            OutputFile = docname
+            OutputFile = docName
             JsonMatchesFile  = jsonSource 
         }) 
     
-    let pdfname = makeSiteOutputName "%s Cover Sheet.pdf"
     DocToPdf (fun p -> 
         { p with 
-            InputFile = docname
-            OutputFile = Some <| pdfname 
+            InputFile = docName
+            OutputFile = Some <| pdfName 
         })
 )
 
-// All file are created in the siteOutputDir...
-let docToPdfAction (message:string) (infile:string) (outfile:string) : unit =
-    Trace.trace message
-    DocToPdf (fun p -> 
-        { p with 
-            InputFile = infile
-            OutputFile = Some <| outfile
-        })
+
 
 Target.Create "SurveySheet" (fun _ ->
     match tryFindExactlyOneMatchingFile "*urvey.doc*" siteInputDir with
-    | Some inputFile -> 
-        let outputFile = makeSiteOutputName "%s Survey Sheet.pdf" 
-        docToPdfAction (sprintf "Survey: %s" inputFile) inputFile outputFile
-    | None -> 
-        Trace.tracefn " --- NO SURVEY SHEET --- "
+    | Some docFile -> 
+        let pdfFile = makeSiteOutputName "%s Survey Sheet.pdf" 
+        DocToPdf (fun p -> 
+        { p with 
+            InputFile = docFile
+            OutputFile = Some <| pdfFile
+        })
+    | None -> assertOptional "NO SURVEY SHEET"
 )
 
 
 Target.Create "SurveyPhotos" (fun _ ->
     let photosPath = siteInputDir @@ "Survey Photos"
-    let docname = makeSiteOutputName "%s Survey Photos.docx" 
-    let pdfname = makeSiteOutputName "%s Survey Photos.pdf"
+    let docName = makeSiteOutputName "%s Survey Photos.docx" 
+    let pdfName = pathChangeExtension docName "pdf"
 
     if System.IO.Directory.Exists(photosPath) then
         DocPhotos (fun p -> 
             { p with 
                 InputPaths = [photosPath]            
-                OutputFile = docname
+                OutputFile = docName
                 ShowFileName = true 
             })
         DocToPdf (fun p -> 
             { p with 
-                InputFile = docname
-                OutputFile = Some <| pdfname 
+                InputFile = docName
+                OutputFile = Some <| pdfName 
             })
-    else Trace.tracefn " --- NO SURVEY PHOTOS --- "
+    else assertOptional "NO SURVEY PHOTOS"
 )
 
 Target.Create "InstallSheet" (fun _ ->
     match tryFindExactlyOneMatchingFile "*Site Works*.doc*" siteInputDir with
-    | Some inputFile -> 
-        let outputFile = makeSiteOutputName "%s Install Sheet.pdf" 
-        docToPdfAction (sprintf "Survey: %s" inputFile) inputFile outputFile
-    | None -> 
-        Trace.tracefn " --- NO INSTALL SHEET --- "
+    | Some docName -> 
+        let pdfName = makeSiteOutputName "%s Install Sheet.pdf" 
+        DocToPdf (fun p -> 
+            { p with 
+                InputFile = docName
+                OutputFile = Some <| pdfName
+            })
+    | None -> assertMandatory "NO INSTALL SHEET"
 )
 
 Target.Create "InstallPhotos" (fun _ ->
     let photosPath = siteInputDir @@ "install photos"
-    let docname = makeSiteOutputName "%s Install Photos.docx" 
-    let pdfname = makeSiteOutputName "%s Install Photos.pdf"
+    let docName = makeSiteOutputName "%s Install Photos.docx" 
+    let pdfName = pathChangeExtension docName "pdf"
 
     if System.IO.Directory.Exists(photosPath) then
         DocPhotos (fun p -> 
             { p with 
                 InputPaths = [photosPath]            
-                OutputFile = docname
+                OutputFile = docName
                 ShowFileName = true 
             })
         DocToPdf (fun p -> 
             { p with 
-                InputFile = docname
-                OutputFile = Some <| pdfname 
+                InputFile = docName
+                OutputFile = Some <| pdfName 
             })
-    else Trace.tracefn " --- NO INSTALL PHOTOS --- "
+    else assertOptional "NO INSTALL PHOTOS"
 )
 
 let finalGlobs : string list = 

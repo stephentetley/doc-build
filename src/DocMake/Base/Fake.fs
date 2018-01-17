@@ -49,7 +49,7 @@ let tryFindExactlyOneMatchingFile (pattern:string) (dir:string) : option<string>
 //    | Some a -> success a
 //    | None -> Trace.tracefn "%s" warnMsg
 
-let assertMandatory (failMsg:string) : unit = failwith failMsg
+let assertMandatory (failMsg:string) : unit = failwithf "FAIL: Mandatory: %s" failMsg
 
-let assertOptional  (warnMsg:string) : unit = Trace.tracefn "%s" warnMsg
+let assertOptional  (warnMsg:string) : unit = Trace.tracefn "WARN: Optional: %s" warnMsg
 

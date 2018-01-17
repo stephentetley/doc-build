@@ -41,9 +41,10 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\ImageMagick.fs"
 #load @"DocMake\Base\Json.fs"
 #load @"DocMake\Base\Office.fs"
+#load @"DocMake\Base\CopyRename.fs"
 open DocMake.Base.Common
 open DocMake.Base.Fake
-
+open DocMake.Base.CopyRename
 
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
@@ -101,24 +102,23 @@ Target.Create "OutputDirectory" (fun _ ->
 
 
 Target.Create "Cover" (fun _ ->
-    let template = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
-    let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
-    let tempDocName = makeSiteOutputName "%s cover-sheet.docx"
-    Trace.tracefn " --- Cover sheet for: %s --- " siteName
-    
-    DocFindReplace (fun p -> 
-        { p with 
-            TemplateFile = template
-            OutputFile = tempDocName
-            JsonMatchesFile  = jsonSource 
-        }) 
-    
-    let finalPdfName = pathChangeExtension tempDocName "pdf"
-    DocToPdf (fun p -> 
-        { p with 
-            InputFile = tempDocName
-            OutputFile = Some <| finalPdfName 
-        })
+    try
+        let template = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
+        let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
+        let docName = makeSiteOutputName "%s cover-sheet.docx"
+        let pdfName = pathChangeExtension docName "pdf"
+        DocFindReplace (fun p -> 
+            { p with 
+                TemplateFile = template
+                OutputFile = docName
+                JsonMatchesFile  = jsonSource 
+            }) 
+        DocToPdf (fun p -> 
+            { p with 
+                InputFile = docName
+                OutputFile = Some <| pdfName 
+            })
+    with ex -> assertMandatory <| sprintf "COVER SHEET FAILED\n%s" (ex.ToString())
 )
 
 Target.Create "ScopeOfWorks" (fun _ ->
@@ -131,20 +131,19 @@ Target.Create "ScopeOfWorks" (fun _ ->
                 InputFile = input
                 OutputFile = Some <| outPath
             })
-    | None -> 
-        failwith " --- NO SCOPE OF WORKS --- "
+    | None -> assertMandatory "NO SCOPE OF WORKS"
 )
 
 
 // Throws error on failure
 let copySingletonAction (pattern:string) (srcDir:string) (destPath:string) : unit = 
     match tryFindExactlyOneMatchingFile pattern srcDir with
-    | None -> failwithf "copySingletonAction - no match '%s'" pattern
-    | Some input -> 
-        Trace.tracef "Copying file '%s' to '%s'" input destPath
-        Fake.IO.Shell.CopyFile destPath input
+    | Some source -> 
+        optionalCopyFile destPath source
+    | None -> assertOptional (sprintf "No match for '%s'" pattern)
 
 Target.Create "Electricals" (fun _ -> 
+    // This is optional for all three
     let proc (glob:string, srcDir:string, destPath:string) : unit =
         try 
             copySingletonAction glob srcDir destPath
@@ -161,28 +160,21 @@ Target.Create "Electricals" (fun _ ->
 
 
 Target.Create "InstallSheets" (fun _ ->
-    match tryFindExactlyOneMatchingFile "*Flow*eter*.xls*" siteInputDir with
-    | Some input -> 
-        let outfile = makeSiteOutputName "%s install-flow.pdf"
-        XlsToPdf (fun p -> 
-            { p with 
-                InputFile = input
-                OutputFile = Some <| outfile
-            })
-    | None -> 
-        Trace.tracef " --- NO FLOW METER INSTALL SHEET --- "
+    let pdfGen (glob:string) (outputFile:string) (warnMsg:string) : unit = 
+        match tryFindExactlyOneMatchingFile glob siteInputDir with
+        | Some input -> 
+            XlsToPdf (fun p -> 
+                { p with 
+                    InputFile = input
+                    OutputFile = Some <| outputFile
+                })
+        | None -> assertOptional warnMsg
 
-    match tryFindExactlyOneMatchingFile "*Pressure*.xls*" siteInputDir with
-    | Some input -> 
-        let outfile = makeSiteOutputName "%s install-pressure.pdf"
-        XlsToPdf (fun p -> 
-            { p with 
-                InputFile = input
-                OutputFile = Some <| outfile
-            })
-    | None -> 
-        Trace.tracef " --- NO PRESSURE SENSOR INSTALL SHEET --- "
+    let flowOut = makeSiteOutputName "%s install-flow.pdf"
+    pdfGen "*Flow*eter*.xls*" flowOut "NO FLOW METER INSTALL SHEET"
 
+    let pressureOut = makeSiteOutputName "%s install-pressure.pdf"
+    pdfGen "*Pressure*.xls*" pressureOut "NO PRESSURE SENSOR INSTALL SHEET"
 )
 
 Target.Create "WorksPhotos" (fun _ ->
@@ -202,7 +194,7 @@ Target.Create "WorksPhotos" (fun _ ->
                 InputFile = docname
                 OutputFile = Some <| pdfname 
             })
-    else Trace.tracefn " --- NO WORKS PHOTOS --- "
+    else assertOptional "NO WORKS PHOTOS"
 )
 
 let finalGlobs : string list = 
