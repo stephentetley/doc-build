@@ -1,5 +1,4 @@
-﻿[<AutoOpen>]
-module DocMake.Tasks.DocToPdf
+﻿module DocMake.Tasks.DocToPdf
 
 open System.IO
 open System.Text.RegularExpressions

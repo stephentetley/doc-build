@@ -1,5 +1,4 @@
-﻿[<AutoOpen>]
-module DocMake.Tasks.DocPhotos
+﻿module DocMake.Tasks.DocPhotos
 
 
 open System.IO

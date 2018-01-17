@@ -1,5 +1,4 @@
-﻿[<AutoOpen>]
-module DocMake.Tasks.DocFindReplace
+﻿module DocMake.Tasks.DocFindReplace
 
 
 open System.IO

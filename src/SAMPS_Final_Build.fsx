@@ -218,6 +218,15 @@ Target.Create "ElectricalWork" (fun _ ->
     | None -> assertOptional "No Electrical Work sheets" 
 )
 
+Target.Create "BottleMachine" (fun _ -> 
+    match tryFindExactlyOneMatchingFile "*ottle*achine*.pdf" siteInputDir with
+    | Some srcFile -> 
+        let destFile = makeSiteOutputName "%s bottle-machine.pdf" 
+        Fake.IO.Shell.CopyFile destFile srcFile
+    | None -> assertOptional "No bottle machine certificate"
+)
+
+
 // Maybe multiple sheets - must find at least 1...
 // TODO - potentially "skeletons" to work with multiple files would be nice
 Target.Create "InstallSheets" (fun _ ->
@@ -242,6 +251,7 @@ let finalGlobs : string list =
       "*survey-ppt.pdf" ;
       "*circuit-diagram.pdf" ;
       "*electrical-worksheet.pdf"
+      "*bottle-machine.pdf"
       "*install-sheet*.pdf" ]
 
 
@@ -268,6 +278,7 @@ Target.Create "Blank" (fun _ ->
     ==> "SurveyPPT"
     ==> "CircuitDiag"
     ==> "ElectricalWork"
+    ==> "BottleMachine"
     ==> "InstallSheets"
     ==> "Final"
 

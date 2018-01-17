@@ -1,47 +1,46 @@
-﻿namespace DocMake.Base
+﻿module DocMake.Base.Common
 
 open System.IO
 open System.Text
 open Fake.Core.Globbing.Operators
 
-module Common = 
     
-    type DocMakePrintQuality = PqScreen | PqPrint
+type DocMakePrintQuality = PqScreen | PqPrint
 
-    let ghostscriptPrintQuality (quality:DocMakePrintQuality) : string = 
-        match quality with
-        | PqScreen -> @"/screen"
-        | PqPrint -> @"/preprint"
+let ghostscriptPrintQuality (quality:DocMakePrintQuality) : string = 
+    match quality with
+    | PqScreen -> @"/screen"
+    | PqPrint -> @"/preprint"
 
 
-    let doubleQuote (s:string) : string = "\"" + s + "\""
+let doubleQuote (s:string) : string = "\"" + s + "\""
 
-    let safeName (input:string) : string = 
-        let bads = ['\\'; '/'; ':']
-        List.fold (fun s c -> s.Replace(c,'_')) input bads
+let safeName (input:string) : string = 
+    let bads = ['\\'; '/'; ':']
+    List.fold (fun s c -> s.Replace(c,'_')) input bads
 
-    let zeroPad (width:int) (value:int) = 
-        let ss = value.ToString ()
-        let diff = width - ss.Length
-        String.replicate diff "0" + ss
+let zeroPad (width:int) (value:int) = 
+    let ss = value.ToString ()
+    let diff = width - ss.Length
+    String.replicate diff "0" + ss
 
-    let maybeCreateDirectory (dirpath:string) : unit = 
-        if not <| Directory.Exists(dirpath) then 
-            ignore <| Directory.CreateDirectory(dirpath)
-        else ()
+let maybeCreateDirectory (dirpath:string) : unit = 
+    if not <| Directory.Exists(dirpath) then 
+        ignore <| Directory.CreateDirectory(dirpath)
+    else ()
 
-    let unique (xs:seq<'a>) : 'a = 
-        let next zs = match zs with
-                      | [] -> failwith "unique - no matches."
-                      | [z] -> z
-                      | _ -> failwithf "unique - %i matches" zs.Length
+let unique (xs:seq<'a>) : 'a = 
+    let next zs = match zs with
+                    | [] -> failwith "unique - no matches."
+                    | [z] -> z
+                    | _ -> failwithf "unique - %i matches" zs.Length
 
-        Seq.toList xs |> next
+    Seq.toList xs |> next
 
-    let pathChangeExtension (path:string) (extension:string) : string = 
-        Path.ChangeExtension(path,extension)
+let pathChangeExtension (path:string) (extension:string) : string = 
+    Path.ChangeExtension(path,extension)
 
-    let pathChangeDirectory (path:string) (outputdir:string) : string = 
-        let justfile = Path.GetFileName path
-        Path.Combine(outputdir,justfile)
+let pathChangeDirectory (path:string) (outputdir:string) : string = 
+    let justfile = Path.GetFileName path
+    Path.Combine(outputdir,justfile)
  

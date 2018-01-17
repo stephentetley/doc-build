@@ -60,6 +60,7 @@
     <Compile Include="DocMake\Base\ImageMagick.fs" />
     <Compile Include="DocMake\Base\Json.fs" />
     <Compile Include="DocMake\Base\Office.fs" />
+    <Compile Include="DocMake\Base\CopyRename.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocToPdf.fs" />

@@ -1,5 +1,4 @@
-﻿[<AutoOpen>]
-module DocMake.Tasks.UniformRename
+﻿module DocMake.Tasks.UniformRename
 
 open System.IO
 open System.Text.RegularExpressions
@@ -7,6 +6,8 @@ open System.Text.RegularExpressions
 
 open DocMake.Base.Common
 
+
+// TODO - this is probably just a helper function and not a task...
  
 // Rename files in a folder matching a pattern. 
 // The new names are uniform base name with an numbering.
