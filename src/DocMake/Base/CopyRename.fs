@@ -1,5 +1,4 @@
-﻿[<AutoOpen>]
-module DocMake.Base.CopyRename
+﻿module DocMake.Base.CopyRename
 
 open System.IO
 open System.Text.RegularExpressions
@@ -7,6 +6,9 @@ open System.Text.RegularExpressions
 
 open DocMake.Base.Common
 
+open Fake
+open Fake.Core
+open Fake.Core.Globbing.Operators
 
 // TODO - this is the code from DocMake.Tasks.UniformRename.
 // It should not be a task (have params record) and needs cleaning up
@@ -19,47 +21,25 @@ open DocMake.Base.Common
 // Push whether or not to use sprintf to the client, this makes things more flexible
 type NameFormatter = int->string
 
-[<CLIMutable>]
-type UniformRenameParams = 
-    { 
-        InputFolder : string option
-        MatchPattern : string
-        MatchIgnoreCase : bool
-        MakeName : NameFormatter
-    }
-
-let UniformRenameDefaults = 
-    { InputFolder = None 
-      MatchPattern = ""
-      MatchIgnoreCase = false
-      MakeName = sprintf @"output-%i"}
 
 // Use... System.IO.File.Move (oldname,newname)
 // System.IO.Directory.GetFiles(directory)
 
-let private matchFiles (dir:string) (search:string) (ignoreCase:bool) : string [] = 
+let multiCopyGlobRename  (srcDir:string, srcGlob:string) (destDir:string, destNamer:int -> string) : unit = 
+    let inputs = findAllMatchingFiles srcGlob srcDir  
+    List.iteri (fun ix srcFile ->
+                    let destFile = destDir @@ destNamer ix
+                    Fake.IO.Shell.CopyFile destFile srcFile) inputs
+
+
+let private regexMatchFiles (srcDir:string) (search:string) (ignoreCase:bool) : string list = 
     let re = if ignoreCase then new Regex(search, RegexOptions.IgnoreCase) else new Regex(search)
-    Directory.GetFiles(dir) |> Array.filter (fun s -> re.Match(s).Success)
+    Directory.GetFiles(srcDir) |> Array.filter (fun s -> re.Match(s).Success) |> Array.toList
 
 
 
-let private renameFiles (files:string []) (fmt:NameFormatter) : unit = 
-    let rename1 count oldpath = 
-        let dirname = Path.GetDirectoryName(oldpath)
-        let newpath = Path.Combine(dirname, fmt count)
-        Directory.Move(oldpath, newpath)
-        count+1
-    ignore <| Array.fold rename1 1 files
-    
-    
-let UniformRename (setUniformRenameParams: UniformRenameParams -> UniformRenameParams) : unit =
-    let opts  = UniformRenameDefaults |> setUniformRenameParams
-    match opts.InputFolder with
-    | None -> printfn "UniformRename - InputFolder must be specified"
-    | Some inpath -> 
-        let worklist = matchFiles inpath opts.MatchPattern opts.MatchIgnoreCase
-        renameFiles worklist opts.MakeName
-
-    
-
-
+let multiCopyRegexRename  (srcDir:string, srcRegex:string, ignoreCase:bool) (destDir:string, destNamer:int -> string) : unit = 
+    let inputs = regexMatchFiles srcDir srcRegex ignoreCase
+    List.iteri (fun ix srcFile ->
+                    let destFile = destDir @@ destNamer ix
+                    Fake.IO.Shell.CopyFile destFile srcFile) inputs

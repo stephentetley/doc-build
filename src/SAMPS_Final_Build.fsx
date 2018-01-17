@@ -43,6 +43,7 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\ImageMagick.fs"
 #load @"DocMake\Base\Json.fs"
 #load @"DocMake\Base\Office.fs"
+#load @"DocMake\Base\CopyRename.fs"
 #load @"DocMake\Tasks\PdfConcat.fs"
 #load @"DocMake\Tasks\DocPhotos.fs"
 #load @"DocMake\Tasks\DocFindReplace.fs"
@@ -58,6 +59,7 @@ open Fake.Core.TargetOperators
 open DocMake.Base.Common
 open DocMake.Base.Fake
 open DocMake.Base.ImageMagick
+open DocMake.Base.CopyRename
 open DocMake.Tasks.DocFindReplace
 open DocMake.Tasks.DocPhotos
 open DocMake.Tasks.DocToPdf
@@ -154,23 +156,25 @@ Target.Create "SurveySheet" (fun _ ->
 
 
 Target.Create "SurveyPhotos" (fun _ ->
-    let inletCopiesPath = siteOutputDir @@ "SurveyPhotos\Inlet"
-    maybeCreateDirectory inletCopiesPath 
-    !! (siteInputDir @@ "Inlet\*.jpg") |> Fake.IO.Shell.Copy inletCopiesPath
-    renamePhotos inletCopiesPath "%s Inlet %03i.jpg"
-    optimizePhotos inletCopiesPath
+    let inletSrcPath    = siteInputDir @@ @"Inlet"
+    let inletDestPath   = siteOutputDir @@ @"SurveyPhotos\Inlet"
+    maybeCreateDirectory inletDestPath 
+    multiCopyGlobRename (inletSrcPath, "*.jpg") 
+                        (inletDestPath, fun ix -> sprintf "%s Inlet %03i.jpg" cleanName (ix+1) )
+    optimizePhotos inletDestPath
 
-    let outletCopiesPath = siteOutputDir @@ "SurveyPhotos\Outlet"
-    maybeCreateDirectory outletCopiesPath
-    !! (siteInputDir @@ "Outlet\*.jpg") |> Fake.IO.Shell.Copy outletCopiesPath 
-    renamePhotos outletCopiesPath "%s Outlet %03i.jpg"
-    optimizePhotos outletCopiesPath
+    let outletSrcPath   = siteInputDir @@ "Outlet"
+    let outletDestPath  = siteOutputDir @@ @"SurveyPhotos\Outlet"
+    maybeCreateDirectory outletDestPath
+    multiCopyGlobRename (outletSrcPath, "*.jpg") 
+                        (outletDestPath, fun ix -> sprintf "%s Outlet %03i.jpg" cleanName (ix+1) )
+    optimizePhotos outletDestPath
     
     let docName = makeSiteOutputName "%s survey-photos.docx" 
     let pdfName = pathChangeExtension docName "pdf"
     DocPhotos (fun p -> 
         { p with 
-            InputPaths = [ inletCopiesPath; outletCopiesPath ]            
+            InputPaths = [ inletDestPath; outletDestPath ]            
             OutputFile = docName
             ShowFileName = true 
         })

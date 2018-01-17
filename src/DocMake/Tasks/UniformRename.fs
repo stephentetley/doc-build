@@ -1,4 +1,6 @@
-﻿module DocMake.Tasks.UniformRename
+﻿// DEPRECATED - use DocMake.Base.CopyRename
+
+module DocMake.Tasks.UniformRename
 
 open System.IO
 open System.Text.RegularExpressions
