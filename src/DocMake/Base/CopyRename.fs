@@ -4,26 +4,17 @@ open System.IO
 open System.Text.RegularExpressions
 
 
-open DocMake.Base.Common
 
 open Fake
 open Fake.Core
 open Fake.Core.Globbing.Operators
 
-// TODO - this is the code from DocMake.Tasks.UniformRename.
-// It should not be a task (have params record) and needs cleaning up
-// to have a nice API.
- 
-// Rename files in a folder matching a pattern. 
-// The new names are uniform base name with an numbering.
-// The file extension is kept the same.
 
-// Push whether or not to use sprintf to the client, this makes things more flexible
+
+// Push whether or not to use sprintf to the client, this makes things 
+// easier for the API.
 type NameFormatter = int->string
 
-
-// Use... System.IO.File.Move (oldname,newname)
-// System.IO.Directory.GetFiles(directory)
 
 let multiCopyGlobRename  (srcDir:string, srcGlob:string) (destDir:string, destNamer:int -> string) : unit = 
     let inputs = findAllMatchingFiles srcGlob srcDir  

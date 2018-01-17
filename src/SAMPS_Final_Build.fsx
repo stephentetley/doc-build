@@ -49,7 +49,6 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Tasks\DocFindReplace.fs"
 #load @"DocMake\Tasks\DocToPdf.fs"
 #load @"DocMake\Tasks\PptToPdf.fs"
-#load @"DocMake\Tasks\UniformRename.fs"
 #load @"DocMake\Tasks\XlsToPdf.fs"
 
 
@@ -65,7 +64,6 @@ open DocMake.Tasks.DocPhotos
 open DocMake.Tasks.DocToPdf
 open DocMake.Tasks.PdfConcat
 open DocMake.Tasks.PptToPdf
-open DocMake.Tasks.UniformRename
 open DocMake.Tasks.XlsToPdf
 
 
@@ -90,16 +88,6 @@ let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string =
 let makeSiteOutputNamei (fmt:Printf.StringFormat<string->int->string>) (ix:int) : string = 
     siteOutputDir @@ sprintf fmt cleanName ix
 
-
-let renamePhotos (jpegFolderPath:string) (fmt:Printf.StringFormat<string->int->string>) : unit =
-    let mkName = fun i -> sprintf fmt cleanName i
-    UniformRename (fun p -> 
-        { p with 
-            InputFolder = Some <| jpegFolderPath
-            MatchPattern = @"\.je?pg$"
-            MatchIgnoreCase = true
-            MakeName = mkName 
-        })
 
 let optimizePhotos (jpegFolderPath:string) : unit =
     let jpegs = !! (jpegFolderPath @@ "*.jpg") |> Seq.toList
