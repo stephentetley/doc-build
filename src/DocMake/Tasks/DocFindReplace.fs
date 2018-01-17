@@ -85,16 +85,19 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss
 
 let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
     let options = DocFindReplaceDefaults |> setDocFindReplaceParams
-    if File.Exists(options.TemplateFile) && File.Exists(options.JsonMatchesFile)
-    then
+    match File.Exists(options.TemplateFile), File.Exists(options.JsonMatchesFile) with
+    | true, true ->
         let app = new Word.ApplicationClass (Visible = true)
         try 
             let matches = readJsonStringPairs options.JsonMatchesFile
             process1 app options.TemplateFile options.OutputFile matches
         finally 
             app.Quit ()
-    else 
-        Trace.traceError <| sprintf "DocFindReplace --- missing input file"
-        failwith "DocFindReplace --- missing input file"
+    | false, _ ->  
+        Trace.traceError <| sprintf "DocFindReplace --- missing template file '%s'" options.TemplateFile
+        failwith "DocFindReplace --- missing template file"
+    | _, _ -> 
+        Trace.traceError <| sprintf "DocFindReplace --- missing matches file '%s'" options.JsonMatchesFile
+        failwith "DocFindReplace --- missing matches file"
 
 

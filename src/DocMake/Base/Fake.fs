@@ -38,3 +38,19 @@ module Fake =
     let tryFindExactlyOneMatchingFile (pattern:string) (dir:string) : option<string> = 
         !! (dir @@ pattern) |> Seq.toList |> tryExactlyOne
 
+ // We have tried the following combinators but they seem to be less
+ // clear in user code than using match ... with
+    //let optionMandatory (source:'a option) (failMsg:string) (success:'a -> unit) = 
+    //    match source with
+    //    | Some a -> success a
+    //    | None -> failwith failMsg
+
+    //let optionOptional (source:'a option) (warnMsg:string) (success:'a -> unit) = 
+    //    match source with
+    //    | Some a -> success a
+    //    | None -> Trace.tracefn "%s" warnMsg
+
+    let assertMandatory (failMsg:string) : unit = failwith failMsg
+
+    let assertOptional  (warnMsg:string) : unit = Trace.tracefn "%s" warnMsg
+

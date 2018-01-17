@@ -67,10 +67,10 @@ open DocMake.Tasks.UniformRename
 open DocMake.Tasks.XlsToPdf
 
 
-let _filestoreRoot  = @"G:\work\Projects\samps\Final_Docs\Jan2018_batch01"
-let _outputRoot     = @"G:\work\Projects\samps\Final_Docs\Jan18_OUTPUT"
-let _templateRoot   = @"G:\work\Projects\samps\Final_Docs\__Templates"
-let _jsonRoot       = @"G:\work\Projects\samps\Final_Docs\__Json"
+let _filestoreRoot  = @"G:\work\Projects\samps\final-docs\Jan2018_batch02"
+let _outputRoot     = @"G:\work\Projects\samps\final-docs\Jan18_OUTPUT"
+let _templateRoot   = @"G:\work\Projects\samps\final-docs\__Templates"
+let _jsonRoot       = @"G:\work\Projects\samps\final-docs\__Json"
 
 // siteName is an envVar so we can use this build script to build many 
 // sites (they all follow the same directory/file structure).
@@ -118,10 +118,11 @@ Target.Create "OutputDirectory" (fun _ ->
 )
 
 
-Target.Create "CoverSheet" (fun _ ->
+Target.Create "Cover" (fun _ ->
     let template = _templateRoot @@ "TEMPLATE Samps Cover Sheet.docx"
     let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
-    let docname = makeSiteOutputName "%s Cover Sheet.docx"
+    let docname = makeSiteOutputName "%s cover-sheet.docx"
+    let pdfname = pathChangeExtension docname "pdf"
 
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
     
@@ -132,7 +133,7 @@ Target.Create "CoverSheet" (fun _ ->
             JsonMatchesFile  = jsonSource
         }) 
     
-    let pdfname = makeSiteOutputName "%s Cover Sheet.pdf"
+    
     DocToPdf (fun p -> 
         { p with 
             InputFile = docname
@@ -143,7 +144,7 @@ Target.Create "CoverSheet" (fun _ ->
 
 Target.Create "SurveySheet" (fun _ ->
     let infile = Fake.IO.Directory.findFirstMatchingFile "* Sampler survey.xlsx" (siteInputDir)
-    let outfile = makeSiteOutputName "%s Survey Sheet.pdf" 
+    let outfile = makeSiteOutputName "%s survey-sheet.pdf" 
     XlsToPdf (fun p -> 
         { p with 
             InputFile = infile
@@ -165,81 +166,83 @@ Target.Create "SurveyPhotos" (fun _ ->
     renamePhotos outletCopiesPath "%s Outlet %03i.jpg"
     optimizePhotos outletCopiesPath
     
-    let docname = makeSiteOutputName "%s Survey Photos.docx" 
+    let docName = makeSiteOutputName "%s survey-photos.docx" 
+    let pdfName = pathChangeExtension docName "pdf"
     DocPhotos (fun p -> 
         { p with 
             InputPaths = [ inletCopiesPath; outletCopiesPath ]            
-            OutputFile = docname
+            OutputFile = docName
             ShowFileName = true 
         })
 
-    let pdfname = makeSiteOutputName "%s Survey Photos.pdf"
     DocToPdf (fun p -> 
         { p with 
-            InputFile = docname
-            OutputFile = Some <| pdfname 
+            InputFile = docName
+            OutputFile = Some <| pdfName 
         })
 )
 
-// findFirstMatchingFile is an alternative to unique
+// This is optional
 Target.Create "SurveyPPT" (fun _ -> 
-    let infile = Fake.IO.Directory.findFirstMatchingFile "*.ppt*" (siteInputDir) 
-    let outfile = makeSiteOutputName "%s Survey PPT.pdf" 
-    Trace.tracef "Input: %s" infile
-    PptToPdf (fun p -> 
-        { p with 
-            InputFile = infile
-            OutputFile = Some <| outfile
-        })
+    match tryFindExactlyOneMatchingFile "*.ppt*" (siteInputDir) with
+    | Some pptFile -> 
+        let outfile = makeSiteOutputName "%s survey-ppt.pdf" 
+        Trace.tracef "Input: %s" pptFile
+        PptToPdf (fun p -> 
+            { p with 
+                InputFile = pptFile
+                OutputFile = Some <| outfile
+            })
+    | None -> assertOptional "No PowerPoint file" 
+        
 )
 
 Target.Create "CircuitDiag" (fun _ -> 
-    let infile = Fake.IO.Directory.findFirstMatchingFile "* Circuit Diagram.pdf" (siteInputDir) 
-    let dest = makeSiteOutputName "%s Circuit Diagram.pdf" 
-    Trace.tracef "Input: %s" infile
-    Fake.IO.Shell.CopyFile dest infile
+    match tryFindExactlyOneMatchingFile "* Circuit Diagram.pdf" siteInputDir with
+    | Some srcFile -> 
+        let destFile = makeSiteOutputName "%s circuit-diagram.pdf" 
+        Fake.IO.Shell.CopyFile destFile srcFile
+    | None -> assertOptional "No circuit diagram"
 )
 
 // Not mandatory
 Target.Create "ElectricalWork" (fun _ ->
     match tryFindExactlyOneMatchingFile "* YW Workbook.xls*" siteInputDir with
-    | Some infile -> 
-        let outfile = makeSiteOutputName "%s Electrical Worksheet.pdf" 
+    | Some xlsFile -> 
+        let pdfFile = makeSiteOutputName "%s electrical-worksheet.pdf" 
         XlsToPdf (fun p -> 
             { p with 
-                InputFile = infile
-                OutputFile = Some <| outfile
+                InputFile = xlsFile
+                OutputFile = Some <| pdfFile
             })
-    | None ->
-        Trace.tracefn "No Electrical Work sheets" 
+    | None -> assertOptional "No Electrical Work sheets" 
 )
 
 // Maybe multiple sheets - must find at least 1...
 // TODO - potentially "skeletons" to work with multiple files would be nice
 Target.Create "InstallSheets" (fun _ ->
-    match tryFindSomeMatchingFiles "* Replacement Record.pdf" siteInputDir with
-    | Some infiles ->
-        List.iteri (fun ix infile -> 
-                        Trace.tracefn " --- Install sheet %i is: %s --- " (ix+1) infile
-                        let outfile = makeSiteOutputNamei "%s Install Sheet %i.pdf" (ix+1)
-                        if System.IO.File.Exists(infile) then
-                            Fake.IO.Shell.CopyFile outfile infile 
-                        else Trace.tracefn " --- NO INSTALL SHEET --- ") infiles
-    | None -> 
-        failwith "No Install sheets"
-                
+    let copySheeti (ix:int) (inputPdf:string) = 
+        Trace.tracefn " --- Install sheet %i is: %s --- " (ix+1) inputPdf
+        let outfile = makeSiteOutputNamei "%s install-sheet-%03i.pdf" (ix+1)
+        if System.IO.File.Exists(inputPdf) then
+            Fake.IO.Shell.CopyFile outfile inputPdf 
+        else 
+            failwithf "InstallSheets - Unbelieveable - glob matches but file does not exist '%s'" inputPdf
     
+    match tryFindSomeMatchingFiles "* Replacement Record.pdf" siteInputDir with
+    | Some inputFiles -> List.iteri copySheeti inputFiles 
+    | None -> assertMandatory "No Install sheets"
 )
 
 
 let finalGlobs : string list = 
-    [ "* Cover Sheet.pdf" ;
-      "* Survey Sheet.pdf" ;
-      "* Survey Photos.pdf" ;
-      "* Survey PPT.pdf" ;
-      "* Circuit Diagram.pdf" ;
-      "* Electrical Worksheet.pdf"
-      "* Install Sheet *.pdf" ]
+    [ "*cover-sheet.pdf" ;
+      "*survey-sheet.pdf" ;
+      "*survey-photos.pdf" ;
+      "*survey-ppt.pdf" ;
+      "*circuit-diagram.pdf" ;
+      "*electrical-worksheet.pdf"
+      "*install-sheet*.pdf" ]
 
 
 Target.Create "Final" (fun _ ->
@@ -259,7 +262,7 @@ Target.Create "Blank" (fun _ ->
 // *** Dependencies ***
 "Clean"
     ==> "OutputDirectory"
-    ==> "CoverSheet"
+    ==> "Cover"
     ==> "SurveySheet"
     ==> "SurveyPhotos"
     ==> "SurveyPPT"

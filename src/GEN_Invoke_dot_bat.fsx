@@ -6,15 +6,15 @@ open System
 
 
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\flow2\sitelist-for-gen-jan2018.xlsx",
+    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
 type SitesRow = SitesTable.Row
 
-let pathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
-let pathToScript = @"D:\coding\fsharp\DocMake\src\FC2_Final_Build.fsx"
-let outputBat = @"G:\work\Projects\flow2\fake-make.bat"
+let pathToFake      = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
+let pathToScript    = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
+let outputBat       = @"G:\work\Projects\samps\fake-make.bat"
 
 let doubleQuote (s:string) : string = sprintf "\"%s\"" s
 
