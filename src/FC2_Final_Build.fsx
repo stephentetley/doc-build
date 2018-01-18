@@ -48,18 +48,14 @@ open DocMake.Base.CopyRename
 
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
-open DocMake.Tasks.DocFindReplace
-
 #load @"DocMake\Tasks\DocPhotos.fs"
-open DocMake.Tasks.DocPhotos
-
 #load @"DocMake\Tasks\DocToPdf.fs"
-open DocMake.Tasks.DocToPdf
-
 #load @"DocMake\Tasks\XlsToPdf.fs"
-open DocMake.Tasks.XlsToPdf
-
 #load @"DocMake\Tasks\PdfConcat.fs"
+open DocMake.Tasks.DocFindReplace
+open DocMake.Tasks.DocPhotos
+open DocMake.Tasks.DocToPdf
+open DocMake.Tasks.XlsToPdf
 open DocMake.Tasks.PdfConcat
 
 // NOTE - can generate a batch file to do "many-to-one"
@@ -135,7 +131,7 @@ Target.Create "ScopeOfWorks" (fun _ ->
 )
 
 
-// Throws error on failure
+// Does not throw error on failure
 let copySingletonAction (pattern:string) (srcDir:string) (destPath:string) : unit = 
     match tryFindExactlyOneMatchingFile pattern srcDir with
     | Some source -> 

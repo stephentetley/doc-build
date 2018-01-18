@@ -21,6 +21,7 @@ let excelTableGetRows (dict:GetRowsDict<'table,'row>) (table:'table) : 'row list
 type BatchFileConfig = 
     { PathToFake : string
       PathToScript : string
+      BuildTarget : string
       OutputBatchFile : string }
 
 
@@ -33,7 +34,7 @@ let private genInvoke1 (sw:IO.StreamWriter) (config:BatchFileConfig) (siteName:s
     fprintf sw "REM %s ...\n"  siteName
     fprintf sw "%s ^\n"  (doubleQuote config.PathToFake)
     fprintf sw "    %s ^\n"  (doubleQuote config.PathToScript)
-    fprintf sw "    Final --envar sitename=%s\n\n"  (doubleQuote siteName)
+    fprintf sw "    %s --envar sitename=%s\n\n" config.BuildTarget (doubleQuote siteName)
 
 let generateBatchFile (config:BatchFileConfig) (siteNames:string list) : unit = 
     use sw = new IO.StreamWriter(config.OutputBatchFile)

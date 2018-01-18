@@ -89,12 +89,6 @@ let makeSiteOutputNamei (fmt:Printf.StringFormat<string->int->string>) (ix:int) 
     siteOutputDir @@ sprintf fmt cleanName ix
 
 
-let optimizePhotos (jpegFolderPath:string) : unit =
-    let jpegs = !! (jpegFolderPath @@ "*.jpg") |> Seq.toList
-    List.iter optimizeForMsWord jpegs
-    
-
-
 Target.Create "Clean" (fun _ -> 
     if Directory.Exists siteOutputDir then 
         Trace.tracefn " --- Clean folder: '%s' ---" siteOutputDir
@@ -256,9 +250,6 @@ Target.Create "Final" (fun _ ->
         files
 )
 
-Target.Create "Blank" (fun _ ->
-    Trace.tracefn "Blank, sitename is %s" siteName
-)
 
 
 // *** Dependencies ***
@@ -274,5 +265,5 @@ Target.Create "Blank" (fun _ ->
     ==> "InstallSheets"
     ==> "Final"
 
-Target.RunOrDefault "Blank"
+Target.RunOrDefault "Final"
 

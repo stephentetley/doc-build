@@ -1,6 +1,10 @@
 ﻿module DocMake.Base.ImageMagick
 
 open System
+
+open Fake
+open Fake.Core.Globbing.Operators
+
 open ImageMagick
 
 
@@ -33,3 +37,11 @@ let optimizeForMsWord (filePath:string) : unit =
     img.Density <- new Density(72.0, 72.0, DensityUnit.PixelsPerInch)
     img.Resize(new MagickGeometry(newWidth, newHeight))
     img.Write filePath
+
+
+
+let optimizePhotos (jpegFolderPath:string) : unit =
+    let (jpegFiles :string list) = !! (jpegFolderPath @@ "*.jpg") |> Seq.toList
+    List.iter optimizeForMsWord jpegFiles
+    
+

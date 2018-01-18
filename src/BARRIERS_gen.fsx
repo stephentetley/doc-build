@@ -1,24 +1,26 @@
-﻿#I @"..\packages\ExcelProvider.0.8.2\lib"
+﻿// Only Generate Batch file 
+// Find/Replace not needed
+
+#I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
 open FSharp.ExcelProvider
+
 
 #I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
-open System
-
 #load @"DocMake\Base\Json.fs"
 #load "GENHelper.fs"
 open GENHelper
 
+
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
-               SheetName = "Sheet1",
+    ExcelFile< @"G:\work\Projects\barriers\sites-temp.xlsx",
+               SheetName = "Sites",
                ForceString = false >
 
 type SitesRow = SitesTable.Row
-
 
 let sitesTableDict : GetRowsDict<SitesTable, SitesRow> = 
     { GetRows     = fun imports -> imports.Data 
@@ -29,14 +31,11 @@ let getSitesRows () : SitesRow list = excelTableGetRows sitesTableDict (new Site
 
 let batchConfig : BatchFileConfig = 
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
-      PathToScript = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
+      PathToScript = @"D:\coding\fsharp\DocMake\src\BARRIERS_Final_Build.fsx"
       BuildTarget = "Final"
-      OutputBatchFile = @"G:\work\Projects\samps\fake-make.bat" }
-
+      OutputBatchFile = @"G:\work\Projects\barriers\fake-make.bat" }
 
 let main () : unit = 
     getSitesRows () 
-        |> List.map (fun (row:SitesRow) -> row.Site) 
+        |> List.map (fun (row:SitesRow) -> row.Name) 
         |> generateBatchFile batchConfig 
-        
-
