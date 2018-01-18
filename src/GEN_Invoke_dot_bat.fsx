@@ -4,6 +4,8 @@ open FSharp.ExcelProvider
 
 open System
 
+#load "GENHelper.fs"
+open GENHelper
 
 type SitesTable = 
     ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
@@ -12,25 +14,22 @@ type SitesTable =
 
 type SitesRow = SitesTable.Row
 
-let pathToFake      = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
-let pathToScript    = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
-let outputBat       = @"G:\work\Projects\samps\fake-make.bat"
 
-let doubleQuote (s:string) : string = sprintf "\"%s\"" s
+let sitesTableDict : GetRowsDict<SitesTable, SitesRow> = 
+    { GetRows     = fun imports -> imports.Data 
+      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
-let genInvoke1 (sw:IO.StreamWriter) (row:SitesRow) : unit = 
-    fprintf sw "REM %s ...\n"  row.Site
-    fprintf sw "%s ^\n"  (doubleQuote pathToFake)
-    fprintf sw "    %s ^\n"  (doubleQuote pathToScript)
-    fprintf sw "    Final --envar sitename=%s\n\n"  (doubleQuote row.Site)
+let getSitesRows () : SitesRow list = excelTableGetRows sitesTableDict (new SitesTable())
+
+
+let batchConfig : BatchFileConfig = 
+    { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
+      PathToScript = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
+      OutputBatchFile = @"G:\work\Projects\samps\fake-make.bat" }
 
 
 let main () : unit = 
-    let masterData = new SitesTable()
-    let nullPred (row:SitesRow) = match row.GetValue(0) with null -> false | _ -> true
-    use sw = new IO.StreamWriter(outputBat)
-    fprintf sw "@echo off\n\n"
-    masterData.Data 
-        |> Seq.filter nullPred
-        |> Seq.iter (genInvoke1 sw)
-    sw.Close ()
+    generateBatchFile batchConfig 
+        << List.map (fun (row:SitesRow) -> row.Site) 
+        <| getSitesRows ()
+

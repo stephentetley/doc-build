@@ -17,6 +17,8 @@ open System
 open DocMake.Base.Common
 open DocMake.Base.Json
 
+#load @"GENHelper.fs"
+open GENHelper
 
 type SitesTable = 
     ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
@@ -25,7 +27,12 @@ type SitesTable =
 
 type SitesRow = SitesTable.Row
 
-let jsonFolder      = @"G:\work\Projects\samps\final-docs\__Json"
+let sitesTableDict : GetRowsDict<SitesTable, SitesRow> = 
+    { GetRows     = fun imports -> imports.Data 
+      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
+
+let getSitesRows () : SitesRow list = excelTableGetRows sitesTableDict (new SitesTable())
+
 
 
 let makeDict (row:SitesRow) : Dict = 
@@ -33,16 +40,14 @@ let makeDict (row:SitesRow) : Dict =
                ; "#SAINUM" , row.Uid
                ]
 
-let processRow (row:SitesRow) : unit = 
-    let name1 = sprintf "%s_findreplace.json" (safeName row.Site)
-    let fileName = System.IO.Path.Combine(jsonFolder, name1)
-    let dict = makeDict row
-    writeJsonDict fileName dict
+let jsonConfig : FindsReplacesConfig<SitesRow> = 
+    { DictionaryBuilder = makeDict
+    ; GetFileName       = 
+        fun (row:SitesRow) -> sprintf "%s_findreplace.json" (safeName row.Site)
 
+    ; OutputJsonFolder = @"G:\work\Projects\samps\final-docs\__Json" }
+
+
+// A file is generated foreach row
 let main () : unit = 
-    let masterData = new SitesTable()
-    let nullPred (row:SitesRow) = match row.Site with null -> false | _ -> true
-
-    masterData.Data 
-        |> Seq.filter nullPred
-        |> Seq.iter processRow
+    getSitesRows () |> List.iter (generateFindsReplacesJson jsonConfig)

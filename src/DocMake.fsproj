@@ -67,6 +67,7 @@
     <Compile Include="DocMake\Tasks\PdfConcat.fs" />
     <Compile Include="DocMake\Tasks\XlsToPdf.fs" />
     <Compile Include="DocMake\Tasks\PptToPdf.fs" />
+    <Compile Include="GENHelper.fs" />
     <None Include="BuildScript.fsx" />
     <None Include="DummyInterop.fsx" />
     <None Include="DummyRename.fsx" />
