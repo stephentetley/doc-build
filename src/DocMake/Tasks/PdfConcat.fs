@@ -1,10 +1,7 @@
 ﻿module DocMake.Tasks.PdfConcat
 
 open System.IO
-open System.Text.RegularExpressions
 
-// open Fake - intellisense not working properly, but we can run this 
-// with Fake.exe in PowerShell
 open Fake.Core
 open Fake.Core.Process
 
@@ -21,7 +18,7 @@ open DocMake.Base.Common
 type PdfConcatParams = 
     { 
         OutputFile : string
-        AppPath : string
+        GhostscriptPath : string
         PrintQuality : DocMakePrintQuality
     }
 
@@ -32,10 +29,10 @@ type PdfConcatParams =
 // FscHelper includes output file name in the params
 
 
-// TODO - GsOptions should be more user friendly
+
 let PdfConcatDefaults = 
     { OutputFile = "concat.pdf"
-      AppPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PrintQuality = PqScreen }
 
 
@@ -60,7 +57,7 @@ let private makeCmd (parameters: PdfConcatParams) (inputFiles: string list) : st
     unlinesS <| first :: rest
 
 // Run as a process...
-let private run toolPath command = 
+let private shellRun toolPath command = 
     if 0 <> ExecProcess (fun info -> 
                 info.FileName <- toolPath
                 info.Arguments <- command) System.TimeSpan.MaxValue
@@ -71,7 +68,7 @@ let private run toolPath command =
 let PdfConcat (setPdfConcatParams: PdfConcatParams -> PdfConcatParams) (inputFiles: string list) : unit =
     let parameters = PdfConcatDefaults |> setPdfConcatParams
     let command = makeCmd parameters inputFiles
-    run parameters.AppPath command
+    shellRun parameters.GhostscriptPath command
   
 
 

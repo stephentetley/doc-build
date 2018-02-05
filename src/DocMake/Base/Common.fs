@@ -12,6 +12,15 @@ let ghostscriptPrintQuality (quality:DocMakePrintQuality) : string =
     | PqScreen -> @"/screen"
     | PqPrint -> @"/preprint"
 
+type DocMakePageOrientation = PoNorth | PoSouth | PoEast | PoWest
+
+let pdftkPageOrientation (orientation:DocMakePageOrientation) : string = 
+    match orientation with
+    | PoNorth -> @"north"
+    | PoSouth -> @"south"
+    | PoEast -> @"east"
+    | PoWest -> @"west"
+
 
 let doubleQuote (s:string) : string = "\"" + s + "\""
 
