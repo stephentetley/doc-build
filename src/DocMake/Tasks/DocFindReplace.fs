@@ -23,11 +23,9 @@ type SearchList = List<string*string>
 
 [<CLIMutable>]
 type DocFindReplaceParams = 
-    { 
-        TemplateFile : string
-        JsonMatchesFile : string
-        OutputFile : string
-    }
+    { TemplateFile: string
+      JsonMatchesFile: string
+      OutputFile: string }
 
 
 let DocFindReplaceDefaults = 

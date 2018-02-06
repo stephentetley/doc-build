@@ -13,8 +13,7 @@ type DocPhotosParams =
     { InputPaths: string list
       OutputFile: string
       ShowFileName: bool
-      DocumentTitle: string option
-    }
+      DocumentTitle: string option }
 
 let DocPhotosDefaults = 
     { InputPaths = []

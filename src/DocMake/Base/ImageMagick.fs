@@ -8,10 +8,10 @@ open Fake.Core.Globbing.Operators
 open ImageMagick
 
 
-type Orientation = Portrait | Landscape
+type PhotoOrientation = PhotoPortrait | PhotoLandscape
 
-let getOrientation (info:MagickImageInfo) : Orientation = 
-    if info.Width > info.Height then Landscape else Portrait
+let getOrientation (info:MagickImageInfo) : PhotoOrientation = 
+    if info.Width > info.Height then PhotoLandscape else PhotoPortrait
     
 let makeRevisedFileName (annotation:string)  (filePath:string) : string = 
     let root = System.IO.Path.GetDirectoryName filePath
@@ -23,9 +23,9 @@ let makeRevisedFileName (annotation:string)  (filePath:string) : string =
 
 let calculateNewPixelSize (info:MagickImageInfo) (maxima:int) : (int * int) = 
     match getOrientation info with
-    | Landscape -> 
+    | PhotoLandscape -> 
         let scaling = maxima / info.Width in (maxima, info.Height * scaling)
-    | Portrait -> 
+    | PhotoPortrait -> 
         let scaling = maxima / info.Height in (info.Width * scaling, maxima)
 
 

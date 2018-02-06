@@ -16,11 +16,9 @@ open DocMake.Base.Common
 
 [<CLIMutable>]
 type PdfConcatParams = 
-    { 
-        OutputFile : string
-        GhostscriptPath : string
-        PrintQuality : DocMakePrintQuality
-    }
+    { OutputFile: string
+      GhostscriptExePath: string
+      PrintQuality: DocMakePrintQuality }
 
 
 
@@ -32,7 +30,7 @@ type PdfConcatParams =
 
 let PdfConcatDefaults = 
     { OutputFile = "concat.pdf"
-      GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      GhostscriptExePath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PrintQuality = PqScreen }
 
 
@@ -68,7 +66,7 @@ let private shellRun toolPath command =
 let PdfConcat (setPdfConcatParams: PdfConcatParams -> PdfConcatParams) (inputFiles: string list) : unit =
     let parameters = PdfConcatDefaults |> setPdfConcatParams
     let command = makeCmd parameters inputFiles
-    shellRun parameters.GhostscriptPath command
+    shellRun parameters.GhostscriptExePath command
   
 
 

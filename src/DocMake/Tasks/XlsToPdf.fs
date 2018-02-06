@@ -14,13 +14,11 @@ open DocMake.Base.Office
 
 [<CLIMutable>]
 type XlsToPdfParams = 
-    { 
-        InputFile : string
-        // If output file is not specified just change extension to .pdf
-        OutputFile : string option
-        PrintQuality : DocMakePrintQuality
-        FitWidth : bool
-    }
+    { InputFile: string
+      // If output file is not specified just change extension to .pdf
+      OutputFile: string option
+      PrintQuality: DocMakePrintQuality
+      FitWidth: bool }
 
 let XlsToPdfDefaults = 
     { InputFile = @""

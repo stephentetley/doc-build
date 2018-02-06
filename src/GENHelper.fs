@@ -43,19 +43,18 @@ let generateBatchFile (config:BatchFileConfig) (siteNames:string list) : unit =
     sw.Close ()
 
 
-// Generate JSON files of name/values pairs for string matching
-
-
+// Generate JSON files of name/values pairs for running Find/Replace 
+// on Word docs.
 
 type FindsReplacesConfig<'row> = 
-    { DictionaryBuilder : 'row -> Dict
+    { DictionaryBuilder : 'row -> FindReplaceDict
       GetFileName : 'row -> string
       OutputJsonFolder : string }
 
 let generateFindsReplacesJson (config:FindsReplacesConfig<'row>) (row:'row) : unit = 
     let file = config.GetFileName row
     let fullName = System.IO.Path.Combine(config.OutputJsonFolder, file)
-    let dict:Dict = config.DictionaryBuilder row
-    writeJsonDict fullName dict
+    let dict:FindReplaceDict = config.DictionaryBuilder row
+    writeJsonFindReplaceDict fullName dict
 
 

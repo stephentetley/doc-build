@@ -35,7 +35,7 @@ let getSitesRows () : SitesRow list = excelTableGetRows sitesTableDict (new Site
 
 
 
-let makeDict (row:SitesRow) : Dict = 
+let makeDict (row:SitesRow) : KeyValueDict = 
     Map.ofList [ "#SITENAME", row.Site
                ; "#SAINUM" , row.Uid
                ]

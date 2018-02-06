@@ -15,12 +15,10 @@ open DocMake.Base.Office
 
 [<CLIMutable>]
 type PptToPdfParams = 
-    { 
-        InputFile : string
-        // If output file is not specified just change extension to .pdf
-        OutputFile : string option
-        PrintQuality : DocMakePrintQuality
-    }
+    { InputFile: string
+      // If output file is not specified just change extension to .pdf
+      OutputFile: string option
+      PrintQuality: DocMakePrintQuality }
 
 let PptToPdfDefaults = 
     { InputFile = @""

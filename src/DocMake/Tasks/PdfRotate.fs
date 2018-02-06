@@ -11,18 +11,16 @@ type PageRotation = int * DocMakePageOrientation
 
 [<CLIMutable>]
 type PdfRotateParams = 
-    { 
-        InputFile : string
-        OutputFile : string
-        PdftkPath : string
-        Rotations : PageRotation list
-    }
+    { InputFile: string
+      OutputFile: string
+      PdftkExePath: string
+      Rotations: PageRotation list }
 
 
 let PdfRotateDefaults = 
     { InputFile = @""
       OutputFile = "rotate_out.pdf"
-      PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe" 
+      PdftkExePath = @"C:\programs\PDFtk Server\bin\pdftk.exe" 
       Rotations = [] }
 
 
@@ -59,4 +57,4 @@ let private shellRun toolPath command =
 let PdfRotate (setPdfRotateParams: PdfRotateParams -> PdfRotateParams)  : unit =
     let parameters = PdfRotateDefaults |> setPdfRotateParams
     let command = makeCmd parameters
-    shellRun parameters.PdftkPath command
+    shellRun parameters.PdftkExePath command

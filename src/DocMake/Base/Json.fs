@@ -5,17 +5,17 @@ open System
 open Newtonsoft.Json
 
 
-type Dict = Map<string,string>
+type FindReplaceDict = Map<string,string>
 
-let readJsonDict (jsonFile:string) : Dict = 
-    let readProc (json:string) : Dict =  JsonConvert.DeserializeObject<Dict>(json) 
+let readJsonFindReplaceDict (jsonFile:string) : FindReplaceDict = 
+    let readProc (json:string) : FindReplaceDict =  JsonConvert.DeserializeObject<FindReplaceDict>(json) 
     use sr = new IO.StreamReader(jsonFile)
     readProc <| sr.ReadToEnd()
 
 let readJsonStringPairs (jsonFile:string) : (string * string) list = 
-    readJsonDict jsonFile |> Map.toList
+    readJsonFindReplaceDict jsonFile |> Map.toList
 
-let writeJsonDict (jsonFile:string) (dict:Dict) : unit = 
+let writeJsonFindReplaceDict (jsonFile:string) (dict:FindReplaceDict) : unit = 
     let write1 (name:string) (value:string) (w:JsonTextWriter) : unit = 
         w.WritePropertyName name
         w.WriteValue value
@@ -26,5 +26,5 @@ let writeJsonDict (jsonFile:string) (dict:Dict) : unit =
     handle.WriteEndObject ()
 
 let writeJsonStringPairs (jsonFile:string) (pairs: (string * string) list) : unit = 
-    writeJsonDict jsonFile <| Map.ofList pairs
+    writeJsonFindReplaceDict jsonFile <| Map.ofList pairs
 
