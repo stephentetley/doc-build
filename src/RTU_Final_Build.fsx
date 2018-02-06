@@ -44,15 +44,12 @@ open DocMake.Base.Common
 open DocMake.Base.Fake
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
-open DocMake.Tasks.DocFindReplace
-
 #load @"DocMake\Tasks\DocPhotos.fs"
-open DocMake.Tasks.DocPhotos
-
 #load @"DocMake\Tasks\DocToPdf.fs"
-open DocMake.Tasks.DocToPdf
-
 #load @"DocMake\Tasks\PdfConcat.fs"
+open DocMake.Tasks.DocFindReplace
+open DocMake.Tasks.DocPhotos
+open DocMake.Tasks.DocToPdf
 open DocMake.Tasks.PdfConcat
 
 // NOTE - can generate a batch file to do "many-to-one"

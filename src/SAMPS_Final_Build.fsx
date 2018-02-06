@@ -44,21 +44,18 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\Json.fs"
 #load @"DocMake\Base\Office.fs"
 #load @"DocMake\Base\CopyRename.fs"
-#load @"DocMake\Tasks\PdfConcat.fs"
-#load @"DocMake\Tasks\DocPhotos.fs"
-#load @"DocMake\Tasks\DocFindReplace.fs"
-#load @"DocMake\Tasks\DocToPdf.fs"
-#load @"DocMake\Tasks\PptToPdf.fs"
-#load @"DocMake\Tasks\XlsToPdf.fs"
-
-
-// open Fake.Core.Trace
-// open Fake opens Fake.EnvironmentHelper     // for (@@) etc.
-
 open DocMake.Base.Common
 open DocMake.Base.Fake
 open DocMake.Base.ImageMagick
 open DocMake.Base.CopyRename
+
+
+#load @"DocMake\Tasks\DocPhotos.fs"
+#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\Tasks\DocToPdf.fs"
+#load @"DocMake\Tasks\PdfConcat.fs"
+#load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\XlsToPdf.fs"
 open DocMake.Tasks.DocFindReplace
 open DocMake.Tasks.DocPhotos
 open DocMake.Tasks.DocToPdf
