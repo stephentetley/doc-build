@@ -10,16 +10,17 @@ open DocMake.Base.Office
 
 [<CLIMutable>]
 type DocPhotosParams = 
-    { 
-        InputPaths : string list
-        OutputFile : string
-        ShowFileName : bool
+    { InputPaths: string list
+      OutputFile: string
+      ShowFileName: bool
+      DocumentTitle: string option
     }
 
 let DocPhotosDefaults = 
     { InputPaths = []
       OutputFile = @"photos.docx"
-      ShowFileName = true }
+      ShowFileName = true
+      DocumentTitle = None }
 
 
 let private getEndRange (doc:Word.Document) : Word.Range = 
@@ -61,8 +62,9 @@ let stepWithoutLabel : PictureFun = appendPicture
 let stepWithLabel : PictureFun = 
     let makeCaption (fileName:string) : string = 
         sprintf "\n%s" (Path.GetFileName fileName)
-    fun doc filename -> appendPicture doc filename
-                        appendText doc <| makeCaption filename
+    fun doc filename -> 
+        appendPicture doc filename
+        appendStyledText doc Word.WdBuiltinStyle.wdStyleNormal <| makeCaption filename
 
 let private processPhotos (doc:Word.Document) (action1:PictureFun) (files:string list) : unit =
     let rec work zs = 
@@ -73,7 +75,14 @@ let private processPhotos (doc:Word.Document) (action1:PictureFun) (files:string
                      appendPageBreak doc
                      work xs
     work files
-                            
+
+
+let private addTitle (doc:Word.Document) (optTitle:string option) : unit =
+    match optTitle with
+    | None -> ()
+    | Some title -> 
+        appendStyledText doc Word.WdBuiltinStyle.wdStyleTitle (title + "\n\n")
+
 
 let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
     let opts = DocPhotosDefaults |> setDocPhotosParams
@@ -82,6 +91,7 @@ let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
     let stepFun = if opts.ShowFileName then stepWithLabel else stepWithoutLabel
     try 
         let doc = app.Documents.Add()
+        addTitle doc opts.DocumentTitle
         processPhotos doc stepFun jpegs
         // File must not exist...
         doc.SaveAs(FileName= refobj opts.OutputFile)

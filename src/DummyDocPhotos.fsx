@@ -23,10 +23,7 @@ open DocMake.Base.Office
 open DocMake.Tasks.DocPhotos
 
 
-let relativeToProject (suffix:string) : string = 
-    System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", suffix)
-
-let test01 () = 
+let dummy01 () = 
     let app = new Word.ApplicationClass (Visible = true)
     try 
         let doc = app.Documents.Add()
@@ -45,12 +42,13 @@ let test01 () =
         app.Quit ()
 
 
-let test02 () = 
+let test01 () = 
     let (opts: DocPhotosParams -> DocPhotosParams) = fun p -> 
         { p with 
             InputPaths = [ @"G:\work\photos1\TestFolder" ]
-            OutputFile = relativeToProject @"data\photos1.docx"
-            ShowFileName = true }
+            OutputFile = @"G:\work\photos1\photodoc1.docx"
+            ShowFileName = true 
+            DocumentTitle = Some "Survey Photos" }
     DocPhotos opts
 
 
