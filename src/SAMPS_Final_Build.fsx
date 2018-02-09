@@ -71,7 +71,7 @@ let _jsonRoot       = @"G:\work\Projects\samps\final-docs\__Json"
 
 // siteName is an envVar so we can use this build script to build many 
 // sites (they all follow the same directory/file structure).
-let siteName = environVarOrDefault "sitename" @"CATTERICK VILLAGE/STW"
+let siteName = environVarOrDefault "sitename" @"MISSING"
 
 let cleanName           = safeName siteName
 let siteInputDir        = _filestoreRoot @@ cleanName

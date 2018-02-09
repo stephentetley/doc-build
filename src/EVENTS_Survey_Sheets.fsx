@@ -41,7 +41,7 @@ let _outputRoot     = @"G:\work\Projects\events2\gen-surveys-risks\output"
 
 // siteName is an envVar so we can use this build script to build many 
 // sites (they all follow the same directory/file structure).
-let siteName = environVarOrDefault "sitename" @"SOME ASSET/TYPE"
+let siteName = environVarOrDefault "sitename" @"MISSING"
 
 
 let cleanName           = safeName siteName

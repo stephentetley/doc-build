@@ -6,10 +6,17 @@ open FSharp.ExcelProvider
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
+// FAKE is local to the project file
+#I @"..\packages\FAKE.5.0.0-beta005\tools"
+#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+
 open System
 
+#load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\Json.fs"
 #load @"DocMake\Base\GENHelper.fs"
+open DocMake.Base.Common
+open DocMake.Base.Json
 open DocMake.Base.GENHelper
 
 type SitesTable = 
@@ -19,7 +26,6 @@ type SitesTable =
 
 type SitesRow = SitesTable.Row
 
-
 let sitesTableDict : GetRowsDict<SitesTable, SitesRow> = 
     { GetRows     = fun imports -> imports.Data 
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
@@ -27,16 +33,32 @@ let sitesTableDict : GetRowsDict<SitesTable, SitesRow> =
 let getSitesRows () : SitesRow list = excelTableGetRows sitesTableDict (new SitesTable())
 
 
+
+let makeDict (row:SitesRow) : FindReplaceDict = 
+    Map.ofList [ "#SITENAME", row.Site
+               ; "#SAINUM" , row.Uid
+               ]
+
+let jsonConfig : FindsReplacesConfig<SitesRow> = 
+    { DictionaryBuilder = makeDict
+    ; GetFileName       = 
+        fun (row:SitesRow) -> sprintf "%s_findreplace.json" (safeName row.Site)
+
+    ; OutputJsonFolder = @"G:\work\Projects\samps\final-docs\__Json" }
+
 let batchConfig : BatchFileConfig = 
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
       PathToScript = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
       BuildTarget = "Final"
-      OutputBatchFile = @"G:\work\Projects\samps\fake-make.bat" }
+      OutputBatchFile = @"G:\work\Projects\samps\final-docs\fake-make.bat" }
 
 
+// A file is generated foreach row
 let main () : unit = 
-    getSitesRows () 
+    let siteList = getSitesRows () 
+    // Generate find-replace json...
+    siteList |> List.iter (generateFindsReplacesJson jsonConfig)
+    // Generate batch file...
+    siteList 
         |> List.map (fun (row:SitesRow) -> row.Site) 
         |> generateBatchFile batchConfig 
-        
-

@@ -31,7 +31,8 @@ let siteTableDict : GetRowsDict<SiteTable, SiteRow> =
     { GetRows     = fun imports -> imports.Data 
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
-let getSiteRows () : SiteRow list = excelTableGetRows siteTableDict (new SiteTable())
+let getSiteRows () : SiteRow list = 
+    excelTableGetRows siteTableDict (new SiteTable()) 
 
 
 let batchConfig : BatchFileConfig = 

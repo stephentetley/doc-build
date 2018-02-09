@@ -33,7 +33,7 @@ let batchConfig : BatchFileConfig =
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
       PathToScript = @"D:\coding\fsharp\DocMake\src\BARRIERS_Final_Build.fsx"
       BuildTarget = "Final"
-      OutputBatchFile = @"G:\work\Projects\barriers\fake-make.bat" }
+      OutputBatchFile = @"G:\work\Projects\barriers\final-docs\fake-make.bat" }
 
 let main () : unit = 
     getSitesRows () 

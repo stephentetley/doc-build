@@ -19,7 +19,7 @@ let writeJsonFindReplaceDict (jsonFile:string) (dict:FindReplaceDict) : unit =
     let write1 (name:string) (value:string) (w:JsonTextWriter) : unit = 
         w.WritePropertyName name
         w.WriteValue value
-    use sw : System.IO.StreamWriter = new IO.StreamWriter(jsonFile)
+    use sw : System.IO.StreamWriter = new IO.StreamWriter(path=jsonFile,append=false)
     use handle : JsonTextWriter = new JsonTextWriter(sw)
     handle.Formatting <- Formatting.Indented
     handle.Indentation <- 2
