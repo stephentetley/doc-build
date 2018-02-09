@@ -1,4 +1,4 @@
-﻿module GENHelper
+﻿module DocMake.Base.GENHelper
 
 open System
 

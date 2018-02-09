@@ -14,11 +14,10 @@ open System
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\Json.fs"
+#load @"DocMake\Base\GENHelper.fs"
 open DocMake.Base.Common
 open DocMake.Base.Json
-
-#load @"GENHelper.fs"
-open GENHelper
+open DocMake.Base.GENHelper
 
 type SitesTable = 
     ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
@@ -35,7 +34,7 @@ let getSitesRows () : SitesRow list = excelTableGetRows sitesTableDict (new Site
 
 
 
-let makeDict (row:SitesRow) : KeyValueDict = 
+let makeDict (row:SitesRow) : FindReplaceDict = 
     Map.ofList [ "#SITENAME", row.Site
                ; "#SAINUM" , row.Uid
                ]

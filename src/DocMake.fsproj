@@ -61,6 +61,7 @@
     <Compile Include="DocMake\Base\Json.fs" />
     <Compile Include="DocMake\Base\Office.fs" />
     <Compile Include="DocMake\Base\CopyRename.fs" />
+    <Compile Include="DocMake\Base\GENHelper.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocToPdf.fs" />
@@ -68,7 +69,6 @@
     <Compile Include="DocMake\Tasks\PdfRotate.fs" />
     <Compile Include="DocMake\Tasks\XlsToPdf.fs" />
     <Compile Include="DocMake\Tasks\PptToPdf.fs" />
-    <Compile Include="GENHelper.fs" />
     <None Include="DummyRename.fsx" />
     <None Include="DummyDocPhotos.fsx" />
     <None Include="DummyPdfRotate.fsx" />

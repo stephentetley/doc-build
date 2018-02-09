@@ -14,11 +14,10 @@ open Newtonsoft.Json
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\Json.fs"
+#load @"DocMake\Base\GENHelper.fs"
 open DocMake.Base.Common
 open DocMake.Base.Json
-
-#load "GENHelper.fs"
-open GENHelper
+open DocMake.Base.GENHelper
 
 
 type SiteTable = 
@@ -82,4 +81,5 @@ let main () : unit =
         |> generateBatchFile batchConfig 
 
     // Json
-    siteList |> Seq.iter (generateFindsReplacesJson findReplaceConfig)
+    siteList 
+        |> Seq.iter (generateFindsReplacesJson findReplaceConfig)

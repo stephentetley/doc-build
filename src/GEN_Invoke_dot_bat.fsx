@@ -9,8 +9,8 @@ open Newtonsoft.Json
 open System
 
 #load @"DocMake\Base\Json.fs"
-#load "GENHelper.fs"
-open GENHelper
+#load @"DocMake\Base\GENHelper.fs"
+open DocMake.Base.GENHelper
 
 type SitesTable = 
     ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",

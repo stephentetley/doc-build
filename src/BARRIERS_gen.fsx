@@ -1,7 +1,4 @@
-﻿// Only Generate Batch file 
-// Find/Replace not needed
-
-#I @"..\packages\ExcelProvider.0.8.2\lib"
+﻿#I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
 open FSharp.ExcelProvider
 
@@ -11,8 +8,11 @@ open FSharp.ExcelProvider
 open Newtonsoft.Json
 
 #load @"DocMake\Base\Json.fs"
-#load "GENHelper.fs"
-open GENHelper
+#load @"DocMake\Base\GENHelper.fs"
+open DocMake.Base.GENHelper
+
+// Only Generate Batch file 
+// Find/Replace not needed
 
 
 type SitesTable = 
