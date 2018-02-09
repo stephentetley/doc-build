@@ -80,6 +80,8 @@
     <None Include="GEN_json_matches.fsx" />
     <None Include="BARRIERS_gen.fsx" />
     <None Include="BARRIERS_Final_Build.fsx" />
+    <None Include="EVENTS_gen_surveys.fsx" />
+    <None Include="EVENTS_Survey_Sheets.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
       <Guid>{00020813-0000-0000-c000-000000000046}</Guid>
       <VersionMajor>1</VersionMajor>

@@ -21,6 +21,8 @@ let writeJsonFindReplaceDict (jsonFile:string) (dict:FindReplaceDict) : unit =
         w.WriteValue value
     use sw : System.IO.StreamWriter = new IO.StreamWriter(jsonFile)
     use handle : JsonTextWriter = new JsonTextWriter(sw)
+    handle.Formatting <- Formatting.Indented
+    handle.Indentation <- 2
     handle.WriteStartObject ()
     Map.iter (fun k v  -> write1 k v handle) dict    
     handle.WriteEndObject ()
