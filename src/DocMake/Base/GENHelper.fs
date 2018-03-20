@@ -30,16 +30,17 @@ let private doubleQuote (s:string) : string = sprintf "\"%s\"" s
 
 type SiteName = string
 
-let private genInvoke1 (sw:IO.StreamWriter) (config:BatchFileConfig) (siteName:string) : unit = 
-    fprintf sw "REM %s ...\n"  siteName
+let private genInvoke1 (sw:IO.StreamWriter) (config:BatchFileConfig) (count:int) (ix:int) (siteName:string) : unit = 
+    fprintf sw "REM %s (%d of %d) ... \n"  siteName (ix+1) count
     fprintf sw "%s ^\n"  (doubleQuote config.PathToFake)
     fprintf sw "    %s ^\n"  (doubleQuote config.PathToScript)
     fprintf sw "    %s --envar sitename=%s\n\n" config.BuildTarget (doubleQuote siteName)
 
 let generateBatchFile (config:BatchFileConfig) (siteNames:string list) : unit = 
+    let count = List.length siteNames
     use sw = new IO.StreamWriter(config.OutputBatchFile)
-    fprintf sw "@echo off\n\n"
-    List.iter (genInvoke1 sw config) siteNames
+    fprintf sw "@echo on\n\n"
+    List.iteri (genInvoke1 sw config count) siteNames
     sw.Close ()
 
 

@@ -31,8 +31,16 @@ let siteTableDict : GetRowsDict<SiteTable, SiteRow> =
     { GetRows     = fun imports -> imports.Data 
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
-let getSiteRows () : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) 
+
+let filterByBatch (batchName:string) (source:SiteRow list) : SiteRow list = 
+    let matchBatch (row:SiteRow) : bool = 
+        match row.``Survey Batch`` with
+        | null -> false
+        | ans -> ans = batchName
+    List.filter  matchBatch source
+
+let getSiteRows (batchName:string) : SiteRow list = 
+    excelTableGetRows siteTableDict (new SiteTable()) |> filterByBatch batchName
 
 
 let batchConfig : BatchFileConfig = 
@@ -55,6 +63,7 @@ let makeDict1 (row:SiteRow) : FindReplaceDict =
             ]
 
 
+
 let findReplaceConfig:FindsReplacesConfig<SiteRow> = 
     let makeFileName (row:SiteRow) = sprintf "%s_findreplace.json" (safeName row.Name)
 
@@ -63,18 +72,12 @@ let findReplaceConfig:FindsReplacesConfig<SiteRow> =
       OutputJsonFolder = @"G:\work\Projects\events2\gen-surveys-risks\__Json" }
 
 
-let filterByBatch (batchName:string) (source:SiteRow list) : SiteRow list = 
-    let matchBatch (row:SiteRow) : bool = 
-        match row.``Survey Batch`` with
-        | :? string as ans -> ans = batchName
-        | _ -> false
-        
-    List.filter  matchBatch source
+
 
 
 // Generating all takes too long just generate a batch.
-let main () : unit = 
-    let siteList = getSiteRows () |> filterByBatch "SK Batch 02"
+let main (batchName:string) : unit = 
+    let siteList = getSiteRows batchName
     printfn "%i sites for output..." siteList.Length
     // Batch file
     siteList
