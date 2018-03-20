@@ -10,10 +10,7 @@ open DocMake.Base.Common
 open DocMake.Base.Json
 open DocMake.Base.Office
 
-// NOTE - Range.Text should be displayed with great caution
-// (This pertains to DocMonad especially) 
-// It will often contain "unprintable" that cause rendering "error" moving the
-// cursor backwards etc.
+
 
 type SearchList = List<string*string>
 
@@ -33,32 +30,24 @@ let XlsFindReplaceDefaults =
       OutputFile = @"findreplace.xlsx" }
 
 
-//let private replaceRange (range:Word.Range) (search:string) (replace:string) : unit =
-//    range.Find.ClearFormatting ()
-//    ignore <| range.Find.Execute (FindText = refobj search, 
-//                                    ReplaceWith = refobj replace,
-//                                    Replace = refobj Word.WdReplace.wdReplaceAll)
 
-let private sheetReplacer1 (worksheet:Excel.Worksheet) (search:string, replace:string) : unit =                      
-    ()
-    //replaceRange rngAll search replace
-    //List.iter (fun (header:Word.HeaderFooter) -> replaceRange header.Range search replace)
-    //          (headers @ footers)
+
+let private sheetReplaces1 (worksheet:Excel.Worksheet) (search:string, replace:string) : unit =                      
+    ignore <| 
+        worksheet.Cells.Replace(What = refobj search, 
+                                Replacement = refobj replace,
+                                SearchOrder = refobj Excel.XlSearchOrder.xlByColumns,
+                                MatchCase = refobj true )
+
     
+let private sheetReplaces (worksheet:Excel.Worksheet) (searches:SearchList) : unit =                      
+    List.iter (sheetReplaces1 worksheet) searches
 
-
-// Note when debugging.
-//
-// The doc is traversed multiple times (once per find-replace pair).
-// In practice this is not heinuous as the "traversal" is very shallow -
-// get the doc, then get its headers and footers.
-//
-// It can make debug output confusing though. 
 
 let private replaces (workbook:Excel.Workbook) (searches:SearchList) : unit = 
     workbook.Worksheets 
         |> Seq.cast<Excel.Worksheet> 
-        |> Seq.iter (fun (sheet:Excel.Worksheet) -> printfn "Worksheet: %s" sheet.Name)
+        |> Seq.iter (fun (sheet:Excel.Worksheet) -> sheetReplaces sheet searches)
 
 
 let private process1 (app:Excel.Application) (inpath:string) (outpath:string) (ss:SearchList) = 
@@ -73,7 +62,7 @@ let private process1 (app:Excel.Application) (inpath:string) (outpath:string) (s
         workbook.Close (SaveChanges = refobj false)
 
 
-let DocFindReplace (setXlsFindReplaceParams: XlsFindReplaceParams -> XlsFindReplaceParams) : unit =
+let XlsFindReplace (setXlsFindReplaceParams: XlsFindReplaceParams -> XlsFindReplaceParams) : unit =
     let options = XlsFindReplaceDefaults |> setXlsFindReplaceParams
     match File.Exists(options.TemplateFile), File.Exists(options.JsonMatchesFile) with
     | true, true ->
