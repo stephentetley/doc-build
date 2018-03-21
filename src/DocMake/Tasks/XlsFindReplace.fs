@@ -14,30 +14,38 @@ open DocMake.Base.Office
 
 type SearchList = List<string*string>
 
-// TODO - should probably change the representation of matches to SearchList (rather than JSON).
+// The representation of matches is a SearchList (rather than JSON).
 // The client can then work out weather or not it is serialized.
+// DocFindReplace should be changed accordingly
 
 [<CLIMutable>]
 type XlsFindReplaceParams = 
     { TemplateFile: string
-      JsonMatchesFile: string
+      Matches: SearchList
       OutputFile: string }
 
 
 let XlsFindReplaceDefaults = 
     { TemplateFile = @""
-      JsonMatchesFile = @""
+      Matches = []
       OutputFile = @"findreplace.xlsx" }
 
 
 
 
-let private sheetReplaces1 (worksheet:Excel.Worksheet) (search:string, replace:string) : unit =                      
+let private sheetReplaces1 (worksheet:Excel.Worksheet) (search:string, replace:string) : unit = 
+    // TODO - I expect the fist line to work but it doesn't
+    // let allCells : Excel.Range = worksheet.Cells
+    let allCells : Excel.Range = worksheet.Range("A1")
+    // Maybe this has to be iterated until false...
     ignore <| 
-        worksheet.Cells.Replace(What = refobj search, 
-                                Replacement = refobj replace,
-                                SearchOrder = refobj Excel.XlSearchOrder.xlByColumns,
-                                MatchCase = refobj true )
+        allCells.Replace(What = search, 
+                            Replacement = replace,
+                            LookAt = Excel.XlLookAt.xlWhole,
+                            SearchOrder = Excel.XlSearchOrder.xlByColumns,
+                            MatchCase = true,
+                            SearchFormat = false,
+                            ReplaceFormat = false )
 
     
 let private sheetReplaces (worksheet:Excel.Worksheet) (searches:SearchList) : unit =                      
@@ -55,28 +63,27 @@ let private process1 (app:Excel.Application) (inpath:string) (outpath:string) (s
     let workbook : Excel.Workbook = app.Workbooks.Open(inpath)
     try 
         replaces workbook ss
-        let outpath1 = doubleQuote outpath
-        printfn "Outpath: %s" outpath1
-        workbook.SaveAs (Filename = refobj outpath1)
+        printfn "Outpath: %s" outpath
+        workbook.SaveAs (Filename = outpath)
     finally 
-        workbook.Close (SaveChanges = refobj false)
+        workbook.Close (SaveChanges = false)
 
 
 let XlsFindReplace (setXlsFindReplaceParams: XlsFindReplaceParams -> XlsFindReplaceParams) : unit =
     let options = XlsFindReplaceDefaults |> setXlsFindReplaceParams
-    match File.Exists(options.TemplateFile), File.Exists(options.JsonMatchesFile) with
-    | true, true ->
+    if File.Exists(options.TemplateFile) then
         let app = new Excel.ApplicationClass(Visible = true)
+        app.DisplayAlerts <- false
+        app.EnableEvents <- false
         try 
-            let matches = readJsonStringPairs options.JsonMatchesFile
-            process1 app options.TemplateFile options.OutputFile matches
+            process1 app options.TemplateFile options.OutputFile options.Matches
+            app.DisplayAlerts <- true
+            app.EnableEvents <- true
         finally 
             app.Quit ()
-    | false, _ ->  
+    else 
         Trace.traceError <| sprintf "XlsFindReplace --- missing template file '%s'" options.TemplateFile
         failwith "XlsFindReplace --- missing template file"
-    | _, _ -> 
-        Trace.traceError <| sprintf "XlsFindReplace --- missing matches file '%s'" options.JsonMatchesFile
-        failwith "XlsFindReplace --- missing matches file"
+
 
 

@@ -18,10 +18,14 @@ open FSharp.ExcelProvider
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
-// Need FAKE for @"DocMake\Base\Common.fs"
+// Need FAKE for @"DocMake\Base\Common.fs" and (@@)
 #I @"..\packages\FAKE.5.0.0-beta005\tools"
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
-
+open Fake
+open Fake.Core
+open Fake.Core.Environment
+open Fake.Core.Globbing.Operators
+open Fake.Core.TargetOperators
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\Office.fs"
@@ -51,18 +55,30 @@ let getSiteRows () : InputRow list =
     excelTableGetRows inputTableDict (new InputTable()) 
 
 
-//let makeDict1 (row:InputRow) : FindReplaceDict = 
-//    Map.ofList 
-//        <|  [ "#SITENAME",          row.``RTU - Amp 6, Yr 3 jobs``
-//            ; "#WHAT" ,             row.What
-//            ]
+let makeSearches (row:InputRow) : SearchList = 
+    [ "#SITENAME",          row.``RTU - Amp 6, Yr 3 jobs``
+    ; "#WHAT" ,             row.What
+    ]
 
+    
+let _outputRoot     = @"G:\work\Projects\rtu\cema-docs\output"
+let _template       = @"G:\work\Projects\rtu\cema-docs\__Templates\TEMPLATE Customer Information Hazardous Area Sheet.xlsx"
+
+
+// Note it's ineffienct to repeated create an instance of Excel foreach row.
+// Look at providing two routes into XlsFindReplace
+let process1  (row:InputRow) : unit =
+    let cleanName = safeName row.``RTU - Amp 6, Yr 3 jobs``
+    let outPath = _outputRoot @@ (sprintf "%s Hazardous Area Sheet.xlsx" cleanName)
+    XlsFindReplace (fun p -> 
+        { p with 
+            TemplateFile = _template
+            OutputFile = outPath
+            Matches  = makeSearches row
+        }) 
 
 let main () : unit = 
     let siteList = getSiteRows ()
     printfn "%i sites for output..." siteList.Length
-    // Batch file
-    //siteList
-    //    |> List.map (fun (row:SiteRow) -> row.Name) 
-    //    |> generateBatchFile batchConfig 
+    siteList |> List.iter process1
 
