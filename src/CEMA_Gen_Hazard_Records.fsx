@@ -69,7 +69,7 @@ let _template       = @"G:\work\Projects\rtu\cema-docs\__Templates\TEMPLATE Cust
 // Look at providing two routes into XlsFindReplace
 let process1  (row:InputRow) : unit =
     let cleanName = safeName row.``RTU - Amp 6, Yr 3 jobs``
-    let outPath = _outputRoot @@ (sprintf "%s Hazardous Area Sheet.xlsx" cleanName)
+    let outPath = _outputRoot @@ (sprintf "%s HS Form 81-1 Hazardous Areas.xlsx" cleanName)
     XlsFindReplace (fun p -> 
         { p with 
             TemplateFile = _template

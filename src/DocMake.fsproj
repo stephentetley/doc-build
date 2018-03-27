@@ -75,6 +75,7 @@
     <None Include="DummyPdfRotate.fsx" />
     <None Include="RTU_gen_final.fsx" />
     <None Include="RTU_Final_Build.fsx" />
+    <None Include="RTU_Erskines_Final1.fsx" />
     <None Include="USAR_gen_final.fsx" />
     <None Include="USAR_Final_Build.fsx" />
     <None Include="FC2_gen_final.fsx" />
