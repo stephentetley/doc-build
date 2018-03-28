@@ -17,6 +17,7 @@ let wordPrintQuality (quality:DocMakePrintQuality) : Word.WdExportOptimizeFor =
     match quality with
     | PqScreen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
     | PqPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
+  
 
 let excelPrintQuality (quality:DocMakePrintQuality) : Excel.XlFixedFormatQuality = 
     match quality with

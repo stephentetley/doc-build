@@ -7,10 +7,15 @@ open Fake.Core.Globbing.Operators
     
 type DocMakePrintQuality = PqScreen | PqPrint
 
-let ghostscriptPrintQuality (quality:DocMakePrintQuality) : string = 
+
+/// Use PdfWhatever for no optimization (can be faster and smaller in some cases...)
+type PdfPrintSetting = PdfPrint | PdfScreen | PdfWhatever
+
+let ghostscriptPrintSetting (quality:PdfPrintSetting) : string = 
     match quality with
-    | PqScreen -> @"/screen"
-    | PqPrint -> @"/preprint"
+    | PdfScreen -> @"-dPDFSETTINGS=/screen"
+    | PdfPrint -> @"-dPDFSETTINGS=/preprint"
+    | PdfWhatever -> ""
 
 type DocMakePageOrientation = PoNorth | PoSouth | PoEast | PoWest
 

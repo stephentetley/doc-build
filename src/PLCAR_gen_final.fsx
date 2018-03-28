@@ -20,7 +20,7 @@ open DocMake.Base.Json
 open DocMake.Base.GENHelper
 
 type SiteTable = 
-    ExcelFile< @"G:\work\Projects\plcar\final-docs\batch1-site-list.xlsx",
+    ExcelFile< @"G:\work\Projects\kw_plcar\final_docs\KW-Batch01.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
@@ -35,22 +35,24 @@ let getSitesRows () : SiteRow list = excelTableGetRows siteTableDict (new SiteTa
 
 
 let makeDict (row:SiteRow) : FindReplaceDict = 
-    Map.ofList [ "#SITENAME", row.``Site Name``
-               ; "#SAINUM" , row.``SAI Number``
+    Map.ofList [ "#SITENAME",   row.Site
+               ; "#SAINUM" ,    row.SAI
+               ; "#PLC",        row.PLC
                ]
 
 let jsonConfig : FindsReplacesConfig<SiteRow> = 
     { DictionaryBuilder = makeDict
     ; GetFileName       = 
-        fun (row:SiteRow) -> sprintf "%s_findreplace.json" (safeName row.``Site Name``)
+        fun (row:SiteRow) -> sprintf "%s_findreplace.json" (safeName row.Folder)
 
-    ; OutputJsonFolder = @"G:\work\Projects\plcar\final-docs\__Json" }
+    ; OutputJsonFolder = @"G:\work\Projects\kw_plcar\final_docs\__Json" }
 
 let batchConfig : BatchFileConfig = 
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
       PathToScript = @"D:\coding\fsharp\DocMake\src\PLCAR_Final_Build.fsx"
       BuildTarget = "Final"
-      OutputBatchFile = @"G:\work\Projects\plcar\final-docs\fake-make.bat" }
+      VarName = "assetname"
+      OutputBatchFile = @"G:\work\Projects\kw_plcar\final_docs\fake-make.bat" }
 
 
 // A file is generated foreach row
@@ -60,5 +62,5 @@ let main () : unit =
     siteList |> List.iter (generateFindsReplacesJson jsonConfig)
     // Generate batch file...
     siteList 
-        |> List.map (fun (row:SiteRow) -> row.``Site Name``) 
+        |> List.map (fun (row:SiteRow) -> row.Folder) 
         |> generateBatchFile batchConfig 

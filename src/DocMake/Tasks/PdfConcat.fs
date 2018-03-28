@@ -18,7 +18,7 @@ open DocMake.Base.Common
 type PdfConcatParams = 
     { OutputFile: string
       GhostscriptExePath: string
-      PrintQuality: DocMakePrintQuality }
+      PrintQuality: PdfPrintSetting }
 
 
 
@@ -31,12 +31,14 @@ type PdfConcatParams =
 let PdfConcatDefaults = 
     { OutputFile = "concat.pdf"
       GhostscriptExePath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PrintQuality = PqScreen }
+      PrintQuality = PdfScreen }
 
 
-let private makeGsOptions (quality:DocMakePrintQuality) =
-    sprintf @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=%s" 
-            (ghostscriptPrintQuality quality) 
+let private makeGsOptions (quality:PdfPrintSetting) : string =
+    match ghostscriptPrintSetting quality with
+    | "" -> @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite"
+    | ss -> sprintf @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=%s" ss
+
 
 
 let private line1 (options:PdfConcatParams) : string =

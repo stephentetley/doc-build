@@ -22,6 +22,7 @@ type BatchFileConfig =
     { PathToFake : string
       PathToScript : string
       BuildTarget : string
+      VarName : string
       OutputBatchFile : string }
 
 
@@ -34,7 +35,7 @@ let private genInvoke1 (sw:IO.StreamWriter) (config:BatchFileConfig) (count:int)
     fprintf sw "REM %s (%d of %d) ... \n"  siteName (ix+1) count
     fprintf sw "%s ^\n"  (doubleQuote config.PathToFake)
     fprintf sw "    %s ^\n"  (doubleQuote config.PathToScript)
-    fprintf sw "    %s --envar sitename=%s\n\n" config.BuildTarget (doubleQuote siteName)
+    fprintf sw "    %s --envar %s=%s\n\n" config.BuildTarget config.VarName (doubleQuote siteName)
 
 let generateBatchFile (config:BatchFileConfig) (siteNames:string list) : unit = 
     let count = List.length siteNames
