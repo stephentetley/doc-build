@@ -1,4 +1,4 @@
-﻿module DocMake.Base.Fake
+﻿module DocMake.Base.FakeExtras
 
 open Fake
 open Fake.Core

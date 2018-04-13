@@ -3,9 +3,9 @@
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\Fake.fs"
+#load @"DocMake\Base\FakeExtras.fs"
 #load @"DocMake\Base\CopyRename.fs"
-open DocMake.Base.Fake
+open DocMake.Base.FakeExtras
 open DocMake.Base.CopyRename
 
 let test01 () = 

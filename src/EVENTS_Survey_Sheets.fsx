@@ -14,7 +14,7 @@ open Newtonsoft.Json
 
 open System.IO
 
-// FAKE is local to the project file
+// FAKE reference path is local to the project file
 #I @"..\packages\FAKE.5.0.0-beta005\tools"
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 open Fake
@@ -25,8 +25,8 @@ open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\Office.fs"
-#load @"DocMake\Base\Json.fs"
+#load @"DocMake\Base\OfficeUtils.fs"
+#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Tasks\DocFindReplace.fs"
 
 open DocMake.Base.Common

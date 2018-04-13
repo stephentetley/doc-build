@@ -36,12 +36,12 @@ open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\ImageMagick.fs"
-#load @"DocMake\Base\Fake.fs"
-#load @"DocMake\Base\Json.fs"
-#load @"DocMake\Base\Office.fs"
+#load @"DocMake\Base\FakeExtras.fs"
+#load @"DocMake\Base\ImageMagickUtils.fs"
+#load @"DocMake\Base\JsonUtils.fs"
+#load @"DocMake\Base\OfficeUtils.fs"
 open DocMake.Base.Common
-open DocMake.Base.Fake
+open DocMake.Base.FakeExtras
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 #load @"DocMake\Tasks\DocPhotos.fs"

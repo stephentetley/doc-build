@@ -3,11 +3,10 @@
 open System.IO
 open System.Text.RegularExpressions
 
-
-
 open Fake
 open Fake.Core
-open Fake.Core.Globbing.Operators
+
+open DocMake.Base.FakeExtras
 
 
 let private regexMatchFiles (srcDir:string) (search:string) (ignoreCase:bool) : string list = 

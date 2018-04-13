@@ -13,37 +13,36 @@ open Newtonsoft.Json
 open System
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\Json.fs"
+#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
 open DocMake.Base.Common
-open DocMake.Base.Json
+open DocMake.Base.JsonUtils
 open DocMake.Base.GENHelper
 
-type SiteTable = 
+type AssetTable = 
     ExcelFile< @"G:\work\Projects\kw_plcar\final_docs\KW-Batch01.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
-type SiteRow = SiteTable.Row
-
-let siteTableDict : GetRowsDict<SiteTable, SiteRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
-
-let getSitesRows () : SiteRow list = excelTableGetRows siteTableDict (new SiteTable())
+type AssetRow = AssetTable.Row
 
 
+let getAssetRows () : AssetRow list = 
+    let rowsDict : GetRowsDict<AssetTable, AssetRow> = 
+        { GetRows     = fun imports -> imports.Data 
+          NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
+    excelTableGetRows rowsDict (new AssetTable())
 
-let makeDict (row:SiteRow) : FindReplaceDict = 
+let makeDict (row:AssetRow) : FindReplaceDict = 
     Map.ofList [ "#SITENAME",   row.Site
                ; "#SAINUM" ,    row.SAI
                ; "#PLC",        row.PLC
                ]
 
-let jsonConfig : FindsReplacesConfig<SiteRow> = 
+let jsonConfig : FindsReplacesConfig<AssetRow> = 
     { DictionaryBuilder = makeDict
     ; GetFileName       = 
-        fun (row:SiteRow) -> sprintf "%s_findreplace.json" (safeName row.Folder)
+        fun (row:AssetRow) -> sprintf "%s_findreplace.json" (safeName row.Folder)
 
     ; OutputJsonFolder = @"G:\work\Projects\kw_plcar\final_docs\__Json" }
 
@@ -57,10 +56,10 @@ let batchConfig : BatchFileConfig =
 
 // A file is generated foreach row
 let main () : unit = 
-    let siteList = getSitesRows () 
+    let assetList = getAssetRows () 
     // Generate find-replace json...
-    siteList |> List.iter (generateFindsReplacesJson jsonConfig)
+    assetList |> List.iter (generateFindsReplacesJson jsonConfig)
     // Generate batch file...
-    siteList 
-        |> List.map (fun (row:SiteRow) -> row.Folder) 
+    assetList 
+        |> List.map (fun (row:AssetRow) -> row.Folder) 
         |> generateBatchFile batchConfig 

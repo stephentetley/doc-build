@@ -13,10 +13,10 @@ open Newtonsoft.Json
 open System
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\Json.fs"
+#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
 open DocMake.Base.Common
-open DocMake.Base.Json
+open DocMake.Base.JsonUtils
 open DocMake.Base.GENHelper
 
 type SiteTable = 
@@ -50,7 +50,8 @@ let batchConfig : BatchFileConfig =
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
       PathToScript = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
       BuildTarget = "Final"
-      OutputBatchFile = @"G:\work\Projects\usar\final-docs\fake-make.bat" }
+      OutputBatchFile = @"G:\work\Projects\usar\final-docs\fake-make.bat"
+      VarName = "sitename" }
 
 
 // A file is generated foreach row

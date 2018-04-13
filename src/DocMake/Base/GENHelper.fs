@@ -2,7 +2,9 @@
 
 open System
 
-open DocMake.Base.Json
+open DocMake.Base.Common
+open DocMake.Base.JsonUtils
+
 
 // The Excel Type Provider seems to read a trailing null row.
 // This dictionary and procedure provide a skeleton to get round this.

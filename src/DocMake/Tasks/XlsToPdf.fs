@@ -9,7 +9,7 @@ open Fake
 open Fake.Core
 
 open DocMake.Base.Common
-open DocMake.Base.Office
+open DocMake.Base.OfficeUtils
 
 
 [<CLIMutable>]

@@ -28,13 +28,12 @@ open Fake.Core.Globbing.Operators
 open Fake.Core.TargetOperators
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\Office.fs"
-#load @"DocMake\Base\Json.fs"
+#load @"DocMake\Base\OfficeUtils.fs"
+#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
+#load @"DocMake\Tasks\XlsFindReplace.fs"
 open DocMake.Base.Common
 open DocMake.Base.GENHelper
-
-#load @"DocMake\Tasks\XlsFindReplace.fs"
 open DocMake.Tasks.XlsFindReplace
 
 /// This is a one-to-many build, so we don't use FAKE directly, we just use it as a library.

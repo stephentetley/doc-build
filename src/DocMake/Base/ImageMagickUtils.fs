@@ -1,4 +1,4 @@
-﻿module DocMake.Base.ImageMagick
+﻿module DocMake.Base.ImageMagickUtils
 
 open System
 

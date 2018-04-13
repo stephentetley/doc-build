@@ -1,23 +1,48 @@
-﻿#I @"..\packages\ExcelProvider.0.8.2\lib"
-#r "ExcelProvider.dll"
-open FSharp.ExcelProvider
+﻿// Office deps
+#I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
+#r "Microsoft.Office.Interop.Word"
+#I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Excel\15.0.0.0__71e9bce111e9429c"
+#r "Microsoft.Office.Interop.Excel"
+#I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.PowerPoint\15.0.0.0__71e9bce111e9429c"
+#r "Microsoft.Office.Interop.PowerPoint"
+#I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
+#r "office"
 
 
 #I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
-// Need FAKE for @"DocMake\Base\Common.fs"
+
+#I @"..\packages\ExcelProvider.0.8.2\lib"
+#r "ExcelProvider.dll"
+open FSharp.ExcelProvider
+
+
 #I @"..\packages\FAKE.5.0.0-beta005\tools"
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+open Fake
+open Fake.Core
+open Fake.Core.Environment
+open Fake.Core.Globbing.Operators
+open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
+#load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Base.Common
-open DocMake.Base.JsonUtils
 open DocMake.Base.GENHelper
+open DocMake.Tasks.DocFindReplace
+
+/// This is a one-to-many build (one site list, many docs), so 
+// we don't use FAKE directly, we just use it as a library.
+
+
+let _templateRoot   = @"G:\work\Projects\events2\gen-surveys-risks\__Templates"
+let _outputRoot     = @"G:\work\Projects\events2\gen-surveys-risks\output"
 
 
 type SiteTable = 
@@ -43,12 +68,7 @@ let getSiteRows (batchName:string) : SiteRow list =
     excelTableGetRows siteTableDict (new SiteTable()) |> filterByBatch batchName
 
 
-let batchConfig : BatchFileConfig = 
-    { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
-      PathToScript = @"D:\coding\fsharp\DocMake\src\EVENTS_Survey_Sheets.fsx"
-      OutputBatchFile = @"G:\work\Projects\events2\gen-surveys-risks\fake-make.bat"
-      VarName = "sitename"
-      BuildTarget = "Final" }
+
 
 let makeDict1 (row:SiteRow) : FindReplaceDict = 
     Map.ofList 
@@ -64,27 +84,30 @@ let makeDict1 (row:SiteRow) : FindReplaceDict =
             ]
 
 
-
-let findReplaceConfig:FindsReplacesConfig<SiteRow> = 
-    let makeFileName (row:SiteRow) = sprintf "%s_findreplace.json" (safeName row.Name)
-
-    { DictionaryBuilder = makeDict1
-      GetFileName = makeFileName
-      OutputJsonFolder = @"G:\work\Projects\events2\gen-surveys-risks\__Json" }
+let makeTopFolder (batchName:string) : unit = 
+    maybeCreateDirectory <| _outputRoot @@ batchName
 
 
-
-
+let genSurvey (batchName:string)  (row:SiteRow) : unit =
+    let cleanName = safeName row.Name
+    let outPath = _outputRoot @@ batchName @@ (sprintf "%s EDM2 Survey.docx" cleanName)
+    DocFindReplace (fun p -> 
+        { p with 
+            TemplateFile = _template
+            OutputFile = outPath
+            // Matches  = makeSearches row
+        }) 
 
 // Generating all takes too long just generate a batch.
+
+
+
 let main (batchName:string) : unit = 
     let siteList = getSiteRows batchName
     printfn "%i sites for output..." siteList.Length
+    makeTopFolder batchName
     // Batch file
     siteList
-        |> List.map (fun (row:SiteRow) -> row.Name) 
-        |> generateBatchFile batchConfig 
-
-    // Json
+        |> List.iteri (fun i (row:SiteRow) -> printfn "%i: %s" i row.Name)
     siteList 
-        |> Seq.iter (generateFindsReplacesJson findReplaceConfig)
+        |> List.iter genSurvey

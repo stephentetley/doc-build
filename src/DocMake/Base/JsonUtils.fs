@@ -1,11 +1,11 @@
-﻿module DocMake.Base.Json
+﻿module DocMake.Base.JsonUtils
 
 open System
 
 open Newtonsoft.Json
 
+open DocMake.Base.Common
 
-type FindReplaceDict = Map<string,string>
 
 let readJsonFindReplaceDict (jsonFile:string) : FindReplaceDict = 
     let readProc (json:string) : FindReplaceDict =  JsonConvert.DeserializeObject<FindReplaceDict>(json) 

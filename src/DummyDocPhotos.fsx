@@ -16,8 +16,8 @@
 open Microsoft.Office.Interop
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\Office.fs"
-open DocMake.Base.Office
+#load @"DocMake\Base\OfficeUtils.fs"
+open DocMake.Base.OfficeUtils
 
 #load @"DocMake\Tasks\DocPhotos.fs"
 open DocMake.Tasks.DocPhotos

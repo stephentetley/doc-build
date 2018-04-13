@@ -28,13 +28,13 @@ open Fake.Core.Globbing.Operators
 open Fake.Core.TargetOperators
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\Office.fs"
-#load @"DocMake\Base\Json.fs"
+#load @"DocMake\Base\OfficeUtils.fs"
+#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
-#load @"DocMake\Base\Fake.fs"
+#load @"DocMake\Base\FakeExtras.fs"
 open DocMake.Base.Common
 open DocMake.Base.GENHelper
-open DocMake.Base.Fake
+open DocMake.Base.FakeExtras
 
 #load @"DocMake\Tasks\DocToPdf.fs"
 open DocMake.Tasks.DocToPdf

@@ -7,7 +7,15 @@ open FSharp.ExcelProvider
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
-#load @"DocMake\Base\Json.fs"
+// FAKE is local to the project file
+#I @"..\packages\FAKE.5.0.0-beta005\tools"
+#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+open Fake
+open Fake.Core
+
+
+#load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
 open DocMake.Base.GENHelper
 
@@ -33,7 +41,8 @@ let batchConfig : BatchFileConfig =
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
       PathToScript = @"D:\coding\fsharp\DocMake\src\BARRIERS_Final_Build.fsx"
       BuildTarget = "Final"
-      OutputBatchFile = @"G:\work\Projects\barriers\final-docs\fake-make.bat" }
+      OutputBatchFile = @"G:\work\Projects\barriers\final-docs\fake-make.bat"
+      VarName = "sitename" }
 
 let main () : unit = 
     getSitesRows () 

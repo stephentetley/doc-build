@@ -4,7 +4,10 @@ open System.IO
 open System.Text
 open Fake.Core.Globbing.Operators
 
-    
+
+type FindReplaceDict = Map<string,string>
+
+
 type DocMakePrintQuality = PqScreen | PqPrint
 
 

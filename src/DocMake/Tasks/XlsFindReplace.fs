@@ -7,8 +7,8 @@ open Fake
 open Fake.Core
 
 open DocMake.Base.Common
-open DocMake.Base.Json
-open DocMake.Base.Office
+open DocMake.Base.JsonUtils
+open DocMake.Base.OfficeUtils
 
 
 

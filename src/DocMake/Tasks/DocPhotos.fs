@@ -5,7 +5,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Microsoft.Office.Interop
 
-open DocMake.Base.Office
+open DocMake.Base.OfficeUtils
 
 
 [<CLIMutable>]
