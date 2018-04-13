@@ -43,7 +43,7 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\OfficeUtils.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
-
+open DocMake.Base.JsonUtils
 
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
@@ -98,19 +98,22 @@ Target.Create "CoverSheet" (fun _ ->
     let docname = makeSiteOutputName "%s Cover Sheet.docx"
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
     
-    DocFindReplace (fun p -> 
-        { p with 
-            TemplateFile = template
-            OutputFile = docname
-            JsonMatchesFile  = jsonSource 
-        }) 
+    if File.Exists(jsonSource) then
+        let matches = readJsonStringPairs jsonSource
+        DocFindReplace (fun p -> 
+            { p with 
+                TemplateFile = template
+                OutputFile = docname
+                Matches = matches 
+            }) 
     
-    let pdfname = makeSiteOutputName "%s Cover Sheet.pdf"
-    DocToPdf (fun p -> 
-        { p with 
-            InputFile = docname
-            OutputFile = Some <| pdfname 
-        })
+        let pdfname = makeSiteOutputName "%s Cover Sheet.pdf"
+        DocToPdf (fun p -> 
+            { p with 
+                InputFile = docname
+                OutputFile = Some <| pdfname 
+            })
+    else assertMandatory "CoverSheet failed no json matches"
 )
 
 // All file are created in the siteOutputDir...

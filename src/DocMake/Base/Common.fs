@@ -6,6 +6,8 @@ open Fake.Core.Globbing.Operators
 
 
 type FindReplaceDict = Map<string,string>
+type SearchList = List<string*string>
+
 
 
 type DocMakePrintQuality = PqScreen | PqPrint

@@ -8,12 +8,16 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
-open System.IO
-
-
 #I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
+
+#I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
+#r "Newtonsoft.Json"
+open Newtonsoft.Json
+
+
+open System.IO
 
 
 // FAKE is local to the project file
@@ -29,10 +33,12 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\FakeExtras.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
+#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\CopyRename.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
+open DocMake.Base.JsonUtils
 open DocMake.Base.CopyRename
 open DocMake.Base.ImageMagickUtils
 
@@ -105,7 +111,6 @@ Target.Create "Photos" (fun _ ->
             InputFile = docName
             OutputFile = Some <| pdfName 
         })
-
 )
 
 

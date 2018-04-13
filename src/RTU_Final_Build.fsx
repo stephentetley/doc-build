@@ -42,6 +42,7 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\OfficeUtils.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
+open DocMake.Base.JsonUtils
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 #load @"DocMake\Tasks\DocPhotos.fs"
@@ -96,19 +97,22 @@ Target.Create "CoverSheet" (fun _ ->
     let pdfName = pathChangeExtension docName "pdf"
 
     Trace.tracefn " --- Cover sheet for: %s --- " siteName
+    if File.Exists(jsonSource) then
+        let matches = readJsonStringPairs jsonSource
+        DocFindReplace (fun p -> 
+        
+            { p with 
+                TemplateFile = template
+                OutputFile = docName
+                Matches  = matches 
+            }) 
     
-    DocFindReplace (fun p -> 
-        { p with 
-            TemplateFile = template
-            OutputFile = docName
-            JsonMatchesFile  = jsonSource 
-        }) 
-    
-    DocToPdf (fun p -> 
-        { p with 
-            InputFile = docName
-            OutputFile = Some <| pdfName 
-        })
+        DocToPdf (fun p -> 
+            { p with 
+                InputFile = docName
+                OutputFile = Some <| pdfName 
+            })
+    else assertMandatory "CoverSheet failed no json matches"
 )
 
 

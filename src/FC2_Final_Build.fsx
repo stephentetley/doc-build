@@ -44,6 +44,7 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\CopyRename.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
+open DocMake.Base.JsonUtils
 open DocMake.Base.CopyRename
 
 
@@ -103,17 +104,21 @@ Target.Create "Cover" (fun _ ->
         let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
         let docName = makeSiteOutputName "%s cover-sheet.docx"
         let pdfName = pathChangeExtension docName "pdf"
-        DocFindReplace (fun p -> 
-            { p with 
-                TemplateFile = template
-                OutputFile = docName
-                JsonMatchesFile  = jsonSource 
-            }) 
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = docName
-                OutputFile = Some <| pdfName 
-            })
+        
+        if File.Exists(jsonSource) then
+            let matches = readJsonStringPairs jsonSource
+            DocFindReplace (fun p -> 
+                { p with 
+                    TemplateFile = template
+                    OutputFile = docName
+                    Matches = matches
+                }) 
+            DocToPdf (fun p -> 
+                { p with 
+                    InputFile = docName
+                    OutputFile = Some <| pdfName 
+                })
+        else assertMandatory "CoverSheet failed no json matches"
     with ex -> assertMandatory <| sprintf "COVER SHEET FAILED\n%s" (ex.ToString())
 )
 

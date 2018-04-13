@@ -11,9 +11,6 @@ open DocMake.Base.JsonUtils
 open DocMake.Base.OfficeUtils
 
 
-
-type SearchList = List<string*string>
-
 // The representation of matches is a SearchList (rather than JSON).
 // The client can then work out weather or not it is serialized.
 // DocFindReplace should be changed accordingly

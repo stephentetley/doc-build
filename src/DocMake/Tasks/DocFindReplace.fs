@@ -17,20 +17,20 @@ open DocMake.Base.OfficeUtils
 // It will often contain "unprintable" that cause rendering "error" moving the
 // cursor backwards etc.
 
-type SearchList = List<string*string>
+
 
 
 
 [<CLIMutable>]
 type DocFindReplaceParams = 
     { TemplateFile: string
-      JsonMatchesFile: string
+      Matches: SearchList
       OutputFile: string }
 
 
 let DocFindReplaceDefaults = 
     { TemplateFile = @""
-      JsonMatchesFile = @""
+      Matches = []
       OutputFile = @"findreplace.docx" }
 
 let private getHeadersOrFooters (doc:Word.Document) (proj:Word.Section -> Word.HeadersFooters) : Word.HeaderFooter list = 
@@ -82,19 +82,15 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss
 
 let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
     let options = DocFindReplaceDefaults |> setDocFindReplaceParams
-    match File.Exists(options.TemplateFile), File.Exists(options.JsonMatchesFile) with
-    | true, true ->
+    match File.Exists(options.TemplateFile) with
+    | true ->
         let app = new Word.ApplicationClass (Visible = true)
         try 
-            let matches = readJsonStringPairs options.JsonMatchesFile
-            process1 app options.TemplateFile options.OutputFile matches
+            process1 app options.TemplateFile options.OutputFile options.Matches
         finally 
             app.Quit ()
-    | false, _ ->  
+    | false ->  
         Trace.traceError <| sprintf "DocFindReplace --- missing template file '%s'" options.TemplateFile
         failwith "DocFindReplace --- missing template file"
-    | _, _ -> 
-        Trace.traceError <| sprintf "DocFindReplace --- missing matches file '%s'" options.JsonMatchesFile
-        failwith "DocFindReplace --- missing matches file"
 
 

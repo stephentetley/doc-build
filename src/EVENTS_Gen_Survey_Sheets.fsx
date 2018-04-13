@@ -69,33 +69,50 @@ let getSiteRows (batchName:string) : SiteRow list =
 
 
 
-
-let makeDict1 (row:SiteRow) : FindReplaceDict = 
-    Map.ofList 
-        <|  [ "#SITENAME",          row.Name
-            ; "#SAINUMBER" ,        row.``SAI Number``
-            ; "#SITEADDRESS",       row.``Site Address``
-            ; "#OPERSTATUS",        row.``Operational Status``
-            ; "#SITEGRIDREF",       row.``Site Grid Ref``
-            ; "#ASSETTYPE",         row.Type
-            ; "#OPERNAME",          row.``Operational Responsibility``
-            ; "#OUTFALLGRIDREF",    row.``Outfall Grid Ref (from IW sheet)``
-            ; "#RECWATERWOURSE",    row.``Receiving Watercourse``
-            ]
-
-
 let makeTopFolder (batchName:string) : unit = 
     maybeCreateDirectory <| _outputRoot @@ batchName
 
 
+let makeSurveySearches (row:SiteRow) : SearchList = 
+    [ "#SITENAME",          row.Name
+    ; "#SAINUMBER" ,        row.``SAI Number``
+    ; "#SITEADDRESS",       row.``Site Address``
+    ; "#OPERSTATUS",        row.``Operational Status``
+    ; "#SITEGRIDREF",       row.``Site Grid Ref``
+    ; "#ASSETTYPE",         row.Type
+    ; "#OPERNAME",          row.``Operational Responsibility``
+    ; "#OUTFALLGRIDREF",    row.``Outfall Grid Ref (from IW sheet)``
+    ; "#RECWATERWOURSE",    row.``Receiving Watercourse``
+    ]
+
+
+
+
 let genSurvey (batchName:string)  (row:SiteRow) : unit =
+    let template = _templateRoot @@ "TEMPLATE EDM2 Survey.docx"
     let cleanName = safeName row.Name
     let outPath = _outputRoot @@ batchName @@ (sprintf "%s EDM2 Survey.docx" cleanName)
     DocFindReplace (fun p -> 
         { p with 
-            TemplateFile = _template
+            TemplateFile = template
             OutputFile = outPath
-            // Matches  = makeSearches row
+            Matches  = makeSurveySearches row
+        }) 
+
+let makeHazardsSearches (row:SiteRow) : SearchList = 
+    [ "#SITENAME",          row.Name
+    ; "#SAINUMBER" ,        row.``SAI Number``
+    ]
+
+let genHazardSheet (batchName:string)  (row:SiteRow) : unit =
+    let template = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
+    let cleanName = safeName row.Name
+    let outPath = _outputRoot @@ batchName @@ (sprintf "%s Hazard Identification Check List" cleanName)    
+    DocFindReplace (fun p -> 
+        { p with 
+            TemplateFile = template
+            OutputFile = outPath
+            Matches = makeHazardsSearches row 
         }) 
 
 // Generating all takes too long just generate a batch.
@@ -104,10 +121,14 @@ let genSurvey (batchName:string)  (row:SiteRow) : unit =
 
 let main (batchName:string) : unit = 
     let siteList = getSiteRows batchName
-    printfn "%i sites for output..." siteList.Length
+    let todo = List.length siteList
+    let proc1 (ix:int) (row:SiteRow) = 
+        printfn "Generating %i of %i: %s ..." ix todo  row.Name
+        genSurvey batchName row
+        genHazardSheet batchName row
+    
+    // actions...
     makeTopFolder batchName
-    // Batch file
-    siteList
-        |> List.iteri (fun i (row:SiteRow) -> printfn "%i: %s" i row.Name)
     siteList 
-        |> List.iter genSurvey
+        |> List.take 5
+        |> List.iteri proc1
