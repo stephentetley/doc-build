@@ -72,6 +72,10 @@ let getSiteRows (batchName:string) : SiteRow list =
 let makeTopFolder (batchName:string) : unit = 
     maybeCreateDirectory <| _outputRoot @@ batchName
 
+let makeSiteFolder (batchName:string) (siteName:string) : unit = 
+    let cleanName = safeName siteName
+    maybeCreateDirectory <| _outputRoot @@ batchName @@ cleanName
+
 
 let makeSurveySearches (row:SiteRow) : SearchList = 
     [ "#SITENAME",          row.Name
@@ -91,7 +95,8 @@ let makeSurveySearches (row:SiteRow) : SearchList =
 let genSurvey (batchName:string)  (row:SiteRow) : unit =
     let template = _templateRoot @@ "TEMPLATE EDM2 Survey.docx"
     let cleanName = safeName row.Name
-    let outPath = _outputRoot @@ batchName @@ (sprintf "%s EDM2 Survey.docx" cleanName)
+    let path1 = _outputRoot @@ batchName @@ cleanName
+    let outPath = path1 @@ (sprintf "%s EDM2 Survey.docx" cleanName)
     DocFindReplace (fun p -> 
         { p with 
             TemplateFile = template
@@ -107,7 +112,8 @@ let makeHazardsSearches (row:SiteRow) : SearchList =
 let genHazardSheet (batchName:string)  (row:SiteRow) : unit =
     let template = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
     let cleanName = safeName row.Name
-    let outPath = _outputRoot @@ batchName @@ (sprintf "%s Hazard Identification Check List" cleanName)    
+    let path1 = _outputRoot @@ batchName @@ cleanName
+    let outPath = path1 @@  (sprintf "%s Hazard Identification Check List.docx" cleanName)    
     DocFindReplace (fun p -> 
         { p with 
             TemplateFile = template
@@ -121,14 +127,15 @@ let genHazardSheet (batchName:string)  (row:SiteRow) : unit =
 
 let main (batchName:string) : unit = 
     let siteList = getSiteRows batchName
-    let todo = List.length siteList
+    let todoCount = List.length siteList
+    let safeBatchName = safeName batchName
+
     let proc1 (ix:int) (row:SiteRow) = 
-        printfn "Generating %i of %i: %s ..." ix todo  row.Name
-        genSurvey batchName row
-        genHazardSheet batchName row
+        printfn "Generating %i of %i: %s ..." (ix+1) todoCount row.Name
+        makeSiteFolder safeBatchName row.Name
+        genSurvey safeBatchName row
+        genHazardSheet safeBatchName row
     
     // actions...
-    makeTopFolder batchName
-    siteList 
-        |> List.take 5
-        |> List.iteri proc1
+    makeTopFolder safeBatchName
+    siteList |> List.iteri proc1
