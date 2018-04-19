@@ -41,12 +41,12 @@ open DocMake.Tasks.DocFindReplace
 // we don't use FAKE directly, we just use it as a library.
 
 
-let _templateRoot   = @"G:\work\Projects\events2\gen-surveys-risks\__Templates"
-let _outputRoot     = @"G:\work\Projects\events2\gen-surveys-risks\output"
+let _templateRoot   = @"G:\work\Projects\rtu\site-docs\__Templates"
+let _outputRoot     = @"G:\work\Projects\rtu\site-docs\output"
 
 
 type SiteTable = 
-    ExcelFile< @"G:\work\Projects\events2\EDM2 Site-List.xlsx",
+    ExcelFile< @"G:\work\Projects\rtu\site-docs\year4_sitelist.xlsx",
                SheetName = "SITE_LIST",
                ForceString = false >
 
@@ -57,46 +57,30 @@ let siteTableDict : GetRowsDict<SiteTable, SiteRow> =
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
 
-let filterByBatch (batchName:string) (source:SiteRow list) : SiteRow list = 
-    let matchBatch (row:SiteRow) : bool = 
-        match row.``Survey Batch`` with
-        | null -> false
-        | ans -> ans = batchName
-    List.filter  matchBatch source
 
-let getSiteRows (batchName:string) : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) |> filterByBatch batchName
+let getSiteRows () : SiteRow list = 
+    excelTableGetRows siteTableDict (new SiteTable())
 
 
-
-let makeTopFolder (batchName:string) : unit = 
-    maybeCreateDirectory <| _outputRoot @@ batchName
-
-let makeSiteFolder (batchName:string) (siteName:string) : unit = 
+let makeSiteFolder (siteName:string) : unit = 
     let cleanName = safeName siteName
-    maybeCreateDirectory <| _outputRoot @@ batchName @@ cleanName
+    maybeCreateDirectory <| _outputRoot @@  cleanName
 
 
 let makeSurveySearches (row:SiteRow) : SearchList = 
-    [ "#SITENAME",          row.Name
-    ; "#SAINUMBER" ,        row.``SAI Number``
-    ; "#SITEADDRESS",       row.``Site Address``
-    ; "#OPERSTATUS",        row.``Operational Status``
-    ; "#SITEGRIDREF",       row.``Site Grid Ref``
-    ; "#ASSETTYPE",         row.Type
-    ; "#OPERNAME",          row.``Operational Responsibility``
-    ; "#OUTFALLGRIDREF",    row.``Outfall Grid Ref (from IW sheet)``
-    ; "#RECWATERWOURSE",    row.``Receiving Watercourse``
+    [ "#SITENAME",          row.``Common Name``
+    ; "#OSNAME" ,           row.``OS Name``
+    ; "#OSADDR",            row.``Os Addr``
     ]
 
 
 
 
-let genSurvey (batchName:string)  (row:SiteRow) : unit =
-    let template = _templateRoot @@ "TEMPLATE EDM2 Survey.docx"
-    let cleanName = safeName row.Name
-    let path1 = _outputRoot @@ batchName @@ cleanName
-    let outPath = path1 @@ (sprintf "%s EDM2 Survey.docx" cleanName)
+let genSurvey (row:SiteRow) : unit =
+    let template = _templateRoot @@ "TEMPLATE RTU Site Works Record.docx"
+    let cleanName = safeName row.``Common Name``
+    let path1 = _outputRoot @@ cleanName
+    let outPath = path1 @@ (sprintf "%s Site Works Record.docx" cleanName)
     DocFindReplace (fun p -> 
         { p with 
             TemplateFile = template
@@ -105,14 +89,14 @@ let genSurvey (batchName:string)  (row:SiteRow) : unit =
         }) 
 
 let makeHazardsSearches (row:SiteRow) : SearchList = 
-    [ "#SITENAME",          row.Name
-    ; "#SAINUMBER" ,        row.``SAI Number``
+    [ "#SAINUMBER" ,        row.Uid
+    ; "#SITENAME",          row.``Common Name``
     ]
 
-let genHazardSheet (batchName:string)  (row:SiteRow) : unit =
+let genHazardSheet (row:SiteRow) : unit =
     let template = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
-    let cleanName = safeName row.Name
-    let path1 = _outputRoot @@ batchName @@ cleanName
+    let cleanName = safeName row.``Common Name``
+    let path1 = _outputRoot @@ cleanName
     let outPath = path1 @@  (sprintf "%s Hazard Identification Check List.docx" cleanName)    
     DocFindReplace (fun p -> 
         { p with 
@@ -121,22 +105,17 @@ let genHazardSheet (batchName:string)  (row:SiteRow) : unit =
             Matches = makeHazardsSearches row 
         }) 
 
-// Generating all takes too long just generate a batch.
-
-// TODO ["Harrogate NN", "Leeds", "Sheffield", "Scarborough"]
 
 
-let main (batchName:string) : unit = 
-    let siteList = getSiteRows batchName
+let main () : unit = 
+    let siteList = getSiteRows () 
     let todoCount = List.length siteList
-    let safeBatchName = safeName batchName
 
     let proc1 (ix:int) (row:SiteRow) = 
-        printfn "Generating %i of %i: %s ..." (ix+1) todoCount row.Name
-        makeSiteFolder safeBatchName row.Name
-        genSurvey safeBatchName row
-        genHazardSheet safeBatchName row
+        printfn "Generating %i of %i: %s ..." (ix+1) todoCount row.``Common Name``
+        makeSiteFolder row.``Common Name``
+        genSurvey row
+        genHazardSheet row
     
     // actions...
-    makeTopFolder safeBatchName
     siteList |> List.iteri proc1
