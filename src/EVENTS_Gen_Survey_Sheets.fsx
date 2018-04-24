@@ -46,9 +46,9 @@ let _outputRoot     = @"G:\work\Projects\events2\gen-surveys-risks\output"
 
 
 type SiteTable = 
-    ExcelFile< @"G:\work\Projects\events2\EDM2 Site-List.xlsx",
+    ExcelFile< @"G:\work\Projects\events2\EDM2 Site-List SK.xlsx",
                SheetName = "SITE_LIST",
-               ForceString = false >
+               ForceString = true >
 
 type SiteRow = SiteTable.Row
 
@@ -76,16 +76,20 @@ let makeSiteFolder (batchName:string) (siteName:string) : unit =
     let cleanName = safeName siteName
     maybeCreateDirectory <| _outputRoot @@ batchName @@ cleanName
 
+let makeSurveyName (siteName:string) (dischargeName:string) : string = 
+    sprintf "%s %s Survey.docx" (safeName siteName) (safeName dischargeName)
+
 
 let makeSurveySearches (row:SiteRow) : SearchList = 
-    [ "#SITENAME",          row.Name
+    [ "#SITENAME",          row.``Site Common Name``
     ; "#SAINUMBER" ,        row.``SAI Number``
     ; "#SITEADDRESS",       row.``Site Address``
     ; "#OPERSTATUS",        row.``Operational Status``
     ; "#SITEGRIDREF",       row.``Site Grid Ref``
-    ; "#ASSETTYPE",         row.Type
+    ; "#ASSETTYPE",         row.``Site Type``
+    ; "#DISCHARGENAME",     row.``Discharge Name``
     ; "#OPERNAME",          row.``Operational Responsibility``
-    ; "#OUTFALLGRIDREF",    row.``Outfall Grid Ref (from IW sheet)``
+    ; "#OUTFALLGRIDREF",    row.``Outfall Grid Ref (from IW sheet, may lack precision)``
     ; "#RECWATERWOURSE",    row.``Receiving Watercourse``
     ]
 
@@ -93,10 +97,10 @@ let makeSurveySearches (row:SiteRow) : SearchList =
 
 
 let genSurvey (batchName:string)  (row:SiteRow) : unit =
-    let template = _templateRoot @@ "TEMPLATE EDM2 Survey.docx"
-    let cleanName = safeName row.Name
-    let path1 = _outputRoot @@ batchName @@ cleanName
-    let outPath = path1 @@ (sprintf "%s EDM2 Survey.docx" cleanName)
+    let template = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-04-24.docx"
+    let path1 = _outputRoot @@ batchName @@ safeName row.``Site Common Name``
+    let file1 = makeSurveyName (row.``Site Common Name``) (row.``Discharge Name``)
+    let outPath = path1 @@ file1
     DocFindReplace (fun p -> 
         { p with 
             TemplateFile = template
@@ -105,13 +109,13 @@ let genSurvey (batchName:string)  (row:SiteRow) : unit =
         }) 
 
 let makeHazardsSearches (row:SiteRow) : SearchList = 
-    [ "#SITENAME",          row.Name
+    [ "#SITENAME",          row.``Site Common Name``
     ; "#SAINUMBER" ,        row.``SAI Number``
     ]
 
 let genHazardSheet (batchName:string)  (row:SiteRow) : unit =
     let template = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
-    let cleanName = safeName row.Name
+    let cleanName = safeName row.``Site Common Name``
     let path1 = _outputRoot @@ batchName @@ cleanName
     let outPath = path1 @@  (sprintf "%s Hazard Identification Check List.docx" cleanName)    
     DocFindReplace (fun p -> 
@@ -132,8 +136,8 @@ let main (batchName:string) : unit =
     let safeBatchName = safeName batchName
 
     let proc1 (ix:int) (row:SiteRow) = 
-        printfn "Generating %i of %i: %s ..." (ix+1) todoCount row.Name
-        makeSiteFolder safeBatchName row.Name
+        printfn "Generating %i of %i: %s ..." (ix+1) todoCount row.``Site Common Name``
+        makeSiteFolder safeBatchName row.``Site Common Name``
         genSurvey safeBatchName row
         genHazardSheet safeBatchName row
     

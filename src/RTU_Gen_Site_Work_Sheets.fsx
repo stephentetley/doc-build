@@ -22,10 +22,6 @@ open FSharp.ExcelProvider
 #I @"..\packages\FAKE.5.0.0-beta005\tools"
 #r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 open Fake
-open Fake.Core
-open Fake.Core.Environment
-open Fake.Core.Globbing.Operators
-open Fake.Core.TargetOperators
 
 
 #load @"DocMake\Base\Common.fs"
@@ -37,8 +33,8 @@ open DocMake.Base.Common
 open DocMake.Base.GENHelper
 open DocMake.Tasks.DocFindReplace
 
-/// This is a one-to-many build (one site list, many docs), so 
-// we don't use FAKE directly, we just use it as a library.
+/// This is a one-to-many build (one site list generates many docs), 
+/// so we don't use FAKE directly, we just use it as a library.
 
 
 let _templateRoot   = @"G:\work\Projects\rtu\site-docs\__Templates"
@@ -72,8 +68,6 @@ let makeSurveySearches (row:SiteRow) : SearchList =
     ; "#OSNAME" ,           row.``OS Name``
     ; "#OSADDR",            row.``Os Addr``
     ]
-
-
 
 
 let genSurvey (row:SiteRow) : unit =
