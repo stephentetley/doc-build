@@ -93,4 +93,17 @@ let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindRepl
         Trace.traceError <| sprintf "DocFindReplace --- missing template file '%s'" options.TemplateFile
         failwith "DocFindReplace --- missing template file"
 
+/// Version of DocFindReplace with a passed in reference to Word
+let BatchDocFindReplace (app:Word.Application) (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
+    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
+    match File.Exists(options.TemplateFile) with
+    | true ->
+        try 
+            process1 app options.TemplateFile options.OutputFile options.Matches
+        with
+        | ex -> 
+            Trace.traceError <| sprintf "BatchDocFindReplace --- exception '%s'" ex.Message
+    | false ->  
+        Trace.traceError <| sprintf "BatchDocFindReplace --- missing template file '%s'" options.TemplateFile
+        failwith "BatchDocFindReplace --- missing template file"
 

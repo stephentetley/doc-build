@@ -27,7 +27,7 @@ open Fake
 //open Fake.Core.Globbing.Operators
 //open Fake.Core.TargetOperators
 
-
+open Microsoft.Office.Interop
 open System.Collections.Generic
 
 #load @"DocMake\Base\Common.fs"
@@ -60,18 +60,12 @@ let siteTableDict : GetRowsDict<SiteTable, SiteRow> =
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
 
-let filterByBatch (batchName:string) (source:SiteRow list) : SiteRow list = 
-    let testRow (row:SiteRow) : bool = 
-        match row.``Survey Batch`` with
-        | null -> false
-        | ans -> ans = batchName
-    List.filter testRow source
 
-let filterByWorkGroup (category:string) (source:SiteRow list) : SiteRow list = 
+let filterByWorkGroup (workGroup:string) (source:SiteRow list) : SiteRow list = 
     let testRow (row:SiteRow) : bool = 
         match row.``Work Group`` with
         | null -> false
-        | ans -> ans = category
+        | ans -> ans = workGroup
     List.filter testRow source
 
 let getSiteRows (workGroup:string) : SiteRow list = 
@@ -177,10 +171,10 @@ let buildSites (rows: SiteRow list) : Site list =
     interim |> Map.toList |> List.map snd
 
 
-let genHazardSheet (batchName:string)  (site:Site) : unit =
+let genHazardSheet (workGroup:string)  (site:Site) : unit =
     let template = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
     let cleanName = safeName site.SiteProps.SiteName
-    let path1 = _outputRoot @@ batchName @@ cleanName
+    let path1 = _outputRoot @@ workGroup @@ cleanName
     let outPath = path1 @@  (sprintf "%s Hazard Identification Check List.docx" cleanName)    
     DocFindReplace (fun p -> 
         { p with 
@@ -190,12 +184,12 @@ let genHazardSheet (batchName:string)  (site:Site) : unit =
         }) 
 
 
-let genSurvey (batchName:string)  (siteProps:SiteProps) (discharge:Discharge) : unit =
+let genSurvey (app:Word.Application) (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : unit =
     let template = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-04-24.docx"
-    let path1 = _outputRoot @@ batchName @@ safeName siteProps.SiteName
+    let path1 = _outputRoot @@ safeName workGroup @@ safeName siteProps.SiteName
     let file1 = makeSurveyName siteProps.SiteName discharge.DischargeName
     let outPath = path1 @@ file1
-    DocFindReplace (fun p -> 
+    BatchDocFindReplace app (fun p -> 
         { p with 
             TemplateFile = template
             OutputFile = outPath
@@ -207,19 +201,24 @@ let genSurvey (batchName:string)  (siteProps:SiteProps) (discharge:Discharge) : 
 // TODO ["Harrogate NN", "Leeds", "Sheffield", "Scarborough"]
 
 
-let main (batchName:string) : unit = 
-    let siteList = buildSites <| getSiteRows batchName 
+
+let main (workGroup:string) : unit = 
+    let siteList = buildSites <| getSiteRows workGroup 
     let todoCount = List.length siteList
-    let safeBatchName = safeName batchName
+    let safeBatchName = safeName workGroup
+    let app = new Word.ApplicationClass (Visible = true)
 
     let proc1 (ix:int) (site:Site) = 
-        printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
-        makeSiteFolder safeBatchName site.SiteProps.SiteName
-        List.iter (genSurvey safeBatchName site.SiteProps) site.Discharges
-        genHazardSheet safeBatchName site
-    
+        if ix >= 29 then 
+            printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
+            makeSiteFolder safeBatchName site.SiteProps.SiteName
+            List.iter (genSurvey app safeBatchName site.SiteProps) site.Discharges
+            genHazardSheet safeBatchName site
+        else 
+            printfn "Skip %i" ix
     // actions...
     makeTopFolder safeBatchName
     siteList |> List.iteri proc1
-
-
+    
+    // finalize...
+    app.Quit ()

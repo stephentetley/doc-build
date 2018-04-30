@@ -35,8 +35,14 @@ let pdftkPageOrientation (orientation:DocMakePageOrientation) : string =
 let doubleQuote (s:string) : string = "\"" + s + "\""
 
 let safeName (input:string) : string = 
-    let bads = ['\\'; '/'; ':']
-    List.fold (fun s c -> s.Replace(c,'_')) input bads
+    let leftOf (find:char) (inp:string) : string = 
+        match inp.Split(find) |> Array.toList with
+        | (x ::_ ) -> x
+        | _ -> inp
+    let bads = ['\\'; '/'; ':'; '?']
+    let ans1 = List.fold (fun (s:string) (c:char) -> s.Replace(c,'_')) input bads
+    ans1.Trim() |> leftOf '[' |> leftOf '(' |> leftOf '{'
+
 
 let zeroPad (width:int) (value:int) = 
     let ss = value.ToString ()
