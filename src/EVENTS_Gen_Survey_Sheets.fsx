@@ -198,10 +198,6 @@ let genSurvey (app:Word.Application) (workGroup:string)  (siteProps:SiteProps) (
 
 // Generating all takes too long just generate a batch.
 
-// TODO ["Harrogate NN", "Leeds", "Sheffield", "Scarborough"]
-
-
-
 let main (workGroup:string) : unit = 
     let siteList = buildSites <| getSiteRows workGroup 
     let todoCount = List.length siteList
@@ -209,13 +205,10 @@ let main (workGroup:string) : unit =
     let app = new Word.ApplicationClass (Visible = true)
 
     let proc1 (ix:int) (site:Site) = 
-        if ix >= 29 then 
-            printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
-            makeSiteFolder safeBatchName site.SiteProps.SiteName
-            List.iter (genSurvey app safeBatchName site.SiteProps) site.Discharges
-            genHazardSheet safeBatchName site
-        else 
-            printfn "Skip %i" ix
+        printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
+        makeSiteFolder safeBatchName site.SiteProps.SiteName
+        List.iter (genSurvey app safeBatchName site.SiteProps) site.Discharges
+        genHazardSheet safeBatchName site
     // actions...
     makeTopFolder safeBatchName
     siteList |> List.iteri proc1

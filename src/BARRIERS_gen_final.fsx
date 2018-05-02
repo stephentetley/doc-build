@@ -22,9 +22,9 @@ open DocMake.Base.GENHelper
 // Only Generate Batch file 
 // Find/Replace not needed
 
-
+/// Name * Uid
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\barriers\sites-temp.xlsx",
+    ExcelFile< @"G:\work\Projects\barriers\final-docs\site_list.xlsx",
                SheetName = "Sites",
                ForceString = false >
 
