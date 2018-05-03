@@ -15,11 +15,13 @@ let private tryExactlyOne (input:'a list) : option<'a> =
     | [x] -> Some x
     | _ -> None
 
-//let private tryAtMostOne (input:'a list) : option<'a> = 
-//    match input with
-//    | [] -> ???
-//    | [x] -> Some x
-//    | _ -> None
+        
+// Has one or more matches. 
+// Note - pattern is a glob, not a regex.
+let hasMatchingFiles (pattern:string) (dir:string) : bool = 
+    let test = not << Seq.isEmpty
+    !! (dir @@ pattern) |> test
+
 
 // Zero or more matches.
 // No need for a try variant (empty list is no matches)
@@ -37,19 +39,11 @@ let tryFindSomeMatchingFiles (pattern:string) (dir:string) : option<string list>
 let tryFindExactlyOneMatchingFile (pattern:string) (dir:string) : option<string> = 
     !! (dir @@ pattern) |> Seq.toList |> tryExactlyOne
 
-// We have tried the following combinators but they seem to be less
-// clear in user code than using match ... with
-//let optionMandatory (source:'a option) (failMsg:string) (success:'a -> unit) = 
-//    match source with
-//    | Some a -> success a
-//    | None -> failwith failMsg
-
-//let optionOptional (source:'a option) (warnMsg:string) (success:'a -> unit) = 
-//    match source with
-//    | Some a -> success a
-//    | None -> Trace.tracefn "%s" warnMsg
 
 let assertMandatory (failMsg:string) : unit = failwithf "FAIL: Mandatory: %s" failMsg
 
 let assertOptional  (warnMsg:string) : unit = Trace.tracefn "WARN: Optional: %s" warnMsg
 
+let subdirectoriesWithMatches (pattern:string) (dir:string) : string list = 
+    let dirs = System.IO.Directory.GetDirectories(dir) |> Array.toList
+    List.filter (hasMatchingFiles pattern) dirs

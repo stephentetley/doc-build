@@ -84,6 +84,7 @@
     <None Include="FC2_Final_Build.fsx" />
     <None Include="SAMPS_gen_final.fsx" />
     <None Include="SAMPS_Final_Build.fsx" />
+    <None Include="SAMPS_Final_Build_Alt.fsx" />
     <None Include="BARRIERS_gen_final.fsx" />
     <None Include="BARRIERS_Final_Build.fsx" />
     <None Include="EVENTS_Gen_Survey_Sheets.fsx" />

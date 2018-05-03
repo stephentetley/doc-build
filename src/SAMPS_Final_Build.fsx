@@ -180,8 +180,7 @@ Target.Create "SurveyPPT" (fun _ ->
                 InputFile = pptFile
                 OutputFile = Some <| outfile
             })
-    | None -> assertOptional "No PowerPoint file" 
-        
+    | None -> assertOptional "No PowerPoint file"       
 )
 
 Target.Create "CircuitDiag" (fun _ -> 

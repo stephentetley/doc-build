@@ -20,8 +20,8 @@ open DocMake.Base.JsonUtils
 open DocMake.Base.GENHelper
 
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\samps\sitelist-for-gen-jan2018.xlsx",
-               SheetName = "Sheet1",
+    ExcelFile< @"G:\work\Projects\samps\final-docs\input\May2018_batch01\site_list.xlsx",
+               SheetName = "Site_List",
                ForceString = false >
 
 type SitesRow = SitesTable.Row
@@ -36,7 +36,7 @@ let getSitesRows () : SitesRow list = excelTableGetRows sitesTableDict (new Site
 
 let makeDict (row:SitesRow) : FindReplaceDict = 
     Map.ofList [ "#SITENAME", row.Site
-               ; "#SAINUM" , row.Uid
+               ; "#SAINUM" , row.UID
                ]
 
 let jsonConfig : FindsReplacesConfig<SitesRow> = 
@@ -48,7 +48,7 @@ let jsonConfig : FindsReplacesConfig<SitesRow> =
 
 let batchConfig : BatchFileConfig = 
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
-      PathToScript = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
+      PathToScript = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build_Alt.fsx"
       BuildTarget = "Final"
       OutputBatchFile = @"G:\work\Projects\samps\final-docs\fake-make.bat"
       VarName = "sitename" }
