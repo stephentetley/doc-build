@@ -66,6 +66,7 @@
     <Compile Include="DocMake\Base\SimpleDocOutput.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
+    <Compile Include="DocMake\Tasks\DocIntertitle.fs" />
     <Compile Include="DocMake\Tasks\DocToPdf.fs" />
     <Compile Include="DocMake\Tasks\PdfConcat.fs" />
     <Compile Include="DocMake\Tasks\PdfRotate.fs" />

@@ -42,6 +42,7 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\CopyRename.fs"
+#load @"DocMake\Base\SimpleDocOutput.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
 open DocMake.Base.JsonUtils

@@ -49,10 +49,8 @@ let stepWithLabel : PictureFun =
 let private addTitle  (optTitle:string option) : DocOutput<unit> =
     match optTitle with
     | None -> docOutput { return () }
-    | Some title -> 
-        docOutput { 
-            do! tellStyledText Word.WdBuiltinStyle.wdStyleTitle (title + "\n\n")
-            }
+    | Some title -> tellStyledText Word.WdBuiltinStyle.wdStyleTitle (title + "\n\n")
+        
 
 let private processPhotos (action1:PictureFun) (files:string list) : DocOutput<unit> =
     // Don't add page break to last, hence use direct recursion

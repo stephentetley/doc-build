@@ -41,8 +41,8 @@ open DocMake.Tasks.DocToPdf
 
 /// This is a one-to-one build, so we don't use FAKE directly, we just use it as a library.
 
-let _inputRoot = @"G:\work\Projects\rtu\final-docs\Erskines-Batch01-input"
-let _outputDir = @"G:\work\Projects\rtu\final-docs\erskine-output\batch01"
+let _inputRoot = @"G:\work\Projects\rtu\final-docs\input\Erskines_02"
+let _outputDir = @"G:\work\Projects\rtu\final-docs\output\erskine-output\batch02"
 
 let generate1 (dir:string) : unit = 
     match tryFindExactlyOneMatchingFile "*Erskine*.doc*" dir with
@@ -51,6 +51,7 @@ let generate1 (dir:string) : unit =
         let name1 = System.IO.FileInfo(ans).Directory.Name
         printfn "Processing %s ..." name1
         let pdfName = _outputDir @@ (sprintf "%s Erskine Battery Asset Replacement.pdf" name1)
+        printfn "Output file: %s" pdfName
         DocToPdf (fun p -> 
             { p with 
                 InputFile = ans
@@ -58,7 +59,8 @@ let generate1 (dir:string) : unit =
             })
 
 let main () = 
-    let childDirs = System.IO.Directory.GetDirectories(_inputRoot) |> Array.toList
-    List.iter generate1 childDirs
+    maybeCreateDirectory _outputDir
+    let childDirs = System.IO.Directory.GetDirectories(_inputRoot)
+    Array.iter generate1 childDirs
 
 
