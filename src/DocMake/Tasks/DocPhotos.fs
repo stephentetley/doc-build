@@ -6,7 +6,7 @@ open System.Text.RegularExpressions
 open Microsoft.Office.Interop
 
 open DocMake.Base.OfficeUtils
-
+open DocMake.Base.SimpleDocOutput
 
 [<CLIMutable>]
 type DocPhotosParams = 
@@ -22,27 +22,6 @@ let DocPhotosDefaults =
       DocumentTitle = None }
 
 
-let private getEndRange (doc:Word.Document) : Word.Range = 
-    doc.GoTo(What = refobj Word.WdGoToItem.wdGoToBookmark, Name = refobj "\EndOfDoc")
-
-let private appendPicture (doc:Word.Document) (filename : string) : unit =
-    let rng = getEndRange doc
-    ignore <| rng.InlineShapes.AddPicture(FileName = filename)
-
-let private appendPageBreak (doc:Word.Document) : unit =
-    let rng = getEndRange doc
-    ignore <| rng.InsertBreak(Type = refobj Word.WdBreakType.wdPageBreak)
-
-let private appendText (doc:Word.Document) (text : string) : unit =
-    let rng = getEndRange doc
-    rng.Text <- text
-
-let private appendStyledText (doc:Word.Document) (sty : Word.WdBuiltinStyle) (text : string) = 
-    let rng = getEndRange doc
-    rng.Style <- refobj sty
-    rng.Text <- text
-
-
         
 let private getJPEGs (dirs:string list) : string list = 
     let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
@@ -53,50 +32,58 @@ let private getJPEGs (dirs:string list) : string list =
     List.collect get1 dirs
     
 
-type PictureFun = Word.Document -> string -> unit
+type PictureFun = string -> DocOutput<unit>
 
 
-let stepWithoutLabel : PictureFun = appendPicture
+let stepWithoutLabel : PictureFun = 
+    fun jpegPath -> tellPicture jpegPath
 
 let stepWithLabel : PictureFun = 
-    let makeCaption (fileName:string) : string = 
-        sprintf "\n%s" (Path.GetFileName fileName)
-    fun doc filename -> 
-        appendPicture doc filename
-        appendStyledText doc Word.WdBuiltinStyle.wdStyleNormal <| makeCaption filename
+    fun jpegPath -> 
+        let caption = sprintf "\n%s" <| Path.GetFileName jpegPath
+        docOutput {  
+            do! tellPicture jpegPath
+            do! tellStyledText Word.WdBuiltinStyle.wdStyleNormal caption 
+            }
 
-let private processPhotos (doc:Word.Document) (action1:PictureFun) (files:string list) : unit =
+let private addTitle  (optTitle:string option) : DocOutput<unit> =
+    match optTitle with
+    | None -> docOutput { return () }
+    | Some title -> 
+        docOutput { 
+            do! tellStyledText Word.WdBuiltinStyle.wdStyleTitle (title + "\n\n")
+            }
+
+let private processPhotos (action1:PictureFun) (files:string list) : DocOutput<unit> =
+    // Don't add page break to last, hence use direct recursion
+    
     let rec work zs = 
         match zs with 
-        | [] -> ()
-        | [x] -> action1 doc x
-        | x :: xs -> action1 doc x
-                     appendPageBreak doc
-                     work xs
+        | [] -> docOutput { return () }
+        | [x] -> action1 x
+        | x :: xs -> 
+            docOutput { 
+                do! action1 x
+                do! tellPageBreak ()
+                do! work xs }
     work files
 
 
-let private addTitle (doc:Word.Document) (optTitle:string option) : unit =
-    match optTitle with
-    | None -> ()
-    | Some title -> 
-        appendStyledText doc Word.WdBuiltinStyle.wdStyleTitle (title + "\n\n")
 
 
 let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
     let opts = DocPhotosDefaults |> setDocPhotosParams
     let jpegs = getJPEGs opts.InputPaths
-    let app = new Word.ApplicationClass (Visible = true)
     let stepFun = if opts.ShowFileName then stepWithLabel else stepWithoutLabel
+    let procM = 
+        docOutput { 
+            do! addTitle opts.DocumentTitle
+            do! processPhotos stepFun jpegs
+            }
     try 
-        let doc = app.Documents.Add()
-        addTitle doc opts.DocumentTitle
-        processPhotos doc stepFun jpegs
-        // File must not exist...
-        doc.SaveAs(FileName= refobj opts.OutputFile)
-        doc.Close(SaveChanges = refobj false)
+        runDocOutput opts.OutputFile procM
     finally 
-        app.Quit ()
+        ()
     
 
 
