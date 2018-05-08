@@ -66,10 +66,10 @@ open DocMake.Tasks.PdfConcat
 // Fake is to make one agglomerate out of many parts.
 // Generating a batch file that invokes Fake for each asset solves this.
 
-let _filestoreRoot  = @"G:\work\Projects\kw_plcar\final_docs\Input-Batch01"
-let _outputRoot     = @"G:\work\Projects\kw_plcar\final_docs\output"
-let _templateRoot   = @"G:\work\Projects\kw_plcar\final_docs\__Templates"
-let _jsonRoot       = @"G:\work\Projects\kw_plcar\final_docs\__Json"
+let _filestoreRoot  = @"G:\work\Projects\plcar\final_docs\Input-Batch01"
+let _outputRoot     = @"G:\work\Projects\plcar\final_docs\output"
+let _templateRoot   = @"G:\work\Projects\plcar\final_docs\__Templates"
+let _jsonRoot       = @"G:\work\Projects\plcar\final_docs\__Json"
 
 // assetName is an envVar so we can use this build script to build many 
 // asset (they all follow the same directory/file structure).

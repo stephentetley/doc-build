@@ -20,7 +20,7 @@ open DocMake.Base.JsonUtils
 open DocMake.Base.GENHelper
 
 type AssetTable = 
-    ExcelFile< @"G:\work\Projects\kw_plcar\final_docs\KW-Batch01.xlsx",
+    ExcelFile< @"G:\work\Projects\plcar\final_docs\KW-Batch01.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
