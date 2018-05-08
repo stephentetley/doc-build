@@ -79,8 +79,8 @@ open DocMake.Tasks.XlsToPdf
 //          \... Site2 
 
 
-let _filestoreRoot  = @"G:\work\Projects\samps\final-docs\input\May2018_batch01"
-let _outputRoot     = @"G:\work\Projects\samps\final-docs\output\May_Batch01"
+let _filestoreRoot  = @"G:\work\Projects\samps\final-docs\input\May2018_batch02"
+let _outputRoot     = @"G:\work\Projects\samps\final-docs\output\May_Batch02"
 let _templateRoot   = @"G:\work\Projects\samps\final-docs\__Templates"
 let _jsonRoot       = @"G:\work\Projects\samps\final-docs\__Json"
 
@@ -229,18 +229,30 @@ Target.Create "CitWorkbook" (fun _ ->
 
 // Maybe multiple sheets - must find at least 1...
 // TODO - potentially "skeletons" to work with multiple files would be nice
+// Install sheets might be doc or pdf (not both at same time)
 Target.Create "InstallSheets" (fun _ ->
-    let copySheeti (ix:int) (inputPdf:string) = 
+    let copyPdfi (ix:int) (inputPdf:string) = 
         Trace.tracefn " --- Install sheet %i is: %s --- " (ix+1) inputPdf
         let outfile = makeSiteOutputNamei "%s install-sheet-%03i.pdf" (ix+1)
         if System.IO.File.Exists(inputPdf) then
             Fake.IO.Shell.CopyFile outfile inputPdf 
         else 
             failwithf "InstallSheets - Unbelieveable - glob matches but file does not exist '%s'" inputPdf
-    
+
+    let wordToPdfi (ix:int) (inputDoc:string) = 
+        let outfile = makeSiteOutputNamei "%s install-sheet-%03i.pdf" (ix+1)
+        DocToPdf (fun p -> 
+            { p with 
+                InputFile = inputDoc
+                OutputFile = Some <| outfile 
+            })
+        
     match tryFindSomeMatchingFiles "*Replacement Record*.pdf" siteWorkInputDir with
-    | Some inputFiles -> List.iteri copySheeti inputFiles 
-    | None -> assertMandatory "No Install sheets"
+    | Some inputFiles -> List.iteri copyPdfi inputFiles 
+    | None -> 
+        match tryFindSomeMatchingFiles "*Replacement Record*.doc*" siteWorkInputDir with
+        | Some inputFiles -> List.iteri wordToPdfi inputFiles 
+        | None -> assertMandatory "No Install sheets"
 )
 
 

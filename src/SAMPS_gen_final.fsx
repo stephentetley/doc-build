@@ -20,7 +20,7 @@ open DocMake.Base.JsonUtils
 open DocMake.Base.GENHelper
 
 type SitesTable = 
-    ExcelFile< @"G:\work\Projects\samps\final-docs\input\May2018_batch01\site_list.xlsx",
+    ExcelFile< @"G:\work\Projects\samps\final-docs\input\May2018_batch02\site_list.xlsx",
                SheetName = "Site_List",
                ForceString = false >
 
