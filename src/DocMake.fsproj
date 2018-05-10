@@ -65,6 +65,7 @@
     <Compile Include="DocMake\Base\CopyRename.fs" />
     <Compile Include="DocMake\Base\GENHelper.fs" />
     <Compile Include="DocMake\Base\SimpleDocOutput.fs" />
+    <Compile Include="DocMake\Base\BuildMonad.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocIntertitle.fs" />

@@ -211,30 +211,6 @@ let makeComms () : unit =
     | xs -> List.iter xlsPdf xs  
 
 
-//////// Does not throw error on failure
-//////let copySingletonAction (pattern:string) (srcDir:string) (destPath:string) : unit = 
-//////    match tryFindExactlyOneMatchingFile pattern srcDir with
-//////    | Some source -> 
-//////        optionalCopyFile destPath source
-//////    | None -> assertOptional (sprintf "No match for '%s'" pattern)
-
-//////Target.Create "CopyPDFs" (fun _ -> 
-//////    // This is optional for all three
-//////    let proc (glob:string, srcDir:string, destPath:string) : unit =
-//////        try 
-//////            copySingletonAction glob srcDir destPath
-//////        with
-//////        | ex -> Trace.tracef "%s" (ex.ToString())
-
-//////    List.iter proc [ "*FDS V*.pdf",         assetInputDir,   makeAssetOutputName "%s fds.pdf" 
-//////                   ; "*FDS App*.pdf",   assetInputDir,   makeAssetOutputName "%s fds-app.pdf" 
-//////                   ; "*CIRCUIT DIAGRAM*.pdf",          assetInputDir,   makeAssetOutputName "%s circuit-diagram.pdf" 
-//////                   ; "*LOI Screens*.pdf",          assetInputDir,   makeAssetOutputName "%s loi-screens.pdf" 
-//////                   ]
-//////)
-
-
-
 
 let finalGlobs : string list = 
     [ "*cover-sheet.pdf" 
@@ -287,5 +263,5 @@ let dummy02 () =
 
 let test02 () = 
     let s1 = "Inside the ships" 
-    printfn "leftOf - s1:'%s'; s2:'%s'" s1 <| leftOf "Inside the ships" " ships"
+    printfn "leftOf - s1:'%s'; s2:'%s'"  s1 <| leftOf "Inside the ships" " ships"
     printfn "rightOf - s1:'%s'; s2:'%s'" s1 <| rightOf "Inside the ships" "Inside "
