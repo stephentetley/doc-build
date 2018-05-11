@@ -3,19 +3,43 @@
 open System.Text
 
 
+/// Document has a Phantom Type so we can distinguish between different types 
+/// (Word, Excel, Pdf, ...)
+/// Maybe we ought to store whether a file has been derived in the build process
+/// (and so deleteable)... 
+type Document<'a> = { DocumentPath : string }
+
+
 type FailMsg = string
 
 type Answer<'a> =
     | Err of FailMsg
     | Ok of 'a
 
+// There's a design issue that we probably won't explore, but it is very 
+// interesting (although complicated).
+// With continuations might enable us to have restartable builds, this could 
+// get us back to an idea of workflows that we have ignored for simplicity 
+// reasons.
 
-type BuildMonad<'res,'a> = private BuildMonad of ('res -> StringBuilder -> Answer<'a>)
 
-let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:'res) (sbuf:StringBuilder) : Answer<'a> = 
+/// TODO - adding "working directory" and a counter would be useful
+/// We could readily generate temp files
+
+type Env = 
+    { WorkingDirectory: string }
+
+type State = 
+    { NameIndex: int }
+
+
+type BuildMonad<'res,'a> = 
+    private BuildMonad of ((Env * 'res) -> StringBuilder -> Answer<'a>)
+
+let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (sbuf:StringBuilder) : Answer<'a> = 
     let (BuildMonad f) = ma in f handle sbuf
 
-let inline private apply1Ex (ma : BuildMonad<'res,'a>) (handle:'res) (sbuf:StringBuilder) : 'a = 
+let inline private apply1Ex (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (sbuf:StringBuilder) : 'a = 
     let (BuildMonad f) = ma
     match f handle sbuf with
     | Err msg -> failwith msg
@@ -133,17 +157,17 @@ let mapiMz (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,
 
 
 // BuildMonad operations
-let runBuildMonad (handle:'res) (ma:BuildMonad<'res,'a>) : string * Answer<'a>= 
+let runBuildMonad (env:Env) (handle:'res) (ma:BuildMonad<'res,'a>) : string * Answer<'a>= 
     let sb = new StringBuilder () 
     match ma with 
-    | BuildMonad fn -> let ans = fn handle sb in (sb.ToString(), ans)
+    | BuildMonad fn -> let ans = fn (env,handle) sb in (sb.ToString(), ans)
 
 
 
 
 let launch (handle:'res1) (ma:BuildMonad<'res1,'a>) : BuildMonad<'res2,'a> = 
-    BuildMonad <| fun _ sbuf -> 
-        let (s,ans) = runBuildMonad handle ma
+    BuildMonad <| fun (env,_) sbuf -> 
+        let (s,ans) = runBuildMonad env handle ma
         sbuf.AppendLine(s) |> ignore
         ans
 
@@ -160,12 +184,16 @@ let tellLine (msg:string) : BuildMonad<'res,unit> =
         Ok ()
 
 
-let temp01 () = 
-    let sb1 = new System.Text.StringBuilder ()
-    let sb2 = new System.Text.StringBuilder ()
-    sb1.Append("hello") |> ignore
-    sb2.Append(" world!") |> ignore
-    sb1.Append(sb2.ToString()) |> ignore
-    sb1.ToString()
+/// Note unit param to avoid value restriction.
+let askU () : BuildMonad<'res,'res> = 
+    BuildMonad <| fun (_,res) _ -> Ok res
+
+let asksU (project:'res -> 'a) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun (_,res) _ -> Ok (project res)
+
+let localU (modify:'res -> 'res) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun (env,res) sbuf -> apply1 ma (env,modify res) sbuf
+
+
 
 

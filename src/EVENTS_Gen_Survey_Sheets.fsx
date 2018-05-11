@@ -47,6 +47,7 @@ open DocMake.Tasks.DocFindReplace
 let _templateRoot   = @"G:\work\Projects\events2\gen-surveys-risks\__Templates"
 let _outputRoot     = @"G:\work\Projects\events2\gen-surveys-risks\output"
 
+let _surveyTemplate = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-05-10.docx"
 
 type SiteTable = 
     ExcelFile< @"G:\work\Projects\events2\EDM2 Site-List SK.xlsx",
@@ -185,18 +186,19 @@ let genHazardSheet (workGroup:string)  (site:Site) : unit =
 
 
 let genSurvey (app:Word.Application) (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : unit =
-    let template = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-04-24.docx"
     let path1 = _outputRoot @@ safeName workGroup @@ safeName siteProps.SiteName
     let file1 = makeSurveyName siteProps.SiteName discharge.DischargeName
     let outPath = path1 @@ file1
     BatchDocFindReplace app (fun p -> 
         { p with 
-            TemplateFile = template
+            TemplateFile = _surveyTemplate
             OutputFile = outPath
             Matches  = makeSurveySearches siteProps discharge
         }) 
 
 // Generating all takes too long just generate a batch.
+
+// TODO SHEFFIELD , YORK
 
 let main (workGroup:string) : unit = 
     let siteList = buildSites <| getSiteRows workGroup 
@@ -208,7 +210,7 @@ let main (workGroup:string) : unit =
         printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
         makeSiteFolder safeBatchName site.SiteProps.SiteName
         List.iter (genSurvey app safeBatchName site.SiteProps) site.Discharges
-        genHazardSheet safeBatchName site
+        // genHazardSheet safeBatchName site
     // actions...
     makeTopFolder safeBatchName
     siteList |> List.iteri proc1

@@ -9,16 +9,9 @@ open Fake
 open Fake.Core
 
 open DocMake.Base.Common
-open DocMake.Base.JsonUtils
+open DocMake.Base.BuildMonad
+open DocMake.Base.Builders
 open DocMake.Base.OfficeUtils
-
-// NOTE - Range.Text should be displayed with great caution
-// (This pertains to DocMonad especially) 
-// It will often contain "unprintable" that cause rendering "error" moving the
-// cursor backwards etc.
-
-
-
 
 
 [<CLIMutable>]
@@ -94,6 +87,8 @@ let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindRepl
         failwith "DocFindReplace --- missing template file"
 
 /// Version of DocFindReplace with a passed in reference to Word
+
+
 let BatchDocFindReplace (app:Word.Application) (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
     let options = DocFindReplaceDefaults |> setDocFindReplaceParams
     match File.Exists(options.TemplateFile) with
@@ -107,3 +102,17 @@ let BatchDocFindReplace (app:Word.Application) (setDocFindReplaceParams: DocFind
         Trace.traceError <| sprintf "BatchDocFindReplace --- missing template file '%s'" options.TemplateFile
         failwith "BatchDocFindReplace --- missing template file"
 
+
+
+// Ideally this would be a function from (something like) Doc -> WordBuild<Doc>
+// Then we could compose / chain document transformers. 
+
+// TODO add "IO" error catching (e.g. missing file)
+let WBFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : WordBuild<WordDoc> =
+    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
+    buildMonad { 
+        let! (app:Word.Application) = ask ()
+        let _ = process1 app options.TemplateFile options.OutputFile options.Matches
+        return { DocumentPath = options.OutputFile }
+    }
+    
