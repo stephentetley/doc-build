@@ -34,6 +34,8 @@ open System.Collections.Generic
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
+#load @"DocMake\Base\BuildMonad.fs"
+#load @"DocMake\Base\Builders.fs"
 #load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Base.Common
 open DocMake.Base.GENHelper

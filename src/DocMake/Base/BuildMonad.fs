@@ -2,6 +2,8 @@
 
 open System.Text
 
+open DocMake.Base.Common
+
 
 /// Document has a Phantom Type so we can distinguish between different types 
 /// (Word, Excel, Pdf, ...)
@@ -27,7 +29,8 @@ type Answer<'a> =
 /// We could readily generate temp files
 
 type Env = 
-    { WorkingDirectory: string }
+    { WorkingDirectory: string
+      PrintQuality: DocMakePrintQuality }
 
 
 
@@ -44,14 +47,6 @@ type BuildMonad<'res,'a> =
 
 let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (sbuf:StringBuilder) (st:State) : State *  Answer<'a> = 
     let (BuildMonad f) = ma in f handle sbuf st
-
-//let inline private apply1Ex (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (sbuf:StringBuilder) : 'a = 
-//    let (BuildMonad f) = ma
-//    match f handle sbuf with
-//    | Err msg -> failwith msg
-//    | Ok a -> a
-
-
 
 
 let inline private unitM (x:'a) : BuildMonad<'res,'a> = 
@@ -182,7 +177,7 @@ let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,
 
 
 
-
+/// Needs better name (launch has connotations of processes, threads, etc.)
 let launch (handle:'res1) (ma:BuildMonad<'res1,'a>) : BuildMonad<'res2,'a> = 
     BuildMonad <| fun (env,_) sbuf st0 -> 
         let (st1,msg,ans) = runBuildMonad env handle st0 ma
@@ -215,7 +210,7 @@ let localU (modify:'res -> 'res) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> 
 
 
 /// The MakeName function is in State rather than Env, but we only provide an API
-///  run it within a context (cf. the Reader monad's local), rather than reset it 
+/// to run it within a context (cf. the Reader monad's local), rather than reset it 
 /// imperatively.
 
 let localState (modify:State -> State) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> = 

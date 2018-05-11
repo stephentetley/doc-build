@@ -11,6 +11,8 @@ open Fake.Core
 
 open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
+open DocMake.Base.BuildMonad
+open DocMake.Base.Builders
 
 [<CLIMutable>]
 type DocToPdfParams = 
@@ -56,3 +58,16 @@ let DocToPdf (setDocToPdfParams: DocToPdfParams -> DocToPdfParams) : unit =
     else 
         Trace.traceError <| sprintf "DocToPdf --- missing input file"
         failwith "DocToPdf --- missing input file"
+
+
+/// Untested - the BuildMonad function will look something like this
+/// What to do about customization?
+/// PrintQuality can be global
+/// Pdf name should probably be the doc name (\s .doc .pdf)
+let docToPdf (wordFile:WordFile) : WordBuild<PdfFile> =
+    let options = DocToPdfDefaults
+    buildMonad { 
+        let! (app:Word.Application) = askU ()
+        let _ = process1 app options.InputFile (getOutputName options) options.PrintQuality
+        return { DocumentPath = getOutputName options }
+    }

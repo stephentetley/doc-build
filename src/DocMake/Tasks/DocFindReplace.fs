@@ -107,11 +107,17 @@ let BatchDocFindReplace (app:Word.Application) (setDocFindReplaceParams: DocFind
 // Ideally this would be a function from (something like) Doc -> WordBuild<Doc>
 // Then we could compose / chain document transformers. 
 
+let getTemplate (filePath:string) : WordBuild<WordFile> =
+    buildMonad { 
+        // TODO - Assert file exists
+        return { DocumentPath = filePath } 
+        }
+
 // TODO add "IO" error catching (e.g. missing file)
-let WBFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : WordBuild<WordDoc> =
+let WBFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : WordBuild<WordFile> =
     let options = DocFindReplaceDefaults |> setDocFindReplaceParams
     buildMonad { 
-        let! (app:Word.Application) = ask ()
+        let! (app:Word.Application) = askU ()
         let _ = process1 app options.TemplateFile options.OutputFile options.Matches
         return { DocumentPath = options.OutputFile }
     }
