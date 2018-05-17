@@ -51,7 +51,7 @@ let private replacer (doc:Word.Document) (search:string, replace:string) : unit 
 
 // Note when debugging.
 //
-// The doc is traversed multiple times (once per find-replace pair).
+// The doc is traversed multiple times (once for each find-replace pair).
 // In practice this is not heinuous as the "traversal" is very shallow -
 // get the doc, then get its headers and footers.
 //
@@ -89,18 +89,18 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss
 /// Version of DocFindReplace with a passed in reference to Word
 
 
-// Ideally this would be a function from (something like) Doc -> WordBuild<Doc>
+// Ideally this would be a function from (something like) WordDoc -> WordBuild<WordDoc>
 // Then we could compose / chain document transformers. 
 
 
 // is this a public or private function?
-let getTemplate (filePath:string) : WordBuild<WordFile> =
+let getTemplate (filePath:string) : WordBuild<WordDoc> =
     assertFile filePath |> fmapM (fun s -> {DocumentPath = s})
 
 
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
-let docFindReplace (matches:SearchList)  (template:WordFile) : WordBuild<WordFile> =
+let docFindReplace (matches:SearchList)  (template:WordDoc) : WordBuild<WordDoc> =
     throwError "docFindReplace: todo"
 
     

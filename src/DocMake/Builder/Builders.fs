@@ -3,11 +3,13 @@
 open Microsoft.Office.Interop
 
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Basis
+
 
 
 type WordBuild<'a> = BuildMonad<Word.Application, 'a>
 type WordPhantom = class end
-type WordFile = Document<WordPhantom>
+type WordDoc = Document<WordPhantom>
 
 let runWordBuild (env:Env) (ma:WordBuild<'a>) : State * string * Answer<'a>= 
     let st0 = 
@@ -29,15 +31,15 @@ let evalWordBuild (env:Env) (ma:WordBuild<'a>) : 'a=
 
 type ExcelBuild<'a> = BuildMonad<Excel.Application, 'a>
 type ExcelPhantom = class end
-type ExcelFile = Document<ExcelPhantom>
+type ExcelDoc = Document<ExcelPhantom>
 
 
 type PowerPointBuild<'a> = BuildMonad<PowerPoint.Application, 'a>
 type PowerPointPhantom = class end
-type PowerPointFile = Document<PowerPointPhantom>
+type PowerPointDoc = Document<PowerPointPhantom>
 
 type PdfPhantom = class end
-type PdfFile = Document<PdfPhantom>
+type PdfDoc = Document<PdfPhantom>
 
 
 // Ghostscript is Ghostscript (not camel case, i.e GhostScript)

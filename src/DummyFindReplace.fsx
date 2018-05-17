@@ -14,11 +14,12 @@
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
-#load @"DocMake\Builder\Builders.fs"
 #load @"DocMake\Builder\Basis.fs"
+#load @"DocMake\Builder\Builders.fs"
 #load @"DocMake\Lib\DocFindReplace.fs"
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Basis
 open DocMake.Builder.Builders
 open DocMake.Lib.DocFindReplace
 
@@ -37,3 +38,23 @@ let temp01 () =
             return ()
         }
     evalWordBuild env proc
+
+
+let temp02 () = 
+    let env = 
+        { WorkingDirectory = @"D:\coding\fsharp\DocMake\data"
+          PrintQuality = DocMakePrintQuality.PqScreen }
+    let proc = 
+        buildMonad { 
+            let! doc1 = getDocument @"D:\coding\fsharp\DocMake\data\somedoc1.pdf"
+            let! doc2 = renameDocument doc1 @"somedoc2.pdf"
+            return ()
+        }
+    evalWordBuild env proc
+
+let test01 () = 
+    let doc:WordDoc = { DocumentPath = @"D:\coding\fsharp\DocMake\data\TESTDOC1.docx"}
+    printfn "%s" <| documentName doc
+    printfn "%s" <| documentExtension doc
+    printfn "%s" <| documentDirectory doc
+    ()

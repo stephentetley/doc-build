@@ -5,11 +5,6 @@ open System.Text
 open DocMake.Base.Common
 
 
-/// Document has a Phantom Type so we can distinguish between different types 
-/// (Word, Excel, Pdf, ...)
-/// Maybe we ought to store whether a file has been derived in the build process
-/// (and so deleteable)... 
-type Document<'a> = { DocumentPath : string }
 
 
 type FailMsg = string
@@ -197,6 +192,15 @@ let evalBuildMonad (env:Env) (handle:'res) (stateZero:State) (finalizer:'res -> 
 let throwError (msg:string) : BuildMonad<'res,'a> = 
     BuildMonad <| fun _ _ st0 -> 
         (st0, Err msg)
+
+/// Execute an FSharp action that may use IO, throw an exception...
+/// Capture any failure within the BuildMonad.
+let executeIO (operation:unit -> 'a) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun _ _ st0 -> 
+    try 
+        let ans = operation () in (st0, Ok ans)
+    with
+    | ex -> (st0, Err ex.Message)
 
 /// Needs better name (launch has connotations of processes, threads, etc.)
 let launch (handle:'res1) (ma:BuildMonad<'res1,'a>) : BuildMonad<'res2,'a> = 
