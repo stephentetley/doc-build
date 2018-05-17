@@ -5,8 +5,6 @@ open System.IO
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-open Fake
-open Fake.Core
 
 open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
@@ -14,17 +12,6 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Builders
 open DocMake.Builder.Basis
 
-[<CLIMutable>]
-type DocFindReplaceParams = 
-    { TemplateFile: string
-      Matches: SearchList
-      OutputFile: string }
-
-
-let DocFindReplaceDefaults = 
-    { TemplateFile = @""
-      Matches = []
-      OutputFile = @"findreplace.docx" }
 
 let private getHeadersOrFooters (doc:Word.Document) (proj:Word.Section -> Word.HeadersFooters) : Word.HeaderFooter list = 
     Seq.foldBack (fun (section:Word.Section) (ac:Word.HeaderFooter list) ->
@@ -73,21 +60,6 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss
         doc.Close (SaveChanges = refobj false)
 
 
-//let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
-//    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
-//    match File.Exists(options.TemplateFile) with
-//    | true ->
-//        let app = new Word.ApplicationClass (Visible = true)
-//        try 
-//            process1 app options.TemplateFile options.OutputFile options.Matches
-//        finally 
-//            app.Quit ()
-//    | false ->  
-//        Trace.traceError <| sprintf "DocFindReplace --- missing template file '%s'" options.TemplateFile
-//        failwith "DocFindReplace --- missing template file"
-
-/// Version of DocFindReplace with a passed in reference to Word
-
 
 // Ideally this would be a function from (something like) WordDoc -> WordBuild<WordDoc>
 // Then we could compose / chain document transformers. 
@@ -101,6 +73,11 @@ let getTemplate (filePath:string) : WordBuild<WordDoc> =
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
 let docFindReplace (matches:SearchList)  (template:WordDoc) : WordBuild<WordDoc> =
-    throwError "docFindReplace: todo"
+    buildMonad { 
+        let! outName = freshFileName ()
+        let! app = askU ()
+        process1 app template.DocumentPath outName matches
+        return (makeDocument outName)
+        }
 
     

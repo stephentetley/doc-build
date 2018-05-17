@@ -11,6 +11,9 @@ open DocMake.Builder.BuildMonad
 /// (and so deleteable)... 
 type Document<'a> = { DocumentPath : string }
 
+let makeDocument (filePath:string) : Document<'a> = 
+    { DocumentPath = filePath }
+
 let documentExtension (doc:Document<'a>) : string = 
     System.IO.FileInfo(doc.DocumentPath).Extension
 
@@ -46,3 +49,6 @@ let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'
         if System.IO.File.Exists(outPath) then System.IO.File.Delete(outPath)
         System.IO.File.Move(srcPath,outPath)
         {DocumentPath=outPath}
+
+let renameTo (dest:string) (src:Document<'a>) : BuildMonad<'res,Document<'a>> = 
+    renameDocument src dest

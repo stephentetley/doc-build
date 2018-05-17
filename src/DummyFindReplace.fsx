@@ -27,34 +27,24 @@ open DocMake.Lib.DocFindReplace
 let matches1 = [ "#before", "after" ]
 
 
-let temp01 () = 
+let test0 () = 
+    let doc:WordDoc = { DocumentPath = @"D:\coding\fsharp\DocMake\data\TESTDOC1.docx"}
+    printfn "%s" <| documentName doc
+    printfn "%s" <| documentExtension doc
+    printfn "%s" <| documentDirectory doc
+    ()
+
+
+let test01 () = 
     let env = 
         { WorkingDirectory = @"D:\coding\fsharp\DocMake\data"
           PrintQuality = DocMakePrintQuality.PqScreen }
     let proc = 
         buildMonad { 
             let! template = getTemplate @"D:\coding\fsharp\DocMake\data\findreplace1.docx"
-            let! _ = docFindReplace matches1 template
+            let! output = docFindReplace matches1 template
+            let! _ = renameTo @"findreplace2.docx" output 
             return ()
         }
     evalWordBuild env proc
 
-
-let temp02 () = 
-    let env = 
-        { WorkingDirectory = @"D:\coding\fsharp\DocMake\data"
-          PrintQuality = DocMakePrintQuality.PqScreen }
-    let proc = 
-        buildMonad { 
-            let! doc1 = getDocument @"D:\coding\fsharp\DocMake\data\somedoc1.pdf"
-            let! doc2 = renameDocument doc1 @"somedoc2.pdf"
-            return ()
-        }
-    evalWordBuild env proc
-
-let test01 () = 
-    let doc:WordDoc = { DocumentPath = @"D:\coding\fsharp\DocMake\data\TESTDOC1.docx"}
-    printfn "%s" <| documentName doc
-    printfn "%s" <| documentExtension doc
-    printfn "%s" <| documentDirectory doc
-    ()

@@ -246,7 +246,9 @@ let localState (modify:State -> State) (ma:BuildMonad<'res,'a>): BuildMonad<'res
 let withNameGen (namer:int -> string) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> =  
     localState (fun s -> { s with  MakeName = namer; NameIndex = 1}) ma
 
-let fileNameGen () : BuildMonad<'res, string> = 
-    BuildMonad <| fun _ _  st0 -> 
+let freshFileName () : BuildMonad<'res, string> = 
+    BuildMonad <| fun (env,_) _  st0 -> 
         let i = st0.NameIndex
-        (incrNameIndex st0, Ok <| st0.MakeName i)
+        let name1 = st0.MakeName i
+        let outPath = System.IO.Path.Combine(env.WorkingDirectory,name1)
+        (incrNameIndex st0, Ok outPath)
