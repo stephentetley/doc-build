@@ -9,8 +9,6 @@ open Fake
 open Fake.Core
 
 open DocMake.Base.Common
-open DocMake.Base.BuildMonad
-open DocMake.Base.Builders
 open DocMake.Base.OfficeUtils
 
 
@@ -104,21 +102,4 @@ let BatchDocFindReplace (app:Word.Application) (setDocFindReplaceParams: DocFind
 
 
 
-// Ideally this would be a function from (something like) Doc -> WordBuild<Doc>
-// Then we could compose / chain document transformers. 
 
-let getTemplate (filePath:string) : WordBuild<WordFile> =
-    buildMonad { 
-        // TODO - Assert file exists
-        return { DocumentPath = filePath } 
-        }
-
-// TODO add "IO" error catching (e.g. missing file)
-let WBFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : WordBuild<WordFile> =
-    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
-    buildMonad { 
-        let! (app:Word.Application) = askU ()
-        let _ = process1 app options.TemplateFile options.OutputFile options.Matches
-        return { DocumentPath = options.OutputFile }
-    }
-    
