@@ -1,4 +1,4 @@
-﻿module DocMake.Base.BuildMonad
+﻿module DocMake.Builder.BuildMonad
 
 open System.Text
 
@@ -168,6 +168,10 @@ let mapiMz (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,
                 | Ok _ -> work (ix+1) st1 zs
         work 0 state xs
 
+// Alternative combinators would be useful...
+
+// *********************************************************
+// *********************************************************
 
 // BuildMonad operations
 let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,'a>) : State * string * Answer<'a>= 
@@ -176,6 +180,23 @@ let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,
     | BuildMonad fn -> let (s1,ans) = fn (env,handle) sb stateZero in (s1, sb.ToString(), ans)
 
 
+// TODO need a simple way to run things
+// In Haskell the `eval` prefix is closes to "run a cmputation, return (just) the answer"
+
+let evalBuildMonad (env:Env) (handle:'res) (stateZero:State) (finalizer:'res -> unit) (ma:BuildMonad<'res,'a>) : 'a = 
+    let _, bmlog, ans = runBuildMonad env handle stateZero ma
+    printfn "%s" bmlog
+    finalizer handle
+    match ans with
+    | Err msg -> failwith msg
+    | Ok a -> a
+
+
+
+
+let throwError (msg:string) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun _ _ st0 -> 
+        (st0, Err msg)
 
 /// Needs better name (launch has connotations of processes, threads, etc.)
 let launch (handle:'res1) (ma:BuildMonad<'res1,'a>) : BuildMonad<'res2,'a> = 

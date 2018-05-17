@@ -65,7 +65,11 @@
     <Compile Include="DocMake\Base\CopyRename.fs" />
     <Compile Include="DocMake\Base\GENHelper.fs" />
     <Compile Include="DocMake\Base\SimpleDocOutput.fs" />
-    <Compile Include="DocMake\Base\BuildMonad.fs" />
+    <Compile Include="DocMake\Builder\BuildMonad.fs" />
+    <Compile Include="DocMake\Builder\Basis.fs" />
+    <Compile Include="DocMake\Builder\Builders.fs" />
+    <Compile Include="DocMake\Lib\DocFindReplace.fs" />
+    <Compile Include="DocMake\Lib\DocToPdf.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocIntertitle.fs" />
@@ -78,6 +82,7 @@
     <None Include="DummyRename.fsx" />
     <None Include="DummyDocPhotos.fsx" />
     <None Include="DummyPdfRotate.fsx" />
+    <None Include="DummyFindReplace.fsx" />
     <None Include="RTU_gen_final.fsx" />
     <None Include="RTU_Final_Build.fsx" />
     <None Include="RTU_Erskines_Final1.fsx" />

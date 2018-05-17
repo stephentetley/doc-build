@@ -9,10 +9,10 @@ open Fake
 open Fake.Core
 
 open DocMake.Base.Common
-open DocMake.Base.BuildMonad
-open DocMake.Base.Builders
 open DocMake.Base.OfficeUtils
-
+open DocMake.Builder.BuildMonad
+open DocMake.Builder.Builders
+open DocMake.Builder.Basis
 
 [<CLIMutable>]
 type DocFindReplaceParams = 
@@ -73,52 +73,34 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss
         doc.Close (SaveChanges = refobj false)
 
 
-let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
-    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
-    match File.Exists(options.TemplateFile) with
-    | true ->
-        let app = new Word.ApplicationClass (Visible = true)
-        try 
-            process1 app options.TemplateFile options.OutputFile options.Matches
-        finally 
-            app.Quit ()
-    | false ->  
-        Trace.traceError <| sprintf "DocFindReplace --- missing template file '%s'" options.TemplateFile
-        failwith "DocFindReplace --- missing template file"
+//let DocFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
+//    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
+//    match File.Exists(options.TemplateFile) with
+//    | true ->
+//        let app = new Word.ApplicationClass (Visible = true)
+//        try 
+//            process1 app options.TemplateFile options.OutputFile options.Matches
+//        finally 
+//            app.Quit ()
+//    | false ->  
+//        Trace.traceError <| sprintf "DocFindReplace --- missing template file '%s'" options.TemplateFile
+//        failwith "DocFindReplace --- missing template file"
 
 /// Version of DocFindReplace with a passed in reference to Word
-
-
-let BatchDocFindReplace (app:Word.Application) (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : unit =
-    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
-    match File.Exists(options.TemplateFile) with
-    | true ->
-        try 
-            process1 app options.TemplateFile options.OutputFile options.Matches
-        with
-        | ex -> 
-            Trace.traceError <| sprintf "BatchDocFindReplace --- exception '%s'" ex.Message
-    | false ->  
-        Trace.traceError <| sprintf "BatchDocFindReplace --- missing template file '%s'" options.TemplateFile
-        failwith "BatchDocFindReplace --- missing template file"
-
 
 
 // Ideally this would be a function from (something like) Doc -> WordBuild<Doc>
 // Then we could compose / chain document transformers. 
 
-let getTemplate (filePath:string) : WordBuild<WordFile> =
-    buildMonad { 
-        // TODO - Assert file exists
-        return { DocumentPath = filePath } 
-        }
 
-// TODO add "IO" error catching (e.g. missing file)
-let WBFindReplace (setDocFindReplaceParams: DocFindReplaceParams -> DocFindReplaceParams) : WordBuild<WordFile> =
-    let options = DocFindReplaceDefaults |> setDocFindReplaceParams
-    buildMonad { 
-        let! (app:Word.Application) = askU ()
-        let _ = process1 app options.TemplateFile options.OutputFile options.Matches
-        return { DocumentPath = options.OutputFile }
-    }
+// is this a public or private function?
+let getTemplate (filePath:string) : WordBuild<WordFile> =
+    assertFile filePath |> fmapM (fun s -> {DocumentPath = s})
+
+
+// What to do about outfile name?
+// If we generate a tempfile, we can have a more compact pipeline
+let docFindReplace (matches:SearchList)  (template:WordFile) : WordBuild<WordFile> =
+    throwError "docFindReplace: todo"
+
     

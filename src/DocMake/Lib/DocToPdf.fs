@@ -11,8 +11,8 @@ open Fake.Core
 
 open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
-open DocMake.Base.BuildMonad
-open DocMake.Base.Builders
+open DocMake.Builder.BuildMonad
+open DocMake.Builder.Builders
 
 [<CLIMutable>]
 type DocToPdfParams = 
