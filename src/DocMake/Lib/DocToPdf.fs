@@ -1,39 +1,23 @@
 ﻿module DocMake.Lib.DocToPdf
 
-open System.IO
-open System.Text.RegularExpressions
 
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-open Fake
-open Fake.Core
 
 open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Basis
 open DocMake.Builder.Builders
 
-[<CLIMutable>]
-type DocToPdfParams = 
-    { InputFile: string
-      // If output file is not specified just change extension to .pdf
-      OutputFile: string option
-      PrintQuality: DocMakePrintQuality }
 
-let DocToPdfDefaults = 
-    { InputFile = @""
-      OutputFile = None
-      PrintQuality = PqScreen }
+let private getOutputName (wordDoc:WordDoc) : WordBuild<string> =
+    executeIO <| fun () -> 
+        System.IO.Path.ChangeExtension(wordDoc.DocumentPath, "pdf")
+    
 
-
-let private getOutputName (opts:DocToPdfParams) : string =
-    match opts.OutputFile with
-    | None -> System.IO.Path.ChangeExtension(opts.InputFile, "pdf")
-    | Some(s) -> s
-
-
-let private process1 (app:Word.Application) (inpath:string) (outpath:string) (quality:DocMakePrintQuality) : unit = 
+let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuality) (app:Word.Application) : unit = 
     try 
         let doc = app.Documents.Open(FileName = refobj inpath)
         doc.ExportAsFixedFormat (OutputFileName = outpath, 
@@ -45,18 +29,11 @@ let private process1 (app:Word.Application) (inpath:string) (outpath:string) (qu
 
 
 
-
-
-
-
-/// Untested - the BuildMonad function will look something like this
-/// What to do about customization?
-/// PrintQuality can be global
-/// Pdf name should probably be the doc name (\s .doc .pdf)
-let docToPdf (wordFile:WordFile) : WordBuild<PdfFile> =
-    let options = DocToPdfDefaults
+let docToPdf (wordFile:WordDoc) : WordBuild<PdfDoc> =
     buildMonad { 
         let! (app:Word.Application) = askU ()
-        let _ = process1 app options.InputFile (getOutputName options) options.PrintQuality
-        return { DocumentPath = getOutputName options }
+        let! outPath = getOutputName wordFile
+        let! quality = asksEnv (fun s -> s.PrintQuality)
+        let _ =  process1 wordFile.DocumentPath outPath quality app
+        return (makeDocument outPath)
     }

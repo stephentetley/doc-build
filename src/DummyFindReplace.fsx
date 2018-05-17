@@ -17,12 +17,13 @@
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\Builders.fs"
 #load @"DocMake\Lib\DocFindReplace.fs"
+#load @"DocMake\Lib\DocToPdf.fs"
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.Builders
 open DocMake.Lib.DocFindReplace
-
+open DocMake.Lib.DocToPdf
 
 let matches1 = [ "#before", "after" ]
 
@@ -43,7 +44,8 @@ let test01 () =
         buildMonad { 
             let! template = getTemplate @"D:\coding\fsharp\DocMake\data\findreplace1.docx"
             let! output = docFindReplace matches1 template
-            let! _ = renameTo @"findreplace2.docx" output 
+            let! a2 = renameTo @"findreplace2.docx" output 
+            let! _ = docToPdf a2
             return ()
         }
     evalWordBuild env proc

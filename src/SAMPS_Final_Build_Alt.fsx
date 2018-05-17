@@ -79,8 +79,8 @@ open DocMake.Tasks.XlsToPdf
 //          \... Site2 
 
 
-let _filestoreRoot  = @"G:\work\Projects\samps\final-docs\input\May2018_batch02"
-let _outputRoot     = @"G:\work\Projects\samps\final-docs\output\May_Batch02"
+let _filestoreRoot  = @"G:\work\Projects\samps\final-docs\input\May2018_batch03"
+let _outputRoot     = @"G:\work\Projects\samps\final-docs\output\May_Batch03"
 let _templateRoot   = @"G:\work\Projects\samps\final-docs\__Templates"
 let _jsonRoot       = @"G:\work\Projects\samps\final-docs\__Json"
 
@@ -290,6 +290,7 @@ let finalGlobs : string list =
     [ "*cover-sheet.pdf"
     ; "*survey-sheet.pdf"
     ; "*survey-photos.pdf"
+    ; "*survey-ppt.pdf"
     ; "*cit-workbook.pdf"
     ; "*circuit-diagram.pdf"
     ; "*install-sheet*.pdf" 

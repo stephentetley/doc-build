@@ -48,7 +48,7 @@ let private replaces (doc:Word.Document) (searches:SearchList) : unit =
     List.iter (replacer doc) searches 
 
 
-let private process1 (app:Word.Application) (inpath:string) (outpath:string) (ss:SearchList) = 
+let private process1  (inpath:string) (outpath:string) (ss:SearchList) (app:Word.Application) = 
     let doc = app.Documents.Open(FileName = refobj inpath)
     replaces doc ss
     // This should be wrapped in try...
@@ -76,7 +76,7 @@ let docFindReplace (matches:SearchList)  (template:WordDoc) : WordBuild<WordDoc>
     buildMonad { 
         let! outName = freshFileName ()
         let! app = askU ()
-        process1 app template.DocumentPath outName matches
+        process1 template.DocumentPath outName matches app
         return (makeDocument outName)
         }
 

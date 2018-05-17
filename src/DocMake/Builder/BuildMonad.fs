@@ -232,7 +232,12 @@ let asksU (project:'res -> 'a) : BuildMonad<'res,'a> =
 let localU (modify:'res -> 'res) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,res) sbuf st0 -> apply1 ma (env, modify res) sbuf st0
 
+    // PrintQuality
+let askEnv () : BuildMonad<'res,Env> = 
+    BuildMonad <| fun (env,_) _ st0 -> (st0, Ok env)
 
+let asksEnv (project:Env -> 'a) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun (env,_) _ st0 -> (st0, Ok (project env))
 
 /// The MakeName function is in State rather than Env, but we only provide an API
 /// to run it within a context (cf. the Reader monad's local), rather than reset it 
