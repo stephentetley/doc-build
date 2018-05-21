@@ -5,7 +5,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Microsoft.Office.Interop
 
-open DocMake.Base.OfficeUtils
+
 open DocMake.Base.SimpleDocOutput
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
