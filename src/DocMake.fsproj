@@ -70,6 +70,8 @@
     <Compile Include="DocMake\Builder\Builders.fs" />
     <Compile Include="DocMake\Lib\DocFindReplace.fs" />
     <Compile Include="DocMake\Lib\DocToPdf.fs" />
+    <Compile Include="DocMake\Lib\XlsToPdf.fs" />
+    <Compile Include="DocMake\Lib\PptToPdf.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocIntertitle.fs" />
