@@ -74,6 +74,7 @@
     <Compile Include="DocMake\Lib\XlsToPdf.fs" />
     <Compile Include="DocMake\Lib\PptToPdf.fs" />
     <Compile Include="DocMake\Lib\GsConcat.fs" />
+    <Compile Include="DocMake\Lib\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocIntertitle.fs" />
