@@ -43,34 +43,32 @@ let private makeGsOptions (quality:PdfPrintSetting) : string =
 
 
 
-let private line1 (options:PdfConcatParams) : string =
-    sprintf "%s -sOutputFile=%s" 
-        (makeGsOptions options.PrintQuality)  (doubleQuote options.OutputFile)
+let private line1 (quality:PdfPrintSetting) (outputFile:string) : string =
+    sprintf "%s -sOutputFile=\"%s\"" (makeGsOptions quality)  outputFile
 
-let private lineK (name:string) : string = sprintf " \"%s\"" name
+let private lineQuote (name:string) : string = sprintf "  \"%s\"" name
 
-let private unlines (lines: string list) : string = String.concat "\n" lines
-let private unlinesC (lines: string list) : string = String.concat "^\n" lines
+//let private unlines (lines: string list) : string = String.concat "\n" lines
+//let private unlinesC (lines: string list) : string = String.concat "^\n" lines
 let private unlinesS (lines: string list) : string = String.concat " " lines
 
-let private makeCmd (parameters: PdfConcatParams) (inputFiles: string list) : string = 
-    let first = line1 parameters
-    let rest = List.map lineK inputFiles
+
+let private makeCmd (quality:PdfPrintSetting) (outputFile:string) (inputFiles: string list) : string = 
+    let first = line1 quality outputFile
+    let rest = List.map lineQuote inputFiles
     unlinesS <| first :: rest
 
-// Run as a process...
-let private shellRun toolPath command = 
-    if 0 <> ExecProcess (fun info -> 
-                info.FileName <- toolPath
-                info.Arguments <- command) System.TimeSpan.MaxValue
-    then failwithf "PdfConcat %s failed." command
 
+let gsConcat  (inputFiles:PdfDoc list) : GsBuild<PdfDoc> = 
+    let pdfs = List.map (fun (a:PdfDoc) -> a.DocumentPath) inputFiles
+    buildMonad { 
+        let! outPath = freshFileName ()
+        let! quality = asksEnv (fun s -> s.PdfQuality)
+        let! _ =  gsRunCommand <| makeCmd quality outPath pdfs
+        return (makeDocument outPath)
+    }
 
-
-let gsConcat  (inputFiles: string list) : GsBuild<PdfDoc> =
-
-    let command = makeCmd parameters inputFiles
-    shellRun parameters.GhostscriptExePath command
+    
   
 
 

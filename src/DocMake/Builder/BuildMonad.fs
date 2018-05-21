@@ -25,7 +25,8 @@ type Answer<'a> =
 
 type Env = 
     { WorkingDirectory: string
-      PrintQuality: DocMakePrintQuality }
+      PrintQuality: DocMakePrintQuality
+      PdfQuality: PdfPrintSetting }
 
 
 

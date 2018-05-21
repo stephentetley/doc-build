@@ -29,6 +29,17 @@ type ExcelBuild<'a> = BuildMonad<Excel.Application, 'a>
 type ExcelPhantom = class end
 type ExcelDoc = Document<ExcelPhantom>
 
+let execExcelBuild (ma:ExcelBuild<'a>) : BuildMonad<'res,'a> = 
+    let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
+    app.DisplayAlerts <- false
+    app.EnableEvents <- false
+    let namer:int -> string = fun i -> sprintf "temp%03i.docx" i
+    let finalizer (oApp:Excel.Application) = 
+        oApp.DisplayAlerts <- true
+        oApp.EnableEvents <- true
+    withUserHandle app finalizer (withNameGen namer ma)
+
+
 
 type PowerPointBuild<'a> = BuildMonad<PowerPoint.Application, 'a>
 type PowerPointPhantom = class end
@@ -55,10 +66,10 @@ let private shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'re
 // Ghostscript is Ghostscript (not camel case, i.e GhostScript)
 
 
-// Having GsBuild/PdftkBuild is close to overkill as will probably only
+// Having GsBuild/PdftkBuild is close to overkill as we will probably only
 // ever run one-shot operations in them.
-// However, having them indicates that I user will need to have the respective
-// applications/ toolsets installed.
+// However, having specialized types indicates that to the user that they 
+// will need the respective applications/ toolsets installed.
 
 
 type GsEnv = 
