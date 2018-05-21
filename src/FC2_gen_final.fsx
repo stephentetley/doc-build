@@ -20,7 +20,7 @@ open DocMake.Base.JsonUtils
 open DocMake.Base.GENHelper
 
 type SiteTable = 
-    ExcelFile< @"G:\work\Projects\flow2\final-docs\sitelist-for-gen-jan2018.xlsx",
+    ExcelFile< @"G:\work\Projects\flow2\final-docs\Input\Batch02\sitelist.xlsx",
                SheetName = "Sheet1",
                ForceString = false >
 
@@ -48,7 +48,7 @@ let jsonConfig : FindsReplacesConfig<SiteRow> =
 
 let batchConfig : BatchFileConfig = 
     { PathToFake = @"D:\coding\fsharp\DocMake\packages\FAKE.5.0.0-beta005\tools\FAKE.exe"
-      PathToScript = @"D:\coding\fsharp\DocMake\src\SAMPS_Final_Build.fsx"
+      PathToScript = @"D:\coding\fsharp\DocMake\src\FC2_Final_Build.fsx"
       BuildTarget = "Final"
       OutputBatchFile = @"G:\work\Projects\flow2\final-docs\fake-make.bat"
       VarName = "sitename" }

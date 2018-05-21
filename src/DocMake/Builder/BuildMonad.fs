@@ -178,7 +178,7 @@ let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,
 // TODO need a simple way to run things
 // In Haskell the `eval` prefix is closes to "run a cmputation, return (just) the answer"
 
-let evalBuildMonad (env:Env) (handle:'res) (stateZero:State) (finalizer:'res -> unit) (ma:BuildMonad<'res,'a>) : 'a = 
+let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:State)  (ma:BuildMonad<'res,'a>) : 'a = 
     let _, bmlog, ans = runBuildMonad env handle stateZero ma
     printfn "%s" bmlog
     finalizer handle
@@ -186,8 +186,20 @@ let evalBuildMonad (env:Env) (handle:'res) (stateZero:State) (finalizer:'res -> 
     | Err msg -> failwith msg
     | Ok a -> a
 
+let consoleRun (env:Env) (ma:BuildMonad<unit,'a>) : 'a = 
+    let state0 = 
+        { MakeName = fun i -> sprintf "temp%i03" i
+          NameIndex = 0}
+    evalBuildMonad env () (fun _ -> ()) state0 ma
 
 
+
+let withUserHandle (handle:'uhandle) (finalizer:'uhandle -> unit) (ma:BuildMonad<'uhandle,'a>) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun (env,_) sbuf st0 -> 
+        let (st1,msg,ans) = runBuildMonad env handle st0 ma
+        sbuf.AppendLine(msg) |> ignore
+        finalizer handle
+        (st1,ans)
 
 let throwError (msg:string) : BuildMonad<'res,'a> = 
     BuildMonad <| fun _ _ st0 -> 
@@ -202,12 +214,6 @@ let executeIO (operation:unit -> 'a) : BuildMonad<'res,'a> =
     with
     | ex -> (st0, Err ex.Message)
 
-/// Needs better name (launch has connotations of processes, threads, etc.)
-let launch (handle:'res1) (ma:BuildMonad<'res1,'a>) : BuildMonad<'res2,'a> = 
-    BuildMonad <| fun (env,_) sbuf st0 -> 
-        let (st1,msg,ans) = runBuildMonad env handle st0 ma
-        sbuf.AppendLine(msg) |> ignore
-        (st1,ans)
 
 
 let tell (msg:string) : BuildMonad<'res,unit> = 
@@ -248,8 +254,10 @@ let localState (modify:State -> State) (ma:BuildMonad<'res,'a>): BuildMonad<'res
         let (_,ans) = apply1 ma (env,res) sbuf (modify st0)
         (st0,ans)
 
+
 let withNameGen (namer:int -> string) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> =  
     localState (fun s -> { s with  MakeName = namer; NameIndex = 1}) ma
+
 
 let freshFileName () : BuildMonad<'res, string> = 
     BuildMonad <| fun (env,_) _  st0 -> 

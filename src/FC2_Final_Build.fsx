@@ -65,7 +65,7 @@ open DocMake.Tasks.PdfConcat
 // Fake is to make one agglomerate out of many parts.
 // Generating a batch file that invokes Fake for each site solves this.
 
-let _filestoreRoot  = @"G:\work\Projects\flow2\final-docs\Input_Batch01"
+let _filestoreRoot  = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
 let _outputRoot     = @"G:\work\Projects\flow2\final-docs\output"
 let _templateRoot   = @"G:\work\Projects\flow2\final-docs\__Templates"
 let _jsonRoot       = @"G:\work\Projects\flow2\final-docs\__Json"
@@ -105,7 +105,7 @@ Target.Create "Cover" (fun _ ->
         let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
         let docName = makeSiteOutputName "%s cover-sheet.docx"
         let pdfName = pathChangeExtension docName "pdf"
-        
+        Trace.tracefn "Json source: '%s'" jsonSource
         if File.Exists(jsonSource) then
             let matches = readJsonStringPairs jsonSource
             DocFindReplace (fun p -> 
@@ -119,20 +119,38 @@ Target.Create "Cover" (fun _ ->
                     InputFile = docName
                     OutputFile = Some <| pdfName 
                 })
-        else assertMandatory "CoverSheet failed no json matches"
+        else 
+            assertMandatory <| sprintf "CoverSheet failed no json matches: %s" jsonSource
     with ex -> assertMandatory <| sprintf "COVER SHEET FAILED\n%s" (ex.ToString())
+)
+
+
+Target.Create "SurveyPhotos" (fun _ ->
+    let photosPath = siteInputDir @@ "Survey_Photos"
+    let docname = makeSiteOutputName "%s survey-photos.docx" 
+    let pdfname = pathChangeExtension docname "pdf"
+
+    if System.IO.Directory.Exists(photosPath) then
+        DocPhotos (fun p -> 
+            { p with 
+                InputPaths = [photosPath]            
+                OutputFile = docname
+                ShowFileName = true 
+            })
+        DocToPdf (fun p -> 
+            { p with 
+                InputFile = docname
+                OutputFile = Some <| pdfname 
+            })
+    else assertOptional "NO INSTALL PHOTOS"
 )
 
 Target.Create "ScopeOfWorks" (fun _ ->
     // Note - matching is with globs not regexs. Cannot use [Ss] to match capital or lower s.
-    match tryFindExactlyOneMatchingFile "*Scope of Works*.doc*" siteInputDir with
-    | Some input -> 
-        let outPath = makeSiteOutputName "%s scope-of-works.pdf"
-        DocToPdf (fun p -> 
-            { p with 
-                InputFile = input
-                OutputFile = Some <| outPath
-            })
+    match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" siteInputDir with
+    | Some source -> 
+        let destPath = makeSiteOutputName "%s scope-of-works.pdf"
+        optionalCopyFile destPath source
     | None -> assertMandatory "NO SCOPE OF WORKS"
 )
 
@@ -180,7 +198,7 @@ Target.Create "InstallSheets" (fun _ ->
 )
 
 Target.Create "WorksPhotos" (fun _ ->
-    let photosPath = siteInputDir
+    let photosPath = siteInputDir @@ "Install_Photos"
     let docname = makeSiteOutputName "%s works-photos.docx" 
     let pdfname = pathChangeExtension docname "pdf"
 
@@ -196,11 +214,12 @@ Target.Create "WorksPhotos" (fun _ ->
                 InputFile = docname
                 OutputFile = Some <| pdfname 
             })
-    else assertOptional "NO WORKS PHOTOS"
+    else assertOptional "NO INSTALL PHOTOS"
 )
 
 let finalGlobs : string list = 
     [ "*cover-sheet.pdf" 
+    ; "*survey-photos.pdf"
     ; "*scope-of-works.pdf" 
     ; "*electricals-*.pdf" 
     ; "*install-*.pdf"
@@ -224,6 +243,7 @@ Target.Create "Final" (fun _ ->
 
 "OutputDirectory"
     ==> "Cover"
+    ==> "SurveyPhotos"
     ==> "ScopeOfWorks"
     ==> "Electricals"
     ==> "InstallSheets"

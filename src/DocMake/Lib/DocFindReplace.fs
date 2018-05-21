@@ -61,10 +61,6 @@ let private process1  (inpath:string) (outpath:string) (ss:SearchList) (app:Word
 
 
 
-// Ideally this would be a function from (something like) WordDoc -> WordBuild<WordDoc>
-// Then we could compose / chain document transformers. 
-
-
 // is this a public or private function?
 let getTemplate (filePath:string) : WordBuild<WordDoc> =
     assertFile filePath |> fmapM (fun s -> {DocumentPath = s})

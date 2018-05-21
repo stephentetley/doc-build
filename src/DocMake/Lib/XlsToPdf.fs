@@ -1,7 +1,7 @@
 ﻿module DocMake.Lib.XlsToPdf
 
 
-// Open at .Interop rather than .Word then the Excel API has to be qualified
+// Open at .Interop rather than .Excel then the Excel API has to be qualified
 open Microsoft.Office.Interop
 
 

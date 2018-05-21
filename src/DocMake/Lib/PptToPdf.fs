@@ -1,7 +1,7 @@
 ﻿module DocMake.Lib.PptToPdf
 
 
-// Open at .Interop rather than .Word then the Powerpoint API has to be qualified
+// Open at .Interop rather than .PowerPoint then the PowerPoint API has to be qualified
 open Microsoft.Office.Interop
 
 

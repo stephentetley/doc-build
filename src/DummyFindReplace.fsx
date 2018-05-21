@@ -40,7 +40,7 @@ let test01 () =
     let env = 
         { WorkingDirectory = @"D:\coding\fsharp\DocMake\data"
           PrintQuality = DocMakePrintQuality.PqScreen }
-    let proc = 
+    let proc : WordBuild<unit> = 
         buildMonad { 
             let! template = getTemplate @"D:\coding\fsharp\DocMake\data\findreplace1.docx"
             let! output = docFindReplace matches1 template
@@ -48,5 +48,5 @@ let test01 () =
             let! _ = docToPdf a2
             return ()
         }
-    evalWordBuild env proc
+    consoleRun env (execWordBuild proc)
 
