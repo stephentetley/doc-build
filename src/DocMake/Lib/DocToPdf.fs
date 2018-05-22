@@ -29,11 +29,11 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 
 
 
-let docToPdf (wordFile:WordDoc) : WordBuild<PdfDoc> =
+let docToPdf (wordDoc:WordDoc) : WordBuild<PdfDoc> =
     buildMonad { 
         let! (app:Word.Application) = askU ()
-        let! outPath = getOutputName wordFile
+        let! outPath = getOutputName wordDoc
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ =  process1 wordFile.DocumentPath outPath quality app
+        let _ =  process1 wordDoc.DocumentPath outPath quality app
         return (makeDocument outPath)
     }

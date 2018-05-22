@@ -44,6 +44,8 @@ open DocMake.Base.FakeExtras
 open DocMake.Base.JsonUtils
 open DocMake.Base.CopyRename
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Basis
+open DocMake.Builder.Builders
 
 #load @"DocMake\Lib\DocFindReplace.fs"
 #load @"DocMake\Lib\DocPhotos.fs"
@@ -91,33 +93,41 @@ let outputDirectory : BuildMonad<'res, unit> =
 
 
 
-//let cover () : BuildMonad<'res, unit> = 
-//    let template = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
-//    let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
-//    let docName = makeSiteOutputName "%s cover-sheet.docx"
-//    let pdfName = pathChangeExtension docName "pdf"
-//    Trace.tracefn "Json source: '%s'" jsonSource
-//    if File.Exists(jsonSource) then
-//        let matches = readJsonStringPairs jsonSource
-//        DocFindReplace (fun p -> 
-//            { p with 
-//                TemplateFile = template
-//                OutputFile = docName
-//                Matches = matches
-//            }) 
-//        DocToPdf (fun p -> 
-//            { p with 
-//                InputFile = docName
-//                OutputFile = Some <| pdfName 
-//            })
-//    else 
-//        assertMandatory <| sprintf "CoverSheet failed no json matches: %s" jsonSource
+// This should be a mandatory task
+let cover (matches:SearchList) : BuildMonad<'res, PdfDoc> = 
+    execWordBuild ( 
+        buildMonad { 
+            let templatePath = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
+            let! template = getTemplate templatePath
+            let! d1 = docFindReplace matches template >>= docToPdf >>= renameTo "cover-sheet.pdf"
+            return d1 }) 
 
 
+
+let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) :  BuildMonad<'res, PdfDoc> = 
+    execWordBuild <| 
+        buildMonad { 
+            let! d1 = photoDoc (Some docTitle) true [jpegSrcPath]
+            let! d2 = breturn d1 >>= docToPdf >>= renameTo pdfName
+            return d2
+            }
+    
+
+
+
+// *******************************************************
+let matches1 : SearchList = 
+    [ "#SITENAME", "BENTLEY MOOR LANE/SPS"
+    ; "#SAINUM", "SAI00004057"
+    ]
 
 let buildScript (siteName:string) : BuildMonad<'res,unit> = 
     buildMonad { 
         do! clean >>. outputDirectory
+        let! d1 = cover matches1
+        let surveyJpegsPath = siteInputDir @@ "Survey_Photos"
+        let! d2 = photosDoc "Survey Photos" surveyJpegsPath "Survey-photos.pdf"
+        return ()                 
     }
 
 
@@ -127,4 +137,20 @@ let main () : unit =
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfPrint }
 
-    consoleRun env (buildScript siteName ) 
+    consoleRun env (buildScript siteName) 
+
+
+let test01 () = 
+    let env = 
+        { WorkingDirectory = siteOutputDir
+          PrintQuality = DocMakePrintQuality.PqScreen
+          PdfQuality = PdfPrintSetting.PdfPrint }
+
+    let proc =
+        execWordBuild <| 
+            buildMonad {
+                let! d1 = freshDocument () // >>= renameTo "TEMP1.docx"
+                let! d2 = freshDocument ()
+                return d1.DocumentPath, d2.DocumentPath
+            }
+    consoleRun env proc

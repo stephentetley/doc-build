@@ -65,6 +65,7 @@ let photoDoc (documentTitle: string option) (showJpegFileName:bool) (inputPaths:
             }
     buildMonad { 
         let! outDoc = freshDocument ()
+        do printfn "Photos - out: %s" outDoc.DocumentPath
         let _ = runDocOutput outDoc.DocumentPath docProc
         return outDoc
         }

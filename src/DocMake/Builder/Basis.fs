@@ -44,6 +44,10 @@ let getDocument(fileName:string) : BuildMonad<'res,Document<'a>> =
         throwError <| sprintf "getDocument failed: '%s'" fileName
 
 
+//// Open a "handle" to a document in the working directory
+//let workingDocument (name:string) : BuildMonad<'res,Document<'a>> = 
+
+
 let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'a>> =  
     executeIO <| fun () -> 
         let srcPath = src.DocumentPath

@@ -3,9 +3,6 @@
 open System.Text
 
 open DocMake.Base.Common
-open System.Drawing
-
-
 
 
 type FailMsg = string
@@ -39,14 +36,16 @@ let private incrNameIndex (st:State) : State =
     let i = st.NameIndex in {st with NameIndex = i + 1 }
 
 
+
+
 type BuildMonad<'res,'a> = 
     private BuildMonad of ((Env * 'res) -> StringBuilder -> State -> (State * Answer<'a>))
 
 let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (sbuf:StringBuilder) (st:State) : State *  Answer<'a> = 
     let (BuildMonad f) = ma in f handle sbuf st
 
-
-let inline private unitM (x:'a) : BuildMonad<'res,'a> = 
+// Return in the BuildMonad
+let inline breturn (x:'a) : BuildMonad<'res,'a> = 
     BuildMonad (fun _ _ st -> st, Ok x)
 
 let private failM : BuildMonad<'res,'a> = 
@@ -72,7 +71,7 @@ let inline private altM (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : Buil
             st1, Ok a
 
 type BuildMonadBuilder() = 
-    member self.Return x = unitM x
+    member self.Return x = breturn x
     member self.Bind (p,f) = bindM p f
     member self.Zero () = failM
 
@@ -235,10 +234,10 @@ let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:S
     | Ok a -> a
 
 let consoleRun (env:Env) (ma:BuildMonad<unit,'a>) : 'a = 
-    let state0 = 
-        { MakeName = fun i -> sprintf "temp%i03" i
-          NameIndex = 0}
-    evalBuildMonad env () (fun _ -> ()) state0 ma
+    let stateZero : State = 
+        { MakeName = sprintf "temp%03i" 
+          NameIndex = 1 }
+    evalBuildMonad env () (fun _ -> ()) stateZero ma
 
 
 
@@ -297,14 +296,13 @@ let asksEnv (project:Env -> 'a) : BuildMonad<'res,'a> =
 /// to run it within a context (cf. the Reader monad's local), rather than reset it 
 /// imperatively.
 
-let localState (modify:State -> State) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> = 
+
+/// Note the file number increases with each file generated, not each type of file generated.
+let withNameGen (namer:int -> string) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> =
     BuildMonad <| fun (env,res) sbuf st0 -> 
-        let (_,ans) = apply1 ma (env,res) sbuf (modify st0)
-        (st0,ans)
-
-
-let withNameGen (namer:int -> string) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> =  
-    localState (fun s -> { s with  MakeName = namer; NameIndex = 1}) ma
+        let fun1 = st0.MakeName
+        let (s1,ans) = apply1 ma (env,res) sbuf {st0 with MakeName = namer}
+        ({s1 with MakeName = fun1}, ans)
 
 
 let freshFileName () : BuildMonad<'res, string> = 

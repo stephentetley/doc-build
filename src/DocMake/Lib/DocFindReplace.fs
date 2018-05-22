@@ -61,9 +61,10 @@ let private process1  (inpath:string) (outpath:string) (ss:SearchList) (app:Word
 
 
 
-// is this a public or private function?
+
+/// TODO - this should assert the file extension is *.doc or *.docx
 let getTemplate (filePath:string) : WordBuild<WordDoc> =
-    assertFile filePath |> fmapM (fun s -> {DocumentPath = s})
+    assertFile filePath |>> (fun s -> {DocumentPath = s})
 
 
 // What to do about outfile name?

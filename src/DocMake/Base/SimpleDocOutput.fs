@@ -79,7 +79,9 @@ let runDocOutput (outputFile:string) (ma:DocOutput<'a>) : 'a =
         app.Quit ()
         ans
     with
-    | ex -> app.Quit(); failwithf "runDocOutput failed: %s" ex.Message
+    | ex -> 
+        app.Quit()
+        failwithf "\nrunDocOutput failed, file-name '%s'\nError message: %s" outputFile ex.Message
 
 
 let private getEndRange () : DocOutput<Word.Range> = 
