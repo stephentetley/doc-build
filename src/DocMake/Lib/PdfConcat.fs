@@ -1,4 +1,4 @@
-﻿module DocMake.Lib.GsConcat
+﻿module DocMake.Lib.PdfConcat
 
 open System.IO
 
@@ -12,30 +12,7 @@ open DocMake.Builder.Builders
  
 
 // Concat PDFs with Ghostscript
-
-// Potentially we could shell out to pdftk, but the space savings don't seem so great:
-// > pdftk Input.pdf output Output.pdf compress    
-
-[<CLIMutable>]
-type PdfConcatParams = 
-    { OutputFile: string
-      GhostscriptExePath: string
-      PrintQuality: PdfPrintSetting }
-
-
-
-// ArchiveHelper.fs includes output file name as a function argument
-// DotCover.fs includes output file name in the params
-// FscHelper includes output file name in the params
-
-
-
-let PdfConcatDefaults = 
-    { OutputFile = "concat.pdf"
-      GhostscriptExePath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PrintQuality = PdfScreen }
-
-
+ 
 let private makeGsOptions (quality:PdfPrintSetting) : string =
     match ghostscriptPrintSetting quality with
     | "" -> @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite"
@@ -60,11 +37,11 @@ let private makeCmd (quality:PdfPrintSetting) (outputFile:string) (inputFiles: s
 
 
 let gsConcat  (inputFiles:PdfDoc list) : GsBuild<PdfDoc> = 
-    let pdfs = List.map (fun (a:PdfDoc) -> a.DocumentPath) inputFiles
+    let paths = List.map (fun (a:PdfDoc) -> a.DocumentPath) inputFiles
     buildMonad { 
         let! outDoc = freshDocument ()
         let! quality = asksEnv (fun s -> s.PdfQuality)
-        let! _ =  gsRunCommand <| makeCmd quality outDoc.DocumentPath pdfs
+        let! _ =  gsRunCommand <| makeCmd quality outDoc.DocumentPath paths
         return outDoc
     }
 

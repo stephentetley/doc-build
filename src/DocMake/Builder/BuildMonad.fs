@@ -3,6 +3,7 @@
 open System.Text
 
 open DocMake.Base.Common
+open System.Drawing
 
 
 
@@ -48,6 +49,9 @@ let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (sbuf:S
 let inline private unitM (x:'a) : BuildMonad<'res,'a> = 
     BuildMonad (fun _ _ st -> st, Ok x)
 
+let private failM : BuildMonad<'res,'a> = 
+    BuildMonad (fun _ _ st -> st, Err "failM")
+
 
 let inline private bindM (ma:BuildMonad<'res,'a>) (f : 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b> =
     BuildMonad <| fun res sbuf st0 -> 
@@ -70,7 +74,7 @@ let inline private altM (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : Buil
 type BuildMonadBuilder() = 
     member self.Return x = unitM x
     member self.Bind (p,f) = bindM p f
-    member self.Zero () = unitM ()
+    member self.Zero () = failM
 
 let (buildMonad:BuildMonadBuilder) = new BuildMonadBuilder()
 
@@ -165,6 +169,49 @@ let mapiMz (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,
         work 0 state xs
 
 // Alternative combinators would be useful...
+
+// *********************************************************
+// *********************************************************
+
+
+// Symbolic aliases / combinators
+// Delegate to FParsec for naming where we can.
+
+// fmapM - aka Haskell's (<$>)
+let (<<|) (fn:'a -> 'b)  (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'b> = 
+    fmapM fn ma
+
+
+// Flipped fmapM 
+let (|>>) (ma: BuildMonad<'res,'a>) (fn:'a -> 'b) : BuildMonad<'res,'b> = 
+    fmapM fn ma
+
+
+// Aka Haskell's (*>)
+let (>>.) (ma: BuildMonad<'res,'a>) (mb: BuildMonad<'res,'b>) : BuildMonad<'res,'b> = 
+    buildMonad { 
+        let! _ = ma
+        let! b = mb
+        return b 
+    }
+
+// Aka Haskell's (<*)
+let (.>>) (ma: BuildMonad<'res,'a>) (mb: BuildMonad<'res,'b>) : BuildMonad<'res,'a> =  
+    buildMonad { 
+        let! a = ma
+        let! _ = mb
+        return a 
+    }
+
+
+// Alt
+let (<|>) (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    altM ma mb
+
+/// Monadic bind
+let (>>=) (ma: BuildMonad<'res,'a>) (k: 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b> = 
+    bindM ma k
+
 
 // *********************************************************
 // *********************************************************

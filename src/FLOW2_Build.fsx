@@ -49,12 +49,12 @@ open DocMake.Builder.BuildMonad
 #load @"DocMake\Lib\DocPhotos.fs"
 #load @"DocMake\Lib\DocToPdf.fs"
 #load @"DocMake\Lib\XlsToPdf.fs"
-#load @"DocMake\Lib\GsConcat.fs"
+#load @"DocMake\Lib\PdfConcat.fs"
 open DocMake.Lib.DocFindReplace
 open DocMake.Lib.DocPhotos
 open DocMake.Lib.DocToPdf
 open DocMake.Lib.XlsToPdf
-open DocMake.Lib.GsConcat
+open DocMake.Lib.PdfConcat
 
 // TODO - localize these
 
@@ -75,7 +75,7 @@ let siteOutputDir       = _outputRoot @@ cleanName
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
     siteOutputDir @@ sprintf fmt cleanName
 
-let clean () : BuildMonad<'res, unit> =
+let clean : BuildMonad<'res, unit> =
     buildMonad { 
         if Directory.Exists(siteOutputDir) then 
             do! tellLine <| sprintf " --- Clean folder: '%s' ---" siteOutputDir
@@ -85,11 +85,11 @@ let clean () : BuildMonad<'res, unit> =
             do! tellLine <| sprintf " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
     }
 
-let outputDirectory () : BuildMonad<'res, unit> =
-    buildMonad { 
-        do! tellLine <| sprintf  " --- Output folder: '%s' ---" siteOutputDir
-        do! executeIO (fun () -> maybeCreateDirectory siteOutputDir )
-    }
+let outputDirectory : BuildMonad<'res, unit> =
+    tellLine (sprintf  " --- Output folder: '%s' ---" siteOutputDir) .>>
+    executeIO (fun () -> maybeCreateDirectory siteOutputDir)
+
+
 
 //let cover () : BuildMonad<'res, unit> = 
 //    let template = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
@@ -117,8 +117,7 @@ let outputDirectory () : BuildMonad<'res, unit> =
 
 let buildScript (siteName:string) : BuildMonad<'res,unit> = 
     buildMonad { 
-        do! clean() 
-        do! outputDirectory ()
+        do! clean >>. outputDirectory
     }
 
 
