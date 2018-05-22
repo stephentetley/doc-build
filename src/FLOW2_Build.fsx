@@ -113,6 +113,35 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : BuildMon
             }
     
 
+let scopeOfWorks : BuildMonad<'res,PdfDoc> = 
+    executeIO <| fun () -> 
+        // Note - matching is with globs not regexs. Cannot use [Ss] to match capital or lower s.
+        match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" siteInputDir with
+        | Some source -> 
+            let destPath = makeSiteOutputName "%s scope-of-works.pdf"
+            optionalCopyFile destPath source
+            makeDocument destPath
+        | None -> failwith "NO SCOPE OF WORKS"
+
+let installSheets : BuildMonad<'res, PdfDoc list> = 
+    let pdfGen (glob:string) (warnMsg:string) : ExcelBuild<PdfDoc list> = 
+        match findAllMatchingFiles glob siteInputDir with
+        | [] -> 
+            buildMonad { 
+                do! tellLine warnMsg
+                return []
+                }
+        | xs -> 
+            forM xs (fun path -> 
+                printfn "installSheet: %s" path
+                getDocument path >>= xlsToPdf true )
+    
+    withNameGen (sprintf "install-%03i.pdf") << execExcelBuild <| 
+        buildMonad { 
+            let! ds1 = pdfGen "*Flow meter*.xls*" "NO FLOW METER INSTALL SHEETS"
+            let! ds2 = pdfGen "*Pressure inst*.xls*" "NO PRESSURE SENSOR INSTALL SHEET"
+            return ds1 @ ds2
+            }
 
 
 // *******************************************************
@@ -122,14 +151,18 @@ let matches1 : SearchList =
     ]
 
 let buildScript (siteName:string) : BuildMonad<'res,unit> = 
+    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
     buildMonad { 
         do! clean >>. outputDirectory
-        let! d1 = cover matches1
+        let! p1 = cover matches1
         let surveyJpegsPath = siteInputDir @@ "Survey_Photos"
-        let! d2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
-
+        let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
+        let! p3 = scopeOfWorks
+        let! ps1 = installSheets
         let surveyJpegsPath = siteInputDir @@ "Install_Photos"
-        let! dZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
+        let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
+        let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ [pZ])
+        let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs)
         return ()                 
     }
 
@@ -138,7 +171,7 @@ let main () : unit =
     let env = 
         { WorkingDirectory = siteOutputDir
           PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfPrint }
+          PdfQuality = PdfPrintSetting.PdfScreen }
 
     consoleRun env (buildScript siteName) 
 
@@ -147,7 +180,7 @@ let test01 () =
     let env = 
         { WorkingDirectory = siteOutputDir
           PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfPrint }
+          PdfQuality = PdfPrintSetting.PdfScreen }
 
     let proc =
         execWordBuild <| 

@@ -59,6 +59,8 @@ let private shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'re
         if (i = 0) then    
             return ()
         else
+            do! tellLine toolPath
+            do! tellLine command
             do! throwError errMsg
         }
             

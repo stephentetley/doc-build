@@ -11,10 +11,6 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.Builders
 
-
-let private getOutputName (wordDoc:WordDoc) : WordBuild<string> =
-    executeIO <| fun () -> 
-        System.IO.Path.ChangeExtension(wordDoc.DocumentPath, "pdf")
     
 
 let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuality) (app:Word.Application) : unit = 
@@ -32,8 +28,8 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 let docToPdf (wordDoc:WordDoc) : WordBuild<PdfDoc> =
     buildMonad { 
         let! (app:Word.Application) = askU ()
-        let! outPath = getOutputName wordDoc
+        let! outPath = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ =  process1 wordDoc.DocumentPath outPath quality app
-        return (makeDocument outPath)
+        let _ =  process1 wordDoc.DocumentPath outPath.DocumentPath quality app
+        return outPath
     }

@@ -14,6 +14,7 @@ type Document<'a> = { DocumentPath : string }
 let makeDocument (filePath:string) : Document<'a> = 
     { DocumentPath = filePath }
 
+
 let freshDocument () : BuildMonad<'res,Document<'a>> = 
     fmapM makeDocument <| freshFileName ()
 
@@ -24,6 +25,9 @@ let documentExtension (doc:Document<'a>) : string =
 let documentDirectory (doc:Document<'a>) : string = 
     System.IO.FileInfo(doc.DocumentPath).DirectoryName
 
+let documentChangeExtension (extension: string) (doc:Document<'a>) :Document<'a> = 
+    let d1 = System.IO.Path.ChangeExtension(doc.DocumentPath, extension)
+    makeDocument d1
 
 let documentName (doc:Document<'a>) : string = 
     System.IO.FileInfo(doc.DocumentPath).Name

@@ -19,7 +19,7 @@ type PdfPrintSetting = PdfPrint | PdfScreen | PdfWhatever
 let ghostscriptPrintSetting (quality:PdfPrintSetting) : string = 
     match quality with
     | PdfScreen -> @"/screen"
-    | PdfPrint -> @"/preprint"
+    | PdfPrint -> @"/preprint"      // WARNING To check
     | PdfWhatever -> ""
 
 type DocMakePageOrientation = PoNorth | PoSouth | PoEast | PoWest

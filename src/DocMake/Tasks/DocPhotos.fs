@@ -79,7 +79,7 @@ let DocPhotos (setDocPhotosParams: DocPhotosParams -> DocPhotosParams) : unit =
             do! processPhotos stepFun jpegs
             }
     try 
-        runDocOutput opts.OutputFile procM
+        runDocOutput opts.OutputFile procM |> ignore
     finally 
         ()
     

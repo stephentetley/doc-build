@@ -36,10 +36,10 @@ let private makeCmd (quality:PdfPrintSetting) (outputFile:string) (inputFiles: s
     unlinesS <| first :: rest
 
 
-let gsConcat  (inputFiles:PdfDoc list) : GsBuild<PdfDoc> = 
+let pdfConcat (inputFiles:PdfDoc list) : GsBuild<PdfDoc> = 
     let paths = List.map (fun (a:PdfDoc) -> a.DocumentPath) inputFiles
     buildMonad { 
-        let! outDoc = freshDocument ()
+        let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PdfQuality)
         let! _ =  gsRunCommand <| makeCmd quality outDoc.DocumentPath paths
         return outDoc
