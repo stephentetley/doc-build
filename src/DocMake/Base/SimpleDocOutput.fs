@@ -4,6 +4,11 @@ open Microsoft.Office.Interop
 
 open DocMake.Base.OfficeUtils
 
+type Result<'a> = 
+    | Failure of string
+    | Success of 'a
+
+
 
 // Word Output Monad
 // Output is to a handle so this is not properly a writer monad
@@ -69,7 +74,7 @@ let traverseMz (fn: 'a -> DocOutput<'b>) (source:seq<'a>) : DocOutput<unit> =
                  source 
 
 
-let runDocOutput (outputFile:string) (ma:DocOutput<'a>) : 'a = 
+let runDocOutput (outputFile:string) (ma:DocOutput<'a>) : Result<'a> = 
     let app = new Word.ApplicationClass (Visible = true)
     try
         let doc = app.Documents.Add()
@@ -77,12 +82,12 @@ let runDocOutput (outputFile:string) (ma:DocOutput<'a>) : 'a =
         doc.SaveAs( FileName = refobj outputFile )
         doc.Close( SaveChanges = refobj false )
         app.Quit ()
-        ans
+        Success ans
     with
     | ex -> 
         app.Quit()
-        failwithf "\nrunDocOutput failed, file-name '%s'\nError message: %s" outputFile ex.Message
-
+        Failure <| sprintf "runDocOutput failed, filename '%s'\nError message: %s" outputFile ex.Message
+       
 
 let private getEndRange () : DocOutput<Word.Range> = 
     DocOutput <| fun doc ->

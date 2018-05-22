@@ -104,7 +104,7 @@ let cover (matches:SearchList) : BuildMonad<'res, PdfDoc> =
 
 
 
-let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) :  BuildMonad<'res, PdfDoc> = 
+let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : BuildMonad<'res, PdfDoc> = 
     execWordBuild <| 
         buildMonad { 
             let! d1 = photoDoc (Some docTitle) true [jpegSrcPath]
@@ -126,7 +126,10 @@ let buildScript (siteName:string) : BuildMonad<'res,unit> =
         do! clean >>. outputDirectory
         let! d1 = cover matches1
         let surveyJpegsPath = siteInputDir @@ "Survey_Photos"
-        let! d2 = photosDoc "Survey Photos" surveyJpegsPath "Survey-photos.pdf"
+        let! d2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
+
+        let surveyJpegsPath = siteInputDir @@ "Install_Photos"
+        let! dZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
         return ()                 
     }
 

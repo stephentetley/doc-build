@@ -57,11 +57,12 @@ let private processPhotos (action1:PictureFun) (files:string list) : DocOutput<u
 
 
 let photoDoc (documentTitle: string option) (showJpegFileName:bool) (inputPaths:string list) : WordBuild<WordDoc> =
+    let jpegs = getJPEGs inputPaths
     let docProc:DocOutput<unit>  = 
         let stepFun = if showJpegFileName then stepWithLabel else stepWithoutLabel
         docOutput { 
             do! addTitle documentTitle
-            do! processPhotos stepFun inputPaths
+            do! processPhotos stepFun jpegs
             }
     buildMonad { 
         let! outDoc = freshDocument ()

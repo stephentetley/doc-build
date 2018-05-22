@@ -17,7 +17,8 @@ type WordPhantom = class end
 type WordDoc = Document<WordPhantom>
 
 
-
+// TODO - this is not good as it can result in spawning many versions of Word.
+// Instead we should ahve a single instance optionally in the 'res parameter.
 let execWordBuild (ma:WordBuild<'a>) : BuildMonad<'res,'a> = 
     let app:Word.Application = new Word.ApplicationClass (Visible = true) :> Word.Application
     let namer:int -> string = fun i -> sprintf "temp%03i.docx" i
