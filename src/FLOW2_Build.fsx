@@ -32,17 +32,13 @@ open Fake.Core.TargetOperators
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\FakeExtras.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
-#load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
-#load @"DocMake\Base\CopyRename.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\Builders.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
-open DocMake.Base.JsonUtils
-open DocMake.Base.CopyRename
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.Builders
@@ -63,11 +59,13 @@ open DocMake.Lib.PdfConcat
 let _filestoreRoot  = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
 let _outputRoot     = @"G:\work\Projects\flow2\final-docs\output"
 let _templateRoot   = @"G:\work\Projects\flow2\final-docs\__Templates"
-let _jsonRoot       = @"G:\work\Projects\flow2\final-docs\__Json"
 
 
-let siteName = "BENTLEY MOOR LANE/SPS"
-
+let siteName = "CHESTNUT AVENUE/SPS"
+let matches1 : SearchList = 
+    [ "#SITENAME", "CHESTNUT AVENUE/SPS"
+    ; "#SAINUM", "SAI00004009"
+    ]
 
 let cleanName           = safeName siteName
 let siteInputDir        = _filestoreRoot @@ cleanName
@@ -78,17 +76,15 @@ let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string =
     siteOutputDir @@ sprintf fmt cleanName
 
 let clean : BuildMonad<'res, unit> =
-    buildMonad { 
-        if Directory.Exists(siteOutputDir) then 
-            do! tellLine <| sprintf " --- Clean folder: '%s' ---" siteOutputDir
-            do! executeIO (fun () -> Fake.IO.Directory.delete siteOutputDir)
-            return ()
-        else 
-            do! tellLine <| sprintf " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
-    }
+    if Directory.Exists(siteOutputDir) then 
+        tellLine (sprintf " --- Clean folder: '%s' ---" siteOutputDir) >>.
+        executeIO (fun () -> Fake.IO.Directory.delete siteOutputDir)
+    else 
+        tellLine <| sprintf " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
+
 
 let outputDirectory : BuildMonad<'res, unit> =
-    tellLine (sprintf  " --- Output folder: '%s' ---" siteOutputDir) .>>
+    tellLine (sprintf  " --- Output folder: '%s' ---" siteOutputDir) >>.
     executeIO (fun () -> maybeCreateDirectory siteOutputDir)
 
 
@@ -114,23 +110,34 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : BuildMon
     
 
 let scopeOfWorks : BuildMonad<'res,PdfDoc> = 
-    executeIO <| fun () -> 
-        // Note - matching is with globs not regexs. Cannot use [Ss] to match capital or lower s.
-        match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" siteInputDir with
-        | Some source -> 
-            let destPath = makeSiteOutputName "%s scope-of-works.pdf"
-            optionalCopyFile destPath source
-            makeDocument destPath
-        | None -> failwith "NO SCOPE OF WORKS"
+    match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" siteInputDir with
+    | Some source -> 
+        copyToWorkingDirectory source >>= renameTo "scope-of-works.pdf"
+    | None -> throwError "NO SCOPE OF WORKS"
 
-let installSheets : BuildMonad<'res, PdfDoc list> = 
+
+
+let citWork () : BuildMonad<'res, PdfDoc list> = 
+    let proc (glob:string) (renamer:int->string) : BuildMonad<'res, PdfDoc list> = 
+        findAllMatchingFiles glob siteInputDir |>
+            foriM (fun i source ->  
+                        copyToWorkingDirectory source >>= renameTo (renamer (i+1)))
+
+    buildMonad {
+        let! ds1 = proc "2018-S4371*.pdf" (sprintf "electricals-%03i.pdf")
+        let! ds2 = proc "*Prop Works*.pdf" (sprintf "cad-drawing-%03i.pdf")
+        return ds1 @ ds2 
+    }
+
+
+
+    // If this isn't thunkified it will launch Excel when the code is loaded in FSI
+let installSheets () : BuildMonad<'res, PdfDoc list> = 
     let pdfGen (glob:string) (warnMsg:string) : ExcelBuild<PdfDoc list> = 
         match findAllMatchingFiles glob siteInputDir with
         | [] -> 
-            buildMonad { 
-                do! tellLine warnMsg
-                return []
-                }
+            tellLine warnMsg >>. breturn []
+             
         | xs -> 
             forM xs (fun path -> 
                 printfn "installSheet: %s" path
@@ -145,10 +152,7 @@ let installSheets : BuildMonad<'res, PdfDoc list> =
 
 
 // *******************************************************
-let matches1 : SearchList = 
-    [ "#SITENAME", "BENTLEY MOOR LANE/SPS"
-    ; "#SAINUM", "SAI00004057"
-    ]
+
 
 let buildScript (siteName:string) : BuildMonad<'res,unit> = 
     let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
@@ -158,11 +162,12 @@ let buildScript (siteName:string) : BuildMonad<'res,unit> =
         let surveyJpegsPath = siteInputDir @@ "Survey_Photos"
         let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
         let! p3 = scopeOfWorks
-        let! ps1 = installSheets
+        let! ps1 = citWork ()
+        let! ps2 = installSheets ()
         let surveyJpegsPath = siteInputDir @@ "Install_Photos"
         let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
-        let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ [pZ])
-        let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs)
+        let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ ps2 @ [pZ])
+        let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs) >>= renameTo "FINAL.pdf"
         return ()                 
     }
 
@@ -190,3 +195,4 @@ let test01 () =
                 return d1.DocumentPath, d2.DocumentPath
             }
     consoleRun env proc
+

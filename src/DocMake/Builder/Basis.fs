@@ -35,21 +35,30 @@ let documentName (doc:Document<'a>) : string =
 
 let assertFile(fileName:string) : BuildMonad<'res,string> =  
     if File.Exists(fileName) then 
-        buildMonad.Return(fileName)
+        breturn(fileName)
     else 
         throwError <| sprintf "assertFile failed: '%s'" fileName
 
 // assertExtension ?
 
-let getDocument(fileName:string) : BuildMonad<'res,Document<'a>> =   
+let getDocument (fileName:string) : BuildMonad<'res,Document<'a>> =   
     if File.Exists(fileName) then 
-        buildMonad.Return({DocumentPath=fileName})
+        breturn({DocumentPath=fileName})
     else 
         throwError <| sprintf "getDocument failed: '%s'" fileName
 
 
-//// Open a "handle" to a document in the working directory
-//let workingDocument (name:string) : BuildMonad<'res,Document<'a>> = 
+let copyToWorkingDirectory (fileName:string) : BuildMonad<'res,Document<'a>> = 
+    if File.Exists(fileName) then 
+        buildMonad { 
+            let name1 = System.IO.FileInfo(fileName).Name
+            let! cwd = asksEnv (fun e -> e.WorkingDirectory)
+            let dest = System.IO.Path.Combine(cwd,name1)
+            do System.IO.File.Copy(fileName,dest)
+            return (makeDocument dest)
+        }
+    else 
+        throwError <| sprintf "getDocument failed: '%s'" fileName
 
 
 let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'a>> =  

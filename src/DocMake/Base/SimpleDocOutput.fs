@@ -100,8 +100,12 @@ let private atEnd (fn:Word.Range -> 'a) : DocOutput<'a> =
         return ans
         }
 
-let tellPicture (filename : string) : DocOutput<unit> =
-    atEnd <| fun rng -> ignore <| rng.InlineShapes.AddPicture(FileName = filename)
+let tellPicture (fileName : string) : DocOutput<unit> =
+    if System.IO.File.Exists(fileName) then 
+        atEnd <| fun rng -> ignore <| rng.InlineShapes.AddPicture(FileName = fileName)
+    else
+        printfn "SimpleDocOutput - picture missing - %s" fileName
+        unitM ()
        
 
 let tellPageBreak () : DocOutput<unit> =

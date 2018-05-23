@@ -38,6 +38,7 @@ let execExcelBuild (ma:ExcelBuild<'a>) : BuildMonad<'res,'a> =
     let finalizer (oApp:Excel.Application) = 
         oApp.DisplayAlerts <- true
         oApp.EnableEvents <- true
+        oApp.Quit ()
     withUserHandle app finalizer (withNameGen namer ma)
 
 

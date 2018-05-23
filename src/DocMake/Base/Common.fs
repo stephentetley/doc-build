@@ -16,10 +16,12 @@ type DocMakePrintQuality = PqScreen | PqPrint
 /// Use PdfWhatever for no optimization (can be faster and smaller in some cases...)
 type PdfPrintSetting = PdfPrint | PdfScreen | PdfWhatever
 
+
+// TODO options should be "/screen", "/ebook", "/printer", "/prepress", "/default"
 let ghostscriptPrintSetting (quality:PdfPrintSetting) : string = 
     match quality with
     | PdfScreen -> @"/screen"
-    | PdfPrint -> @"/preprint"      // WARNING To check
+    | PdfPrint -> @"/prepress"      // WARNING To check
     | PdfWhatever -> ""
 
 type DocMakePageOrientation = PoNorth | PoSouth | PoEast | PoWest

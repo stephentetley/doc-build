@@ -167,6 +167,12 @@ let mapiMz (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,
                 | Ok _ -> work (ix+1) st1 zs
         work 0 state xs
 
+let foriM (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,'b list> =
+    mapiM fn xs
+
+let foriMz (xs:'a list) (fn:int -> 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,unit> =
+    mapiMz fn xs
+
 // Alternative combinators would be useful...
 
 // *********************************************************
@@ -252,16 +258,18 @@ let throwError (msg:string) : BuildMonad<'res,'a> =
     BuildMonad <| fun _ _ st0 -> 
         (st0, Err msg)
 
+
+
+
 /// Execute an FSharp action that may use IO, throw an exception...
 /// Capture any failure within the BuildMonad.
+/// (It seems like this proc needs to be guarded with a thunk)
 let executeIO (operation:unit -> 'a) : BuildMonad<'res,'a> = 
     BuildMonad <| fun _ _ st0 -> 
     try 
         let ans = operation () in (st0, Ok ans)
     with
     | ex -> (st0, Err ex.Message)
-
-
 
 let tell (msg:string) : BuildMonad<'res,unit> = 
     BuildMonad <| fun _ sbuf st0 -> 
