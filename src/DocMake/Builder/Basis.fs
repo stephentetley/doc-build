@@ -2,6 +2,7 @@
 
 open System.IO
 
+open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 
 
@@ -72,3 +73,20 @@ let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'
 
 let renameTo (dest:string) (src:Document<'a>) : BuildMonad<'res,Document<'a>> = 
     renameDocument src dest
+
+let localWorkingDirectory (wd:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    localEnv (fun (e:Env) -> { e with WorkingDirectory = wd }) ma
+
+let deleteWorkingDirectory () : BuildMonad<'res,unit> = 
+    buildMonad { 
+        let! cwd = asksEnv (fun e -> e.WorkingDirectory)
+        ignore << executeIO <| fun () ->
+            if System.IO.Directory.Exists(cwd) then System.IO.Directory.Delete(path=cwd,recursive=true)
+        return ()
+        }
+
+let createWorkingDirectory () : BuildMonad<'res,unit> = 
+    buildMonad { 
+        let! cwd = asksEnv (fun e -> e.WorkingDirectory)
+        do! executeIO (fun () -> maybeCreateDirectory cwd) 
+    }

@@ -37,7 +37,8 @@ let private incrNameIndex (st:State) : State =
 
 
 
-
+// Note - keeping log in a StringBuilder means we only see it "at the end",
+// any direct console writes are visible before the log is shown.
 type BuildMonad<'res,'a> = 
     private BuildMonad of ((Env * 'res) -> StringBuilder -> State -> (State * Answer<'a>))
 
@@ -299,6 +300,9 @@ let askEnv () : BuildMonad<'res,Env> =
 
 let asksEnv (project:Env -> 'a) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,_) _ st0 -> (st0, Ok (project env))
+
+let localEnv (modify:Env -> Env) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun (env,res) sbuf st0 -> apply1 ma (modify env, res) sbuf st0
 
 /// The MakeName function is in State rather than Env, but we only provide an API
 /// to run it within a context (cf. the Reader monad's local), rather than reset it 

@@ -67,30 +67,39 @@ let _outputRoot     = @"G:\work\Projects\barriers\final-docs\output\Batch02"
 let siteName = "BARTON LE WILLOW/STW"
 
 
-let cleanName           = safeName siteName
-let siteInputDir        = _filestoreRoot @@ cleanName
-let siteOutputDir       = _outputRoot @@ cleanName
+//let cleanName           = safeName siteName
+//let siteInputDir        = _filestoreRoot @@ cleanName
+//let siteOutputDir       = _outputRoot @@ cleanName
 
 
-let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-    siteOutputDir @@ sprintf fmt cleanName
+//let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
+//    siteOutputDir @@ sprintf fmt cleanName
 
+
+// TODO this should clean (delete) the working directory
 let clean : BuildMonad<'res, unit> =
-    if Directory.Exists(siteOutputDir) then 
-        tellLine (sprintf " --- Clean folder: '%s' ---" siteOutputDir) >>.
-        executeIO (fun () -> Fake.IO.Directory.delete siteOutputDir)
-    else 
-        tellLine <| sprintf " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
+    buildMonad { 
+        let! cwd = asksEnv (fun e -> e.WorkingDirectory)
+        if Directory.Exists(cwd) then 
+            do! tellLine (sprintf " --- Clean folder: '%s' ---" cwd)
+            do! deleteWorkingDirectory ()
+        else 
+            do! tellLine <| sprintf " --- Clean --- : folder does not exist '%s' ---" cwd
+    }
+
 
 
 let outputDirectory : BuildMonad<'res, unit> =
-    tellLine (sprintf  " --- Output folder: '%s' ---" siteOutputDir) >>.
-    executeIO (fun () -> maybeCreateDirectory siteOutputDir)
+    buildMonad { 
+        let! cwd = asksEnv (fun e -> e.WorkingDirectory)
+        do! tellLine (sprintf  " --- Output folder: '%s' ---" cwd)
+        do! createWorkingDirectory ()
+    }
 
 
 // No cover needed
 
-let siteWorks : BuildMonad<'res,PdfDoc> = 
+let siteWorks (siteInputDir:string) : BuildMonad<'res,PdfDoc> = 
     match tryFindExactlyOneMatchingFile "*Site Works*.doc*" siteInputDir with
     | Some source -> 
             execWordBuild <| (getDocument source >>= docToPdf)
@@ -114,15 +123,20 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : BuildMon
 
 let buildScript (siteName:string) : BuildMonad<'res,unit> = 
     let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-    buildMonad { 
-        do! clean >>. outputDirectory
-        let! p1 = siteWorks
-        let surveyJpegsPath = siteInputDir @@ "PHOTOS"
-        let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
-        let (pdfs:PdfDoc list) = [p1;p2]
-        let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs) >>= renameTo "FINAL.pdf"
-        return ()                 
-    }
+    let cleanName           = safeName siteName
+    let siteInputDir        = _filestoreRoot @@ cleanName
+    let cwd                 = _outputRoot @@ cleanName
+
+    localWorkingDirectory cwd <| 
+        buildMonad { 
+            do! clean >>. outputDirectory
+            let! p1 = siteWorks siteInputDir
+            let surveyJpegsPath = siteInputDir @@ "PHOTOS"
+            let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
+            let (pdfs:PdfDoc list) = [p1;p2]
+            let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs) >>= renameTo "FINAL.pdf"
+            return ()                 
+        }
 
 
 
@@ -130,7 +144,7 @@ let buildScript (siteName:string) : BuildMonad<'res,unit> =
 
 let main () : unit = 
     let env = 
-        { WorkingDirectory = siteOutputDir
+        { WorkingDirectory = _outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
 
