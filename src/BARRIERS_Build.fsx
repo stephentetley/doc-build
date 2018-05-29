@@ -43,40 +43,22 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.Builders
 
-#load @"DocMake\Lib\DocFindReplace.fs"
 #load @"DocMake\Lib\DocPhotos.fs"
 #load @"DocMake\Lib\DocToPdf.fs"
-#load @"DocMake\Lib\XlsToPdf.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
-open DocMake.Lib.DocFindReplace
 open DocMake.Lib.DocPhotos
 open DocMake.Lib.DocToPdf
-open DocMake.Lib.XlsToPdf
 open DocMake.Lib.PdfConcat
 
 // TODO - localize these
 
-let _filestoreRoot  = @"G:\work\Projects\barriers\final-docs\input\Batch02"
+let _inputRoot      = @"G:\work\Projects\barriers\final-docs\input\Batch02"
 let _outputRoot     = @"G:\work\Projects\barriers\final-docs\output\Batch02"
 
 
 // Output is just "Site Works" doc and collected "Photo doc"
 
 
-
-let siteName = "BARTON LE WILLOW/STW"
-
-
-//let cleanName           = safeName siteName
-//let siteInputDir        = _filestoreRoot @@ cleanName
-//let siteOutputDir       = _outputRoot @@ cleanName
-
-
-//let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-//    siteOutputDir @@ sprintf fmt cleanName
-
-
-// TODO this should clean (delete) the working directory
 let clean : BuildMonad<'res, unit> =
     buildMonad { 
         let! cwd = asksEnv (fun e -> e.WorkingDirectory)
@@ -124,9 +106,9 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : BuildMon
 let buildScript (siteName:string) : BuildMonad<'res,unit> = 
     let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
     let cleanName           = safeName siteName
-    let siteInputDir        = _filestoreRoot @@ cleanName
+    let siteInputDir        = _inputRoot @@ cleanName
     let cwd                 = _outputRoot @@ cleanName
-
+    let finalName           = sprintf "%s S3953 IS Barrier Replacement.pdf" cleanName
     localWorkingDirectory cwd <| 
         buildMonad { 
             do! clean >>. outputDirectory
@@ -134,22 +116,27 @@ let buildScript (siteName:string) : BuildMonad<'res,unit> =
             let surveyJpegsPath = siteInputDir @@ "PHOTOS"
             let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
             let (pdfs:PdfDoc list) = [p1;p2]
-            let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs) >>= renameTo "FINAL.pdf"
+            let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs) >>= renameTo finalName
             return ()                 
         }
 
 
 
-// TODO - this should be a many-build script.
+
+let getSites (root:string) : string [] = 
+    let slashName (name:string) = String.replace  "_" "/" name
+    let getName (path:string) = 
+        slashName <| System.IO.DirectoryInfo(path).Name
+    System.IO.Directory.GetDirectories(_inputRoot) 
+        |> Array.map getName
 
 let main () : unit = 
     let env = 
         { WorkingDirectory = _outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
-
-    consoleRun env (buildScript siteName) 
-
+    let siteList = getSites _inputRoot |> Array.toList
+    consoleRun env (forMz siteList buildScript) 
 
 
 
