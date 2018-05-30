@@ -1,7 +1,7 @@
 ﻿module DocMake.Base.FakeExtras
 
-open Fake
 open Fake.Core
+open Fake.IO.FileSystemOperators
 open Fake.Core.Globbing.Operators
 
     

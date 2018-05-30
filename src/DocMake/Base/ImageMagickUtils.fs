@@ -4,6 +4,7 @@ open System
 
 open Fake
 open Fake.Core.Globbing.Operators
+open Fake.IO.FileSystemOperators
 
 open ImageMagick
 

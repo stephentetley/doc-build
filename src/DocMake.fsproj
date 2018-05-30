@@ -147,25 +147,65 @@
     <Reference Include="ExcelProvider">
       <HintPath>..\packages\ExcelProvider.0.8.2\lib\ExcelProvider.dll</HintPath>
     </Reference>
+    <Reference Include="Fake.Core.Context">
+      <HintPath>..\packages\Fake.Core.Context.5.0.0-rc017.237\lib\net46\Fake.Core.Context.dll</HintPath>
+    </Reference>
+    <Reference Include="Fake.Core.Environment">
+      <HintPath>..\packages\Fake.Core.Environment.5.0.0-rc017.237\lib\net46\Fake.Core.Environment.dll</HintPath>
+    </Reference>
+    <Reference Include="Fake.Core.Globbing">
+      <HintPath>..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46\Fake.Core.Globbing.dll</HintPath>
+    </Reference>
+    <Reference Include="Fake.Core.Process">
+      <HintPath>..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46\Fake.Core.Process.dll</HintPath>
+    </Reference>
+    <Reference Include="Fake.Core.String">
+      <HintPath>..\packages\Fake.Core.String.5.0.0-rc017.237\lib\net46\Fake.Core.String.dll</HintPath>
+    </Reference>
+    <Reference Include="Fake.Core.Trace">
+      <HintPath>..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46\Fake.Core.Trace.dll</HintPath>
+    </Reference>
+    <Reference Include="Fake.IO.FileSystem">
+      <HintPath>..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46\Fake.IO.FileSystem.dll</HintPath>
+    </Reference>
     <Reference Include="FakeLib">
       <HintPath>..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Data">
+      <HintPath>..\packages\FSharp.Data.3.0.0-beta3\lib\net45\FSharp.Data.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\ExcelProvider.0.8.2\lib\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Magick.NET-Q8-AnyCPU">
-      <HintPath>..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40\Magick.NET-Q8-AnyCPU.dll</HintPath>
+      <HintPath>..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40\Magick.NET-Q8-AnyCPU.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.FileVersionInfo">
+      <HintPath>..\packages\System.Diagnostics.FileVersionInfo.4.3.0\lib\net46\System.Diagnostics.FileVersionInfo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Diagnostics.Process">
+      <HintPath>..\packages\System.Diagnostics.Process.4.3.0\lib\net46\System.Diagnostics.Process.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.FileSystem.Watcher">
+      <HintPath>..\packages\System.IO.FileSystem.Watcher.4.3.0\lib\net46\System.IO.FileSystem.Watcher.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>

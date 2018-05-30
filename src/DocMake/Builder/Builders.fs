@@ -4,7 +4,7 @@ open System.IO
 open Microsoft.Office.Interop
 
 // Ideally don't use Fake
-open Fake.Core.Process
+open Fake.Core
 
 
 open DocMake.Builder.BuildMonad
@@ -60,10 +60,10 @@ let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) :BuildMonad<'res
 
 // Shell helper:
 let private shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
+    let infoF (info:ProcStartInfo) =  
+        { info with FileName =  toolPath; Arguments = command }
     buildMonad { 
-        let i = ExecProcess (fun info -> 
-                    info.FileName <- toolPath
-                    info.Arguments <- command) System.TimeSpan.MaxValue
+        let i = Fake.Core.Process.execSimple infoF System.TimeSpan.MaxValue
         if (i = 0) then    
             return ()
         else

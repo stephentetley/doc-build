@@ -3,7 +3,6 @@
 open System.IO
 
 open Fake.Core
-open Fake.Core.Process
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
