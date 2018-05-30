@@ -19,21 +19,32 @@
 open System.IO
 
 
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
-open ImageMagick
 
-#I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
+
+#I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
 #r "Newtonsoft.Json"
-open Newtonsoft.Json
+
 
 // FAKE is local to the project file
-#I @"..\packages\FAKE.5.0.0-beta005\tools"
-#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+#I @"..\packages\FAKE.5.0.0-rc016.225\tools"
+#r @"FakeLib.dll"
+#I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
+#r @"Fake.Core.Globbing.dll"
+#I @"..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46"
+#r @"Fake.IO.FileSystem.dll"
+#I @"..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Trace.dll"
+#I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Process.dll"
+#I @"..\packages\Fake.Core.Target.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Target.dll"
+#I @"..\packages\Fake.Core.Environment.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Environment.dll"
 
 open Fake
 open Fake.Core
-open Fake.Core.Environment
 open Fake.Core.Globbing.Operators
 open Fake.Core.TargetOperators
 
@@ -86,7 +97,7 @@ let _jsonRoot       = @"G:\work\Projects\samps\final-docs\__Json"
 
 // siteName is an envVar so we can use this build script to build many 
 // sites (they all follow the same directory/file structure).
-let siteName = environVarOrDefault "sitename" @"MISSING"
+let siteName = Fake.Core.Environment.environVarOrDefault "sitename" @"MISSING"
 
 let cleanName           = safeName siteName
 let surveyInputDir      = _filestoreRoot @@ "SURVEYS" @@ cleanName
@@ -103,20 +114,20 @@ let makeSiteOutputNamei (fmt:Printf.StringFormat<string->int->string>) (ix:int) 
     siteOutputDir @@ sprintf fmt cleanName ix
 
 
-Target.Create "Clean" (fun _ -> 
+Fake.Core.Target.create "Clean" (fun _ -> 
     if Directory.Exists siteOutputDir then 
         Trace.tracefn " --- Clean folder: '%s' ---" siteOutputDir
         Fake.IO.Directory.delete siteOutputDir
     else ()
 )
 
-Target.Create "OutputDirectory" (fun _ -> 
+Fake.Core.Target.create "OutputDirectory" (fun _ -> 
     Trace.tracefn " --- Output folder: '%s' ---" siteOutputDir
     maybeCreateDirectory siteOutputDir
 )
 
 
-Target.Create "Cover" (fun _ ->
+Fake.Core.Target.create "Cover" (fun _ ->
     let template = _templateRoot @@ "TEMPLATE Samps Cover Sheet.docx"
     let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
     let docname = makeSiteOutputName "%s cover-sheet.docx"
@@ -143,7 +154,7 @@ Target.Create "Cover" (fun _ ->
 )
 
 
-Target.Create "SurveySheet" (fun _ ->
+Fake.Core.Target.create "SurveySheet" (fun _ ->
     let infile = Fake.IO.Directory.findFirstMatchingFile "*Sampler survey*.xlsx" surveyInputDir
     let outfile = makeSiteOutputName "%s survey-sheet.pdf" 
     XlsToPdf (fun p -> 
@@ -163,7 +174,7 @@ let processPhotoFolder (srcPath:string) (destPath:string) : unit =
     
 
 
-Target.Create "SurveyPhotos" (fun _ ->
+Fake.Core.Target.create "SurveyPhotos" (fun _ ->
     let destPath = siteOutputDir @@ "Survey_photos"
     let photoFolders = subdirectoriesWithMatches "*.jpg" surveyInputDir
     List.iter (fun dir -> 
@@ -190,7 +201,7 @@ Target.Create "SurveyPhotos" (fun _ ->
 )
 
 // This is optional
-Target.Create "SurveyPPT" (fun _ -> 
+Fake.Core.Target.create "SurveyPPT" (fun _ -> 
     match tryFindExactlyOneMatchingFile "*.ppt*" surveyInputDir with
     | Some pptFile -> 
         let outfile = makeSiteOutputName "%s survey-ppt.pdf" 
@@ -203,17 +214,17 @@ Target.Create "SurveyPPT" (fun _ ->
     | None -> assertOptional "No PowerPoint file"       
 )
 
-Target.Create "CitCircuitDiagram" (fun _ -> 
+Fake.Core.Target.create "CitCircuitDiagram" (fun _ -> 
     let glob = sprintf "%s*" cleanName
     match tryFindExactlyOneMatchingFile "*Circuit Diagram.pdf" citInputDir with
     | Some srcFile -> 
         let destFile = makeSiteOutputName "%s circuit-diagram.pdf" 
-        Fake.IO.Shell.CopyFile destFile srcFile
+        Fake.IO.Shell.copyFile destFile srcFile
     | None -> assertOptional "No circuit diagram"
 )
 
 // This is optional
-Target.Create "CitWorkbook" (fun _ -> 
+Fake.Core.Target.create "CitWorkbook" (fun _ -> 
     match tryFindExactlyOneMatchingFile "*Workbook*.xls*" citInputDir with
     | Some pptFile -> 
         let outfile = makeSiteOutputName "%s cit-workbook.pdf" 
@@ -230,12 +241,12 @@ Target.Create "CitWorkbook" (fun _ ->
 // Maybe multiple sheets - must find at least 1...
 // TODO - potentially "skeletons" to work with multiple files would be nice
 // Install sheets might be doc or pdf (not both at same time)
-Target.Create "InstallSheets" (fun _ ->
+Fake.Core.Target.create "InstallSheets" (fun _ ->
     let copyPdfi (ix:int) (inputPdf:string) = 
         Trace.tracefn " --- Install sheet %i is: %s --- " (ix+1) inputPdf
         let outfile = makeSiteOutputNamei "%s install-sheet-%03i.pdf" (ix+1)
         if System.IO.File.Exists(inputPdf) then
-            Fake.IO.Shell.CopyFile outfile inputPdf 
+            Fake.IO.Shell.copyFile outfile inputPdf 
         else 
             failwithf "InstallSheets - Unbelieveable - glob matches but file does not exist '%s'" inputPdf
 
@@ -256,7 +267,7 @@ Target.Create "InstallSheets" (fun _ ->
 )
 
 
-Target.Create "InstallPhotos" (fun _ ->
+Fake.Core.Target.create "InstallPhotos" (fun _ ->
 
     let photoFolders = subdirectoriesWithMatches "*.jpg" siteWorkInputDir
     if not <| List.isEmpty photoFolders then
@@ -298,7 +309,7 @@ let finalGlobs : string list =
     ]
 
 
-Target.Create "Final" (fun _ ->
+Fake.Core.Target.create "Final" (fun _ ->
     let files:string list= 
         List.collect (fun glob -> findAllMatchingFiles glob siteOutputDir) finalGlobs
     PdfConcat (fun p -> 
@@ -322,5 +333,5 @@ Target.Create "Final" (fun _ ->
     ==> "InstallPhotos"
     ==> "Final"
 
-Target.RunOrDefault "Final"
+Fake.Core.Target.runOrDefault "Final"
 

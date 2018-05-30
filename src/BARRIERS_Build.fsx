@@ -32,9 +32,7 @@ open System.IO
 #r @"Fake.Core.Process.dll"
 open Fake
 open Fake.IO.FileSystemOperators
-// open Fake.Core.Environment
-open Fake.Core.Globbing
-//open Fake.Core.TargetOperators
+
 
 
 #load @"DocMake\Base\Common.fs"

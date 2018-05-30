@@ -5,6 +5,7 @@ open System.Text.RegularExpressions
 
 open Fake
 open Fake.Core
+open Fake.IO.FileSystemOperators
 
 open DocMake.Base.FakeExtras
 
@@ -19,13 +20,13 @@ let private regexMatchFiles (srcDir:string) (search:string) (ignoreCase:bool) : 
 let multiCopyGlob  (srcDir:string, srcGlob:string) (destDir:string) : unit = 
     let inputs = findAllMatchingFiles srcGlob srcDir  
     List.iter (fun srcFile ->
-                    Fake.IO.Shell.CopyFile destDir srcFile) inputs
+                    Fake.IO.Shell.copyFile destDir srcFile) inputs
 
 
 let multiCopyRegex (srcDir:string, srcRegex:string, ignoreCase:bool) (destDir:string) : unit = 
     let inputs = regexMatchFiles srcDir srcRegex ignoreCase
     List.iter (fun srcFile ->
-                    Fake.IO.Shell.CopyFile destDir srcFile) inputs
+                    Fake.IO.Shell.copyFile destDir srcFile) inputs
 
 // Push whether or not to use sprintf to the client, this makes things 
 // easier for the API.
@@ -36,7 +37,7 @@ let multiCopyGlobRename  (srcDir:string, srcGlob:string) (destDir:string, destNa
     let inputs = findAllMatchingFiles srcGlob srcDir  
     List.iteri (fun ix srcFile ->
                     let destFile = destDir @@ destNamer ix
-                    Fake.IO.Shell.CopyFile destFile srcFile) inputs
+                    Fake.IO.Shell.copyFile destFile srcFile) inputs
 
 
 
@@ -44,18 +45,18 @@ let multiCopyRegexRename  (srcDir:string, srcRegex:string, ignoreCase:bool) (des
     let inputs = regexMatchFiles srcDir srcRegex ignoreCase
     List.iteri (fun ix srcFile ->
                     let destFile = destDir @@ destNamer ix
-                    Fake.IO.Shell.CopyFile destFile srcFile) inputs
+                    Fake.IO.Shell.copyFile destFile srcFile) inputs
 
 // Throws error if the source is not found...
 let mandatoryCopyFile (destPath:string) (source:string) : unit = 
     if IO.File.exists(source) then
-        Fake.IO.Shell.CopyFile destPath source
+        Fake.IO.Shell.copyFile destPath source
     else 
         failwithf "mandatoryCopyFile - source not found '%s'" source
 
 // Prints warning if the source is not found...
 let optionalCopyFile (destPath:string) (source:string) : unit = 
     if IO.File.exists(source) then
-        Fake.IO.Shell.CopyFile destPath source
+        Fake.IO.Shell.copyFile destPath source
     else 
         Trace.tracefn "optionalCopyFile: WARNING - not copied, source not found '%s'" source

@@ -9,24 +9,29 @@
 #r "office"
 
 
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
-#I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
+#I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
 open System.IO
 
 // FAKE is local to the project file
-#I @"..\packages\FAKE.5.0.0-beta005\tools"
-#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
-open Fake
+#I @"..\packages\FAKE.5.0.0-rc016.225\tools"
+#r @"FakeLib.dll"
+#I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
+#r @"Fake.Core.Globbing.dll"
+#I @"..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46"
+#r @"Fake.IO.FileSystem.dll"
+#I @"..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Trace.dll"
+#I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Process.dll"
 open Fake.Core
-open Fake.Core.Environment
-open Fake.Core.Globbing.Operators
-open Fake.Core.TargetOperators
+open Fake.IO.FileSystemOperators
 
 
 #load @"DocMake\Base\Common.fs"

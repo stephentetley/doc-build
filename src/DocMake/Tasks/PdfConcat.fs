@@ -3,7 +3,6 @@
 open System.IO
 
 open Fake.Core
-open Fake.Core.Process
 
 open DocMake.Base.Common
 
@@ -58,9 +57,9 @@ let private makeCmd (parameters: PdfConcatParams) (inputFiles: string list) : st
 
 // Run as a process...
 let private shellRun toolPath command = 
-    if 0 <> ExecProcess (fun info -> 
-                info.FileName <- toolPath
-                info.Arguments <- command) System.TimeSpan.MaxValue
+    let infoF (info:ProcStartInfo) =  
+        { info with FileName =  toolPath; Arguments = command }
+    if 0 <> Fake.Core.Process.execSimple infoF System.TimeSpan.MaxValue
     then failwithf "PdfConcat %s failed." command
 
 
