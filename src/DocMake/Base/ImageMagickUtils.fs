@@ -11,11 +11,9 @@ open ImageMagick
 type PhotoOrientation = PhotoPortrait | PhotoLandscape
 
 
-// This seems to be getting orientation wrong, this is either
-// a problem with Magick.NET or the jpegs under test are mis-orientated.
-// Need to update Magick.NET...
+// This may get orientation "wrong" for files when the picture 
+// orientation is stored as an Exif tag.
 let getOrientation (info:MagickImageInfo) : PhotoOrientation = 
-    printfn "Orientation: w=%i, h=%i, %s" info.Width info.Height info.FileName 
     if info.Width > info.Height then PhotoLandscape else PhotoPortrait
     
 let makeRevisedFileName (annotation:string)  (filePath:string) : string = 
@@ -35,11 +33,9 @@ let calculateNewPixelSize (info:MagickImageInfo) (maxWidth:int, maxHeight:int) :
     match getOrientation info with
     | PhotoLandscape -> 
         let scaling = getScaling maxWidth info.Width 
-        printfn "Landscape: scaleBy=%f" scaling
         (maxWidth, scale info.Height scaling)
     | PhotoPortrait -> 
         let scaling = getScaling maxHeight info.Height 
-        printfn "Portrait: scaleBy=%f" scaling
         (scale info.Width scaling, maxHeight)
 
 
@@ -53,7 +49,6 @@ let optimizeForMsWord (filePath:string) : unit =
     use (img:MagickImage) = new MagickImage(filePath)
     let (newWidth,newHeight) = calculateNewPixelSize info (600,540)   // To check
     img.Density <- new Density(72.0, 72.0, DensityUnit.PixelsPerInch)
-    printfn "img => (w:%i, h:%i)" newWidth newHeight
     img.Resize(new MagickGeometry(width=newWidth, height=newHeight))
     img.Write filePath
 

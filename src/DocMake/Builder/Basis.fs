@@ -1,6 +1,8 @@
 ﻿module DocMake.Builder.Basis
 
 open System.IO
+open System.Threading
+
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
@@ -84,6 +86,7 @@ let deleteWorkingDirectory () : BuildMonad<'res,unit> =
         do printfn "Deleting: %s" cwd
         do! executeIO <| fun () ->
             if System.IO.Directory.Exists(cwd) then System.IO.Directory.Delete(path=cwd,recursive=true)
+        do! executeIO <| fun () -> Thread.Sleep(360)
         }
 
 
@@ -99,7 +102,6 @@ let localWorkingDirectory (wd:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res
 let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     localEnv (fun (e:Env) -> 
                 let cwd = System.IO.Path.Combine(e.WorkingDirectory, subdir)
-                printfn "localSubDirectory: %s " cwd
                 { e with WorkingDirectory = cwd }) 
             (createWorkingDirectory () >>. ma)
 

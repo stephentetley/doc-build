@@ -31,17 +31,11 @@ let private copyJPEGs (imgPaths:string list) : BuildMonad<'res,string> =
         buildMonad { 
             do! mapMz copyToWorkingDirectory imgPaths
             let! cwd = askWorkingDirectory ()
-            do printfn "Optimize: %s" cwd
             do optimizePhotos cwd 
             return cwd
         }
 
-
-    
-
-
 type PictureFun = string -> DocOutput<unit>
-
 
 let stepWithoutLabel : PictureFun = 
     fun jpegPath -> tellPicture jpegPath
@@ -88,7 +82,6 @@ let photoDoc (documentTitle: string option) (showJpegFileName:bool) (inputPaths:
         let jpegInputs = getJPEGs inputPaths
         let! tempLoc = copyJPEGs jpegInputs
         let! outDoc = freshDocument ()
-        do printfn "Photos - out: %s" outDoc.DocumentPath
         let _ = runDocOutput outDoc.DocumentPath (docProc tempLoc)
         return outDoc
         }

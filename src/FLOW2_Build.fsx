@@ -109,10 +109,9 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : BuildMon
             }
     
 
-let scopeOfWorks : BuildMonad<'res,PdfDoc> = 
+let scopeOfWorks () : BuildMonad<'res,PdfDoc> = 
     match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" siteInputDir with
-    | Some source -> 
-        copyToWorkingDirectory source >>= renameTo "scope-of-works.pdf"
+    | Some source -> copyToWorkingDirectory source
     | None -> throwError "NO SCOPE OF WORKS"
 
 
@@ -161,7 +160,7 @@ let buildScript (siteName:string) : BuildMonad<'res,unit> =
         let! p1 = cover matches1
         let surveyJpegsPath = siteInputDir @@ "Survey_Photos"
         let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
-        let! p3 = scopeOfWorks
+        let! p3 = makePdf "scope-of-works.pdf"  <| scopeOfWorks () 
         let! ps1 = citWork ()
         let! ps2 = installSheets ()
         let surveyJpegsPath = siteInputDir @@ "Install_Photos"
@@ -180,19 +179,4 @@ let main () : unit =
 
     consoleRun env (buildScript siteName) 
 
-
-let test01 () = 
-    let env = 
-        { WorkingDirectory = siteOutputDir
-          PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfScreen }
-
-    let proc =
-        execWordBuild <| 
-            buildMonad {
-                let! d1 = freshDocument () // >>= renameTo "TEMP1.docx"
-                let! d2 = freshDocument ()
-                return d1.DocumentPath, d2.DocumentPath
-            }
-    consoleRun env proc
 

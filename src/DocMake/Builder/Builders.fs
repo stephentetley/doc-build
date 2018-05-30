@@ -16,6 +16,10 @@ type WordBuild<'a> = BuildMonad<Word.Application, 'a>
 type WordPhantom = class end
 type WordDoc = Document<WordPhantom>
 
+let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
+    proc >>= renameTo outputName
+
+
 
 // TODO - this is not good as it can result in spawning many versions of Word.
 // Instead we should ahve a single instance optionally in the 'res parameter.
@@ -50,6 +54,9 @@ type PowerPointDoc = Document<PowerPointPhantom>
 type PdfPhantom = class end
 type PdfDoc = Document<PdfPhantom>
 
+
+let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) :BuildMonad<'res, PdfDoc> = 
+    proc >>= renameTo outputName
 
 // Shell helper:
 let private shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
