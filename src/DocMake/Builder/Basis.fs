@@ -74,19 +74,33 @@ let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'
 let renameTo (dest:string) (src:Document<'a>) : BuildMonad<'res,Document<'a>> = 
     renameDocument src dest
 
-let localWorkingDirectory (wd:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
-    localEnv (fun (e:Env) -> { e with WorkingDirectory = wd }) ma
+
+let askWorkingDirectory () : BuildMonad<'res,string> = 
+    asksEnv (fun e -> e.WorkingDirectory)
 
 let deleteWorkingDirectory () : BuildMonad<'res,unit> = 
     buildMonad { 
-        let! cwd = asksEnv (fun e -> e.WorkingDirectory)
-        ignore << executeIO <| fun () ->
+        let! cwd = askWorkingDirectory ()
+        do printfn "Deleting: %s" cwd
+        do! executeIO <| fun () ->
             if System.IO.Directory.Exists(cwd) then System.IO.Directory.Delete(path=cwd,recursive=true)
-        return ()
         }
+
 
 let createWorkingDirectory () : BuildMonad<'res,unit> = 
     buildMonad { 
         let! cwd = asksEnv (fun e -> e.WorkingDirectory)
         do! executeIO (fun () -> maybeCreateDirectory cwd) 
     }
+
+let localWorkingDirectory (wd:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    localEnv (fun (e:Env) -> { e with WorkingDirectory = wd }) ma
+
+let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    localEnv (fun (e:Env) -> 
+                let cwd = System.IO.Path.Combine(e.WorkingDirectory, subdir)
+                printfn "localSubDirectory: %s " cwd
+                { e with WorkingDirectory = cwd }) 
+            (createWorkingDirectory () >>. ma)
+
+

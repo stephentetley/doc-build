@@ -5,13 +5,18 @@ open System.IO
 open System.Text.RegularExpressions
 open Microsoft.Office.Interop
 
-
+open DocMake.Base.ImageMagickUtils
 open DocMake.Base.SimpleDocOutput
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.Builders
 
-        
+// TODO - must optimize the size of the photos for Word.
+// Which in turn means copy the photos.
+
+
+
+
 let private getJPEGs (dirs:string list) : string list = 
     let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
     let get1 = fun dir -> 
@@ -20,6 +25,20 @@ let private getJPEGs (dirs:string list) : string list =
         |> Array.toList
     List.collect get1 dirs
     
+
+let private copyJPEGs (imgPaths:string list) : BuildMonad<'res,string> = 
+    localSubDirectory "photos" <| 
+        buildMonad { 
+            do! mapMz copyToWorkingDirectory imgPaths
+            let! cwd = askWorkingDirectory ()
+            do printfn "Optimize: %s" cwd
+            do optimizePhotos cwd 
+            return cwd
+        }
+
+
+    
+
 
 type PictureFun = string -> DocOutput<unit>
 
@@ -41,7 +60,7 @@ let private addTitle  (optTitle:string option) : DocOutput<unit> =
     | Some title -> tellStyledText Word.WdBuiltinStyle.wdStyleTitle (title + "\n\n")
         
 
-let private processPhotos (action1:PictureFun) (files:string list) : DocOutput<unit> =
+let private insertPhotos (action1:PictureFun) (files:string list) : DocOutput<unit> =
     // Don't add page break to last, hence use direct recursion
     
     let rec work zs = 
@@ -57,25 +76,21 @@ let private processPhotos (action1:PictureFun) (files:string list) : DocOutput<u
 
 
 let photoDoc (documentTitle: string option) (showJpegFileName:bool) (inputPaths:string list) : WordBuild<WordDoc> =
-    let jpegs = getJPEGs inputPaths
-    let docProc:DocOutput<unit>  = 
+    let docProc (jpegFolder:string) : DocOutput<unit>  = 
+        let jpegs = getJPEGs [jpegFolder]
         let stepFun = if showJpegFileName then stepWithLabel else stepWithoutLabel
         docOutput { 
             do! addTitle documentTitle
-            do! processPhotos stepFun jpegs
+            do! insertPhotos stepFun jpegs
             }
+
     buildMonad { 
+        let jpegInputs = getJPEGs inputPaths
+        let! tempLoc = copyJPEGs jpegInputs
         let! outDoc = freshDocument ()
         do printfn "Photos - out: %s" outDoc.DocumentPath
-        let _ = runDocOutput outDoc.DocumentPath docProc
+        let _ = runDocOutput outDoc.DocumentPath (docProc tempLoc)
         return outDoc
         }
     
-
-
-
-
-    
-
-
 

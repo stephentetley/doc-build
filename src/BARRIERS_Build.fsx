@@ -61,7 +61,7 @@ let _outputRoot     = @"G:\work\Projects\barriers\final-docs\output\Batch02"
 
 let clean : BuildMonad<'res, unit> =
     buildMonad { 
-        let! cwd = asksEnv (fun e -> e.WorkingDirectory)
+        let! cwd = askWorkingDirectory ()
         if Directory.Exists(cwd) then 
             do! tellLine (sprintf " --- Clean folder: '%s' ---" cwd)
             do! deleteWorkingDirectory ()
@@ -113,8 +113,8 @@ let buildScript (siteName:string) : BuildMonad<'res,unit> =
         buildMonad { 
             do! clean >>. outputDirectory
             let! p1 = siteWorks siteInputDir
-            let surveyJpegsPath = siteInputDir @@ "PHOTOS"
-            let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
+            let worksJpegsPath = siteInputDir @@ "PHOTOS"
+            let! p2 = photosDoc "Site Work Photos" worksJpegsPath "site-work-photos.pdf"
             let (pdfs:PdfDoc list) = [p1;p2]
             let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs) >>= renameTo finalName
             return ()                 
