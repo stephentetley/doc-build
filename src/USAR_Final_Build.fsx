@@ -16,24 +16,34 @@
 #r "office"
 
 
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
-#I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
+#I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
 open System.IO
 
-// FAKE is local to the project file
-#I @"..\packages\FAKE.5.0.0-beta005\tools"
-#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+#I @"..\packages\FAKE.5.0.0-rc016.225\tools"
+#r @"FakeLib.dll"
+#I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
+#r @"Fake.Core.Globbing.dll"
+#I @"..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46"
+#r @"Fake.IO.FileSystem.dll"
+#I @"..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Trace.dll"
+#I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Process.dll"
+#I @"..\packages\Fake.Core.Target.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Target.dll"
+#I @"..\packages\Fake.Core.Environment.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Environment.dll"
 open Fake
 open Fake.Core
-open Fake.Core.Environment
-open Fake.Core.Globbing.Operators
 open Fake.Core.TargetOperators
+
 
 
 #load @"DocMake\Base\Common.fs"
@@ -68,7 +78,7 @@ let _jsonRoot       = @"G:\work\Projects\usar\Final_Docs\__Json"
 
 // siteName is an envVar so we can use this build script to build many 
 // sites (they all follow the same directory/file structure).
-let siteName = environVarOrDefault "sitename" @"MISSING"
+let siteName = Fake.Core.Environment.environVarOrDefault "sitename" @"MISSING"
 
 
 let cleanName           = safeName siteName
@@ -79,7 +89,7 @@ let siteOutputDir       = _outputRoot @@ cleanName
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
     siteOutputDir @@ sprintf fmt cleanName
 
-Target.Create "Clean" (fun _ -> 
+Fake.Core.Target.create "Clean" (fun _ -> 
     if Directory.Exists(siteOutputDir) then 
         Trace.tracefn " --- Clean folder: '%s' ---" siteOutputDir
         Fake.IO.Directory.delete siteOutputDir
@@ -88,12 +98,12 @@ Target.Create "Clean" (fun _ ->
 )
 
 
-Target.Create "OutputDirectory" (fun _ -> 
+Fake.Core.Target.create "OutputDirectory" (fun _ -> 
     Trace.tracefn " --- Output folder: '%s' ---" siteOutputDir
     maybeCreateDirectory siteOutputDir 
 )
 
-Target.Create "CoverSheet" (fun _ ->
+Fake.Core.Target.create "CoverSheet" (fun _ ->
     let template = _templateRoot @@ "USAR Cover Sheet.docx"
     let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
     let docname = makeSiteOutputName "%s Cover Sheet.docx"
@@ -129,7 +139,7 @@ let docToPdfAction (message:string) (infile:string) : unit =
 
 
 // Multiple survey sheets
-Target.Create "SurveySheets" (fun _ ->
+Fake.Core.Target.create "SurveySheets" (fun _ ->
     // Note - matching is with globs not regexs. Cannot use [Ss] to match capital or lower s.
     match tryFindSomeMatchingFiles "*urvey.doc*" siteInputDir with
     | Some inputs -> 
@@ -140,7 +150,7 @@ Target.Create "SurveySheets" (fun _ ->
 
 
 
-Target.Create "InstallSheets" (fun _ ->
+Fake.Core.Target.create "InstallSheets" (fun _ ->
     match tryFindSomeMatchingFiles "*nstall.doc*" siteInputDir with
     | Some inputs -> 
         List.iter (fun file -> docToPdfAction (sprintf "Install: %s" file) file) inputs
@@ -155,7 +165,7 @@ let finalGlobs : string list =
       "*Survey*.pdf" ;
       "*Install*.pdf" ]
 
-Target.Create "Final" (fun _ ->
+Fake.Core.Target.create "Final" (fun _ ->
     let files:string list= 
         List.collect (fun glob -> findAllMatchingFiles glob siteOutputDir) finalGlobs
     PdfConcat (fun p -> 
@@ -163,26 +173,20 @@ Target.Create "Final" (fun _ ->
             OutputFile = makeSiteOutputName "%s S3820 Ultrasonic Asset Replacement.pdf" })
         files
 )
+
 // *** Dummy cases
 
-Target.Create "Dummy" (fun _ ->
-    printfn "Message from Dummy target"
-)
-
-Target.Create "None" (fun _ ->
+Fake.Core.Target.create "None" (fun _ ->
     printfn "None"
 )
-
 
 // *** Dependencies ***
 "Clean"
     ==> "OutputDirectory"
-
-"OutputDirectory"
     ==> "CoverSheet"
     ==> "SurveySheets"
     ==> "InstallSheets"
     ==> "Final"
 
 // Note seemingly Fake files must end with this...
-Target.RunOrDefault "None"
+Fake.Core.Target.runOrDefault "None"

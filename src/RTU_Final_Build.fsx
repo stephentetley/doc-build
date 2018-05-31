@@ -15,24 +15,34 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40"
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
-#I @"..\packages\Newtonsoft.Json.10.0.3\lib\net45"
+#I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
 
 open System.IO
 
-// FAKE is local to the project file
-#I @"..\packages\FAKE.5.0.0-beta005\tools"
-#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+#I @"..\packages\FAKE.5.0.0-rc016.225\tools"
+#r @"FakeLib.dll"
+#I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
+#r @"Fake.Core.Globbing.dll"
+#I @"..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46"
+#r @"Fake.IO.FileSystem.dll"
+#I @"..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Trace.dll"
+#I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Process.dll"
+#I @"..\packages\Fake.Core.Target.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Target.dll"
+#I @"..\packages\Fake.Core.Environment.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Environment.dll"
 open Fake
 open Fake.Core
-open Fake.Core.Environment
-open Fake.Core.Globbing.Operators
 open Fake.Core.TargetOperators
+
 
 
 #load @"DocMake\Base\Common.fs"
@@ -66,7 +76,7 @@ let _jsonRoot       = @"G:\work\Projects\rtu\Final_Docs\__Json"
 
 // siteName is an envVar so we can use this build script to build many 
 // sites (they all follow the same directory/file structure).
-let siteName = environVarOrDefault "sitename" @"MISSING"
+let siteName = Fake.Core.Environment.environVarOrDefault "sitename" @"MISSING"
 
 
 let cleanName           = safeName siteName
@@ -77,7 +87,7 @@ let siteOutputDir       = _outputRoot @@ cleanName
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
     siteOutputDir @@ sprintf fmt cleanName
 
-Target.Create "Clean" (fun _ -> 
+Fake.Core.Target.create "Clean" (fun _ -> 
     if Directory.Exists siteOutputDir then 
         Trace.tracefn " --- Clean folder: '%s' ---" siteOutputDir
         Fake.IO.Directory.delete siteOutputDir
@@ -86,12 +96,12 @@ Target.Create "Clean" (fun _ ->
 )
 
 
-Target.Create "OutputDirectory" (fun _ -> 
+Fake.Core.Target.create "OutputDirectory" (fun _ -> 
     Trace.tracefn " --- Output folder: '%s' ---" siteOutputDir
     maybeCreateDirectory siteOutputDir
 )
 
-Target.Create "CoverSheet" (fun _ ->
+Fake.Core.Target.create "CoverSheet" (fun _ ->
     let template = _templateRoot @@ "MM3x-to-MMIM RTU Cover Sheet.docx"
     let jsonSource = _jsonRoot @@ (sprintf "%s_findreplace.json" cleanName)
     let docName = makeSiteOutputName "%s Cover Sheet.docx"
@@ -118,7 +128,7 @@ Target.Create "CoverSheet" (fun _ ->
 
 
 
-Target.Create "SurveySheet" (fun _ ->
+Fake.Core.Target.create "SurveySheet" (fun _ ->
     match tryFindExactlyOneMatchingFile "*urvey.doc*" siteInputDir with
     | Some docFile -> 
         let pdfFile = makeSiteOutputName "%s Survey Sheet.pdf" 
@@ -131,7 +141,7 @@ Target.Create "SurveySheet" (fun _ ->
 )
 
 
-Target.Create "SurveyPhotos" (fun _ ->
+Fake.Core.Target.create "SurveyPhotos" (fun _ ->
     let photosPath = siteInputDir @@ "Survey Photos"
     let docName = makeSiteOutputName "%s Survey Photos.docx" 
     let pdfName = pathChangeExtension docName "pdf"
@@ -151,7 +161,7 @@ Target.Create "SurveyPhotos" (fun _ ->
     else assertOptional "NO SURVEY PHOTOS"
 )
 
-Target.Create "InstallSheet" (fun _ ->
+Fake.Core.Target.create "InstallSheet" (fun _ ->
     match tryFindExactlyOneMatchingFile "*Site Works*.doc*" siteInputDir with
     | Some docName -> 
         let pdfName = makeSiteOutputName "%s Install Sheet.pdf" 
@@ -163,7 +173,7 @@ Target.Create "InstallSheet" (fun _ ->
     | None -> assertMandatory "NO INSTALL SHEET"
 )
 
-Target.Create "InstallPhotos" (fun _ ->
+Fake.Core.Target.create "InstallPhotos" (fun _ ->
     let photosPath = siteInputDir @@ "install photos"
     let docName = makeSiteOutputName "%s Install Photos.docx" 
     let pdfName = pathChangeExtension docName "pdf"
@@ -190,7 +200,7 @@ let finalGlobs : string list =
       "* Install Sheet.pdf" ;
       "* Install Photos.pdf" ]
 
-Target.Create "Final" (fun _ ->
+Fake.Core.Target.create "Final" (fun _ ->
     let files:string list= 
         List.collect (fun glob -> findAllMatchingFiles glob siteOutputDir) finalGlobs
     PdfConcat (fun p -> 
@@ -198,13 +208,11 @@ Target.Create "Final" (fun _ ->
             OutputFile = makeSiteOutputName "%s S3953 RTU Asset Replacement.pdf" })
         files
 )
+
+
 // *** Dummy cases
 
-Target.Create "Dummy" (fun _ ->
-    printfn "Message from Dummy target"
-)
-
-Target.Create "None" (fun _ ->
+Fake.Core.Target.create "None" (fun _ ->
     printfn "None"
 )
 
@@ -212,8 +220,6 @@ Target.Create "None" (fun _ ->
 // *** Dependencies ***
 "Clean"
     ==> "OutputDirectory"
-
-"OutputDirectory"
     ==> "CoverSheet"
     ==> "SurveySheet"
     ==> "SurveyPhotos"
@@ -222,4 +228,4 @@ Target.Create "None" (fun _ ->
     ==> "Final"
 
 // Note seemingly Fake files must end with this...
-Target.RunOrDefault "None"
+Fake.Core.Target.runOrDefault "None"

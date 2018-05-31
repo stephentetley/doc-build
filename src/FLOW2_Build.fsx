@@ -30,7 +30,7 @@ open System.IO
 #I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
 #r @"Fake.Core.Process.dll"
 open Fake
-
+open Fake.IO.FileSystemOperators
 
 
 #load @"DocMake\Base\Common.fs"

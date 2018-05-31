@@ -54,7 +54,7 @@ open DocMake.Tasks.DocFindReplace
 let _templateRoot   = @"G:\work\Projects\events2\gen-surveys-risks\__Templates"
 let _outputRoot     = @"G:\work\Projects\events2\gen-surveys-risks\output"
 
-let _surveyTemplate = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-05-10.docx"
+let _surveyTemplate = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-05-31.docx"
 
 type SiteTable = 
     ExcelFile< @"G:\work\Projects\events2\EDM2 Site-List SK.xlsx",
@@ -76,8 +76,15 @@ let filterByWorkGroup (workGroup:string) (source:SiteRow list) : SiteRow list =
         | ans -> ans = workGroup
     List.filter testRow source
 
-let getSiteRows (workGroup:string) : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) |> filterByWorkGroup workGroup
+let filterBySurveyBatch (batch:string) (source:SiteRow list) : SiteRow list = 
+    let testRow (row:SiteRow) : bool = 
+        match row.``Survey Batch`` with
+        | null -> false
+        | ans -> ans = batch
+    List.filter testRow source
+
+let getSiteRows (surveyBatch:string) : SiteRow list = 
+    excelTableGetRows siteTableDict (new SiteTable()) |> filterBySurveyBatch surveyBatch
 
 
 
@@ -207,17 +214,17 @@ let genSurvey (app:Word.Application) (workGroup:string)  (siteProps:SiteProps) (
 
 // TODO SHEFFIELD , YORK
 
-let main (workGroup:string) : unit = 
-    let siteList = buildSites <| getSiteRows workGroup 
+let main (surveyBatch:string) : unit = 
+    let siteList = buildSites <| getSiteRows surveyBatch 
     let todoCount = List.length siteList
-    let safeBatchName = safeName workGroup
+    let safeBatchName = safeName surveyBatch
     let app = new Word.ApplicationClass (Visible = true)
 
     let proc1 (ix:int) (site:Site) = 
         printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
         makeSiteFolder safeBatchName site.SiteProps.SiteName
         List.iter (genSurvey app safeBatchName site.SiteProps) site.Discharges
-        // genHazardSheet safeBatchName site
+        genHazardSheet safeBatchName site
     // actions...
     makeTopFolder safeBatchName
     siteList |> List.iteri proc1
