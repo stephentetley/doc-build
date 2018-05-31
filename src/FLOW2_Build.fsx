@@ -80,17 +80,19 @@ let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string =
     siteOutputDir @@ sprintf fmt cleanName
 
 let clean : BuildMonad<'res, unit> =
-    if Directory.Exists(siteOutputDir) then 
-        tellLine (sprintf " --- Clean folder: '%s' ---" siteOutputDir) >>.
-        executeIO (fun () -> Fake.IO.Directory.delete siteOutputDir)
-    else 
-        tellLine <| sprintf " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
-
+    buildMonad { 
+        if Directory.Exists(siteOutputDir) then 
+            do printfn " --- Clean folder: '%s' ---" siteOutputDir
+            do! executeIO (fun () -> Fake.IO.Directory.delete siteOutputDir)
+        else 
+            do printfn " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
+    }
 
 let outputDirectory : BuildMonad<'res, unit> =
-    tellLine (sprintf  " --- Output folder: '%s' ---" siteOutputDir) >>.
-    executeIO (fun () -> maybeCreateDirectory siteOutputDir)
-
+    buildMonad { 
+        do printfn  " --- Output folder: '%s' ---" siteOutputDir
+        do! executeIO (fun () -> maybeCreateDirectory siteOutputDir)
+    }
 
 
 // This should be a mandatory task
@@ -139,7 +141,7 @@ let installSheets () : BuildMonad<'res, PdfDoc list> =
     let pdfGen (glob:string) (warnMsg:string) : ExcelBuild<PdfDoc list> = 
         match findAllMatchingFiles glob siteInputDir with
         | [] -> 
-            tellLine warnMsg >>. breturn []
+            printfn "%s" warnMsg; breturn []
              
         | xs -> 
             forM xs (fun path -> 

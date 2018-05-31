@@ -67,10 +67,10 @@ let clean () : BuildMonad<'res, unit> =
     buildMonad { 
         let! cwd = askWorkingDirectory ()
         if Directory.Exists(cwd) then 
-            do! tellLine (sprintf " --- Clean folder: '%s' ---" cwd)
+            do printfn " --- Clean folder: '%s' ---" cwd
             do! deleteWorkingDirectory ()
         else 
-            do! tellLine <| sprintf " --- Clean --- : folder does not exist '%s' ---" cwd
+            do printfn " --- Clean --- : folder does not exist '%s' ---" cwd
     }
 
 
@@ -78,7 +78,7 @@ let clean () : BuildMonad<'res, unit> =
 let outputDirectory () : BuildMonad<'res, unit> =
     buildMonad { 
         let! cwd = asksEnv (fun e -> e.WorkingDirectory)
-        do! tellLine (sprintf  " --- Output folder: '%s' ---" cwd)
+        do printfn  " --- Output folder: '%s' ---" cwd
         do! createWorkingDirectory ()
     }
 
