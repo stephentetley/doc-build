@@ -5,11 +5,6 @@ open System.Text
 open DocMake.Base.Common
 
 
-type FailMsg = string
-
-type Answer<'a> =
-    | Err of FailMsg
-    | Ok of 'a
 
 // There's a design issue that we probably won't explore, but it is very 
 // interesting (although complicated).
@@ -32,6 +27,13 @@ type State =
     { MakeName: int -> string
       NameIndex: int }
 
+type FailMsg = string
+
+type BuildResult<'a> =
+    | Err of FailMsg
+    | Ok of State * 'a
+
+
 let private incrNameIndex (st:State) : State = 
     let i = st.NameIndex in {st with NameIndex = i + 1 }
 
@@ -40,38 +42,51 @@ let private incrNameIndex (st:State) : State =
 // Note - keeping log in a StringBuilder means we only see it "at the end",
 // any direct console writes are visible before the log is shown.
 type BuildMonad<'res,'a> = 
-    private BuildMonad of ((Env * 'res)  -> State -> (State * Answer<'a>))
+    private BuildMonad of ((Env * 'res)  -> State -> BuildResult<'a>)
 
-let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (st:State) : State *  Answer<'a> = 
+let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (st:State) : BuildResult<'a> = 
     let (BuildMonad f) = ma in f handle st
 
 // Return in the BuildMonad
 let inline breturn (x:'a) : BuildMonad<'res,'a> = 
-    BuildMonad (fun _ st -> st, Ok x)
+    BuildMonad (fun _ st -> Ok (st,x))
 
 let private failM : BuildMonad<'res,'a> = 
-    BuildMonad (fun _ st -> st, Err "failM")
+    BuildMonad (fun _ st -> Err "failM")
 
 
 let inline private bindM (ma:BuildMonad<'res,'a>) (f : 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b> =
     BuildMonad <| fun res st0 -> 
-        let st1, ans = apply1 ma res st0
-        match ans with
-        | Err s -> (st1, Err s)
-        | Ok a -> apply1 (f a) res st1
+        match apply1 ma res st0 with
+        | Err msg -> Err msg
+        | Ok (st1,a) -> apply1 (f a) res st1
 
 
 let inline private altM (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : BuildMonad<'res,'a> =
     BuildMonad <| fun res st0 -> 
-        let st1, ans = apply1 ma res st0
-        match ans with 
-        | Err s -> apply1 ma res st1
-        | Ok a -> st1, Ok a
+        match apply1 ma res st0 with 
+        | Err msg -> apply1 mb res st0
+        | Ok (st1,a) -> Ok (st1, a)
+
+let combineM (ma:BuildMonad<'res,unit>) (mb:BuildMonad<'res,unit>) : BuildMonad<'res,unit> = 
+    BuildMonad <| fun res st0 -> 
+        match apply1 ma res st0 with
+        | Err msg -> Err msg
+        | Ok(st1,a) -> 
+            match apply1 mb res st1 with
+            | Err msg -> Err msg
+            | Ok(st2,a) -> Ok (st2, ())
+
+let delayM (fn:unit -> BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    bindM (breturn ()) fn 
+
 
 type BuildMonadBuilder() = 
-    member self.Return x = breturn x
-    member self.Bind (p,f) = bindM p f
-    member self.Zero () = failM
+    member self.Return x        = breturn x
+    member self.Bind (p,f)      = bindM p f
+    member self.Zero ()         = failM
+    member self.Delay fn        = delayM fn
+
 
 let (buildMonad:BuildMonadBuilder) = new BuildMonadBuilder()
 
@@ -79,22 +94,20 @@ let (buildMonad:BuildMonadBuilder) = new BuildMonadBuilder()
 // Common monadic operations
 let fmapM (fn:'a -> 'b) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'b> = 
     BuildMonad <| fun res st0 ->
-        let (st1,ans) =  apply1 ma res st0 
-        match ans with
-        | Err msg -> (st1, Err msg)
-        | Ok a -> (st1, Ok <| fn a)
+        match apply1 ma res st0  with
+        | Err msg -> Err msg
+        | Ok (st1,a) -> Ok (st1, fn a)
 
 
 let mapM (fn:'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,'b list> =
     BuildMonad <| fun res state -> 
         let rec work ac (st0:State) ys = 
             match ys with
-            | [] -> (st0, Ok <| List.rev ac)
+            | [] -> Ok (st0, List.rev ac)
             | z :: zs ->
-                let (st1,ans) = apply1 (fn z) res st0
-                match ans with
-                | Err msg -> st1, Err msg 
-                | Ok a -> work (a::ac) st1 zs
+                match apply1 (fn z) res st0 with
+                | Err msg -> Err msg 
+                | Ok(st1, a) -> work (a::ac) st1 zs
         work [] state xs
 
 let forM (xs:'a list) (fn:'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b list> = 
@@ -105,12 +118,11 @@ let mapMz (fn:'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,unit> =
     BuildMonad <| fun res state -> 
         let rec work st0 ys = 
             match ys with
-            | [] -> (st0, Ok ())
+            | [] -> Ok (st0, ())
             | z :: zs ->
-                let (st1,ans) = apply1 (fn z) res st0
-                match ans with
-                | Err msg -> (st1, Err msg)
-                | Ok _ -> work st1 zs
+                match apply1 (fn z) res st0 with
+                | Err msg -> Err msg
+                | Ok (st1,_) -> work st1 zs
         work state xs
 
 
@@ -145,24 +157,22 @@ let mapiM (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,'
     BuildMonad <| fun res state -> 
         let rec work ac ix st0 ys = 
             match ys with
-            | [] -> (st0, Ok <| List.rev ac)
+            | [] ->  Ok (st0,List.rev ac)
             | z :: zs ->
-                let (st1,ans) = apply1 (fn ix z) res st0
-                match ans with
-                | Err msg -> (st1, Err msg)
-                | Ok a -> work (a::ac) (ix+1) st1 zs
+                match apply1 (fn ix z) res st0 with
+                | Err msg -> Err msg
+                | Ok (st1,a) -> work (a::ac) (ix+1) st1 zs
         work [] 0 state xs
 
 let mapiMz (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,unit> =
     BuildMonad <| fun res state -> 
         let rec work ix st0 ys = 
             match ys with
-            | [] -> (st0, Ok ())
+            | [] -> Ok (st0, ())
             | z :: zs ->
-                let (st1,ans) =  apply1 (fn ix z) res st0
-                match ans with
-                | Err msg -> (st1, Err msg)
-                | Ok _ -> work (ix+1) st1 zs
+                match apply1 (fn ix z) res st0 with
+                | Err msg ->  Err msg
+                | Ok (st1, _) -> work (ix+1) st1 zs
         work 0 state xs
 
 let foriM (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,'b list> =
@@ -220,20 +230,20 @@ let (>>=) (ma: BuildMonad<'res,'a>) (k: 'a -> BuildMonad<'res,'b>) : BuildMonad<
 // *********************************************************
 
 // BuildMonad operations
-let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,'a>) : State * Answer<'a>= 
+let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,'a>) : BuildResult<'a>= 
     match ma with 
-    | BuildMonad fn -> let (s1,ans) = fn (env,handle) stateZero in (s1,ans)
+    | BuildMonad fn ->  fn (env,handle) stateZero
 
 
 // TODO need a simple way to run things
 // In Haskell the `eval` prefix is closes to "run a cmputation, return (just) the answer"
 
 let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:State)  (ma:BuildMonad<'res,'a>) : 'a = 
-    let _, ans = runBuildMonad env handle stateZero ma
+    let ans = runBuildMonad env handle stateZero ma
     finalizer handle
     match ans with
     | Err msg -> failwith msg
-    | Ok a -> a
+    | Ok (_,a) -> a
 
 let consoleRun (env:Env) (ma:BuildMonad<unit,'a>) : 'a = 
     let stateZero : State = 
@@ -245,13 +255,12 @@ let consoleRun (env:Env) (ma:BuildMonad<unit,'a>) : 'a =
 
 let withUserHandle (handle:'uhandle) (finalizer:'uhandle -> unit) (ma:BuildMonad<'uhandle,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,_) st0 -> 
-        let (st1,ans) = runBuildMonad env handle st0 ma
+        let ans = runBuildMonad env handle st0 ma
         finalizer handle
-        (st1,ans)
+        ans
 
 let throwError (msg:string) : BuildMonad<'res,'a> = 
-    BuildMonad <| fun _ st0 -> 
-        (st0, Err msg)
+    BuildMonad <| fun _ _ -> Err msg
 
 
 
@@ -262,28 +271,28 @@ let throwError (msg:string) : BuildMonad<'res,'a> =
 let executeIO (operation:unit -> 'a) : BuildMonad<'res,'a> = 
     BuildMonad <| fun _ st0 -> 
     try 
-        let ans = operation () in (st0, Ok ans)
+        let ans = operation () in Ok (st0, ans)
     with
-    | ex -> (st0, Err ex.Message)
+    | ex -> Err ex.Message
 
 
 
 /// Note unit param to avoid value restriction.
 let askU () : BuildMonad<'res,'res> = 
-    BuildMonad <| fun (_,res) st0 -> (st0, Ok res)
+    BuildMonad <| fun (_,res) st0 -> Ok (st0, res)
 
 let asksU (project:'res -> 'a) : BuildMonad<'res,'a> = 
-    BuildMonad <| fun (_,res) st0 -> (st0, Ok (project res))
+    BuildMonad <| fun (_,res) st0 -> Ok (st0, project res)
 
 let localU (modify:'res -> 'res) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,res) st0 -> apply1 ma (env, modify res) st0
 
     // PrintQuality
 let askEnv () : BuildMonad<'res,Env> = 
-    BuildMonad <| fun (env,_) st0 -> (st0, Ok env)
+    BuildMonad <| fun (env,_) st0 -> Ok (st0, env)
 
 let asksEnv (project:Env -> 'a) : BuildMonad<'res,'a> = 
-    BuildMonad <| fun (env,_) st0 -> (st0, Ok (project env))
+    BuildMonad <| fun (env,_) st0 -> Ok (st0, project env)
 
 let localEnv (modify:Env -> Env) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,res) st0 -> apply1 ma (modify env, res) st0
@@ -297,8 +306,9 @@ let localEnv (modify:Env -> Env) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> 
 let withNameGen (namer:int -> string) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> =
     BuildMonad <| fun (env,res) st0 -> 
         let fun1 = st0.MakeName
-        let (s1,ans) = apply1 ma (env,res) {st0 with MakeName = namer}
-        ({s1 with MakeName = fun1}, ans)
+        match apply1 ma (env,res) {st0 with MakeName = namer} with
+        | Err msg ->Err msg
+        | Ok (st1,a) -> Ok ({st1 with MakeName = fun1}, a)
 
 
 let freshFileName () : BuildMonad<'res, string> = 
@@ -306,4 +316,4 @@ let freshFileName () : BuildMonad<'res, string> =
         let i = st0.NameIndex
         let name1 = st0.MakeName i
         let outPath = System.IO.Path.Combine(env.WorkingDirectory,name1)
-        (incrNameIndex st0, Ok outPath)
+        Ok (incrNameIndex st0, outPath)
