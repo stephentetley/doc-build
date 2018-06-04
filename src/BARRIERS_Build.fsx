@@ -56,9 +56,6 @@ open DocMake.Lib.DocPhotos
 open DocMake.Lib.DocToPdf
 open DocMake.Lib.PdfConcat
 
-// TODO - localize these
-
-
 
 // Output is just "Site Works" doc and the collected "Photo doc"
 
