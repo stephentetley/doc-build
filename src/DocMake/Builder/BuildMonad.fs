@@ -5,7 +5,6 @@ open System.Text
 open DocMake.Base.Common
 
 
-
 // There's a design issue that we probably won't explore, but it is very 
 // interesting (although complicated).
 // With continuations might enable us to have restartable builds, this could 
