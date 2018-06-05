@@ -1,4 +1,7 @@
-﻿module DocMake.Lib.DocToPdf
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Lib.DocToPdf
 
 
 // Open at .Interop rather than .Word then the Word API has to be qualified

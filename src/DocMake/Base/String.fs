@@ -1,4 +1,7 @@
-﻿module DocMake.Base.String
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Base.String
 
 
 let isPrefixOf (source:string) (needle:string) : bool = 

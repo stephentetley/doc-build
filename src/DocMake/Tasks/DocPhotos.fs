@@ -1,4 +1,7 @@
-﻿module DocMake.Tasks.DocPhotos
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Tasks.DocPhotos
 
 
 open System.IO

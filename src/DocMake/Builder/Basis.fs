@@ -1,4 +1,7 @@
-﻿module DocMake.Builder.Basis
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Builder.Basis
 
 open System.IO
 open System.Threading
@@ -11,7 +14,7 @@ open DocMake.Builder.BuildMonad
 /// Document has a Phantom Type so we can distinguish between different types 
 /// (Word, Excel, Pdf, ...)
 /// Maybe we ought to store whether a file has been derived in the build process
-/// (and so deleteable)... 
+/// (and so deletable)... 
 type Document<'a> = { DocumentPath : string }
 
 let makeDocument (filePath:string) : Document<'a> = 

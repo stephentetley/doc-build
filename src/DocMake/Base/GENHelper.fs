@@ -1,4 +1,7 @@
-﻿module DocMake.Base.GENHelper
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Base.GENHelper
 
 open System
 

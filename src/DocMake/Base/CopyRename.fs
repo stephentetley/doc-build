@@ -1,4 +1,7 @@
-﻿module DocMake.Base.CopyRename
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Base.CopyRename
 
 open System.IO
 open System.Text.RegularExpressions

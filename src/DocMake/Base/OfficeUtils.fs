@@ -1,4 +1,7 @@
-﻿module DocMake.Base.OfficeUtils
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Base.OfficeUtils
 
 open Microsoft.Office.Interop
 

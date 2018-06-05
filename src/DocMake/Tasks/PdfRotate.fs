@@ -1,4 +1,7 @@
-﻿module DocMake.Tasks.PdfRotate
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Tasks.PdfRotate
 
 open System.IO
 

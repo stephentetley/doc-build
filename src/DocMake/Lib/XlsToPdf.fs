@@ -1,4 +1,7 @@
-﻿module DocMake.Lib.XlsToPdf
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Lib.XlsToPdf
 
 
 // Open at .Interop rather than .Excel then the Excel API has to be qualified

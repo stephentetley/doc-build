@@ -1,4 +1,7 @@
-﻿module DocMake.Base.Common
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Base.Common
 
 open System.IO
 open System.Text

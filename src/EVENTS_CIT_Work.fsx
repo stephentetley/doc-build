@@ -62,7 +62,6 @@ open DocMake.Lib.DocFindReplace
 // Generate multiple outputs in a single folder.
 
 
-
 let _templateRoot       = @"G:\work\Projects\events2\gen-cit-sheets\__Templates"
 let _outputDirectory    = @"G:\work\Projects\events2\gen-cit-sheets\output"
 

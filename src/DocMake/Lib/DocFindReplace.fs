@@ -1,4 +1,7 @@
-﻿module DocMake.Lib.DocFindReplace
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Lib.DocFindReplace
 
 
 open System.IO

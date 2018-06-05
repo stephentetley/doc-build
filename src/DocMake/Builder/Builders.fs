@@ -1,4 +1,8 @@
-﻿module DocMake.Builder.Builders
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+
+module DocMake.Builder.Builders
 
 open System.IO
 open Microsoft.Office.Interop

@@ -1,4 +1,7 @@
-﻿module DocMake.Tasks.DocIntertitle
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Tasks.DocIntertitle
 
 // Note - this is showing the limitations of using Fake (make) as the
 // ``application style`` for building documents.

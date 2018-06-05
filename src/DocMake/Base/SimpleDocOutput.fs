@@ -1,4 +1,7 @@
-﻿module DocMake.Base.SimpleDocOutput
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Base.SimpleDocOutput
 
 open Microsoft.Office.Interop
 

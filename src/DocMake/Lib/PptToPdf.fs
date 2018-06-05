@@ -1,4 +1,7 @@
-﻿module DocMake.Lib.PptToPdf
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Lib.PptToPdf
 
 
 // Open at .Interop rather than .PowerPoint then the PowerPoint API has to be qualified

@@ -1,4 +1,7 @@
-﻿module DocMake.Tasks.XlsToPdf
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module DocMake.Tasks.XlsToPdf
 
 open System.IO
 open System.Text.RegularExpressions
