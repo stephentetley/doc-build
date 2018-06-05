@@ -16,9 +16,6 @@
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
-#I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
-#r "Newtonsoft.Json"
-open Newtonsoft.Json
 
 open System.IO
 

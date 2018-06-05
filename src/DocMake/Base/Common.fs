@@ -73,4 +73,17 @@ let pathChangeExtension (path:string) (extension:string) : string =
 let pathChangeDirectory (path:string) (outputdir:string) : string = 
     let justfile = Path.GetFileName path
     Path.Combine(outputdir,justfile)
+
+
+// The Excel Type Provider seems to read a trailing null row.
+// This dictionary and procedure provide a skeleton to get round this.
+
+type ExcelProviderHelperDict<'table, 'row> = 
+    { GetRows : 'table -> seq<'row>
+      NotNullProc : 'row -> bool }
+
+let excelTableGetRows (dict:ExcelProviderHelperDict<'table,'row>) (table:'table) : 'row list = 
+    let allrows = dict.GetRows table
+    allrows |> Seq.filter dict.NotNullProc |> Seq.toList
+
  

@@ -7,15 +7,9 @@
 #r "Microsoft.Office.Interop.PowerPoint"
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
+open Microsoft.Office.Interop
 
 
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
-#r @"Magick.NET-Q8-AnyCPU.dll"
-open ImageMagick
-
-#I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
-#r "Newtonsoft.Json"
-open Newtonsoft.Json
 
 #I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
@@ -41,15 +35,12 @@ open Fake.IO.FileSystemOperators
 
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\JsonUtils.fs"
-#load @"DocMake\Base\GENHelper.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
 open DocMake.Base.Common
-open DocMake.Base.GENHelper
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
@@ -74,7 +65,7 @@ type SiteTable =
 
 type SiteRow = SiteTable.Row
 
-let siteTableDict : GetRowsDict<SiteTable, SiteRow> = 
+let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> = 
     { GetRows     = fun imports -> imports.Data 
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
@@ -117,6 +108,11 @@ let scopeOfWorks (row:SiteRow) : BuildMonad<'res, WordDoc> =
 let buildScript () : BuildMonad<'res,unit> = 
     let siteList = List.take 5 <|  getSiteRows "" 
     forMz siteList scopeOfWorks
+
+type EventsRes = 
+    { WordApp : Word.Application } 
+
+
 
 
 let main () : unit = 
