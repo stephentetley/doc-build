@@ -81,7 +81,7 @@ let private getTemplateImpl (filePath:string) : BuildMonad<'res,WordDoc> =
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
 let private docFindReplaceImpl (getHandle:'res-> Word.Application) (matches:SearchList)  (template:WordDoc) : BuildMonad<'res,WordDoc> =
-    buildMonad { 
+    withDocxNamer <| buildMonad { 
         let! outName = freshFileName ()
         let! app = asksU getHandle
         process1 template.DocumentPath outName matches app

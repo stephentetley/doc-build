@@ -89,6 +89,7 @@
     <Compile Include="DocMake\Tasks\XlsFindReplace.fs" />
     <Compile Include="DocMake\Tasks\XlsToPdf.fs" />
     <Compile Include="DocMake\Tasks\PptToPdf.fs" />
+    <Compile Include="DocMake\FullBuilder.fs" />
     <None Include="DummyRename.fsx" />
     <None Include="DummyDocPhotos.fsx" />
     <None Include="DummyPdfRotate.fsx" />
@@ -96,6 +97,7 @@
     <None Include="FLOW2_Build.fsx" />
     <None Include="BARRIERS_Build.fsx" />
     <None Include="EVENTS_CIT_Work.fsx" />
+    <None Include="CEMA_Hazard_Sheets.fsx" />
     <None Include="RTU_gen_final.fsx" />
     <None Include="RTU_Final_Build.fsx" />
     <None Include="RTU_Erskines_Final1.fsx" />
@@ -111,7 +113,6 @@
     <None Include="PLCAR_gen_final.fsx" />
     <None Include="PLCAR_Final_Build.fsx" />
     <None Include="PLCAR_Filey_Final.fsx" />
-    <None Include="CEMA_Gen_Hazard_Records.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
       <Guid>{00020813-0000-0000-c000-000000000046}</Guid>
       <VersionMajor>1</VersionMajor>

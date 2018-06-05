@@ -12,6 +12,8 @@ open DocMake.Builder.PdftkBuilder
 open DocMake.Lib
 
 
+/// Note - we probably need to look at "by need" creation of Excel, 
+/// PowerPoint, etc. instances.
 type FullHandle = 
     { WordApp : Word.Application
       ExcelApp : Excel.Application 
@@ -50,17 +52,17 @@ let docFindReplace = d1.docFindReplace
 let getTemplate = d1.getTemplate
 
 let docToPdf = 
-    let api = DocMake.Lib.DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
+    let api = DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
     api.docToPdf
 
 let xlsToPdf = 
-    let api = DocMake.Lib.XlsToPdf.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
+    let api = XlsToPdf.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
     api.xlsToPdf
 
 let docPhotos = 
-    let api = DocMake.Lib.DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
+    let api = DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
     api.docPhotos
 
 let pdfConcat = 
-    let api = DocMake.Lib.PdfConcat.makeAPI (fun (h:FullHandle) -> h.Ghostscript)
+    let api = PdfConcat.makeAPI (fun (h:FullHandle) -> h.Ghostscript)
     api.pdfConcat

@@ -35,5 +35,8 @@ let excelBuilderHook : BuilderHooks<Excel.Application> =
     { InitializeResource = initExcel    
       FinalizeResource = finalizeExcel }
 
+let withXlsxNamer (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    withNameGen (sprintf "temp%03i.xlsx") ma
+
 
 

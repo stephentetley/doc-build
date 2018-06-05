@@ -51,12 +51,14 @@ let private process1 (inpath:string) (outpath:string) (ss:SearchList) (app:Excel
     finally 
         workbook.Close (SaveChanges = false)
 
-
+/// TODO - this should assert the file extension is *.xlsx or *.xlsm...
+let private getTemplateImpl (filePath:string) : BuildMonad<'res,ExcelDoc> =
+    assertFile filePath |>> (fun s -> {DocumentPath = s})
 
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
 let private xlsFindReplaceImpl (getHandle:'res-> Excel.Application) (matches:SearchList)  (xlsDoc:ExcelDoc) : BuildMonad<'res,ExcelDoc> =
-    buildMonad { 
+    withXlsxNamer <| buildMonad { 
         let! outName = freshFileName ()
         let! app = asksU getHandle
         process1 xlsDoc.DocumentPath outName matches app
@@ -66,7 +68,9 @@ let private xlsFindReplaceImpl (getHandle:'res-> Excel.Application) (matches:Sea
     
     
 type XlsFindReplace<'res> = 
-    { xlsFindReplace : SearchList -> ExcelDoc -> BuildMonad<'res,ExcelDoc>}
+    { xlsFindReplace : SearchList -> ExcelDoc -> BuildMonad<'res,ExcelDoc>
+      getTemplate: string -> BuildMonad<'res,ExcelDoc> }
 
 let makeAPI (getHandle:'res-> Excel.Application) : XlsFindReplace<'res> = 
-    { xlsFindReplace = xlsFindReplaceImpl getHandle }
+    { xlsFindReplace = xlsFindReplaceImpl getHandle 
+      getTemplate = getTemplateImpl }

@@ -36,3 +36,5 @@ let wordBuilderHook : BuilderHooks<Word.Application> =
 let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
     proc >>= renameTo outputName
 
+let withDocxNamer (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    withNameGen (sprintf "temp%03i.docx") ma
