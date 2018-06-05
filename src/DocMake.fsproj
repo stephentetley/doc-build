@@ -68,6 +68,9 @@
     <Compile Include="DocMake\Builder\BuildMonad.fs" />
     <Compile Include="DocMake\Builder\Basis.fs" />
     <Compile Include="DocMake\Builder\Builders.fs" />
+    <Compile Include="DocMake\Builder\WordBuilder.fs" />
+    <Compile Include="DocMake\Builder\ExcelBuilder.fs" />
+    <Compile Include="DocMake\Builder\PowerPointBuilder.fs" />
     <Compile Include="DocMake\Lib\DocFindReplace.fs" />
     <Compile Include="DocMake\Lib\XlsFindReplace.fs" />
     <Compile Include="DocMake\Lib\DocToPdf.fs" />
@@ -89,6 +92,9 @@
     <None Include="DummyDocPhotos.fsx" />
     <None Include="DummyPdfRotate.fsx" />
     <None Include="DummyFindReplace.fsx" />
+    <None Include="FLOW2_Build.fsx" />
+    <None Include="BARRIERS_Build.fsx" />
+    <None Include="EVENTS_CIT_Work.fsx" />
     <None Include="RTU_gen_final.fsx" />
     <None Include="RTU_Final_Build.fsx" />
     <None Include="RTU_Erskines_Final1.fsx" />
@@ -97,13 +103,10 @@
     <None Include="USAR_Final_Build.fsx" />
     <None Include="FC2_gen_final.fsx" />
     <None Include="FC2_Final_Build.fsx" />
-    <None Include="FLOW2_Build.fsx" />
     <None Include="SAMPS_gen_final.fsx" />
     <None Include="SAMPS_Final_Build.fsx" />
     <None Include="SAMPS_Final_Build_Alt.fsx" />
-    <None Include="BARRIERS_Build.fsx" />
     <None Include="EVENTS_Gen_Survey_Sheets.fsx" />
-    <None Include="EVENTS_CIT_Work.fsx" />
     <None Include="PLCAR_gen_final.fsx" />
     <None Include="PLCAR_Final_Build.fsx" />
     <None Include="PLCAR_Filey_Final.fsx" />

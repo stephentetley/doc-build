@@ -44,7 +44,7 @@ let pdfConcat (inputFiles:PdfDoc list) : GsBuild<PdfDoc> =
         let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PdfQuality)
         let! _ =  gsRunCommand <| makeCmd quality outDoc.DocumentPath paths
-        return outDoc
+        return (castToPdfDoc outDoc)
     }
 
     

@@ -12,7 +12,7 @@ open DocMake.Base.ImageMagickUtils
 open DocMake.Base.SimpleDocOutput
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.Builders
+open DocMake.Builder.WordBuilder
 
 // TODO - must optimize the size of the photos for Word.
 // Which in turn means copy the photos.
@@ -87,6 +87,6 @@ let photoDoc (documentTitle: string option) (showJpegFileName:bool) (inputPaths:
         let! outDoc = freshDocument ()
         let _ = runDocOutput outDoc.DocumentPath (docProc tempLoc)
         return outDoc
-        }
+        } 
     
 

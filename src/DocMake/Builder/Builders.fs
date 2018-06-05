@@ -16,47 +16,45 @@ open DocMake.Builder.Basis
 
 
 
-type WordBuild<'a> = BuildMonad<Word.Application, 'a>
-type WordPhantom = class end
-type WordDoc = Document<WordPhantom>
+//type WordBuild<'a> = BuildMonad<Word.Application, 'a>
+//type WordPhantom = class end
+//type WordDoc = Document<WordPhantom>
 
-let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
-    proc >>= renameTo outputName
-
-
-
-// TODO - this is not good as it can result in spawning many versions of Word.
-// Instead we should ahve a single instance optionally in the 'res parameter.
-let execWordBuild (ma:WordBuild<'a>) : BuildMonad<'res,'a> = 
-    let app:Word.Application = new Word.ApplicationClass (Visible = true) :> Word.Application
-    let namer:int -> string = fun i -> sprintf "temp%03i.docx" i
-    withUserHandle app (fun (oApp:Word.Application) -> oApp.Quit()) (withNameGen namer ma)
+//let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
+//    proc >>= renameTo outputName
 
 
 
-type ExcelBuild<'a> = BuildMonad<Excel.Application, 'a>
-type ExcelPhantom = class end
-type ExcelDoc = Document<ExcelPhantom>
-
-let execExcelBuild (ma:ExcelBuild<'a>) : BuildMonad<'res,'a> = 
-    let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
-    app.DisplayAlerts <- false
-    app.EnableEvents <- false
-    let namer:int -> string = fun i -> sprintf "temp%03i.docx" i
-    let finalizer (oApp:Excel.Application) = 
-        oApp.DisplayAlerts <- true
-        oApp.EnableEvents <- true
-        oApp.Quit ()
-    withUserHandle app finalizer (withNameGen namer ma)
+//// TODO - this is not good as it can result in spawning many versions of Word.
+//// Instead we should ahve a single instance optionally in the 'res parameter.
+//let execWordBuild (ma:WordBuild<'a>) : BuildMonad<'res,'a> = 
+//    let app:Word.Application = new Word.ApplicationClass (Visible = true) :> Word.Application
+//    let namer:int -> string = fun i -> sprintf "temp%03i.docx" i
+//    withUserHandle app (fun (oApp:Word.Application) -> oApp.Quit()) (withNameGen namer ma)
 
 
 
-type PowerPointBuild<'a> = BuildMonad<PowerPoint.Application, 'a>
-type PowerPointPhantom = class end
-type PowerPointDoc = Document<PowerPointPhantom>
+//type ExcelBuild<'a> = BuildMonad<Excel.Application, 'a>
+//type ExcelPhantom = class end
+//type ExcelDoc = Document<ExcelPhantom>
 
-type PdfPhantom = class end
-type PdfDoc = Document<PdfPhantom>
+//let execExcelBuild (ma:ExcelBuild<'a>) : BuildMonad<'res,'a> = 
+//    let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
+//    app.DisplayAlerts <- false
+//    app.EnableEvents <- false
+//    let namer:int -> string = fun i -> sprintf "temp%03i.docx" i
+//    let finalizer (oApp:Excel.Application) = 
+//        oApp.DisplayAlerts <- true
+//        oApp.EnableEvents <- true
+//        oApp.Quit ()
+//    withUserHandle app finalizer (withNameGen namer ma)
+
+
+
+//type PowerPointBuild<'a> = BuildMonad<PowerPoint.Application, 'a>
+//type PowerPointPhantom = class end
+//type PowerPointDoc = Document<PowerPointPhantom>
+
 
 
 let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) :BuildMonad<'res, PdfDoc> = 

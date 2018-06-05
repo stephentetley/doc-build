@@ -148,7 +148,7 @@ let makeSiteProps (row:SiteRow) : SiteProps =
       SiteAddress = row.``Site Address``
       SiteNGR = row.``Site Grid Ref``
       OperationalStatus = row.``Operational Status``
-      OperationalResponsibility = row.``Operational Status``
+      OperationalResponsibility = row.``Operational Responsibility``
       AssetType = row.``Site Type`` }
 
 let makeDischargeProps (row:SiteRow) : Discharge = 

@@ -48,11 +48,12 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\Builders.fs"
+#load @"DocMake\Builder\WordBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.GENHelper
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.Builders
+open DocMake.Builder.WordBuilder
 
 #load @"DocMake\Lib\DocFindReplace.fs"
 open DocMake.Lib.DocFindReplace

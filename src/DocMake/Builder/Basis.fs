@@ -11,11 +11,27 @@ open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 
 
+type BuilderHook<'res> = 
+    { InitializeResource : unit -> 'res
+      FinalizeResource: 'res -> unit }
+
+
+
 /// Document has a Phantom Type so we can distinguish between different types 
 /// (Word, Excel, Pdf, ...)
 /// Maybe we ought to store whether a file has been derived in the build process
 /// (and so deletable)... 
 type Document<'a> = { DocumentPath : string }
+
+let castDocument (doc:Document<'a>) : Document<'b> = 
+    { DocumentPath = doc.DocumentPath }
+    
+
+
+type PdfPhantom = class end
+type PdfDoc = Document<PdfPhantom>
+
+let castToPdfDoc (doc:Document<'a>) : PdfDoc = castDocument doc
 
 let makeDocument (filePath:string) : Document<'a> = 
     { DocumentPath = filePath }
