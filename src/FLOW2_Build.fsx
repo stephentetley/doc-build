@@ -42,21 +42,22 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
 #load @"DocMake\Builder\ExcelBuilder.fs"
+#load @"DocMake\Builder\PowerPointBuilder.fs"
 #load @"DocMake\Builder\GhostscriptBuilder.fs"
+#load @"DocMake\Builder\PdftkBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
-open DocMake.Builder.ExcelBuilder
-open DocMake.Builder.GhostscriptBuilder
+
 
 #load @"DocMake\Lib\DocFindReplace.fs"
 #load @"DocMake\Lib\DocPhotos.fs"
 #load @"DocMake\Lib\DocToPdf.fs"
 #load @"DocMake\Lib\XlsToPdf.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
-open DocMake.Lib
+#load @"DocMake\FullBuilder.fs"
+open DocMake.FullBuilder
 
 // TODO - localize these
 
@@ -79,7 +80,7 @@ let siteOutputDir       = _outputRoot @@ cleanName
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
     siteOutputDir @@ sprintf fmt cleanName
 
-let clean : BuildMonad<'res, unit> =
+let clean : FullBuild<unit> =
     buildMonad { 
         if Directory.Exists(siteOutputDir) then 
             do printfn " --- Clean folder: '%s' ---" siteOutputDir
@@ -88,7 +89,7 @@ let clean : BuildMonad<'res, unit> =
             do printfn " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
     }
 
-let outputDirectory : BuildMonad<'res, unit> =
+let outputDirectory : FullBuild<unit> =
     buildMonad { 
         do printfn  " --- Output folder: '%s' ---" siteOutputDir
         do! executeIO (fun () -> maybeCreateDirectory siteOutputDir)
@@ -96,23 +97,21 @@ let outputDirectory : BuildMonad<'res, unit> =
 
 
 // This should be a mandatory task
-let cover (matches:SearchList) : BuildMonad<'res, PdfDoc> = 
-    execWordBuild ( 
-        buildMonad { 
-            let templatePath = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
-            let! template = getTemplate templatePath
-            let! d1 = docFindReplace matches template >>= docToPdf >>= renameTo "cover-sheet.pdf"
-            return d1 }) 
+let cover (matches:SearchList) : FullBuild<PdfDoc> = 
+    buildMonad { 
+        let templatePath = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
+        let! template = getTemplate templatePath
+        let! d1 = docFindReplace matches template >>= docToPdf >>= renameTo "cover-sheet.pdf"
+        return d1 }
 
 
 
-let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : BuildMonad<'res, PdfDoc> = 
-    execWordBuild <| 
-        buildMonad { 
-            let! d1 = photoDoc (Some docTitle) true [jpegSrcPath]
-            let! d2 = breturn d1 >>= docToPdf >>= renameTo pdfName
-            return d2
-            }
+let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : FullBuild<PdfDoc> = 
+    buildMonad { 
+        let! d1 = docPhotos (Some docTitle) true [jpegSrcPath]
+        let! d2 = breturn d1 >>= docToPdf >>= renameTo pdfName
+        return d2
+        }
     
 
 let scopeOfWorks () : BuildMonad<'res,PdfDoc> = 
@@ -122,8 +121,8 @@ let scopeOfWorks () : BuildMonad<'res,PdfDoc> =
 
 
 
-let citWork () : BuildMonad<'res, PdfDoc list> = 
-    let proc (glob:string) (renamer:int->string) : BuildMonad<'res, PdfDoc list> = 
+let citWork () : FullBuild<PdfDoc list> = 
+    let proc (glob:string) (renamer:int->string) : FullBuild<PdfDoc list> = 
         findAllMatchingFiles glob siteInputDir |>
             foriM (fun i source ->  
                         copyToWorkingDirectory source >>= renameTo (renamer (i+1)))
@@ -137,8 +136,8 @@ let citWork () : BuildMonad<'res, PdfDoc list> =
 
 
     // If this isn't thunkified it will launch Excel when the code is loaded in FSI
-let installSheets () : BuildMonad<'res, PdfDoc list> = 
-    let pdfGen (glob:string) (warnMsg:string) : ExcelBuild<PdfDoc list> = 
+let installSheets () : FullBuild<PdfDoc list> = 
+    let pdfGen (glob:string) (warnMsg:string) : FullBuild<PdfDoc list> = 
         match findAllMatchingFiles glob siteInputDir with
         | [] -> 
             printfn "%s" warnMsg; breturn []
@@ -148,7 +147,7 @@ let installSheets () : BuildMonad<'res, PdfDoc list> =
                 printfn "installSheet: %s" path
                 getDocument path >>= xlsToPdf true )
     
-    withNameGen (sprintf "install-%03i.pdf") << execExcelBuild <| 
+    withNameGen (sprintf "install-%03i.pdf") <| 
         buildMonad { 
             let! ds1 = pdfGen "*Flow meter*.xls*" "NO FLOW METER INSTALL SHEETS"
             let! ds2 = pdfGen "*Pressure inst*.xls*" "NO PRESSURE SENSOR INSTALL SHEET"
@@ -159,8 +158,8 @@ let installSheets () : BuildMonad<'res, PdfDoc list> =
 // *******************************************************
 
 
-let buildScript (siteName:string) : BuildMonad<'res,unit> = 
-    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+let buildScript (siteName:string) : FullBuild<unit> = 
+    
     buildMonad { 
         do! clean >>. outputDirectory
         let! p1 = cover matches1
@@ -172,17 +171,21 @@ let buildScript (siteName:string) : BuildMonad<'res,unit> =
         let surveyJpegsPath = siteInputDir @@ "Install_Photos"
         let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
         let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ ps2 @ [pZ])
-        let! (final:PdfDoc) = execGsBuild gsExe (pdfConcat pdfs) >>= renameTo "FINAL.pdf"
+        let! (final:PdfDoc) = pdfConcat pdfs >>= renameTo "FINAL.pdf"
         return ()                 
     }
 
 
 let main () : unit = 
+    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+    let pdftkExe = @"C:\programs\PDFtk Server\bin\pdftk.exe"
+    let hooks = fullBuilderHooks gsExe pdftkExe
+
     let env = 
         { WorkingDirectory = siteOutputDir
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
 
-    consoleRun env (buildScript siteName) 
+    consoleRun env hooks (buildScript siteName) 
 
 

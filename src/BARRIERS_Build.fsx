@@ -44,18 +44,22 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
 #load @"DocMake\Builder\ExcelBuilder.fs"
+#load @"DocMake\Builder\PowerPointBuilder.fs"
 #load @"DocMake\Builder\GhostscriptBuilder.fs"
+#load @"DocMake\Builder\PdftkBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
-open DocMake.Builder.GhostscriptBuilder
+
 
 #load @"DocMake\Lib\DocPhotos.fs"
 #load @"DocMake\Lib\DocToPdf.fs"
+#load @"DocMake\Lib\DocFindReplace.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
-open DocMake.Lib
+#load @"DocMake\Lib\XlsToPdf.fs"
+#load @"DocMake\FullBuilder.fs"
+open DocMake.FullBuilder
 
 // Output is just "Site Works" doc and the collected "Photo doc"
 
@@ -82,16 +86,14 @@ let outputDirectory () : BuildMonad<'res, unit> =
 
 // No cover needed
 
-let siteWorks (siteInputDir:string) : BuildMonad<'res,PdfDoc> = 
+let siteWorks (siteInputDir:string) : FullBuild<PdfDoc> = 
     match tryFindExactlyOneMatchingFile "*Site Works*.doc*" siteInputDir with
-    | Some source -> 
-            execWordBuild <| (getDocument source >>= docToPdf)
+    | Some source -> getDocument source >>= docToPdf
     | None -> throwError "No Site Works"
 
 
-let photosDoc (docTitle:string) (jpegSrcPath:string) : BuildMonad<'res, PdfDoc> = 
-    execWordBuild <| 
-        (photoDoc (Some docTitle) true [jpegSrcPath] >>= docToPdf)
+let photosDoc (docTitle:string) (jpegSrcPath:string) : FullBuild<PdfDoc> = 
+    docPhotos (Some docTitle) true [jpegSrcPath] >>= docToPdf
     
 
 
@@ -100,7 +102,7 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) : BuildMonad<'res, PdfDoc> 
 // *******************************************************
 
 
-let buildScript (inputRoot:string) (siteName:string) : BuildMonad<'res,PdfDoc> = 
+let buildScript (inputRoot:string) (siteName:string) : FullBuild<PdfDoc> = 
     let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
     let cleanName           = safeName siteName
     let siteInputDir        = inputRoot @@ cleanName
@@ -112,7 +114,7 @@ let buildScript (inputRoot:string) (siteName:string) : BuildMonad<'res,PdfDoc> =
             let! p1 = makePdf "site-works.pdf"          <| siteWorks siteInputDir
             let! p2 = makePdf "site-work-photos.pdf"    <| photosDoc "Site Work Photos" jpegsSrcPath 
             let pdfs = [p1;p2]
-            let! (final:PdfDoc) = makePdf finalName     <| execGsBuild gsExe (pdfConcat pdfs)
+            let! (final:PdfDoc) = makePdf finalName     <| pdfConcat pdfs
             return final            
         }
 
@@ -126,14 +128,19 @@ let getSites (root:string) : string [] =
 
 
 let main () : unit = 
+    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+    let pdftkExe = @"C:\programs\PDFtk Server\bin\pdftk.exe"
+    let hooks = fullBuilderHooks gsExe pdftkExe
     let inputRoot      = @"G:\work\Projects\barriers\final-docs\input\Batch02"
     let outputRoot     = @"G:\work\Projects\barriers\final-docs\output\Batch02"
     let env = 
         { WorkingDirectory = outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
+
+
     let siteList = getSites inputRoot |> Array.toList 
-    consoleRun env <| forMz siteList (buildScript inputRoot) 
+    consoleRun env hooks <| forMz siteList (buildScript inputRoot) 
 
 
 

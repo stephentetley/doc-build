@@ -14,7 +14,7 @@ open DocMake.Builder.Basis
 type GsHandle = 
     { GhostscriptExePath: string }
 
-let gsBuilderHook (exePath:string) : BuilderHooks<GsHandle> = 
+let ghostsciptBuilderHook (exePath:string) : BuilderHooks<GsHandle> = 
     { InitializeResource = fun _ ->  { GhostscriptExePath = exePath } 
       FinalizeResource = fun _ -> () }
 
