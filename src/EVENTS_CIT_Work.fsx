@@ -47,7 +47,6 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\Builders.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.GENHelper

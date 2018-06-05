@@ -67,10 +67,11 @@
     <Compile Include="DocMake\Base\SimpleDocOutput.fs" />
     <Compile Include="DocMake\Builder\BuildMonad.fs" />
     <Compile Include="DocMake\Builder\Basis.fs" />
-    <Compile Include="DocMake\Builder\Builders.fs" />
     <Compile Include="DocMake\Builder\WordBuilder.fs" />
     <Compile Include="DocMake\Builder\ExcelBuilder.fs" />
     <Compile Include="DocMake\Builder\PowerPointBuilder.fs" />
+    <Compile Include="DocMake\Builder\PdftkBuilder.fs" />
+    <Compile Include="DocMake\Builder\GhostscriptBuilder.fs" />
     <Compile Include="DocMake\Lib\DocFindReplace.fs" />
     <Compile Include="DocMake\Lib\XlsFindReplace.fs" />
     <Compile Include="DocMake\Lib\DocToPdf.fs" />

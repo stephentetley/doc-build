@@ -1,4 +1,7 @@
-﻿// Office deps
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+// Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.Word"
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Excel\15.0.0.0__71e9bce111e9429c"
@@ -42,15 +45,15 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\Builders.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
 #load @"DocMake\Builder\ExcelBuilder.fs"
+#load @"DocMake\Builder\GhostscriptBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.Builders
 open DocMake.Builder.WordBuilder
+open DocMake.Builder.GhostscriptBuilder
 
 #load @"DocMake\Lib\DocPhotos.fs"
 #load @"DocMake\Lib\DocToPdf.fs"

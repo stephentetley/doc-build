@@ -17,6 +17,8 @@ type ExcelBuild<'a> = BuildMonad<Excel.Application, 'a>
 type ExcelPhantom = class end
 type ExcelDoc = Document<ExcelPhantom>
 
+let castToExcelDoc (doc:Document<'a>) : ExcelDoc = castDocument doc
+
 
 let private initExcel () : Excel.Application = 
     let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application

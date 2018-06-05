@@ -6,6 +6,9 @@ module DocMake.Builder.Basis
 open System.IO
 open System.Threading
 
+// Ideally don't use Fake (need currently for process running)
+open Fake.Core
+
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
@@ -32,6 +35,8 @@ type PdfPhantom = class end
 type PdfDoc = Document<PdfPhantom>
 
 let castToPdfDoc (doc:Document<'a>) : PdfDoc = castDocument doc
+
+
 
 let makeDocument (filePath:string) : Document<'a> = 
     { DocumentPath = filePath }
@@ -125,4 +130,23 @@ let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res
                 { e with WorkingDirectory = cwd }) 
             (createWorkingDirectory () >>. ma)
 
+
+
+// Shell helper:
+let  shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
+    let infoF (info:ProcStartInfo) =  
+        { info with FileName =  toolPath; Arguments = command }
+    buildMonad { 
+        let i = Fake.Core.Process.execSimple infoF System.TimeSpan.MaxValue
+        if (i = 0) then    
+            return ()
+        else
+            do printfn "%s" toolPath
+            do printfn "%s" command
+            do! throwError errMsg
+        }
+
+
+let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) :BuildMonad<'res, PdfDoc> = 
+    proc >>= renameTo outputName
 

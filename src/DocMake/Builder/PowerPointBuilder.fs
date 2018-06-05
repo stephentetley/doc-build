@@ -18,6 +18,8 @@ type PowerPointBuild<'a> = BuildMonad<PowerPoint.Application, 'a>
 type PowerPointPhantom = class end
 type PowerPointDoc = Document<PowerPointPhantom>
 
+let castToPowerPointDoc (doc:Document<'a>) : PowerPointDoc = castDocument doc
+
 
 let private initPowerPoint () : PowerPoint.Application = 
     let app = new PowerPoint.ApplicationClass() :> PowerPoint.Application
