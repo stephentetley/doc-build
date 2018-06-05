@@ -1,4 +1,7 @@
-﻿// Run in PowerShell not fsi:
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+// Run in PowerShell not fsi:
 // PS> cd <path-to-src>
 // PS> ..\packages\FAKE.5.0.0-beta005\tools\FAKE.exe .\TESTCASE_DocMake.fsx Dummy
 

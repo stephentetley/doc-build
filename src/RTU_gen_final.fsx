@@ -1,4 +1,7 @@
-﻿#I @"..\packages\ExcelProvider.0.8.2\lib"
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+#I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
 open FSharp.ExcelProvider
 
@@ -33,7 +36,7 @@ type SiteTable =
 
 type SiteRow = SiteTable.Row
 
-let siteTableDict : GetRowsDict<SiteTable, SiteRow> = 
+let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> = 
     { GetRows     = fun imports -> imports.Data 
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 

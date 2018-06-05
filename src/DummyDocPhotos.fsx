@@ -1,4 +1,7 @@
-﻿// FAKE is local to the project file
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+// FAKE is local to the project file
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.Word"
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Excel\15.0.0.0__71e9bce111e9429c"

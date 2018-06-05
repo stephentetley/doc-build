@@ -1,4 +1,7 @@
-﻿// Office deps
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+// Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.Word"
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Excel\15.0.0.0__71e9bce111e9429c"
@@ -56,7 +59,7 @@ type SiteTable =
 
 type SiteRow = SiteTable.Row
 
-let siteTableDict : GetRowsDict<SiteTable, SiteRow> = 
+let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> = 
     { GetRows     = fun imports -> imports.Data 
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 

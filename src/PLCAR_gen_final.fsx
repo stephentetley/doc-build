@@ -1,4 +1,7 @@
-﻿#I @"..\packages\ExcelProvider.0.8.2\lib"
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+#I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
 open FSharp.ExcelProvider
 
@@ -36,7 +39,7 @@ type AssetRow = AssetTable.Row
 
 
 let getAssetRows () : AssetRow list = 
-    let rowsDict : GetRowsDict<AssetTable, AssetRow> = 
+    let rowsDict : ExcelProviderHelperDict<AssetTable, AssetRow> = 
         { GetRows     = fun imports -> imports.Data 
           NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
     excelTableGetRows rowsDict (new AssetTable())
