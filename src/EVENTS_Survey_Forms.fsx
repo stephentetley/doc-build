@@ -245,7 +245,7 @@ let genSurvey (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : 
 
 // TODO SHEFFIELD , YORK
 
-let buildScript (surveyBatch:string) : WordBuild<unit> = 
+let buildScript (surveyBatch:string) (makeHazards:bool) : WordBuild<unit> = 
     let siteList = List.take 3 << buildSites <| getSiteRows surveyBatch 
     let todoCount = List.length siteList
     let safeBatchName = safeName surveyBatch
@@ -255,7 +255,8 @@ let buildScript (surveyBatch:string) : WordBuild<unit> =
             do printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
             do makeSiteFolder safeBatchName site.SiteProps.SiteName
             do! forMz site.Discharges (genSurvey safeBatchName site.SiteProps) 
-            // let! _ = genHazardSheet safeBatchName site
+            if makeHazards then 
+                do! genHazardSheet safeBatchName site |>> ignore
             return ()
         }
 
@@ -270,4 +271,4 @@ let main (surveyBatch:string) : unit =
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
     let hooks:BuilderHooks<Word.Application> = wordBuilderHook
-    consoleRun env hooks (buildScript surveyBatch)
+    consoleRun env hooks (buildScript surveyBatch false)

@@ -88,7 +88,7 @@ type BuildMonadBuilder() =
     member self.Bind (p,f)      = bindM p f
     member self.Zero ()         = failM
     member self.Delay fn        = delayM fn
-
+    member self.Combine (p,q)   = combineM p q
 
 let (buildMonad:BuildMonadBuilder) = new BuildMonadBuilder()
 
