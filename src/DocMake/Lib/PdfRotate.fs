@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+[<RequireQualifiedAccess>]
 module DocMake.Lib.PdfRotate
 
 open System.IO
 
 open Fake.Core
-open Fake.Core.Process
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.Builders
+open DocMake.Builder.PdftkBuilder
 
 type PageRotation = int * DocMakePageOrientation
 
@@ -38,10 +38,17 @@ let private makeCmd (inputFile:string) (outputFile:string) (rotations: PageRotat
     sprintf "A=\"%s\" %s output \"%s\"" inputFile rotateSpec outputFile 
 
 
-let pdfRotate (rotations: PageRotation list) (pdfDoc:PdfDoc) : PdftkBuild<PdfDoc> =
+let private pdfRotateImpl (getHandle:'res -> PdftkHandle) (rotations: PageRotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! outDoc = freshDocument ()
-        let! _ =  pdftkRunCommand <| makeCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
+        let! _ =  pdftkRunCommand getHandle <| makeCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
         return outDoc
     }
+
+type PdfConcat<'res> = 
+    { pdfRotate : PageRotation list -> PdfDoc -> BuildMonad<'res, PdfDoc> }
+
+let makeAPI (getHandle:'res-> PdftkHandle) : PdfConcat<'res> = 
+    { pdfRotate = pdfRotateImpl getHandle }
+
 

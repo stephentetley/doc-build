@@ -32,7 +32,7 @@ let private finalizeExcel (app:Excel.Application) : unit =
         app.Quit ()
 
 
-let excelBuilderHook : BuilderHook<Excel.Application> = 
+let excelBuilderHook : BuilderHooks<Excel.Application> = 
     { InitializeResource = initExcel    
       FinalizeResource = finalizeExcel }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+[<RequireQualifiedAccess>]
 module DocMake.Lib.DocPhotos
 
 
@@ -72,7 +73,7 @@ let private insertPhotos (action1:PictureFun) (files:string list) : DocOutput<un
     work files
 
 
-let photoDoc (documentTitle: string option) (showJpegFileName:bool) (inputPaths:string list) : WordBuild<WordDoc> =
+let private photoDocImpl (getHandle:'res-> Word.Application) (documentTitle: string option) (showJpegFileName:bool) (inputPaths:string list) : BuildMonad<'res,WordDoc> =
     let docProc (jpegFolder:string) : DocOutput<unit>  = 
         let jpegs = getJPEGs [jpegFolder]
         let stepFun = if showJpegFileName then stepWithLabel else stepWithoutLabel
@@ -85,8 +86,14 @@ let photoDoc (documentTitle: string option) (showJpegFileName:bool) (inputPaths:
         let jpegInputs = getJPEGs inputPaths
         let! tempLoc = copyJPEGs jpegInputs
         let! outDoc = freshDocument ()
-        let _ = runDocOutput outDoc.DocumentPath (docProc tempLoc)
+        let! app = asksU getHandle
+        let _ = runDocOutput2 outDoc.DocumentPath app (docProc tempLoc)
         return outDoc
         } 
     
 
+type DocPhotos<'res> = 
+    { docPhotos : string option -> bool -> string list -> BuildMonad<'res, WordDoc> }
+
+let makeAPI (getHandle:'res -> Word.Application) : DocPhotos<'res> = 
+    { docPhotos = photoDocImpl getHandle }

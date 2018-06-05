@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+[<RequireQualifiedAccess>]
 module DocMake.Lib.PptToPdf
 
 
@@ -12,10 +13,10 @@ open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.Builders
+open DocMake.Builder.PowerPointBuilder
 
 
-let private getOutputName (pptDoc:PowerPointDoc) : PowerPointBuild<string> =
+let private getOutputName (pptDoc:PowerPointDoc) : BuildMonad<'res,string> =
     executeIO <| fun () -> 
         System.IO.Path.ChangeExtension(pptDoc.DocumentPath, "pdf")
     
@@ -34,11 +35,17 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 
 
 
-let pptToPdf (pptDoc:PowerPointDoc) : PowerPointBuild<PdfDoc> =
+let private pptToPdfImpl (getHandle:'res-> PowerPoint.Application) (pptDoc:PowerPointDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
-        let! (app:PowerPoint.Application) = askU ()
+        let! (app:PowerPoint.Application) = asksU getHandle
         let! outPath = getOutputName pptDoc
         let! quality = asksEnv (fun s -> s.PrintQuality)
         let _ =  process1 pptDoc.DocumentPath outPath quality app
         return (makeDocument outPath)
     }
+
+type PptToPdf<'res> = 
+    { pptToPdf : PowerPointDoc -> BuildMonad<'res, PdfDoc> }
+
+let makeAPI (getHandle:'res-> PowerPoint.Application) : PptToPdf<'res> = 
+    { pptToPdf = pptToPdfImpl getHandle }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+[<RequireQualifiedAccess>]
 module DocMake.Lib.XlsFindReplace
 
 
@@ -10,10 +11,9 @@ open Microsoft.Office.Interop
 
 
 open DocMake.Base.Common
-open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
-open DocMake.Builder.Builders
 open DocMake.Builder.Basis
+open DocMake.Builder.ExcelBuilder
 
 
 let private sheetReplaces1 (worksheet:Excel.Worksheet) (search:string, replace:string) : unit = 
@@ -55,12 +55,18 @@ let private process1 (inpath:string) (outpath:string) (ss:SearchList) (app:Excel
 
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
-let xlsFindReplace (matches:SearchList)  (xlsDoc:ExcelDoc) : ExcelBuild<ExcelDoc> =
+let private xlsFindReplaceImpl (getHandle:'res-> Excel.Application) (matches:SearchList)  (xlsDoc:ExcelDoc) : BuildMonad<'res,ExcelDoc> =
     buildMonad { 
         let! outName = freshFileName ()
-        let! app = askU ()
+        let! app = asksU getHandle
         process1 xlsDoc.DocumentPath outName matches app
         return (makeDocument outName)
         }
 
     
+    
+type XlsFindReplace<'res> = 
+    { xlsFindReplace : SearchList -> ExcelDoc -> BuildMonad<'res,ExcelDoc>}
+
+let makeAPI (getHandle:'res-> Excel.Application) : XlsFindReplace<'res> = 
+    { xlsFindReplace = xlsFindReplaceImpl getHandle }

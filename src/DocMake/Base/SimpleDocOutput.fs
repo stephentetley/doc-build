@@ -90,7 +90,19 @@ let runDocOutput (outputFile:string) (ma:DocOutput<'a>) : Result<'a> =
     | ex -> 
         app.Quit()
         Failure <| sprintf "runDocOutput failed, filename '%s'\nError message: %s" outputFile ex.Message
-       
+
+let runDocOutput2 (outputFile:string) (app:Word.Application) (ma:DocOutput<'a>) : Result<'a> = 
+    try
+        let doc = app.Documents.Add()
+        let ans =  match ma with | DocOutput fn -> fn doc
+        doc.SaveAs( FileName = refobj outputFile )
+        doc.Close( SaveChanges = refobj false )
+        Success ans
+    with
+    | ex -> 
+        Failure <| sprintf "runDocOutput failed, filename '%s'\nError message: %s" outputFile ex.Message
+  
+  
 
 let private getEndRange () : DocOutput<Word.Range> = 
     DocOutput <| fun doc ->

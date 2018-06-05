@@ -56,11 +56,7 @@ open DocMake.Builder.GhostscriptBuilder
 #load @"DocMake\Lib\DocToPdf.fs"
 #load @"DocMake\Lib\XlsToPdf.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
-open DocMake.Lib.DocFindReplace
-open DocMake.Lib.DocPhotos
-open DocMake.Lib.DocToPdf
-open DocMake.Lib.XlsToPdf
-open DocMake.Lib.PdfConcat
+open DocMake.Lib
 
 // TODO - localize these
 

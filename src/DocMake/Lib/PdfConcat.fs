@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+
+[<RequireQualifiedAccess>]
 module DocMake.Lib.PdfConcat
 
-open System.IO
 
 open Fake.Core
 
@@ -38,14 +39,21 @@ let private makeCmd (quality:PdfPrintSetting) (outputFile:string) (inputFiles: s
     unlinesS <| first :: rest
 
 
-let pdfConcat (inputFiles:PdfDoc list) : GsBuild<PdfDoc> = 
+let private pdfConcatImpl (getHandle:'res -> GsHandle) (inputFiles:PdfDoc list) : BuildMonad<'res,PdfDoc> = 
     let paths = List.map (fun (a:PdfDoc) -> a.DocumentPath) inputFiles
     buildMonad { 
         let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PdfQuality)
-        let! _ =  gsRunCommand <| makeCmd quality outDoc.DocumentPath paths
+        let! _ =  gsRunCommand getHandle <| makeCmd quality outDoc.DocumentPath paths
         return (castToPdfDoc outDoc)
     }
+
+
+type PdfConcat<'res> = 
+    { pdfConcat : PdfDoc list -> BuildMonad<'res, PdfDoc> }
+
+let makeAPI (getHandle:'res-> GsHandle) : PdfConcat<'res> = 
+    { pdfConcat = pdfConcatImpl getHandle }
 
     
   

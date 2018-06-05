@@ -55,10 +55,7 @@ open DocMake.Builder.GhostscriptBuilder
 #load @"DocMake\Lib\DocPhotos.fs"
 #load @"DocMake\Lib\DocToPdf.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
-open DocMake.Lib.DocPhotos
-open DocMake.Lib.DocToPdf
-open DocMake.Lib.PdfConcat
-
+open DocMake.Lib
 
 // Output is just "Site Works" doc and the collected "Photo doc"
 

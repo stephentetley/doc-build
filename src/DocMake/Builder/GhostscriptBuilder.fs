@@ -5,27 +5,22 @@
 module DocMake.Builder.GhostscriptBuilder
 
 open System.IO
-open Microsoft.Office.Interop
-
-
 
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
 
-type GsEnv = 
+
+type GsHandle = 
     { GhostscriptExePath: string }
 
-type GsBuild<'a> = BuildMonad<GsEnv, 'a>
+let gsBuilderHook (exePath:string) : BuilderHooks<GsHandle> = 
+    { InitializeResource = fun _ ->  { GhostscriptExePath = exePath } 
+      FinalizeResource = fun _ -> () }
 
 
-let execGsBuild (pathToGsExe:string) (ma:GsBuild<'a>) : BuildMonad<'res,'a> = 
-    let gsEnv = { GhostscriptExePath = pathToGsExe }
-    withUserHandle gsEnv (fun _ -> ()) ma
-
-
-let gsRunCommand (command:string) : GsBuild<unit> = 
+let gsRunCommand (getHandle:'res -> GsHandle) (command:string) : BuildMonad<'res,unit> = 
     buildMonad { 
-        let! toolPath = asksU (fun (e:GsEnv) -> e.GhostscriptExePath) 
+        let! toolPath = asksU (getHandle >> fun e -> e.GhostscriptExePath) 
         do! shellRun toolPath command "GS failed"
     }

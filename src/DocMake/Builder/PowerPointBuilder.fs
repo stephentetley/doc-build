@@ -30,7 +30,7 @@ let private finalizePowerPoint (app:PowerPoint.Application) : unit =
     app.Quit ()
 
 
-let powerPointBuilderHook : BuilderHook<PowerPoint.Application> = 
+let powerPointBuilderHook : BuilderHooks<PowerPoint.Application> = 
     { InitializeResource = initPowerPoint
       FinalizeResource = finalizePowerPoint }
 

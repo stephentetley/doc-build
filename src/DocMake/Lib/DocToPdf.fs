@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+[<RequireQualifiedAccess>]
 module DocMake.Lib.DocToPdf
 
 
@@ -28,11 +29,18 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 
 
 
-let docToPdf (wordDoc:WordDoc) : WordBuild<PdfDoc> =
+let private docToPdfImpl (getHandle:'res-> Word.Application) (wordDoc:WordDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
-        let! (app:Word.Application) = askU ()
+        let! (app:Word.Application) = asksU getHandle
         let! outPath = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
         let _ =  process1 wordDoc.DocumentPath outPath.DocumentPath quality app
         return outPath
     }
+
+    
+type DocToPdf<'res> = 
+    { docToPdf : WordDoc -> BuildMonad<'res, PdfDoc> }
+
+let makeAPI (getHandle:'res-> Word.Application) : DocToPdf<'res> = 
+    { docToPdf = docToPdfImpl getHandle }
