@@ -48,9 +48,16 @@ let private replaces (doc:Word.Document) (searches:SearchList) : unit =
     List.iter (replacer doc) searches 
 
 
+let private updateToCs (doc:Word.Document)  : unit = 
+    doc.TablesOfContents
+        |> Seq.cast<Word.TableOfContents>
+        |> Seq.iter (fun x -> x.Update ())
+
+
 let private process1  (inpath:string) (outpath:string) (ss:SearchList) (app:Word.Application) = 
     let doc = app.Documents.Open(FileName = refobj inpath)
     replaces doc ss
+    updateToCs doc
     // This should be wrapped in try...
     try 
         let outpath1 = doubleQuote outpath
