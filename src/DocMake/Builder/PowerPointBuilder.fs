@@ -14,7 +14,6 @@ open DocMake.Builder.Basis
 
 
 
-type PowerPointBuild<'a> = BuildMonad<PowerPoint.Application, 'a>
 type PowerPointPhantom = class end
 type PowerPointDoc = Document<PowerPointPhantom>
 

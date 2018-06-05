@@ -36,16 +36,3 @@ let wordBuilderHook : BuilderHooks<Word.Application> =
 let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
     proc >>= renameTo outputName
 
-
-
-//// TODO - Remove - run as a global single instance...
-////
-//// This is not good as it can result in spawning many versions of Word.
-//// Instead we should ahve a single instance optionally in the 'res parameter.
-//let execWordBuild (ma:WordBuild<'a>) : BuildMonad<'res,'a> = 
-//    let app:Word.Application = new Word.ApplicationClass (Visible = true) :> Word.Application
-//    let namer:int -> string = fun i -> sprintf "temp%03i.docx" i
-//    withUserHandle app (fun (oApp:Word.Application) -> oApp.Quit()) (withNameGen namer ma)
-
-
-    

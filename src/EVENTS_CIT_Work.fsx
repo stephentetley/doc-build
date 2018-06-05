@@ -107,16 +107,18 @@ type EventsRes = Word.Application
 
 type EventsBuild<'a> = BuildMonad<EventsRes,'a>
 
-// At the moment the dictionary is a bit small,so this seems like a faff
-let dict1 = DocFindReplace.makeAPI (fun app -> app)
-let docFindRepl = dict1.docFindReplace
+// Just need the DocFindReplace API...
+let api = DocFindReplace.makeAPI (fun app -> app)
+let docFindReplace = api.docFindReplace
+let getTemplate = api.getTemplate
+
 
 let scopeOfWorks (row:SiteRow) : EventsBuild<WordDoc> = 
     buildMonad { 
         let docName = sprintf "%s Scope of Works.docx" (safeName row.``Site Common Name``)
         let matches = makeMatches row
-        let! template = dict1.getTemplate _surveyTemplate
-        let! d1 = docFindRepl matches template >>= renameTo docName
+        let! template = getTemplate _surveyTemplate
+        let! d1 = docFindReplace matches template >>= renameTo docName
         return d1 } 
 
 let buildScript () : EventsBuild<unit> = 
