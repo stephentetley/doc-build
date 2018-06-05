@@ -21,7 +21,7 @@ let castToWordDoc (doc:Document<'a>) : WordDoc = castDocument doc
 
 
 
-let wordBuilderHook : BuilderHook<Word.Application> = 
+let wordBuilderHook : BuilderHooks<Word.Application> = 
     { InitializeResource =
         fun () -> new Word.ApplicationClass (Visible = true) :> Word.Application
     

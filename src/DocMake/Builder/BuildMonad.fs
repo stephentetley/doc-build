@@ -247,11 +247,19 @@ let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:S
     | Err msg -> failwith msg
     | Ok (_,a) -> a
 
-let consoleRun (env:Env) (ma:BuildMonad<unit,'a>) : 'a = 
+
+    
+type BuilderHooks<'res> = 
+    { InitializeResource : unit -> 'res
+      FinalizeResource: 'res -> unit }
+
+
+let consoleRun (env:Env) (builderHooks:BuilderHooks<'res>) (ma:BuildMonad<'res,'a>) : 'a = 
     let stateZero : State = 
         { MakeName = sprintf "temp%03i" 
           NameIndex = 1 }
-    evalBuildMonad env () (fun _ -> ()) stateZero ma
+    let handle = builderHooks.InitializeResource ()
+    evalBuildMonad env handle builderHooks.FinalizeResource stateZero ma
 
 
 

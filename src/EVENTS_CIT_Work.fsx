@@ -36,7 +36,6 @@ open Fake
 open Fake.IO.FileSystemOperators
 
 
-
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
@@ -49,7 +48,7 @@ open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
 
 #load @"DocMake\Lib\DocFindReplace.fs"
-open DocMake.Lib.DocFindReplace
+open DocMake.Lib
 
 
 // Simple find-and-replace (mail merge-like).
@@ -99,29 +98,35 @@ let makeMatches (row:SiteRow) : SearchList =
     ; "#RECWATERCOURSE",    row.``Receiving Watercourse``
     ]
 
-let scopeOfWorks (row:SiteRow) : BuildMonad<'res, WordDoc> = 
-    execWordBuild ( 
-        buildMonad { 
-            let docName = sprintf "%s Scope of Works.docx" (safeName row.``Site Common Name``)
-            let matches = makeMatches row
-            let! template = getTemplate _surveyTemplate
-            let! d1 = docFindReplace matches template >>= renameTo docName
-            return d1 }) 
 
-let buildScript () : BuildMonad<'res,unit> = 
+// ********************************
+// Build script
+
+
+type EventsRes = Word.Application
+
+type EventsBuild<'a> = BuildMonad<EventsRes,'a>
+
+// At the moment the dictionary is a bit small,so this seems like a faff
+let dict1 = DocFindReplace.makeAPI (fun app -> app)
+let docFindRepl = dict1.docFindReplace
+
+let scopeOfWorks (row:SiteRow) : EventsBuild<WordDoc> = 
+    buildMonad { 
+        let docName = sprintf "%s Scope of Works.docx" (safeName row.``Site Common Name``)
+        let matches = makeMatches row
+        let! template = dict1.getTemplate _surveyTemplate
+        let! d1 = docFindRepl matches template >>= renameTo docName
+        return d1 } 
+
+let buildScript () : EventsBuild<unit> = 
     let siteList = List.take 5 <|  getSiteRows "" 
     forMz siteList scopeOfWorks
-
-type EventsRes = 
-    { WordApp : Word.Application } 
-
-
-
 
 let main () : unit = 
     let env = 
         { WorkingDirectory = _outputDirectory
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
-
-    consoleRun env (buildScript ()) 
+    let hooks:BuilderHooks<Word.Application> = wordBuilderHook
+    consoleRun env hooks (buildScript ())

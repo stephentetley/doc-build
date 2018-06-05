@@ -14,9 +14,6 @@ open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 
 
-type BuilderHook<'res> = 
-    { InitializeResource : unit -> 'res
-      FinalizeResource: 'res -> unit }
 
 
 

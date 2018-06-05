@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+[<RequireQualifiedAccess>]
 module DocMake.Lib.DocFindReplace
 
 
@@ -72,19 +73,29 @@ let private process1  (inpath:string) (outpath:string) (ss:SearchList) (app:Word
 
 
 
-/// TODO - this should assert the file extension is *.doc or *.docx
-let getTemplate (filePath:string) : WordBuild<WordDoc> =
+/// TODO - this should assert the file extension is *.doc or *.docx...
+let private getTemplateImpl (filePath:string) : BuildMonad<'res,WordDoc> =
     assertFile filePath |>> (fun s -> {DocumentPath = s})
 
 
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
-let docFindReplace (matches:SearchList)  (template:WordDoc) : WordBuild<WordDoc> =
+let private docFindReplaceImpl (getHandle:'res-> Word.Application) (matches:SearchList)  (template:WordDoc) : BuildMonad<'res,WordDoc> =
     buildMonad { 
         let! outName = freshFileName ()
-        let! app = askU ()
+        let! app = asksU getHandle
         process1 template.DocumentPath outName matches app
         return (makeDocument outName)
         }
 
+
     
+type DocFindReplace<'res> = 
+    { docFindReplace : SearchList -> WordDoc -> BuildMonad<'res,WordDoc>
+      getTemplate: string -> BuildMonad<'res,WordDoc> }
+
+let makeAPI (getHandle:'res-> Word.Application) : DocFindReplace<'res> = 
+    { docFindReplace = docFindReplaceImpl getHandle
+      getTemplate = getTemplateImpl }
+
+
