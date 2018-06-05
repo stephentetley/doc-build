@@ -2,10 +2,6 @@
 // License: BSD 3 Clause
 
 
-// *************************************
-// OBSOLETE - use EVENTS_Survey_Forms.fsx
-
-
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.Word"
@@ -47,12 +43,17 @@ open Microsoft.Office.Interop
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
-#load @"DocMake\Base\JsonUtils.fs"
-#load @"DocMake\Base\GENHelper.fs"
-#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\Base\SimpleDocOutput.fs"
+#load @"DocMake\Builder\BuildMonad.fs"
+#load @"DocMake\Builder\Basis.fs"
+#load @"DocMake\Builder\WordBuilder.fs"
 open DocMake.Base.Common
-open DocMake.Base.GENHelper
-open DocMake.Tasks.DocFindReplace
+open DocMake.Builder.BuildMonad
+open DocMake.Builder.Basis
+open DocMake.Builder.WordBuilder
+
+#load @"DocMake\Lib\DocFindReplace.fs"
+open DocMake.Lib
 
 
 /// This is a one-to-many build (one site list, many docs), so 
@@ -62,7 +63,7 @@ open DocMake.Tasks.DocFindReplace
 let _templateRoot   = @"G:\work\Projects\events2\gen-surveys-risks\__Templates"
 let _outputRoot     = @"G:\work\Projects\events2\gen-surveys-risks\output"
 
-let _surveyTemplate = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-05-31.docx"
+
 
 type SiteTable = 
     ExcelFile< @"G:\work\Projects\events2\EDM2 Site-List SK.xlsx",
@@ -194,48 +195,79 @@ let buildSites (rows: SiteRow list) : Site list =
     interim |> Map.toList |> List.map snd
 
 
-let genHazardSheet (workGroup:string)  (site:Site) : unit =
-    let template = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
-    let cleanName = safeName site.SiteProps.SiteName
-    let path1 = _outputRoot @@ workGroup @@ cleanName
-    let outPath = path1 @@  (sprintf "%s Hazard Identification Check List.docx" cleanName)    
-    DocFindReplace (fun p -> 
-        { p with 
-            TemplateFile = template
-            OutputFile = outPath
-            Matches = makeHazardsSearches site.SiteProps 
-        }) 
+// ********************************
+// Build script
 
 
-let genSurvey (app:Word.Application) (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : unit =
-    let path1 = _outputRoot @@ safeName workGroup @@ safeName siteProps.SiteName
-    let file1 = makeSurveyName siteProps.SiteName discharge.DischargeName
-    let outPath = path1 @@ file1
-    BatchDocFindReplace app (fun p -> 
-        { p with 
-            TemplateFile = _surveyTemplate
-            OutputFile = outPath
-            Matches  = makeSurveySearches siteProps discharge
-        }) 
+type WordRes = Word.Application
+
+type WordBuild<'a> = BuildMonad<WordRes,'a>
+
+// Just need the DocFindReplace API...
+let api = DocFindReplace.makeAPI (fun app -> app)
+let docFindReplace = api.docFindReplace
+let getTemplate = api.getTemplate
+
+let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
+    buildMonad { 
+        let templatePath = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
+        let cleanName = safeName site.SiteProps.SiteName
+        let outPath = _outputRoot @@ workGroup @@ cleanName
+        let outName = sprintf "%s Hazard Identification Check List.docx" cleanName   
+        let matches = makeHazardsSearches site.SiteProps 
+        let! d1 = 
+            localSubDirectory outPath <| 
+                buildMonad { 
+                    let! template = getTemplate templatePath
+                    let! d1 = docFindReplace matches template >>= renameTo outName 
+                    return d1
+                }
+        return d1
+    }
+
+let genSurvey (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : WordBuild<WordDoc> = 
+    buildMonad { 
+        let surveyTemplate = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-05-31.docx"
+        let outPath = _outputRoot @@ safeName workGroup @@ safeName siteProps.SiteName
+        let outName = makeSurveyName siteProps.SiteName discharge.DischargeName
+        let matches = makeSurveySearches siteProps discharge
+        let! d1 = 
+            localSubDirectory outPath <| 
+                buildMonad { 
+                    let! template = getTemplate surveyTemplate
+                    let! d1 = docFindReplace matches template >>= renameTo outName 
+                    return d1
+                }
+        return d1
+    }
 
 // Generating all takes too long just generate a batch.
 
 // TODO SHEFFIELD , YORK
 
-let main (surveyBatch:string) : unit = 
-    let siteList = buildSites <| getSiteRows surveyBatch 
+let buildScript (surveyBatch:string) : WordBuild<unit> = 
+    let siteList = List.take 3 << buildSites <| getSiteRows surveyBatch 
     let todoCount = List.length siteList
     let safeBatchName = safeName surveyBatch
-    let app = new Word.ApplicationClass (Visible = true)
 
-    let proc1 (ix:int) (site:Site) = 
-        printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
-        makeSiteFolder safeBatchName site.SiteProps.SiteName
-        List.iter (genSurvey app safeBatchName site.SiteProps) site.Discharges
-        genHazardSheet safeBatchName site
-    // actions...
-    makeTopFolder safeBatchName
-    siteList |> List.iteri proc1
-    
-    // finalize...
-    app.Quit ()
+    let proc1 (ix:int) (site:Site) : WordBuild<unit> = 
+        buildMonad { 
+            do printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
+            do makeSiteFolder safeBatchName site.SiteProps.SiteName
+            do! forMz site.Discharges (genSurvey safeBatchName site.SiteProps) 
+            // let! _ = genHazardSheet safeBatchName site
+            return ()
+        }
+
+
+    foriMz siteList proc1
+                               
+
+
+let main (surveyBatch:string) : unit = 
+    let env = 
+        { WorkingDirectory = _outputRoot
+          PrintQuality = DocMakePrintQuality.PqScreen
+          PdfQuality = PdfPrintSetting.PdfScreen }
+    let hooks:BuilderHooks<Word.Application> = wordBuilderHook
+    consoleRun env hooks (buildScript surveyBatch)
