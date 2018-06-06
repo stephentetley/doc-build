@@ -110,7 +110,6 @@
     <None Include="SAMPS_gen_final.fsx" />
     <None Include="SAMPS_Final_Build.fsx" />
     <None Include="SAMPS_Final_Build_Alt.fsx" />
-    <None Include="EVENTS_Gen_Survey_Sheets.fsx" />
     <None Include="PLCAR_gen_final.fsx" />
     <None Include="PLCAR_Final_Build.fsx" />
     <None Include="PLCAR_Filey_Final.fsx" />

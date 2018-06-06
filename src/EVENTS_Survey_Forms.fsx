@@ -212,11 +212,11 @@ let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
     buildMonad { 
         let templatePath = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
         let cleanName = safeName site.SiteProps.SiteName
-        let outPath = _outputRoot @@ workGroup @@ cleanName
+        let subPath = safeName workGroup @@ cleanName
         let outName = sprintf "%s Hazard Identification Check List.docx" cleanName   
         let matches = makeHazardsSearches site.SiteProps 
         let! d1 = 
-            localSubDirectory outPath <| 
+            localSubDirectory subPath <| 
                 buildMonad { 
                     let! template = getTemplate templatePath
                     let! d1 = docFindReplace matches template >>= renameTo outName 
@@ -228,11 +228,11 @@ let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
 let genSurvey (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : WordBuild<WordDoc> = 
     buildMonad { 
         let surveyTemplate = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-05-31.docx"
-        let outPath = _outputRoot @@ safeName workGroup @@ safeName siteProps.SiteName
+        let subPath = safeName workGroup @@ safeName siteProps.SiteName
         let outName = makeSurveyName siteProps.SiteName discharge.DischargeName
         let matches = makeSurveySearches siteProps discharge
         let! d1 = 
-            localSubDirectory outPath <| 
+            localSubDirectory subPath <| 
                 buildMonad { 
                     let! template = getTemplate surveyTemplate
                     let! d1 = docFindReplace matches template >>= renameTo outName 
@@ -246,20 +246,20 @@ let genSurvey (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : 
 // TODO SHEFFIELD , YORK
 
 let buildScript (surveyBatch:string) (makeHazards:bool) : WordBuild<unit> = 
-    let siteList = List.take 3 << buildSites <| getSiteRows surveyBatch 
+    let siteList = buildSites <| getSiteRows surveyBatch 
     let todoCount = List.length siteList
     let safeBatchName = safeName surveyBatch
 
     let proc1 (ix:int) (site:Site) : WordBuild<unit> = 
         buildMonad { 
             do printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
-            do makeSiteFolder safeBatchName site.SiteProps.SiteName
+            // do makeSiteFolder safeBatchName site.SiteProps.SiteName
             do! forMz site.Discharges (genSurvey safeBatchName site.SiteProps) 
             if makeHazards then 
                 do! genHazardSheet safeBatchName site |>> ignore
+            else return ()
             return ()
         }
-
 
     foriMz siteList proc1
                                
