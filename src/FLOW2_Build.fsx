@@ -55,11 +55,11 @@ open DocMake.Builder.Basis
 #load @"DocMake\Lib\DocPhotos.fs"
 #load @"DocMake\Lib\DocToPdf.fs"
 #load @"DocMake\Lib\XlsToPdf.fs"
+#load @"DocMake\Lib\PptToPdf.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
 #load @"DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
 
-// TODO - localize these
 
 let _filestoreRoot  = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
 let _outputRoot     = @"G:\work\Projects\flow2\final-docs\output"

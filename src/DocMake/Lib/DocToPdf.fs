@@ -32,10 +32,12 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 let private docToPdfImpl (getHandle:'res-> Word.Application) (wordDoc:WordDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! (app:Word.Application) = asksU getHandle
-        let! outPath = freshDocument () |>> documentChangeExtension "pdf"
+        let  outPath = documentName <| documentChangeExtension "pdf" wordDoc
+        let! outTemp = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ =  process1 wordDoc.DocumentPath outPath.DocumentPath quality app
-        return outPath
+        let _ = process1 wordDoc.DocumentPath outTemp.DocumentPath quality app
+        let! final =  renameTo outPath outTemp 
+        return final
     }
 
     

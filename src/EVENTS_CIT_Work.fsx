@@ -71,15 +71,15 @@ let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> =
     { GetRows     = fun imports -> imports.Data 
       NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
-let filterBySurveyBatch (batch:string) (source:SiteRow list) : SiteRow list = 
+let filterBySurveyComplete (source:SiteRow list) : SiteRow list = 
     let testRow (row:SiteRow) : bool = 
-        match row.``Survey Batch`` with
+        match row.``Survey Completed (initials - date)`` with
         | null -> false
-        | ans -> ans = batch
-    List.filter testRow source
+        | ans -> ans <> ""
+    List.filter (not << testRow) source
 
-let getSiteRows (surveyBatch:string) : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) // |> filterBySurveyBatch surveyBatch
+let getSiteRows () : SiteRow list = 
+    excelTableGetRows siteTableDict (new SiteTable()) |> filterBySurveyComplete
 
 
 let makeMatches (row:SiteRow) : SearchList = 
@@ -115,15 +115,29 @@ let getTemplate = api.getTemplate
 
 let scopeOfWorks (row:SiteRow) : EventsBuild<WordDoc> = 
     buildMonad { 
-        let docName = sprintf "%s Scope of Works.docx" (safeName row.``Site Common Name``)
+        let name1 = 
+            let s = safeName row.``Site Common Name``
+            if s.Length > 40 then
+                s.[0..39]
+            else
+                s
+
+        let docName = sprintf "%s Scope of Works.docx" name1
         let matches = makeMatches row
         let! template = getTemplate _surveyTemplate
         let! d1 = docFindReplace matches template >>= renameTo docName
         return d1 } 
 
 let buildScript () : EventsBuild<unit> = 
-    let siteList = List.take 5 <|  getSiteRows "" 
-    forMz siteList scopeOfWorks
+    let siteList = getSiteRows () |> List.sortBy (fun r -> r.``Site Common Name``)
+    let count = siteList.Length
+    foriMz siteList <| fun ix row -> 
+        if ix > 0 then
+            printfn "Site %i of %i:" (ix+1) count
+            fmapM ignore <| scopeOfWorks row
+        else
+            breturn ()
+        
 
 let main () : unit = 
     let env = 

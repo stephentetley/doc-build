@@ -15,11 +15,7 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.PowerPointBuilder
 
-
-let private getOutputName (pptDoc:PowerPointDoc) : BuildMonad<'res,string> =
-    executeIO <| fun () -> 
-        System.IO.Path.ChangeExtension(pptDoc.DocumentPath, "pdf")
-    
+   
 
 
 let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuality) (app:PowerPoint.Application) : unit = 
@@ -38,10 +34,12 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 let private pptToPdfImpl (getHandle:'res-> PowerPoint.Application) (pptDoc:PowerPointDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! (app:PowerPoint.Application) = asksU getHandle
-        let! outPath = getOutputName pptDoc
+        let  outName = documentName <| documentChangeExtension "pdf" pptDoc
+        let! outTemp = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ =  process1 pptDoc.DocumentPath outPath quality app
-        return (makeDocument outPath)
+        let _ =  process1 pptDoc.DocumentPath outTemp.DocumentPath quality app
+        let! final = renameTo outName outTemp
+        return final
     }
 
 type PptToPdf<'res> = 

@@ -44,10 +44,12 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 let private xlsToPdfImpl (getHandle:'res-> Excel.Application) (fitWidth:bool) (xlsDoc:ExcelDoc) : BuildMonad<'res, PdfDoc> =
     buildMonad { 
         let! (app:Excel.Application) = asksU getHandle
-        let! outPath = freshDocument () |>> documentChangeExtension "pdf"
+        let  outName = documentName <| documentChangeExtension "pdf" xlsDoc
+        let! outTemp = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ =  process1 xlsDoc.DocumentPath outPath.DocumentPath quality fitWidth app
-        return outPath
+        let _ =  process1 xlsDoc.DocumentPath outTemp.DocumentPath quality fitWidth app
+        let! final = renameTo outName outTemp
+        return final
     }    
     
 

@@ -265,10 +265,10 @@ let buildScript (surveyBatch:string) (makeHazards:bool) : WordBuild<unit> =
                                
 
 
-let main (surveyBatch:string) : unit = 
+let main (surveyBatch:string) (makeHazards:bool) : unit = 
     let env = 
         { WorkingDirectory = _outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
     let hooks:BuilderHooks<Word.Application> = wordBuilderHook
-    consoleRun env hooks (buildScript surveyBatch false)
+    consoleRun env hooks (buildScript surveyBatch makeHazards)

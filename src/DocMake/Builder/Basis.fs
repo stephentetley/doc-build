@@ -86,6 +86,9 @@ let copyToWorkingDirectory (fileName:string) : BuildMonad<'res,Document<'a>> =
         throwError <| sprintf "getDocument failed: '%s'" fileName
 
 
+
+
+
 let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'a>> =  
     executeIO <| fun () -> 
         let srcPath = src.DocumentPath
@@ -118,6 +121,7 @@ let createWorkingDirectory () : BuildMonad<'res,unit> =
         do! executeIO (fun () -> maybeCreateDirectory cwd) 
     }
 
+/// This should porbably be removed, it enables non-local writes...
 let localWorkingDirectory (wd:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     localEnv (fun (e:Env) -> { e with WorkingDirectory = wd }) ma
 
@@ -130,7 +134,7 @@ let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res
 
 
 // Shell helper:
-let  shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
+let shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
     let infoF (info:ProcStartInfo) =  
         { info with FileName =  toolPath; Arguments = command }
     buildMonad { 

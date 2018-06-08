@@ -99,6 +99,7 @@
     <None Include="EVENTS_CIT_Work.fsx" />
     <None Include="EVENTS_Survey_Forms.fsx" />
     <None Include="CEMA_Hazard_Sheets.fsx" />
+    <None Include="SAMPS_New_Final.fsx" />
     <None Include="RTU_gen_final.fsx" />
     <None Include="RTU_Final_Build.fsx" />
     <None Include="RTU_Erskines_Final1.fsx" />

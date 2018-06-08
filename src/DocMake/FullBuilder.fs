@@ -4,6 +4,7 @@
 open Microsoft.Office.Interop
 
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
 open DocMake.Builder.ExcelBuilder
 open DocMake.Builder.PowerPointBuilder
@@ -55,9 +56,14 @@ let docToPdf =
     let api = DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
     api.docToPdf
 
-let xlsToPdf = 
+let xlsToPdf (fitPage:bool) (xlsDoc:ExcelDoc) : FullBuild<PdfDoc> = 
     let api = XlsToPdf.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
-    api.xlsToPdf
+    api.xlsToPdf fitPage xlsDoc
+
+let pptToPdf (pptDoc:PowerPointDoc) : FullBuild<PdfDoc> = 
+    let api = PptToPdf.makeAPI (fun (h:FullHandle) -> h.PowerPointApp)
+    api.pptToPdf pptDoc
+
 
 let docPhotos = 
     let api = DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
