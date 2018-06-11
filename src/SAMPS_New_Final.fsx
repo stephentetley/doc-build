@@ -64,6 +64,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Lib\PptToPdf.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
 #load @"DocMake\FullBuilder.fs"
+open DocMake.Lib
 open DocMake.FullBuilder
 
 
@@ -112,6 +113,19 @@ let surveyPres (siteName:string) : FullBuild<PdfDoc> =
         getDocument ppt >>= pptToPdf >>= renameTo outName
 
 
+let makePhotosDoc (docTitle:string) (jpegSrc:DocPhotos.JpegInputSource) (pdfName:string) : FullBuild<PdfDoc> = 
+    let opts = { DocTitle = Some docTitle; ShowFileName = true } : DocPhotos.DocPhotosOptions
+    docPhotos opts [jpegSrc] >>= docToPdf >>= renameTo pdfName
+
+
+let surveyPhotos (siteName:string) : FullBuild<PdfDoc> = 
+    let jpegsDir = _inputRoot @@ safeName siteName @@ @"SURVEY" @@ @"PHOTOS"
+    // let renamer = Some <| sprintf "%s %03i.jpg" (safeName siteName) 
+    let source = { InputDirectory = jpegsDir; RenameProc = None} : DocPhotos.JpegInputSource
+    let pdfName = sprintf "%s survey-photos.pdf" (safeName siteName)
+    makePhotosDoc "Survey Photos" source pdfName
+
+
 let buildScript (siteName:string) : FullBuild<unit> = 
     let subFolder = safeName siteName
     localSubDirectory subFolder <| 
@@ -120,6 +134,7 @@ let buildScript (siteName:string) : FullBuild<unit> =
             let! d1 = cover siteName
             let! d2 = surveySheet siteName
             let! d3 = surveyPres siteName
+            let! d4 = surveyPhotos siteName
             return ()                
         }
 

@@ -9,6 +9,9 @@ open System.IO
 open System.Text.RegularExpressions
 open Microsoft.Office.Interop
 
+open Fake.IO.FileSystemOperators
+
+
 open DocMake.Base.ImageMagickUtils
 open DocMake.Base.SimpleDocOutput
 open DocMake.Builder.BuildMonad
@@ -19,21 +22,37 @@ open DocMake.Builder.WordBuilder
 // Which in turn means copy the photos.
 
 
+type DocPhotosOptions = 
+    { DocTitle: string option
+      ShowFileName: bool }
+
+type JpegRenamer = option<int -> string>
+
+type JpegInputSource =
+    { InputDirectory: string
+      RenameProc: JpegRenamer }
 
 
-let private getJPEGs (dirs:string list) : string list = 
+
+let private getJPEGs (dir:string) : string list = 
     let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
-    let get1 = fun dir -> 
-        Directory.GetFiles(dir) 
+    Directory.GetFiles(dir) 
         |> Array.filter (fun s -> re.Match(s).Success)
         |> Array.toList
-    List.collect get1 dirs
+
     
 
-let private copyJPEGs (imgPaths:string list) : BuildMonad<'res,string> = 
+let private copyJPEGs (jpgSrc:JpegInputSource) : BuildMonad<'res,string> = 
+    let copyProc (i:int) (inputFile:string) = 
+        let renamer = 
+            match jpgSrc.RenameProc with
+            | Some fn -> renameTo (fn (i+1))
+            | None -> breturn
+        copyToWorkingDirectory inputFile >>= renamer >>. breturn ()
     localSubDirectory "photos" <| 
         buildMonad { 
-            do! mapMz copyToWorkingDirectory imgPaths
+            let jpegs = getJPEGs jpgSrc.InputDirectory
+            do! mapiMz copyProc jpegs
             let! cwd = askWorkingDirectory ()
             do optimizePhotos cwd 
             return cwd
@@ -60,7 +79,6 @@ let private addTitle  (optTitle:string option) : DocOutput<unit> =
 
 let private insertPhotos (action1:PictureFun) (files:string list) : DocOutput<unit> =
     // Don't add page break to last, hence use direct recursion
-    
     let rec work zs = 
         match zs with 
         | [] -> docOutput { return () }
@@ -72,19 +90,19 @@ let private insertPhotos (action1:PictureFun) (files:string list) : DocOutput<un
                 do! work xs }
     work files
 
-
-let private photoDocImpl (getHandle:'res-> Word.Application) (documentTitle: string option) (showJpegFileName:bool) (inputPaths:string list) : BuildMonad<'res,WordDoc> =
+// TODO inputPaths should be paired with an optional rename procedure
+let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOptions) (inputSources:JpegInputSource list) : BuildMonad<'res,WordDoc> =
     let docProc (jpegFolder:string) : DocOutput<unit>  = 
-        let jpegs = getJPEGs [jpegFolder]
-        let stepFun = if showJpegFileName then stepWithLabel else stepWithoutLabel
+        let jpegs = getJPEGs jpegFolder
+        let stepFun = if opts.ShowFileName then stepWithLabel else stepWithoutLabel
         docOutput { 
-            do! addTitle documentTitle
+            do! addTitle opts.DocTitle
             do! insertPhotos stepFun jpegs
             }
 
     buildMonad { 
-        let jpegInputs = getJPEGs inputPaths
-        let! tempLoc = copyJPEGs jpegInputs
+        do! mapMz copyJPEGs inputSources 
+        let! tempLoc = (fun d -> d @@ "photos") <<| askWorkingDirectory ()
         let! outDoc = freshDocument ()
         let! app = asksU getHandle
         let _ = runDocOutput2 outDoc.DocumentPath app (docProc tempLoc)
@@ -93,7 +111,7 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (documentTitle: str
     
 
 type DocPhotos<'res> = 
-    { docPhotos : string option -> bool -> string list -> BuildMonad<'res, WordDoc> }
+    { docPhotos : DocPhotosOptions -> JpegInputSource list -> BuildMonad<'res, WordDoc> }
 
 let makeAPI (getHandle:'res -> Word.Application) : DocPhotos<'res> = 
     { docPhotos = photoDocImpl getHandle }
