@@ -273,7 +273,12 @@ let throwError (msg:string) : BuildMonad<'res,'a> =
     BuildMonad <| fun _ _ -> Err msg
 
 
-
+let attempt (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun (env,res) st0 -> 
+        try
+            apply1 ma (env, res) st0
+        with
+        | _ -> Err "attempt failed"
 
 /// Execute an FSharp action that may use IO, throw an exception...
 /// Capture any failure within the BuildMonad.

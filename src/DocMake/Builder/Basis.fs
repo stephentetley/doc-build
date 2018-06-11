@@ -137,7 +137,7 @@ let shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit>
         let procInfo = new System.Diagnostics.ProcessStartInfo ()
         procInfo.FileName <- toolPath
         procInfo.Arguments <- command
-        // procInfo.UseShellExecute <- true
+        procInfo.CreateNoWindow <- true
         let proc = new System.Diagnostics.Process()
         proc.StartInfo <- procInfo
         proc.Start() |> ignore

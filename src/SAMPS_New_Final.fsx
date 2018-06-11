@@ -76,13 +76,34 @@ let _inputRoot          = @"G:\work\Projects\samps\final-docs\input\June2018_bat
 let _outputRoot         = @"G:\work\Projects\samps\final-docs\output\June_Batch01"
 
 
+type UidTable = 
+    ExcelFile< @"G:\work\Projects\samps\uid_numbers.xlsx",
+               SheetName = "Sheet1",
+               ForceString = true >
+
+type UidRow = UidTable.Row
+
+let uidsTableDict : ExcelProviderHelperDict<UidTable, UidRow> = 
+    { GetRows     = fun imports -> imports.Data 
+      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
+
+let uidDict : Map<string,string> = 
+    excelTableGetRows uidsTableDict (new UidTable()) 
+        |> List.map (fun (row:UidRow) -> row.``Common Name``, row.UID)
+        |> Map.ofList
+
+
 let clean () : FullBuild<unit> = deleteWorkingDirectory () 
 let outputDirectory () : FullBuild<unit> = createWorkingDirectory ()
 
 
 let makeCoverMatches (siteName:string) : SearchList = 
+    let sai = 
+        match uidDict.TryFind siteName with
+        | Some uid -> uid
+        | None -> failwith "makeCoverMatches"            
     [ "#SITENAME",          siteName   
-    ; "#SAINUMBER" ,        "SAI00ZZZZZZ"
+    ; "#SAINUMBER" ,        sai
     ]
 
 
@@ -116,8 +137,9 @@ let surveyPres (siteName:string) : FullBuild<PdfDoc> =
         getDocument ppt >>= pptToPdf >>= renameTo outName
 
 
-let makePhotosDoc (docTitle:string) (jpegSrc:DocPhotos.JpegInputSource) (pdfName:string) : FullBuild<PdfDoc> = 
-    let opts = { DocTitle = Some docTitle; ShowFileName = true } : DocPhotos.DocPhotosOptions
+let makePhotosDoc (docTitle:string) (jpegSrc:DocPhotos.JpegInputSource) (pdfName:string) (subFolder:string) : FullBuild<PdfDoc> = 
+    let opts : DocPhotos.DocPhotosOptions = 
+        { DocTitle = Some docTitle; ShowFileName = true; CopyToSubDirectory = subFolder } 
     docPhotos opts [jpegSrc] >>= docToPdf >>= renameTo pdfName
 
 
@@ -127,7 +149,7 @@ let surveyPhotos (siteName:string) : FullBuild<PdfDoc> =
     let source = { InputDirectory = jpegsDir; RenameProc = None} : DocPhotos.JpegInputSource
     let pdfName = sprintf "%s survey-photos.pdf" (safeName siteName)
     printfn "Survey Photos: %s" pdfName
-    makePhotosDoc "Survey Photos" source pdfName
+    makePhotosDoc "Survey Photos" source pdfName @"survey_photos"
 
 // copy-pdf
 let citCircuitDiagram (siteName:string) : FullBuild<PdfDoc> = 
@@ -150,7 +172,7 @@ let citWorkbook (siteName:string) : FullBuild<PdfDoc> =
 // doc-to-pdf OR copy-pdf
 let installSheets (siteName:string) : FullBuild<PdfDoc list> =
     let makeOutName (inputFileName:string) : string = 
-        let groups = Regex.Match(inputFileName, @"([A-z]*) Sampler Replacement").Groups
+        let groups = Regex.Match(inputFileName, @"([A-z_]*) Sampler Replacement").Groups
         if groups.Count > 0 then 
             sprintf "%s %s sampler-install.pdf" (safeName siteName) (safeName (groups.Item(1).Value))
         else 
@@ -178,6 +200,17 @@ let bottleMachine (siteName:string) : FullBuild<PdfDoc list> =
     | Some xs -> 
         forM xs <| fun pdf -> copyToWorkingDirectory pdf >>= renameTo (makeOutName pdf)
 
+
+let installPhotos (siteName:string) : FullBuild<PdfDoc list> = 
+    let jpegsDir = _inputRoot @@ safeName siteName @@ @"SITE_WORKS" @@ @"PHOTOS"
+    let source = { InputDirectory = jpegsDir; RenameProc = None} : DocPhotos.JpegInputSource
+    let pdfName = sprintf "%s install-photos.pdf" (safeName siteName)
+    printfn "Install Photos: %s" pdfName
+    attempt (makePhotosDoc "Install Photos" source pdfName @"install_photos" |>> (fun a -> [a]))
+        <|> breturn []
+
+
+
 let buildScript (siteName:string) : FullBuild<unit> = 
     let subFolder = safeName siteName
     let finalName = sprintf "%s S3820 Sampler Asset Replacement.pdf" (safeName siteName)
@@ -191,8 +224,9 @@ let buildScript (siteName:string) : FullBuild<unit> =
             let! d5 = citCircuitDiagram siteName
             let! d6 = citWorkbook siteName
             let! ds1 = installSheets siteName
-            let! ds2 = bottleMachine siteName
-            let pdfs = [d1; d2; d3; d4; d5; d6] @ ds1 @ ds2
+            let! ds2 = installPhotos siteName
+            let! ds3 = bottleMachine siteName
+            let pdfs = [d1; d2; d3; d4; d5; d6] @ ds1 @ ds2 @ ds3
             let! (final:PdfDoc) = makePdf finalName     <| pdfConcat pdfs
 
             return ()                
@@ -213,10 +247,12 @@ let main () : unit =
             System.IO.Directory.GetDirectories(_inputRoot) |> Array.toList
         foriMz folders <|
             fun ix path -> 
-                printfn "Processing %i of %i... '%s'" (ix+1) folders.Length path
-                let name = System.IO.DirectoryInfo(path).Name |> fun s -> s.Replace("_", "/")
-                buildScript name
-                
+                if ix >= 0 then 
+                    printfn "Processing %i of %i... '%s'" (ix+1) folders.Length path
+                    let name = System.IO.DirectoryInfo(path).Name |> fun s -> s.Replace("_", "/")
+                    buildScript name
+                else
+                    breturn ()
     consoleRun env hooks proc
 
 

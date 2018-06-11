@@ -23,7 +23,8 @@ open DocMake.Builder.WordBuilder
 
 
 type DocPhotosOptions = 
-    { DocTitle: string option
+    { CopyToSubDirectory: string
+      DocTitle: string option
       ShowFileName: bool }
 
 type JpegRenamer = option<int -> string>
@@ -42,14 +43,14 @@ let private getJPEGs (dir:string) : string list =
 
     
 
-let private copyJPEGs (jpgSrc:JpegInputSource) : BuildMonad<'res,string> = 
+let private copyJPEGs (jpgSrc:JpegInputSource) (outputSubDirectory:string) : BuildMonad<'res,string> = 
     let copyProc (i:int) (inputFile:string) = 
         let renamer = 
             match jpgSrc.RenameProc with
             | Some fn -> renameTo (fn (i+1))
             | None -> breturn
         copyToWorkingDirectory inputFile >>= renamer >>. breturn ()
-    localSubDirectory "photos" <| 
+    localSubDirectory outputSubDirectory <| 
         buildMonad { 
             let jpegs = getJPEGs jpgSrc.InputDirectory
             do! mapiMz copyProc jpegs
@@ -101,10 +102,10 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOpti
             }
 
     buildMonad { 
-        do! mapMz copyJPEGs inputSources 
-        let! tempLoc = (fun d -> d @@ "photos") <<| askWorkingDirectory ()
+        do! mapMz (fun jpg -> copyJPEGs jpg opts.CopyToSubDirectory) inputSources 
         let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! app = asksU getHandle
+        let! tempLoc = (fun d -> d @@ opts.CopyToSubDirectory) <<| askWorkingDirectory ()
         let _ = runDocOutput2 outDoc.DocumentPath app (docProc tempLoc)
         return outDoc
         } 
