@@ -22,6 +22,8 @@ open ImageMagick
 
 
 open System.IO
+open System.Text.RegularExpressions
+
 
 // FAKE dependencies are getting onorous...
 #I @"..\packages\FAKE.5.0.0-rc016.225\tools"
@@ -98,9 +100,10 @@ let cover (siteName:string) : FullBuild<PdfDoc> =
 // One survey sheet per site (even if multiple samplers)
 let surveySheet (siteName:string) : FullBuild<PdfDoc> = 
     let inputSubDir = _inputRoot @@ safeName siteName @@ @"SURVEY"
+    let outName = sprintf "%s sampler-survey.pdf" (safeName siteName) 
     match tryFindExactlyOneMatchingFile "*Sampler survey.xls*" inputSubDir  with
     | None -> throwError "No survey sheet"
-    | Some xls -> getDocument xls >>= xlsToPdf true
+    | Some xls -> getDocument xls >>= xlsToPdf true >>= renameTo outName
     
 // One survey sheet per site (even if multiple samplers)
 let surveyPres (siteName:string) : FullBuild<PdfDoc> = 
@@ -123,11 +126,60 @@ let surveyPhotos (siteName:string) : FullBuild<PdfDoc> =
     // let renamer = Some <| sprintf "%s %03i.jpg" (safeName siteName) 
     let source = { InputDirectory = jpegsDir; RenameProc = None} : DocPhotos.JpegInputSource
     let pdfName = sprintf "%s survey-photos.pdf" (safeName siteName)
+    printfn "Survey Photos: %s" pdfName
     makePhotosDoc "Survey Photos" source pdfName
 
+// copy-pdf
+let citCircuitDiagram (siteName:string) : FullBuild<PdfDoc> = 
+    let inputSubDir = _inputRoot @@ safeName siteName @@ @"CIT"
+    let outName = sprintf "%s circuit-diagram.pdf" (safeName siteName) 
+    match tryFindExactlyOneMatchingFile "*Circuit Diagram.pdf" inputSubDir  with
+    | None -> throwError "No survey sheet"
+    | Some pdf -> copyToWorkingDirectory pdf >>= renameTo outName
+
+// xls-to-pdf
+let citWorkbook (siteName:string) : FullBuild<PdfDoc> =     
+    let inputSubDir = _inputRoot @@ safeName siteName @@ @"CIT"
+    let outName = sprintf "%s cit-workbook.pdf" (safeName siteName) 
+    match tryFindExactlyOneMatchingFile "*YW Workbook.xls*" inputSubDir  with
+    | None -> throwError "No survey sheet"
+    | Some xls -> getDocument xls >>= xlsToPdf true >>= renameTo outName
+
+
+// May be more-than-one.
+// doc-to-pdf OR copy-pdf
+let installSheets (siteName:string) : FullBuild<PdfDoc list> =
+    let makeOutName (inputFileName:string) : string = 
+        let groups = Regex.Match(inputFileName, @"([A-z]*) Sampler Replacement").Groups
+        if groups.Count > 0 then 
+            sprintf "%s %s sampler-install.pdf" (safeName siteName) (safeName (groups.Item(1).Value))
+        else 
+            sprintf "%s UNKNOWN sampler-install.pdf" (safeName siteName) 
+
+    let inputSubDir = _inputRoot @@ safeName siteName @@ @"SITE_WORKS"
+    match tryFindSomeMatchingFiles "*Replacement Record.doc*" inputSubDir  with
+    | None -> 
+        match tryFindSomeMatchingFiles "*Replacement Record.pdf" inputSubDir  with
+        | None -> throwError "No install sheets"
+        | Some xs -> 
+            forM xs <| fun pdf -> copyToWorkingDirectory pdf >>= renameTo (makeOutName pdf)
+    | Some xs -> 
+        forM xs <| fun docx -> getDocument docx >>= docToPdf >>= renameTo (makeOutName docx)
+
+// May be more-than-one.
+// copy-pdf
+let bottleMachine (siteName:string) : FullBuild<PdfDoc list> =
+    let makeOutName (inputFileName:string) : string = 
+        sprintf "%s %s sampler-install.pdf" (safeName siteName) inputFileName
+    let inputSubDir = _inputRoot @@ safeName siteName @@ @"SITE_WORKS"
+    match tryFindSomeMatchingFiles "*Bottle_Machine.pdf" inputSubDir  with
+    | None -> breturn []
+    | Some xs -> 
+        forM xs <| fun pdf -> copyToWorkingDirectory pdf >>= renameTo (makeOutName pdf)
 
 let buildScript (siteName:string) : FullBuild<unit> = 
     let subFolder = safeName siteName
+    let finalName = sprintf "%s S3820 Sampler Asset Replacement.pdf" (safeName siteName)
     localSubDirectory subFolder <| 
         buildMonad { 
             do! clean () >>. outputDirectory () 
@@ -135,6 +187,13 @@ let buildScript (siteName:string) : FullBuild<unit> =
             let! d2 = surveySheet siteName
             let! d3 = surveyPres siteName
             let! d4 = surveyPhotos siteName
+            let! d5 = citCircuitDiagram siteName
+            let! d6 = citWorkbook siteName
+            let! ds1 = installSheets siteName
+            let! ds2 = bottleMachine siteName
+            let pdfs = [d1; d2; d3; d4; d5; d6] @ ds1 @ ds2
+            let! (final:PdfDoc) = makePdf finalName     <| pdfConcat pdfs
+
             return ()                
         }
 
@@ -158,3 +217,10 @@ let main () : unit =
                 buildScript name
                 
     consoleRun env hooks proc
+
+
+//let temp01 () = 
+//    let ss = @"Kirkbymoorside STW - Outlet Sampler Replacement Record.docx"
+//    let result = Regex.Match(ss, @"([A-z]*) Sampler Replacement")
+//    printfn "%s" (result.Groups.Item(0).Value)
+//    printfn "%s" (result.Groups.Item(1).Value)

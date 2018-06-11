@@ -317,10 +317,10 @@ let withNameGen (namer:int -> string) (ma:BuildMonad<'res,'a>): BuildMonad<'res,
     BuildMonad <| fun (env,res) st0 -> 
         let fun1 = st0.MakeName
         match apply1 ma (env,res) {st0 with MakeName = namer} with
-        | Err msg ->Err msg
+        | Err msg -> Err msg
         | Ok (st1,a) -> Ok ({st1 with MakeName = fun1}, a)
 
-
+// TODO - if this took a file extension it might simplify things
 let freshFileName () : BuildMonad<'res, string> = 
     BuildMonad <| fun (env,_) st0 -> 
         let i = st0.NameIndex
