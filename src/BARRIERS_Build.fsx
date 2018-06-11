@@ -58,6 +58,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Lib\DocFindReplace.fs"
 #load @"DocMake\Lib\PdfConcat.fs"
 #load @"DocMake\Lib\XlsToPdf.fs"
+#load @"DocMake\Lib\PptToPdf.fs"
 #load @"DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
 

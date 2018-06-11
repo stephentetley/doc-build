@@ -5,6 +5,7 @@ module DocMake.Builder.Basis
 
 open System.IO
 open System.Threading
+open System.Diagnostics
 
 // Ideally don't use Fake (need currently for process running)
 open Fake.Core
@@ -131,21 +132,19 @@ let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res
                 { e with WorkingDirectory = cwd }) 
             (createWorkingDirectory () >>. ma)
 
-
-
-// Shell helper:
 let shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
-    let infoF (info:ProcStartInfo) =  
-        { info with FileName =  toolPath; Arguments = command }
-    buildMonad { 
-        let i = Fake.Core.Process.execSimple infoF System.TimeSpan.MaxValue
-        if (i = 0) then    
-            return ()
-        else
-            do printfn "%s" toolPath
-            do printfn "%s" command
-            do! throwError errMsg
-        }
+    try
+        let procInfo = new System.Diagnostics.ProcessStartInfo ()
+        procInfo.FileName <- toolPath
+        procInfo.Arguments <- command
+        // procInfo.UseShellExecute <- true
+        let proc = new System.Diagnostics.Process()
+        proc.StartInfo <- procInfo
+        proc.Start() |> ignore
+        proc.WaitForExit () 
+        breturn ()
+    with
+    | ex -> throwError (sprintf "shellRun: \n%s" ex.Message)
 
 
 let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) :BuildMonad<'res, PdfDoc> = 

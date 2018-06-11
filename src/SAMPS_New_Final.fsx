@@ -169,8 +169,9 @@ let installSheets (siteName:string) : FullBuild<PdfDoc list> =
 // May be more-than-one.
 // copy-pdf
 let bottleMachine (siteName:string) : FullBuild<PdfDoc list> =
-    let makeOutName (inputFileName:string) : string = 
-        sprintf "%s %s sampler-install.pdf" (safeName siteName) inputFileName
+    let makeOutName (inputFilePath:string) : string = 
+        let name = System.IO.FileInfo(inputFilePath).Name
+        sprintf "%s %s sampler-install.pdf" (safeName siteName) name
     let inputSubDir = _inputRoot @@ safeName siteName @@ @"SITE_WORKS"
     match tryFindSomeMatchingFiles "*Bottle_Machine.pdf" inputSubDir  with
     | None -> breturn []
