@@ -5,10 +5,10 @@ module DocMake.Tasks.PdfRotate
 
 open System.IO
 
-open Fake.Core
-open Fake.Core.Process
+// open Fake.Core
 
 open DocMake.Base.Common
+open DocMake.Base.FakeLike
 
 type PageRotation = int * DocMakePageOrientation
 
@@ -51,9 +51,7 @@ let private makeCmd (parameters: PdfRotateParams)  : string =
 // Run as a process...
 let private shellRun toolPath command = 
     printfn "%s %s" toolPath command
-    if 0 <> ExecProcess (fun info -> 
-                info.FileName <- toolPath
-                info.Arguments <- command) System.TimeSpan.MaxValue
+    if 0 <> executeProcess toolPath command
     then failwithf "PdfRotate %s failed." command
 
 

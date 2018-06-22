@@ -11,22 +11,21 @@
 #r "office"
 
 // FAKE is local to the project file
-#I @"..\packages\FAKE.5.0.0-beta005\tools"
-#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+//#I @"..\packages\FAKE.5.0.0-beta005\tools"
+//#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\Builders.fs"
+#load @"DocMake\Builder\WordBuilder.fs"
 #load @"DocMake\Lib\DocFindReplace.fs"
 #load @"DocMake\Lib\DocToPdf.fs"
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.Builders
-open DocMake.Lib.DocFindReplace
-open DocMake.Lib.DocToPdf
+open DocMake.Builder.WordBuilder
+open DocMake.Lib
 
 let matches1 = [ "#before", "after" ]
 

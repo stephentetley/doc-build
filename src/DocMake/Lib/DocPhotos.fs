@@ -18,8 +18,6 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
 
-// TODO - must optimize the size of the photos for Word.
-// Which in turn means copy the photos.
 
 
 type DocPhotosOptions = 

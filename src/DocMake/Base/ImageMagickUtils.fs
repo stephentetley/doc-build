@@ -5,11 +5,9 @@ module DocMake.Base.ImageMagickUtils
 
 open System
 
-// open Fake
-
 open ImageMagick
 
-open DocMake.Base.FakeFake
+open DocMake.Base.FakeLike
 
 type PhotoOrientation = PhotoPortrait | PhotoLandscape
 

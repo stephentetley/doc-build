@@ -32,17 +32,18 @@ open System.IO
 #r @"Fake.Core.Trace.dll"
 #I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
 #r @"Fake.Core.Process.dll"
-open Fake
-open Fake.IO.FileSystemOperators
+
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\FakeLike.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
 open DocMake.Base.Common
+open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
@@ -58,7 +59,7 @@ open DocMake.Lib
 let _templateRoot       = @"G:\work\Projects\events2\gen-cit-sheets\__Templates"
 let _outputDirectory    = @"G:\work\Projects\events2\gen-cit-sheets\output"
 
-let _surveyTemplate = _templateRoot @@ "TEMPLATE Scope of Works.docx"
+let _surveyTemplate = _templateRoot </> "TEMPLATE Scope of Works.docx"
 
 type SiteTable = 
     ExcelFile< @"G:\work\Projects\events2\EDM2 Site-List SK.xlsx",

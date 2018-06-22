@@ -41,8 +41,7 @@ open System.Text.RegularExpressions
 
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeExtras.fs"
-#load @"DocMake\Base\FakeFake.fs"
+#load @"DocMake\Base\FakeLike.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
@@ -54,8 +53,7 @@ open System.Text.RegularExpressions
 #load @"DocMake\Builder\GhostscriptBuilder.fs"
 #load @"DocMake\Builder\PdftkBuilder.fs"
 open DocMake.Base.Common
-open DocMake.Base.FakeExtras
-open DocMake.Base.FakeFake
+open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 

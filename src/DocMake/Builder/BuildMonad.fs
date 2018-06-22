@@ -15,9 +15,6 @@ open DocMake.Base.Common
 // reasons.
 
 
-/// TODO - adding "working directory" and a counter would be useful
-/// We could readily generate temp files
-
 type Env = 
     { WorkingDirectory: string
       PrintQuality: DocMakePrintQuality

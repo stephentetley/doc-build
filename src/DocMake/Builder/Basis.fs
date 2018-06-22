@@ -129,7 +129,7 @@ let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res
                 { e with WorkingDirectory = cwd }) 
             (createWorkingDirectory () >>. ma)
 
-let shellRun toolPath (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
+let shellRun (toolPath:string) (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
     try
         let procInfo = new System.Diagnostics.ProcessStartInfo ()
         procInfo.FileName <- toolPath

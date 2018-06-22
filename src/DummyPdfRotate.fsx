@@ -1,15 +1,11 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-// FAKE is local to the project file
-#I @"..\packages\FAKE.5.0.0-beta005\tools"
-#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeExtras.fs"
+#load @"DocMake\Base\FakeLike.fs"
 #load @"DocMake\Tasks\PdfRotate.fs"
 open DocMake.Base.Common
-open DocMake.Base.FakeExtras
 open DocMake.Tasks.PdfRotate
 
 

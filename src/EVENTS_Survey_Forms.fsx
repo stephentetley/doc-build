@@ -13,6 +13,9 @@
 #r "office"
 
 
+open Microsoft.Office.Interop
+
+
 #I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
 #r "Newtonsoft.Json"
 open Newtonsoft.Json
@@ -34,20 +37,17 @@ open FSharp.ExcelProvider
 #r @"Fake.Core.Trace.dll"
 #I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
 #r @"Fake.Core.Process.dll"
-open Fake.IO.FileSystemOperators
-
-
-
-open Microsoft.Office.Interop
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\FakeLike.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
 open DocMake.Base.Common
+open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
@@ -98,11 +98,11 @@ let getSiteRows (surveyBatch:string) : SiteRow list =
 
 
 let makeTopFolder (batchName:string) : unit = 
-    maybeCreateDirectory <| _outputRoot @@ batchName
+    maybeCreateDirectory <| (_outputRoot </> batchName)
 
 let makeSiteFolder (batchName:string) (siteName:string) : unit = 
     let cleanName = safeName siteName
-    maybeCreateDirectory <| _outputRoot @@ batchName @@ cleanName
+    maybeCreateDirectory <| (_outputRoot </> batchName </> cleanName)
 
 let makeSurveyName (siteName:string) (dischargeName:string) : string = 
     sprintf "%s %s Survey.docx" (safeName siteName) (safeName dischargeName)
@@ -210,9 +210,9 @@ let getTemplate = api.getTemplate
 
 let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
     buildMonad { 
-        let templatePath = _templateRoot @@ "TEMPLATE Hazard Identification Check List.docx"
+        let templatePath = _templateRoot </> "TEMPLATE Hazard Identification Check List.docx"
         let cleanName = safeName site.SiteProps.SiteName
-        let subPath = safeName workGroup @@ cleanName
+        let subPath = safeName workGroup </> cleanName
         let outName = sprintf "%s Hazard Identification Check List.docx" cleanName   
         let matches = makeHazardsSearches site.SiteProps 
         let! d1 = 
@@ -227,8 +227,8 @@ let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
 
 let genSurvey (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : WordBuild<WordDoc> = 
     buildMonad { 
-        let surveyTemplate = _templateRoot @@ "TEMPLATE EDM2 Survey 2018-05-31.docx"
-        let subPath = safeName workGroup @@ safeName siteProps.SiteName
+        let surveyTemplate = _templateRoot </> "TEMPLATE EDM2 Survey 2018-05-31.docx"
+        let subPath = safeName workGroup </> safeName siteProps.SiteName
         let outName = makeSurveyName siteProps.SiteName discharge.DischargeName
         let matches = makeSurveySearches siteProps discharge
         let! d1 = 

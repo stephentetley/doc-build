@@ -9,9 +9,6 @@ open DocMake.Base.Common
 open DocMake.Base.JsonUtils
 
 
-
-
-
 // Generate Batch file
 
 type BatchFileConfig = 

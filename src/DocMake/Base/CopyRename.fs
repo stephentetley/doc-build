@@ -8,10 +8,9 @@ open System.Text.RegularExpressions
 
 open Fake
 open Fake.Core
-// open Fake.IO.FileSystemOperators
 
-open DocMake.Base.FakeFake
-open DocMake.Base.FakeExtras
+open DocMake.Base.FakeLike
+
 
 
 let private regexMatchFiles (srcDir:string) (search:string) (ignoreCase:bool) : string list = 

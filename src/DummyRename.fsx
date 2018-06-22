@@ -1,14 +1,22 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-// FAKE is local to the project file
-#I @"..\packages\FAKE.5.0.0-beta005\tools"
-#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
+// FAKE dependencies are getting onorous...
+#I @"..\packages\FAKE.5.0.0-rc016.225\tools"
+#r @"FakeLib.dll"
+#I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
+#r @"Fake.Core.Globbing.dll"
+#I @"..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46"
+#r @"Fake.IO.FileSystem.dll"
+#I @"..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Trace.dll"
+#I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
+#r @"Fake.Core.Process.dll"
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeExtras.fs"
+#load @"DocMake\Base\FakeLike.fs"
 #load @"DocMake\Base\CopyRename.fs"
-open DocMake.Base.FakeExtras
+open DocMake.Base.FakeLike
 open DocMake.Base.CopyRename
 
 let test01 () = 
