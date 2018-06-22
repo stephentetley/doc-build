@@ -67,16 +67,17 @@ let inline private altM (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : Buil
         | Err msg -> apply1 mb res st0
         | Ok (st1,a) -> Ok (st1, a)
 
-let combineM (ma:BuildMonad<'res,unit>) (mb:BuildMonad<'res,unit>) : BuildMonad<'res,unit> = 
+/// This is Haskell's (>>).
+let inline private combineM (ma:BuildMonad<'res,unit>) (mb:BuildMonad<'res,'b>) : BuildMonad<'res,'b> = 
     BuildMonad <| fun res st0 -> 
         match apply1 ma res st0 with
         | Err msg -> Err msg
-        | Ok(st1,a) -> 
+        | Ok (st1,_) -> 
             match apply1 mb res st1 with
             | Err msg -> Err msg
-            | Ok(st2,a) -> Ok (st2, ())
+            | Ok (st2,b) -> Ok (st2, b)
 
-let delayM (fn:unit -> BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+let inline private delayM (fn:unit -> BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     bindM (breturn ()) fn 
 
 
