@@ -69,6 +69,11 @@ let docPhotos (opts:DocPhotos.DocPhotosOptions) (sourceDirectories:string list) 
     let api = DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
     api.docPhotos opts sourceDirectories
 
-let pdfConcat = 
+let pdfConcat (inputFiles:PdfDoc list) : FullBuild<PdfDoc> = 
     let api = PdfConcat.makeAPI (fun (h:FullHandle) -> h.Ghostscript)
-    api.pdfConcat
+    api.pdfConcat inputFiles
+
+let pdfRotate (rotations: PdfRotate.PageRotation list) (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
+    let api = PdfRotate.makeAPI (fun (h:FullHandle) -> h.Pdftk)
+    api.pdfRotate rotations pdfDoc
+

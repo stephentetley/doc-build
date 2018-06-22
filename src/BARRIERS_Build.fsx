@@ -44,6 +44,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Lib\PdfConcat.fs"
 #load @"DocMake\Lib\XlsToPdf.fs"
 #load @"DocMake\Lib\PptToPdf.fs"
+#load @"DocMake\Lib\PdfRotate.fs"
 #load @"DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
 open DocMake.Lib
