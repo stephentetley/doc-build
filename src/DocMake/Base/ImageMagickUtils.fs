@@ -5,12 +5,11 @@ module DocMake.Base.ImageMagickUtils
 
 open System
 
-open Fake
-open Fake.Core.Globbing.Operators
-open Fake.IO.FileSystemOperators
+// open Fake
 
 open ImageMagick
 
+open DocMake.Base.FakeFake
 
 type PhotoOrientation = PhotoPortrait | PhotoLandscape
 
@@ -60,7 +59,7 @@ let optimizeForMsWord (filePath:string) : unit =
 
 
 let optimizePhotos (jpegFolderPath:string) : unit =
-    let (jpegFiles :string list) = !! (jpegFolderPath @@ "*.jpg") |> Seq.toList
+    let (jpegFiles :string list) = getFilesMatching jpegFolderPath "*.jpg"
     List.iter (fun file -> autoOrient file; optimizeForMsWord file) jpegFiles
     
 

@@ -37,6 +37,7 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\JsonUtils.fs"
 #load @"DocMake\Base\GENHelper.fs"
+#load @"DocMake\Base\FakeFake.fs"
 #load @"DocMake\Base\FakeExtras.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
@@ -55,7 +56,7 @@ let generate1 (dir:string) : unit =
     | Some ans ->
         let name1 = System.IO.FileInfo(ans).Directory.Name
         printfn "Processing %s ..." name1
-        let pdfName = _outputDir @@ (sprintf "%s Erskine Battery Asset Replacement.pdf" name1)
+        let pdfName = _outputDir </> (sprintf "%s Erskine Battery Asset Replacement.pdf" name1)
         printfn "Output file: %s" pdfName
         DocToPdf (fun p -> 
             { p with 

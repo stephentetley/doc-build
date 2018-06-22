@@ -4,9 +4,6 @@
 [<RequireQualifiedAccess>]
 module DocMake.Lib.PdfRotate
 
-open System.IO
-
-open Fake.Core
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad

@@ -8,8 +8,9 @@ open System.Text.RegularExpressions
 
 open Fake
 open Fake.Core
-open Fake.IO.FileSystemOperators
+// open Fake.IO.FileSystemOperators
 
+open DocMake.Base.FakeFake
 open DocMake.Base.FakeExtras
 
 
@@ -39,7 +40,7 @@ type NameFormatter = int->string
 let multiCopyGlobRename  (srcDir:string, srcGlob:string) (destDir:string, destNamer:int -> string) : unit = 
     let inputs = findAllMatchingFiles srcGlob srcDir  
     List.iteri (fun ix srcFile ->
-                    let destFile = destDir @@ destNamer ix
+                    let destFile = destDir </> destNamer ix
                     Fake.IO.Shell.copyFile destFile srcFile) inputs
 
 
@@ -47,7 +48,7 @@ let multiCopyGlobRename  (srcDir:string, srcGlob:string) (destDir:string, destNa
 let multiCopyRegexRename  (srcDir:string, srcRegex:string, ignoreCase:bool) (destDir:string, destNamer:int -> string) : unit = 
     let inputs = regexMatchFiles srcDir srcRegex ignoreCase
     List.iteri (fun ix srcFile ->
-                    let destFile = destDir @@ destNamer ix
+                    let destFile = destDir </> destNamer ix
                     Fake.IO.Shell.copyFile destFile srcFile) inputs
 
 // Throws error if the source is not found...

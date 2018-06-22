@@ -32,8 +32,8 @@ open System.IO
 
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeExtras.fs"
 #load @"DocMake\Base\FakeFake.fs"
+#load @"DocMake\Base\FakeExtras.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"

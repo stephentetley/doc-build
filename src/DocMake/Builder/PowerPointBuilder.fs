@@ -7,8 +7,6 @@ module DocMake.Builder.PowerPointBuilder
 open System.IO
 open Microsoft.Office.Interop
 
-
-
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 

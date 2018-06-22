@@ -7,9 +7,6 @@ open System.IO
 open System.Threading
 open System.Diagnostics
 
-// Ideally don't use Fake (need currently for process running)
-open Fake.Core
-
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
