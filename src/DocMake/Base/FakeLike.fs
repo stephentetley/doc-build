@@ -79,3 +79,33 @@ let executeProcess (toolPath:string) (command:string) : int =
         proc.ExitCode
     with
     | ex -> failwith (sprintf "executeProcess: \n%s" ex.Message)
+
+
+let copyFile (target:string) (sourceFile:string) : unit =
+    if File.Exists(sourceFile) then 
+        let src = FileInfo(sourceFile)
+        if Directory.Exists(target) then 
+            let target1 = target </> src.Name
+            src.CopyTo(target1) |> ignore
+        else
+            src.CopyTo(target) |> ignore
+    else
+        failwithf "copyFile: src not found '%s'" sourceFile
+
+let fileExists (filePath:string) : bool = 
+    File.Exists(filePath) 
+    
+let directoryExists (filePath:string) : bool =
+    Directory.Exists(filePath)
+
+/// Recursively delete directory
+let deleteDirectory (dirPath:string) : unit = 
+    if Directory.Exists(dirPath) then
+        Directory.Delete(path = dirPath, recursive = true)
+    else 
+        ()
+
+
+
+
+    

@@ -9,9 +9,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Microsoft.Office.Interop
 
-open Fake.IO.FileSystemOperators
-
-
+open DocMake.Base.FakeLike
 open DocMake.Base.ImageMagickUtils
 open DocMake.Base.SimpleDocOutput
 open DocMake.Builder.BuildMonad
@@ -90,7 +88,7 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOpti
         do! mapMz (fun jpg -> copyJPEGs jpg opts.CopyToSubDirectory) inputPaths
         let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! app = asksU getHandle
-        let! tempLoc = (fun d -> d @@ opts.CopyToSubDirectory) <<| askWorkingDirectory ()
+        let! tempLoc = (fun d -> d </> opts.CopyToSubDirectory) <<| askWorkingDirectory ()
         let _ = runDocOutput2 outDoc.DocumentPath app (docProc tempLoc)
         return outDoc
         } 

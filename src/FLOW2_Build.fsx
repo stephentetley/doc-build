@@ -19,16 +19,6 @@ open ImageMagick
 
 open System.IO
 
-#I @"..\packages\FAKE.5.0.0-rc016.225\tools"
-#r @"FakeLib.dll"
-#I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
-#r @"Fake.Core.Globbing.dll"
-#I @"..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46"
-#r @"Fake.IO.FileSystem.dll"
-#I @"..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46"
-#r @"Fake.Core.Trace.dll"
-#I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
-#r @"Fake.Core.Process.dll"
 
 
 #load @"DocMake\Base\Common.fs"
@@ -83,7 +73,7 @@ let clean : FullBuild<unit> =
     buildMonad { 
         if Directory.Exists(siteOutputDir) then 
             do printfn " --- Clean folder: '%s' ---" siteOutputDir
-            do! executeIO (fun () -> Fake.IO.Directory.delete siteOutputDir)
+            do! executeIO (fun () -> deleteDirectory siteOutputDir)
         else 
             do printfn " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
     }

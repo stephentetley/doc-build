@@ -6,8 +6,6 @@
 module DocMake.Lib.PdfConcat
 
 
-open Fake.Core
-
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis

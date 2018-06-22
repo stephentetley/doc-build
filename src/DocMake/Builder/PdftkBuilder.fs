@@ -12,8 +12,8 @@ open DocMake.Builder.Basis
 
 type PdftkHandle = 
     { PdftkExePath: string }
-
 let pdftkBuilderHook (exePath:string) : BuilderHooks<PdftkHandle> = 
+
     { InitializeResource = fun _ ->  { PdftkExePath = exePath } 
       FinalizeResource = fun _ -> () }
 

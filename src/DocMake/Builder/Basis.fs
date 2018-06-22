@@ -5,10 +5,11 @@ module DocMake.Builder.Basis
 
 open System.IO
 open System.Threading
-open System.Diagnostics
+
 
 
 open DocMake.Base.Common
+open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 
 
@@ -107,8 +108,7 @@ let deleteWorkingDirectory () : BuildMonad<'res,unit> =
     buildMonad { 
         let! cwd = askWorkingDirectory ()
         do printfn "Deleting: %s" cwd
-        do! executeIO <| fun () ->
-            if System.IO.Directory.Exists(cwd) then System.IO.Directory.Delete(path=cwd,recursive=true)
+        do! executeIO <| fun () -> deleteDirectory cwd
         do! executeIO <| fun () -> Thread.Sleep(360)
         }
 
@@ -129,21 +129,17 @@ let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res
                 { e with WorkingDirectory = cwd }) 
             (createWorkingDirectory () >>. ma)
 
+
 let shellRun (toolPath:string) (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
     try
-        let procInfo = new System.Diagnostics.ProcessStartInfo ()
-        procInfo.FileName <- toolPath
-        procInfo.Arguments <- command
-        procInfo.CreateNoWindow <- true
-        let proc = new System.Diagnostics.Process()
-        proc.StartInfo <- procInfo
-        proc.Start() |> ignore
-        proc.WaitForExit () 
-        breturn ()
+        if 0 <> executeProcess toolPath command then
+            throwError errMsg
+        else            
+            breturn ()
     with
     | ex -> throwError (sprintf "shellRun: \n%s" ex.Message)
 
 
-let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) :BuildMonad<'res, PdfDoc> = 
+let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) : BuildMonad<'res, PdfDoc> = 
     proc >>= renameTo outputName
 
