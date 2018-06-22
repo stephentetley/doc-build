@@ -59,6 +59,7 @@
     <Compile Include="DocMake\Base\Common.fs" />
     <Compile Include="DocMake\Base\String.fs" />
     <Compile Include="DocMake\Base\FakeExtras.fs" />
+    <Compile Include="DocMake\Base\FakeFake.fs" />
     <Compile Include="DocMake\Base\ImageMagickUtils.fs" />
     <Compile Include="DocMake\Base\JsonUtils.fs" />
     <Compile Include="DocMake\Base\OfficeUtils.fs" />
@@ -106,11 +107,9 @@
     <None Include="RTU_Gen_Site_Work_Sheets.fsx" />
     <None Include="USAR_gen_final.fsx" />
     <None Include="USAR_Final_Build.fsx" />
+    <None Include="USAR_New_Final.fsx" />
     <None Include="FC2_gen_final.fsx" />
     <None Include="FC2_Final_Build.fsx" />
-    <None Include="SAMPS_gen_final.fsx" />
-    <None Include="SAMPS_Final_Build.fsx" />
-    <None Include="SAMPS_Final_Build_Alt.fsx" />
     <None Include="PLCAR_gen_final.fsx" />
     <None Include="PLCAR_Final_Build.fsx" />
     <None Include="PLCAR_Filey_Final.fsx" />

@@ -14,7 +14,6 @@
 
 #I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
-open ImageMagick
 
 
 open System.IO
@@ -30,13 +29,11 @@ open System.IO
 #r @"Fake.Core.Trace.dll"
 #I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
 #r @"Fake.Core.Process.dll"
-open Fake
-open Fake.IO.FileSystemOperators
-
 
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\FakeExtras.fs"
+#load @"DocMake\Base\FakeFake.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
@@ -49,6 +46,7 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Builder\PdftkBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
+open DocMake.Base.FakeFake
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
@@ -61,6 +59,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Lib\PptToPdf.fs"
 #load @"DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
+open DocMake.Lib
 
 // Output is just "Site Works" doc and the collected "Photo doc"
 
@@ -93,8 +92,11 @@ let siteWorks (siteInputDir:string) : FullBuild<PdfDoc> =
     | None -> throwError "No Site Works"
 
 
-let photosDoc (docTitle:string) (jpegSrcPath:string) : FullBuild<PdfDoc> = 
-    docPhotos (Some docTitle) true [jpegSrcPath] >>= docToPdf
+let photosDoc (docTitle:string) (jpegSrcPath:string) : FullBuild<PdfDoc> =
+    let photoOpts:DocPhotos.DocPhotosOptions = 
+        { DocTitle = Some docTitle; ShowFileName = true; CopyToSubDirectory = "Photos" } 
+
+    docPhotos photoOpts [jpegSrcPath] >>= docToPdf
     
 
 
@@ -106,8 +108,8 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) : FullBuild<PdfDoc> =
 let buildScript (inputRoot:string) (siteName:string) : FullBuild<PdfDoc> = 
     let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
     let cleanName           = safeName siteName
-    let siteInputDir        = inputRoot @@ cleanName
-    let jpegsSrcPath        = siteInputDir @@ "PHOTOS"
+    let siteInputDir        = inputRoot </> cleanName
+    let jpegsSrcPath        = siteInputDir </> "PHOTOS"
     let finalName           = sprintf "%s S3953 IS Barrier Replacement.pdf" cleanName
     localSubDirectory cleanName <| 
         buildMonad { 

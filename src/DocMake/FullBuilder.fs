@@ -65,9 +65,9 @@ let pptToPdf (pptDoc:PowerPointDoc) : FullBuild<PdfDoc> =
     api.pptToPdf pptDoc
 
 
-let docPhotos (opts:DocPhotos.DocPhotosOptions) (sources:DocPhotos.JpegInputSource list) : FullBuild<WordDoc> = 
+let docPhotos (opts:DocPhotos.DocPhotosOptions) (sourceDirectories:string list) : FullBuild<WordDoc> = 
     let api = DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
-    api.docPhotos opts sources
+    api.docPhotos opts sourceDirectories
 
 let pdfConcat = 
     let api = PdfConcat.makeAPI (fun (h:FullHandle) -> h.Ghostscript)

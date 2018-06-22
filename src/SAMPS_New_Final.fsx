@@ -10,7 +10,7 @@
 #r "Microsoft.Office.Interop.PowerPoint"
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
-open Microsoft.Office.Interop
+
 
 #I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
@@ -36,13 +36,13 @@ open System.Text.RegularExpressions
 #r @"Fake.Core.Trace.dll"
 #I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
 #r @"Fake.Core.Process.dll"
-open Fake
-open Fake.IO.FileSystemOperators
+
 
 
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\FakeExtras.fs"
+#load @"DocMake\Base\FakeFake.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
@@ -55,6 +55,7 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Builder\PdftkBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
+open DocMake.Base.FakeFake
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
@@ -109,7 +110,7 @@ let makeCoverMatches (siteName:string) : SearchList =
 
 let cover (siteName:string) : FullBuild<PdfDoc> = 
     buildMonad { 
-        let templatePath = _templateRoot @@ @"TEMPLATE Samps Cover Sheet.docx"
+        let templatePath = _templateRoot </> @"TEMPLATE Samps Cover Sheet.docx"
         let! template = getTemplate templatePath
         let docOutName = sprintf "%s cover-sheet.docx" (safeName siteName)
         let matches = makeCoverMatches siteName
@@ -120,7 +121,7 @@ let cover (siteName:string) : FullBuild<PdfDoc> =
 
 // One survey sheet per site (even if multiple samplers)
 let surveySheet (siteName:string) : FullBuild<PdfDoc> = 
-    let inputSubDir = _inputRoot @@ safeName siteName @@ @"SURVEY"
+    let inputSubDir = _inputRoot </> safeName siteName </> @"SURVEY"
     let outName = sprintf "%s sampler-survey.pdf" (safeName siteName) 
     match tryFindExactlyOneMatchingFile "*Sampler survey.xls*" inputSubDir  with
     | None -> throwError "No survey sheet"
@@ -128,7 +129,7 @@ let surveySheet (siteName:string) : FullBuild<PdfDoc> =
     
 // One survey sheet per site (even if multiple samplers)
 let surveyPres (siteName:string) : FullBuild<PdfDoc> = 
-    let inputSubDir = _inputRoot @@ safeName siteName @@ @"SURVEY"
+    let inputSubDir = _inputRoot </> safeName siteName </> @"SURVEY"
     let outName = sprintf "%s survey-presentation.pdf" (safeName siteName) 
     match tryFindExactlyOneMatchingFile "*.ppt*" inputSubDir  with
     | None -> throwError "No survey presentation"
@@ -137,23 +138,21 @@ let surveyPres (siteName:string) : FullBuild<PdfDoc> =
         getDocument ppt >>= pptToPdf >>= renameTo outName
 
 
-let makePhotosDoc (docTitle:string) (jpegSrc:DocPhotos.JpegInputSource) (pdfName:string) (subFolder:string) : FullBuild<PdfDoc> = 
+let makePhotosDoc (docTitle:string) (jpegSourceDirectory:string) (pdfName:string) (subFolder:string) : FullBuild<PdfDoc> = 
     let opts : DocPhotos.DocPhotosOptions = 
         { DocTitle = Some docTitle; ShowFileName = true; CopyToSubDirectory = subFolder } 
-    docPhotos opts [jpegSrc] >>= docToPdf >>= renameTo pdfName
+    docPhotos opts [jpegSourceDirectory] >>= docToPdf >>= renameTo pdfName
 
 
 let surveyPhotos (siteName:string) : FullBuild<PdfDoc> = 
-    let jpegsDir = _inputRoot @@ safeName siteName @@ @"SURVEY" @@ @"PHOTOS"
-    // let renamer = Some <| sprintf "%s %03i.jpg" (safeName siteName) 
-    let source = { InputDirectory = jpegsDir; RenameProc = None} : DocPhotos.JpegInputSource
+    let jpegsDir = _inputRoot </> safeName siteName </> @"SURVEY" </> @"PHOTOS"
     let pdfName = sprintf "%s survey-photos.pdf" (safeName siteName)
     printfn "Survey Photos: %s" pdfName
-    makePhotosDoc "Survey Photos" source pdfName @"survey_photos"
+    makePhotosDoc "Survey Photos" jpegsDir pdfName @"survey_photos"
 
 // copy-pdf
 let citCircuitDiagram (siteName:string) : FullBuild<PdfDoc> = 
-    let inputSubDir = _inputRoot @@ safeName siteName @@ @"CIT"
+    let inputSubDir = _inputRoot </> safeName siteName </> @"CIT"
     let outName = sprintf "%s circuit-diagram.pdf" (safeName siteName) 
     match tryFindExactlyOneMatchingFile "*Circuit Diagram.pdf" inputSubDir  with
     | None -> throwError "No survey sheet"
@@ -161,7 +160,7 @@ let citCircuitDiagram (siteName:string) : FullBuild<PdfDoc> =
 
 // xls-to-pdf
 let citWorkbook (siteName:string) : FullBuild<PdfDoc> =     
-    let inputSubDir = _inputRoot @@ safeName siteName @@ @"CIT"
+    let inputSubDir = _inputRoot </> safeName siteName </> @"CIT"
     let outName = sprintf "%s cit-workbook.pdf" (safeName siteName) 
     match tryFindExactlyOneMatchingFile "*YW Workbook.xls*" inputSubDir  with
     | None -> throwError "No survey sheet"
@@ -178,7 +177,7 @@ let installSheets (siteName:string) : FullBuild<PdfDoc list> =
         else 
             sprintf "%s UNKNOWN sampler-install.pdf" (safeName siteName) 
 
-    let inputSubDir = _inputRoot @@ safeName siteName @@ @"SITE_WORKS"
+    let inputSubDir = _inputRoot </> safeName siteName </> @"SITE_WORKS"
     match tryFindSomeMatchingFiles "*Replacement Record.doc*" inputSubDir  with
     | None -> 
         match tryFindSomeMatchingFiles "*Replacement Record.pdf" inputSubDir  with
@@ -194,7 +193,7 @@ let bottleMachine (siteName:string) : FullBuild<PdfDoc list> =
     let makeOutName (inputFilePath:string) : string = 
         let name = System.IO.FileInfo(inputFilePath).Name
         sprintf "%s %s sampler-install.pdf" (safeName siteName) name
-    let inputSubDir = _inputRoot @@ safeName siteName @@ @"SITE_WORKS"
+    let inputSubDir = _inputRoot </> safeName siteName </> @"SITE_WORKS"
     match tryFindSomeMatchingFiles "*Bottle_Machine.pdf" inputSubDir  with
     | None -> breturn []
     | Some xs -> 
@@ -202,11 +201,11 @@ let bottleMachine (siteName:string) : FullBuild<PdfDoc list> =
 
 
 let installPhotos (siteName:string) : FullBuild<PdfDoc list> = 
-    let jpegsDir = _inputRoot @@ safeName siteName @@ @"SITE_WORKS" @@ @"PHOTOS"
-    let source = { InputDirectory = jpegsDir; RenameProc = None} : DocPhotos.JpegInputSource
+    let jpegsDir = _inputRoot </> safeName siteName </> @"SITE_WORKS" </> @"PHOTOS"
+    // let source = { InputDirectory = jpegsDir; RenameProc = None} : DocPhotos.JpegInputSource
     let pdfName = sprintf "%s install-photos.pdf" (safeName siteName)
     printfn "Install Photos: %s" pdfName
-    attempt (makePhotosDoc "Install Photos" source pdfName @"install_photos" |>> (fun a -> [a]))
+    attempt (makePhotosDoc "Install Photos" jpegsDir pdfName @"install_photos" |>> (fun a -> [a]))
         <|> breturn []
 
 
@@ -255,9 +254,3 @@ let main () : unit =
                     breturn ()
     consoleRun env hooks proc
 
-
-//let temp01 () = 
-//    let ss = @"Kirkbymoorside STW - Outlet Sampler Replacement Record.docx"
-//    let result = Regex.Match(ss, @"([A-z]*) Sampler Replacement")
-//    printfn "%s" (result.Groups.Item(0).Value)
-//    printfn "%s" (result.Groups.Item(1).Value)

@@ -29,12 +29,11 @@ open System.IO
 #r @"Fake.Core.Trace.dll"
 #I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
 #r @"Fake.Core.Process.dll"
-open Fake
-open Fake.IO.FileSystemOperators
 
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\FakeExtras.fs"
+#load @"DocMake\Base\FakeFake.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
@@ -47,6 +46,7 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Builder\PdftkBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeExtras
+open DocMake.Base.FakeFake
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
@@ -59,6 +59,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Lib\PdfConcat.fs"
 #load @"DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
+open DocMake.Lib
 
 
 let _filestoreRoot  = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
@@ -73,12 +74,12 @@ let matches1 : SearchList =
     ]
 
 let cleanName           = safeName siteName
-let siteInputDir        = _filestoreRoot @@ cleanName
-let siteOutputDir       = _outputRoot @@ cleanName
+let siteInputDir        = _filestoreRoot </> cleanName
+let siteOutputDir       = _outputRoot </> cleanName
 
 
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-    siteOutputDir @@ sprintf fmt cleanName
+    siteOutputDir </> sprintf fmt cleanName
 
 let clean : FullBuild<unit> =
     buildMonad { 
@@ -99,7 +100,7 @@ let outputDirectory : FullBuild<unit> =
 // This should be a mandatory task
 let cover (matches:SearchList) : FullBuild<PdfDoc> = 
     buildMonad { 
-        let templatePath = _templateRoot @@ "FC2 Cover TEMPLATE.docx"
+        let templatePath = _templateRoot </> "FC2 Cover TEMPLATE.docx"
         let! template = getTemplate templatePath
         let! d1 = docFindReplace matches template >>= docToPdf >>= renameTo "cover-sheet.pdf"
         return d1 }
@@ -107,8 +108,11 @@ let cover (matches:SearchList) : FullBuild<PdfDoc> =
 
 
 let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : FullBuild<PdfDoc> = 
+    let photoOpts:DocPhotos.DocPhotosOptions = 
+        { DocTitle = Some docTitle; ShowFileName = true; CopyToSubDirectory = "Photos" } 
+
     buildMonad { 
-        let! d1 = docPhotos (Some docTitle) true [jpegSrcPath]
+        let! d1 = docPhotos photoOpts [jpegSrcPath]
         let! d2 = breturn d1 >>= docToPdf >>= renameTo pdfName
         return d2
         }
@@ -163,12 +167,12 @@ let buildScript (siteName:string) : FullBuild<unit> =
     buildMonad { 
         do! clean >>. outputDirectory
         let! p1 = cover matches1
-        let surveyJpegsPath = siteInputDir @@ "Survey_Photos"
+        let surveyJpegsPath = siteInputDir </> "Survey_Photos"
         let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
         let! p3 = makePdf "scope-of-works.pdf"  <| scopeOfWorks () 
         let! ps1 = citWork ()
         let! ps2 = installSheets ()
-        let surveyJpegsPath = siteInputDir @@ "Install_Photos"
+        let surveyJpegsPath = siteInputDir </> "Install_Photos"
         let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
         let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ ps2 @ [pZ])
         let! (final:PdfDoc) = pdfConcat pdfs >>= renameTo "FINAL.pdf"

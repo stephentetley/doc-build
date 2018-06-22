@@ -19,9 +19,8 @@ open FSharp.ExcelProvider
 
 #I @"..\packages\Newtonsoft.Json.11.0.2\lib\net45"
 #r "Newtonsoft.Json"
-open Newtonsoft.Json
 
-// Need FAKE for @"DocMake\Base\Common.fs" and (@@)
+
 #I @"..\packages\FAKE.5.0.0-rc016.225\tools"
 #r @"FakeLib.dll"
 #I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
@@ -40,13 +39,12 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Base\GENHelper.fs"
 #load @"DocMake\Base\FakeExtras.fs"
 open DocMake.Base.Common
-open DocMake.Base.GENHelper
 open DocMake.Base.FakeExtras
 
 #load @"DocMake\Tasks\DocToPdf.fs"
 open DocMake.Tasks.DocToPdf
 
-/// This is a one-to-one build, so we don't use FAKE directly, we just use it as a library.
+/// TODO change to use Build monad
 
 let _inputRoot = @"G:\work\Projects\rtu\final-docs\input\Erskines_02"
 let _outputDir = @"G:\work\Projects\rtu\final-docs\output\erskine-output\batch02"

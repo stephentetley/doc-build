@@ -27,13 +27,6 @@ type DocPhotosOptions =
       DocTitle: string option
       ShowFileName: bool }
 
-type JpegRenamer = option<int -> string>
-
-type JpegInputSource =
-    { InputDirectory: string
-      RenameProc: JpegRenamer }
-
-
 
 let private getJPEGs (dir:string) : string list = 
     let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
@@ -43,17 +36,11 @@ let private getJPEGs (dir:string) : string list =
 
     
 
-let private copyJPEGs (jpgSrc:JpegInputSource) (outputSubDirectory:string) : BuildMonad<'res,string> = 
-    let copyProc (i:int) (inputFile:string) = 
-        let renamer = 
-            match jpgSrc.RenameProc with
-            | Some fn -> renameTo (fn (i+1))
-            | None -> breturn
-        copyToWorkingDirectory inputFile >>= renamer >>. breturn ()
+let private copyJPEGs (jpgSrcDirectory:string) (outputSubDirectory:string) : BuildMonad<'res,string> = 
     localSubDirectory outputSubDirectory <| 
         buildMonad { 
-            let jpegs = getJPEGs jpgSrc.InputDirectory
-            do! mapiMz copyProc jpegs
+            let jpegs = getJPEGs jpgSrcDirectory
+            do! mapMz copyToWorkingDirectory jpegs
             let! cwd = askWorkingDirectory ()
             do optimizePhotos cwd 
             return cwd
@@ -92,7 +79,7 @@ let private insertPhotos (action1:PictureFun) (files:string list) : DocOutput<un
     work files
 
 // TODO inputPaths should be paired with an optional rename procedure
-let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOptions) (inputSources:JpegInputSource list) : BuildMonad<'res,WordDoc> =
+let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOptions) (inputPaths:string list) : BuildMonad<'res,WordDoc> =
     let docProc (jpegFolder:string) : DocOutput<unit>  = 
         let jpegs = getJPEGs jpegFolder
         let stepFun = if opts.ShowFileName then stepWithLabel else stepWithoutLabel
@@ -102,7 +89,7 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOpti
             }
 
     buildMonad { 
-        do! mapMz (fun jpg -> copyJPEGs jpg opts.CopyToSubDirectory) inputSources 
+        do! mapMz (fun jpg -> copyJPEGs jpg opts.CopyToSubDirectory) inputPaths
         let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! app = asksU getHandle
         let! tempLoc = (fun d -> d @@ opts.CopyToSubDirectory) <<| askWorkingDirectory ()
@@ -112,7 +99,7 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOpti
     
 
 type DocPhotos<'res> = 
-    { docPhotos : DocPhotosOptions -> JpegInputSource list -> BuildMonad<'res, WordDoc> }
+    { docPhotos : DocPhotosOptions -> string list -> BuildMonad<'res, WordDoc> }
 
 let makeAPI (getHandle:'res -> Word.Application) : DocPhotos<'res> = 
     { docPhotos = photoDocImpl getHandle }

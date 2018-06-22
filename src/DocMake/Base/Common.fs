@@ -4,8 +4,6 @@
 module DocMake.Base.Common
 
 open System.IO
-open System.Text
-open Fake.Core.Globbing.Operators
 
 
 type FindReplaceDict = Map<string,string>

@@ -18,7 +18,7 @@ open FSharp.ExcelProvider
 
 
 
-// Need FAKE for @"DocMake\Base\Common.fs" and (@@)
+// Currently we need FAKE 
 #I @"..\packages\FAKE.5.0.0-rc016.225\tools"
 #r @"FakeLib.dll"
 #I @"..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46"
@@ -29,7 +29,6 @@ open FSharp.ExcelProvider
 #r @"Fake.Core.Trace.dll"
 #I @"..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46"
 #r @"Fake.Core.Process.dll"
-open Fake
 
 
 #load @"DocMake\Base\Common.fs"
@@ -45,8 +44,6 @@ open DocMake.Builder.ExcelBuilder
 #load @"DocMake\Lib\XlsFindReplace.fs"
 open DocMake.Lib
 
-
-/// This is a one-to-many build, so we don't use FAKE directly, we just use it as a library.
 
 type InputTable = 
     ExcelFile< @"G:\work\Projects\rtu\cema-docs\Site list Yr 3.xlsx",
@@ -86,8 +83,6 @@ let getTemplate = api.getTemplate
 
 
 
-// Note it's ineffienct to repeated create an instance of Excel foreach row.
-// Look at providing two routes into XlsFindReplace
 let hazardSheet  (row:InputRow) : ExcelBuild<ExcelDoc> =
     buildMonad { 
         let cleanName = safeName row.``RTU - Amp 6, Yr 3 jobs``
