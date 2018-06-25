@@ -81,6 +81,7 @@
     <Compile Include="DocMake\Lib\DocPhotos.fs" />
     <Compile Include="DocMake\Lib\PdfRotate.fs" />
     <Compile Include="DocMake\FullBuilder.fs" />
+    <Compile Include="Proprietry.fs" />
     <None Include="DummyRename.fsx" />
     <None Include="DummyPdfRotate.fsx" />
     <None Include="DummyFindReplace.fsx" />

@@ -52,9 +52,9 @@ let d1 : DocMake.Lib.DocFindReplace.DocFindReplace<FullHandle> =
 let docFindReplace = d1.docFindReplace
 let getTemplate = d1.getTemplate
 
-let docToPdf = 
+let docToPdf (wordDoc:WordDoc) : FullBuild<PdfDoc> = 
     let api = DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
-    api.docToPdf
+    api.docToPdf wordDoc 
 
 let xlsToPdf (fitPage:bool) (xlsDoc:ExcelDoc) : FullBuild<PdfDoc> = 
     let api = XlsToPdf.makeAPI (fun (h:FullHandle) -> h.ExcelApp)

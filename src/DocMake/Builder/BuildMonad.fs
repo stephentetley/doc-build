@@ -225,6 +225,10 @@ let (<|>) (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : BuildMonad<'res,'a
 let (>>=) (ma: BuildMonad<'res,'a>) (k: 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b> = 
     bindM ma k
 
+/// Flipped monadic bind
+let (=<<) (k: 'a -> BuildMonad<'res,'b>) (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'b> = 
+    bindM ma k
+
 
 // *********************************************************
 // *********************************************************

@@ -78,8 +78,10 @@ type ExcelProviderHelperDict<'table, 'row> =
     { GetRows : 'table -> seq<'row>
       NotNullProc : 'row -> bool }
 
-let excelTableGetRows (dict:ExcelProviderHelperDict<'table,'row>) (table:'table) : 'row list = 
+      
+let excelTableGetRows (dict:ExcelProviderHelperDict<'table,'row>) (table:'table) : seq<'row> = 
     let allrows = dict.GetRows table
-    allrows |> Seq.filter dict.NotNullProc |> Seq.toList
+    allrows |> Seq.filter dict.NotNullProc 
+
 
  
