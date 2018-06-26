@@ -134,33 +134,6 @@
     <Reference Include="ExcelProvider">
       <HintPath>..\packages\ExcelProvider.0.8.2\lib\ExcelProvider.dll</HintPath>
     </Reference>
-    <Reference Include="Fake.Core.CommandLineParsing">
-      <HintPath>..\packages\Fake.Core.CommandLineParsing.5.0.0-rc017.237\lib\net46\Fake.Core.CommandLineParsing.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.Context">
-      <HintPath>..\packages\Fake.Core.Context.5.0.0-rc017.237\lib\net46\Fake.Core.Context.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.Environment">
-      <HintPath>..\packages\Fake.Core.Environment.5.0.0-rc017.237\lib\net46\Fake.Core.Environment.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.Globbing">
-      <HintPath>..\packages\Fake.Core.Globbing.5.0.0-beta021\lib\net46\Fake.Core.Globbing.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.Process">
-      <HintPath>..\packages\Fake.Core.Process.5.0.0-rc017.237\lib\net46\Fake.Core.Process.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.String">
-      <HintPath>..\packages\Fake.Core.String.5.0.0-rc017.237\lib\net46\Fake.Core.String.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.Target">
-      <HintPath>..\packages\Fake.Core.Target.5.0.0-rc017.237\lib\net46\Fake.Core.Target.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.Trace">
-      <HintPath>..\packages\Fake.Core.Trace.5.0.0-rc017.237\lib\net46\Fake.Core.Trace.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.IO.FileSystem">
-      <HintPath>..\packages\Fake.IO.FileSystem.5.0.0-rc017.237\lib\net46\Fake.IO.FileSystem.dll</HintPath>
-    </Reference>
     <Reference Include="FakeLib">
       <HintPath>..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll</HintPath>
     </Reference>
@@ -169,9 +142,6 @@
     </Reference>
     <Reference Include="FParsecCS">
       <HintPath>..\packages\FParsec.1.0.3\lib\net40-client\FParsecCS.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Control.Reactive">
-      <HintPath>..\packages\FSharp.Control.Reactive.4.0.0\lib\net45\FSharp.Control.Reactive.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
@@ -204,41 +174,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.FileSystem.Watcher">
-      <HintPath>..\packages\System.IO.FileSystem.Watcher.4.3.0\lib\net46\System.IO.FileSystem.Watcher.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Reactive">
-      <HintPath>..\packages\System.Reactive.4.0.0\lib\net46\System.Reactive.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Core">
-      <HintPath>..\packages\System.Reactive.Core.4.0.0\lib\net46\System.Reactive.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Experimental">
-      <HintPath>..\packages\System.Reactive.Experimental.4.0.0\lib\net46\System.Reactive.Experimental.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces">
-      <HintPath>..\packages\System.Reactive.Interfaces.4.0.0\lib\net46\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq">
-      <HintPath>..\packages\System.Reactive.Linq.4.0.0\lib\net46\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices">
-      <HintPath>..\packages\System.Reactive.PlatformServices.4.0.0\lib\net46\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Providers">
-      <HintPath>..\packages\System.Reactive.Providers.4.0.0\lib\net46\System.Reactive.Providers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Runtime.Remoting">
-      <HintPath>..\packages\System.Reactive.Runtime.Remoting.4.0.0\lib\net46\System.Reactive.Runtime.Remoting.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Windows.Forms">
-      <HintPath>..\packages\System.Reactive.Windows.Forms.4.0.0\lib\net46\System.Reactive.Windows.Forms.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Windows.Threading">
-      <HintPath>..\packages\System.Reactive.Windows.Threading.4.0.0\lib\net46\System.Reactive.Windows.Threading.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
