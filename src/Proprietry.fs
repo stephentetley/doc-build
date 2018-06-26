@@ -42,3 +42,9 @@ let getSaiLookups () : SaiLookups =
 
 let getSaiNumber (siteName:string) (saiLookups:SaiLookups) : option<string> = 
     Map.tryFind siteName saiLookups
+
+let slashName (siteName:string) : string =
+    siteName.Replace("_","/")
+
+let underscoreName (siteName:string) : string = 
+    siteName.Replace("/","_")

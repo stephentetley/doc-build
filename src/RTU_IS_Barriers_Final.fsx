@@ -12,9 +12,12 @@
 #r "office"
 
 
+#I @"..\packages\ExcelProvider.0.8.2\lib"
+#r "ExcelProvider.dll"
+
+
 #I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
-
 
 open System.IO
 
@@ -37,7 +40,7 @@ open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
-
+#load @"DocMake\Tasks\IOActions.fs"
 #load @"DocMake\Tasks\DocFindReplace.fs"
 #load @"DocMake\Tasks\XlsFindReplace.fs"
 #load @"DocMake\Tasks\DocToPdf.fs"
@@ -50,31 +53,17 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
+#load "Proprietry.fs" 
+open Proprietry
+
+
 // Output is just "Site Works" doc and the collected "Photo doc"
 
-
-let clean () : BuildMonad<'res, unit> =
-    buildMonad { 
-        let! cwd = askWorkingDirectory ()
-        if Directory.Exists(cwd) then 
-            do printfn " --- Clean folder: '%s' ---" cwd
-            do! deleteWorkingDirectory ()
-        else 
-            do printfn " --- Clean --- : folder does not exist '%s' ---" cwd
-    }
+let _inputRoot      = @"G:\work\Projects\rtu\IS_barriers\final-docs\input\Batch03_June"
+let _outputRoot     = @"G:\work\Projects\rtu\IS_barriers\final-docs\output\Batch03"
 
 
-
-let outputDirectory () : BuildMonad<'res, unit> =
-    buildMonad { 
-        let! cwd = asksEnv (fun e -> e.WorkingDirectory)
-        do printfn  " --- Output folder: '%s' ---" cwd
-        do! createWorkingDirectory ()
-    }
-
-
-// No cover needed
-
+// No cover needed - but "Site Works" sheet must be converted to Pdf.
 let siteWorks (siteInputDir:string) : FullBuild<PdfDoc> = 
     match tryFindExactlyOneMatchingFile "*Site Works*.doc*" siteInputDir with
     | Some source -> getDocument source >>= docToPdf
@@ -94,15 +83,16 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) : FullBuild<PdfDoc> =
 // *******************************************************
 
 
-let buildScript (inputRoot:string) (siteName:string) : FullBuild<PdfDoc> = 
-    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-    let cleanName           = safeName siteName
-    let siteInputDir        = inputRoot </> cleanName
+let buildScript1 (siteInputDir:string) : FullBuild<PdfDoc> = 
+    let underscoreName      = DirectoryInfo(siteInputDir).Name
+    printfn "underscoreName: %s"  underscoreName
+    let properSiteName      = slashName underscoreName
     let jpegsSrcPath        = siteInputDir </> "PHOTOS"
-    let finalName           = sprintf "%s S3953 IS Barrier Replacement.pdf" cleanName
-    localSubDirectory cleanName <| 
+    let finalName           = sprintf "%s S3953 IS Barrier Replacement.pdf" underscoreName
+    localSubDirectory underscoreName <| 
         buildMonad { 
-            do! clean () >>. outputDirectory ()
+            do! IOActions.clean () 
+            do! IOActions.createOutputDirectory ()
             let! p1 = makePdf "site-works.pdf"          <| siteWorks siteInputDir
             let! p2 = makePdf "site-work-photos.pdf"    <| photosDoc "Site Work Photos" jpegsSrcPath 
             let pdfs = [p1;p2]
@@ -111,28 +101,23 @@ let buildScript (inputRoot:string) (siteName:string) : FullBuild<PdfDoc> =
         }
 
 
-let getSites (root:string) : string [] = 
-    let slashName (name:string) = name.Replace(oldChar='_', newChar='/')
-    let getName (path:string) = 
-        slashName <| System.IO.DirectoryInfo(path).Name
-    System.IO.Directory.GetDirectories(root) 
-        |> Array.map getName
+let buildScript () : FullBuild<unit> = 
+    let inputs = 
+        System.IO.Directory.GetDirectories(_inputRoot)  |> Array.toList 
+    forMz inputs buildScript1
 
 
 let main () : unit = 
     let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
     let pdftkExe = @"C:\programs\PDFtk Server\bin\pdftk.exe"
     let hooks = fullBuilderHooks gsExe pdftkExe
-    let inputRoot      = @"G:\work\Projects\barriers\final-docs\input\Batch02"
-    let outputRoot     = @"G:\work\Projects\barriers\final-docs\output\Batch02"
+
     let env = 
-        { WorkingDirectory = outputRoot
+        { WorkingDirectory = _outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
 
-
-    let siteList = getSites inputRoot |> Array.toList 
-    consoleRun env hooks <| forMz siteList (buildScript inputRoot) 
+    consoleRun env hooks <| buildScript ()
 
 
 

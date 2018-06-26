@@ -71,6 +71,7 @@
     <Compile Include="DocMake\Builder\PowerPointHooks.fs" />
     <Compile Include="DocMake\Builder\PdftkHooks.fs" />
     <Compile Include="DocMake\Builder\GhostscriptHooks.fs" />
+    <Compile Include="DocMake\Tasks\IOActions.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\XlsFindReplace.fs" />
     <Compile Include="DocMake\Tasks\DocToPdf.fs" />
@@ -84,12 +85,12 @@
     <None Include="DummyRename.fsx" />
     <None Include="DummyPdfRotate.fsx" />
     <None Include="DummyFindReplace.fsx" />
-    <None Include="BARRIERS_Build.fsx" />
     <None Include="CEMA_Hazard_Sheets.fsx" />
     <None Include="EVENTS_CIT_Work.fsx" />
     <None Include="EVENTS_Survey_Forms.fsx" />
     <None Include="FLOW2_Build.fsx" />
     <None Include="RTU_Erskines_Final.fsx" />
+    <None Include="RTU_IS_Barriers_Final.fsx" />
     <None Include="RTU_Gen_Site_Work_Sheets.fsx" />
     <None Include="SAMPS_New_Final.fsx" />
     <None Include="USAR_New_Final.fsx" />
