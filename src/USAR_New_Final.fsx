@@ -130,7 +130,7 @@ let buildScript () : FullBuild<unit> =
     let inputs = 
         System.IO.Directory.GetDirectories(_inputRoot) 
             |> Array.toList
-            |> List.take 5   /// limited for testing...
+            
     mapMz buildScript1 inputs
 
     
