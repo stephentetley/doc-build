@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.XlsToPdf
+module DocMake.Tasks.XlsToPdf
 
 
 // Open at .Interop rather than .Excel then the Excel API has to be qualified

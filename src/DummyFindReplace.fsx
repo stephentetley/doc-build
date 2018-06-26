@@ -20,13 +20,14 @@
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
 #load @"DocMake\Builder\WordBuilder.fs"
-#load @"DocMake\Lib\DocFindReplace.fs"
-#load @"DocMake\Lib\DocToPdf.fs"
+
+#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\Tasks\DocToPdf.fs"
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
-open DocMake.Lib
+open DocMake.Tasks
 
 let matches1 = [ "#before", "after" ]
 

@@ -3,7 +3,7 @@
 
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.PdfConcat
+module DocMake.Tasks.PdfConcat
 
 
 open DocMake.Base.Common

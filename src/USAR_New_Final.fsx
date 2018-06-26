@@ -41,16 +41,19 @@ open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
-#load @"DocMake\Lib\DocFindReplace.fs"
-#load @"DocMake\Lib\DocPhotos.fs"
-#load @"DocMake\Lib\DocToPdf.fs"
-#load @"DocMake\Lib\XlsToPdf.fs"
-#load @"DocMake\Lib\PptToPdf.fs"
-#load @"DocMake\Lib\PdfConcat.fs"
-#load @"DocMake\Lib\PdfRotate.fs"
+
+#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\Tasks\XlsFindReplace.fs"
+#load @"DocMake\Tasks\DocToPdf.fs"
+#load @"DocMake\Tasks\XlsToPdf.fs"
+#load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\PdfConcat.fs"
+#load @"DocMake\Tasks\PdfRotate.fs"
+#load @"DocMake\Tasks\DocPhotos.fs"
 #load @"DocMake\FullBuilder.fs"
-open DocMake.Lib
 open DocMake.FullBuilder
+open DocMake.Tasks
+
 
 #load "Proprietry.fs"
 open Proprietry
@@ -73,7 +76,7 @@ let makeCoverMatches (siteName:string) (saiLookups:SaiLookups) : option<SearchLi
 let cover (siteName:string) : FullBuild<PdfDoc> = 
     buildMonad { 
         let templatePath = _templateRoot </> @"USAR Cover Sheet.docx"
-        let! template = getTemplate templatePath
+        let! template = getTemplateDoc templatePath
         let docOutName = sprintf "%s cover-sheet.docx" (safeName siteName)
         let lookups = getSaiLookups ()
         match makeCoverMatches siteName lookups with

@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.DocFindReplace
+module DocMake.Tasks.DocFindReplace
 
 
 open System.IO
@@ -92,10 +92,10 @@ let private docFindReplaceImpl (getHandle:'res-> Word.Application) (matches:Sear
     
 type DocFindReplace<'res> = 
     { docFindReplace : SearchList -> WordDoc -> BuildMonad<'res,WordDoc>
-      getTemplate: string -> BuildMonad<'res,WordDoc> }
+      getTemplateDoc: string -> BuildMonad<'res,WordDoc> }
 
 let makeAPI (getHandle:'res-> Word.Application) : DocFindReplace<'res> = 
     { docFindReplace = docFindReplaceImpl getHandle
-      getTemplate = getTemplateImpl }
+      getTemplateDoc = getTemplateImpl }
 
 

@@ -40,8 +40,8 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
 
-#load @"DocMake\Lib\DocFindReplace.fs"
-open DocMake.Lib
+#load @"DocMake\Tasks\DocFindReplace.fs"
+open DocMake.Tasks
 
 
 /// This is a one-to-many build (one site list, many docs), so 
@@ -81,7 +81,9 @@ let filterBySurveyBatch (batch:string) (source:SiteRow list) : SiteRow list =
     List.filter testRow source
 
 let getSiteRows (surveyBatch:string) : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) |> filterBySurveyBatch surveyBatch
+    excelTableGetRows siteTableDict (new SiteTable()) 
+        |> Seq.toList
+        |> filterBySurveyBatch surveyBatch
 
 
 
@@ -194,7 +196,7 @@ type WordBuild<'a> = BuildMonad<WordRes,'a>
 // Just need the DocFindReplace API...
 let api = DocFindReplace.makeAPI (fun app -> app)
 let docFindReplace = api.docFindReplace
-let getTemplate = api.getTemplate
+let getTemplateDoc = api.getTemplateDoc
 
 let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
     buildMonad { 
@@ -206,7 +208,7 @@ let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
         let! d1 = 
             localSubDirectory subPath <| 
                 buildMonad { 
-                    let! template = getTemplate templatePath
+                    let! template = getTemplateDoc templatePath
                     let! d1 = docFindReplace matches template >>= renameTo outName 
                     return d1
                 }
@@ -222,7 +224,7 @@ let genSurvey (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : 
         let! d1 = 
             localSubDirectory subPath <| 
                 buildMonad { 
-                    let! template = getTemplate surveyTemplate
+                    let! template = getTemplateDoc surveyTemplate
                     let! d1 = docFindReplace matches template >>= renameTo outName 
                     return d1
                 }

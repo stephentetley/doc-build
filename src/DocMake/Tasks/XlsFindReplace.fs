@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.XlsFindReplace
+module DocMake.Tasks.XlsFindReplace
 
 
 open System.IO
@@ -69,8 +69,8 @@ let private xlsFindReplaceImpl (getHandle:'res-> Excel.Application) (matches:Sea
     
 type XlsFindReplace<'res> = 
     { xlsFindReplace : SearchList -> ExcelDoc -> BuildMonad<'res,ExcelDoc>
-      getTemplate: string -> BuildMonad<'res,ExcelDoc> }
+      getTemplateXls: string -> BuildMonad<'res,ExcelDoc> }
 
 let makeAPI (getHandle:'res-> Excel.Application) : XlsFindReplace<'res> = 
     { xlsFindReplace = xlsFindReplaceImpl getHandle 
-      getTemplate = getTemplateImpl }
+      getTemplateXls = getTemplateImpl }

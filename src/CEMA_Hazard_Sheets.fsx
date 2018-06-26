@@ -21,6 +21,7 @@ open FSharp.ExcelProvider
 
 
 #load @"DocMake\Base\Common.fs"
+#load @"DocMake\Base\FakeLike.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
@@ -30,8 +31,8 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.ExcelBuilder
 
-#load @"DocMake\Lib\XlsFindReplace.fs"
-open DocMake.Lib
+#load @"DocMake\Tasks\XlsFindReplace.fs"
+open DocMake.Tasks
 
 
 type InputTable = 
@@ -47,7 +48,7 @@ let inputTableDict : ExcelProviderHelperDict<InputTable, InputRow> =
 
 
 let getSiteRows () : InputRow list = 
-    excelTableGetRows inputTableDict (new InputTable()) 
+    excelTableGetRows inputTableDict (new InputTable()) |> Seq.toList
 
 
 let makeSearches (row:InputRow) : SearchList = 
@@ -68,7 +69,7 @@ type ExcelBuild<'a> = BuildMonad<ExcelRes,'a>
 // Just need the XlsFindReplace API...
 let api = XlsFindReplace.makeAPI (fun app -> app)
 let xlsFindReplace = api.xlsFindReplace
-let getTemplate = api.getTemplate
+let getTemplate = api.getTemplateXls
 
 
 

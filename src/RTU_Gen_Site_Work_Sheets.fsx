@@ -38,10 +38,8 @@ open Fake.IO.FileSystemOperators
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\JsonUtils.fs"
-#load @"DocMake\Base\GENHelper.fs"
 #load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Base.Common
-open DocMake.Base.GENHelper
 open DocMake.Tasks.DocFindReplace
 
 /// This is a one-to-many build (one site list generates many docs), 
@@ -66,7 +64,7 @@ let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> =
 
 
 let getSiteRows () : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable())
+    excelTableGetRows siteTableDict (new SiteTable()) |> Seq.toList
 
 
 let makeSiteFolder (siteName:string) : unit = 

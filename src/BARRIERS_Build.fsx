@@ -38,16 +38,17 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
 
-#load @"DocMake\Lib\DocPhotos.fs"
-#load @"DocMake\Lib\DocToPdf.fs"
-#load @"DocMake\Lib\DocFindReplace.fs"
-#load @"DocMake\Lib\PdfConcat.fs"
-#load @"DocMake\Lib\XlsToPdf.fs"
-#load @"DocMake\Lib\PptToPdf.fs"
-#load @"DocMake\Lib\PdfRotate.fs"
+#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\Tasks\XlsFindReplace.fs"
+#load @"DocMake\Tasks\DocToPdf.fs"
+#load @"DocMake\Tasks\XlsToPdf.fs"
+#load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\PdfConcat.fs"
+#load @"DocMake\Tasks\PdfRotate.fs"
+#load @"DocMake\Tasks\DocPhotos.fs"
 #load @"DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
-open DocMake.Lib
+open DocMake.Tasks
 
 // Output is just "Site Works" doc and the collected "Photo doc"
 

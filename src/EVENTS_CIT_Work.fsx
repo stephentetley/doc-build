@@ -35,8 +35,8 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
 
-#load @"DocMake\Lib\DocFindReplace.fs"
-open DocMake.Lib
+#load @"DocMake\Tasks\DocFindReplace.fs"
+open DocMake.Tasks
 
 
 // Simple find-and-replace (mail merge-like).
@@ -67,7 +67,9 @@ let filterBySurveyComplete (source:SiteRow list) : SiteRow list =
     List.filter (not << testRow) source
 
 let getSiteRows () : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) |> filterBySurveyComplete
+    excelTableGetRows siteTableDict (new SiteTable()) 
+        |> Seq.toList 
+        |> filterBySurveyComplete
 
 
 let makeMatches (row:SiteRow) : SearchList = 
@@ -98,7 +100,7 @@ type EventsBuild<'a> = BuildMonad<EventsRes,'a>
 // Just need the DocFindReplace API...
 let api = DocFindReplace.makeAPI (fun app -> app)
 let docFindReplace = api.docFindReplace
-let getTemplate = api.getTemplate
+let getTemplate = api.getTemplateDoc
 
 
 let scopeOfWorks (row:SiteRow) : EventsBuild<WordDoc> = 

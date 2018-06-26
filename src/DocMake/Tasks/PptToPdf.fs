@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.PptToPdf
+module DocMake.Tasks.PptToPdf
 
 
 // Open at .Interop rather than .PowerPoint then the PowerPoint API has to be qualified

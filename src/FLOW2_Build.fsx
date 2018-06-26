@@ -39,16 +39,18 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
 
-#load @"DocMake\Lib\DocFindReplace.fs"
-#load @"DocMake\Lib\DocPhotos.fs"
-#load @"DocMake\Lib\DocToPdf.fs"
-#load @"DocMake\Lib\XlsToPdf.fs"
-#load @"DocMake\Lib\PptToPdf.fs"
-#load @"DocMake\Lib\PdfConcat.fs"
-#load @"DocMake\Lib\PdfRotate.fs"
+
+#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\Tasks\XlsFindReplace.fs"
+#load @"DocMake\Tasks\DocToPdf.fs"
+#load @"DocMake\Tasks\XlsToPdf.fs"
+#load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\PdfConcat.fs"
+#load @"DocMake\Tasks\PdfRotate.fs"
+#load @"DocMake\Tasks\DocPhotos.fs"
 #load @"DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
-open DocMake.Lib
+open DocMake.Tasks
 
 
 let _filestoreRoot  = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
@@ -90,7 +92,7 @@ let outputDirectory : FullBuild<unit> =
 let cover (matches:SearchList) : FullBuild<PdfDoc> = 
     buildMonad { 
         let templatePath = _templateRoot </> "FC2 Cover TEMPLATE.docx"
-        let! template = getTemplate templatePath
+        let! template = getTemplateDoc templatePath
         let! d1 = docFindReplace matches template >>= docToPdf >>= renameTo "cover-sheet.pdf"
         return d1 }
 

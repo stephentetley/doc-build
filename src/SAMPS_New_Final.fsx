@@ -44,16 +44,18 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
 
-#load @"DocMake\Lib\DocFindReplace.fs"
-#load @"DocMake\Lib\DocPhotos.fs"
-#load @"DocMake\Lib\DocToPdf.fs"
-#load @"DocMake\Lib\XlsToPdf.fs"
-#load @"DocMake\Lib\PptToPdf.fs"
-#load @"DocMake\Lib\PdfConcat.fs"
-#load @"DocMake\FullBuilder.fs"
-open DocMake.Lib
-open DocMake.FullBuilder
 
+#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\Tasks\XlsFindReplace.fs"
+#load @"DocMake\Tasks\DocToPdf.fs"
+#load @"DocMake\Tasks\XlsToPdf.fs"
+#load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\PdfConcat.fs"
+#load @"DocMake\Tasks\PdfRotate.fs"
+#load @"DocMake\Tasks\DocPhotos.fs"
+#load @"DocMake\FullBuilder.fs"
+open DocMake.FullBuilder
+open DocMake.Tasks
 
 
 let _templateRoot       = @"G:\work\Projects\samps\final-docs\__Templates"
@@ -74,8 +76,8 @@ let uidsTableDict : ExcelProviderHelperDict<UidTable, UidRow> =
 
 let uidDict : Map<string,string> = 
     excelTableGetRows uidsTableDict (new UidTable()) 
-        |> List.map (fun (row:UidRow) -> row.``Common Name``, row.UID)
-        |> Map.ofList
+        |> Seq.map (fun (row:UidRow) -> row.``Common Name``, row.UID)
+        |> Map.ofSeq
 
 
 let clean () : FullBuild<unit> = deleteWorkingDirectory () 
@@ -95,7 +97,7 @@ let makeCoverMatches (siteName:string) : SearchList =
 let cover (siteName:string) : FullBuild<PdfDoc> = 
     buildMonad { 
         let templatePath = _templateRoot </> @"TEMPLATE Samps Cover Sheet.docx"
-        let! template = getTemplate templatePath
+        let! template = getTemplateDoc templatePath
         let docOutName = sprintf "%s cover-sheet.docx" (safeName siteName)
         let matches = makeCoverMatches siteName
         let! d1 = docFindReplace matches template >>= renameTo docOutName 

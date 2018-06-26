@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.PdfRotate
+module DocMake.Tasks.PdfRotate
 
 
 open DocMake.Base.Common

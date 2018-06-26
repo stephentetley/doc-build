@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.DocToPdf
+module DocMake.Tasks.DocToPdf
 
 
 // Open at .Interop rather than .Word then the Word API has to be qualified

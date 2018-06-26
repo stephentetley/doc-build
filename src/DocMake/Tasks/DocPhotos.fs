@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 [<RequireQualifiedAccess>]
-module DocMake.Lib.DocPhotos
+module DocMake.Tasks.DocPhotos
 
 
 open System.IO

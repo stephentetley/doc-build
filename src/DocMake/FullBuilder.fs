@@ -3,6 +3,8 @@
 
 open Microsoft.Office.Interop
 
+
+open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.WordBuilder
@@ -10,7 +12,7 @@ open DocMake.Builder.ExcelBuilder
 open DocMake.Builder.PowerPointBuilder
 open DocMake.Builder.GhostscriptBuilder
 open DocMake.Builder.PdftkBuilder
-open DocMake.Lib
+open DocMake.Tasks
 
 
 /// Note - we probably need to look at "by need" creation of Excel, 
@@ -46,15 +48,33 @@ let fullBuilderHooks (gsPath:string) (pdftkPath:string) : BuilderHooks<FullHandl
       FinalizeResource = finalizeFullBuilder }
 
 
-let d1 : DocMake.Lib.DocFindReplace.DocFindReplace<FullHandle> = 
-    DocMake.Lib.DocFindReplace.makeAPI (fun (h:FullHandle) -> h.WordApp)
+/// DocFindReplace Api has more than one entry point...
+let private docFindReplaceApi : DocFindReplace.DocFindReplace<FullHandle> = 
+    DocFindReplace.makeAPI (fun (h:FullHandle) -> h.WordApp)
 
-let docFindReplace = d1.docFindReplace
-let getTemplate = d1.getTemplate
+let getTemplateDoc (docPath:string) : FullBuild<WordDoc> = 
+    docFindReplaceApi.getTemplateDoc docPath
+
+
+let docFindReplace (searchList:SearchList) (template:WordDoc) : FullBuild<WordDoc> = 
+    docFindReplaceApi.docFindReplace searchList template
+    
 
 let docToPdf (wordDoc:WordDoc) : FullBuild<PdfDoc> = 
     let api = DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
     api.docToPdf wordDoc 
+
+/// XlsFindReplace Api has more than one entry point...
+let private xlsFindReplaceApi : XlsFindReplace.XlsFindReplace<FullHandle> = 
+    XlsFindReplace.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
+
+let getTemplateXls (xlsPath:string) : FullBuild<ExcelDoc> = 
+    xlsFindReplaceApi.getTemplateXls xlsPath
+
+
+let xlsFindReplace (searchList:SearchList) (template:ExcelDoc) : FullBuild<ExcelDoc> = 
+    xlsFindReplaceApi.xlsFindReplace searchList template
+
 
 let xlsToPdf (fitPage:bool) (xlsDoc:ExcelDoc) : FullBuild<PdfDoc> = 
     let api = XlsToPdf.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
