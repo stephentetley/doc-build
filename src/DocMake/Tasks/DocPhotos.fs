@@ -14,7 +14,7 @@ open DocMake.Base.ImageMagickUtils
 open DocMake.Base.SimpleDocOutput
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
+open DocMake.Builder.WordHooks
 
 
 

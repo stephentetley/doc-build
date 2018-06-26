@@ -13,7 +13,7 @@ open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
+open DocMake.Builder.WordHooks
 
     
 

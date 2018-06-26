@@ -19,14 +19,14 @@
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\WordBuilder.fs"
+#load @"DocMake\Builder\WordHooks.fs"
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 #load @"DocMake\Tasks\DocToPdf.fs"
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
+open DocMake.Builder.WordHooks
 open DocMake.Tasks
 
 let matches1 = [ "#before", "after" ]
@@ -47,7 +47,7 @@ let test01 () =
           PdfQuality = PdfPrintSetting.PdfPrint }
     let proc : WordBuild<unit> = 
         buildMonad { 
-            let! template = getTemplate @"D:\coding\fsharp\DocMake\data\findreplace1.docx"
+            let! template = getTemplateDoc @"D:\coding\fsharp\DocMake\data\findreplace1.docx"
             let! output = docFindReplace matches1 template
             let! a2 = renameTo @"findreplace2.docx" output 
             let! _ = docToPdf a2

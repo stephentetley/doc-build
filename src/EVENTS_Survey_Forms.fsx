@@ -33,12 +33,12 @@ open FSharp.ExcelProvider
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\WordBuilder.fs"
+#load @"DocMake\Builder\WordHooks.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
+open DocMake.Builder.WordHooks
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Tasks

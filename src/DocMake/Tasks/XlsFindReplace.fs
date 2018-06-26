@@ -13,7 +13,7 @@ open Microsoft.Office.Interop
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.ExcelBuilder
+open DocMake.Builder.ExcelHooks
 
 
 let private sheetReplaces1 (worksheet:Excel.Worksheet) (search:string, replace:string) : unit = 

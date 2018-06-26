@@ -14,7 +14,7 @@ open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
+open DocMake.Builder.WordHooks
 
 
 let private getHeadersOrFooters (doc:Word.Document) (proj:Word.Section -> Word.HeadersFooters) : Word.HeaderFooter list = 

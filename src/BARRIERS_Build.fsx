@@ -27,11 +27,11 @@ open System.IO
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\WordBuilder.fs"
-#load @"DocMake\Builder\ExcelBuilder.fs"
-#load @"DocMake\Builder\PowerPointBuilder.fs"
-#load @"DocMake\Builder\GhostscriptBuilder.fs"
-#load @"DocMake\Builder\PdftkBuilder.fs"
+#load @"DocMake\Builder\WordHooks.fs"
+#load @"DocMake\Builder\ExcelHooks.fs"
+#load @"DocMake\Builder\PowerPointHooks.fs"
+#load @"DocMake\Builder\GhostscriptHooks.fs"
+#load @"DocMake\Builder\PdftkHooks.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad

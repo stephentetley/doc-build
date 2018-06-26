@@ -9,7 +9,7 @@ module DocMake.Tasks.PdfConcat
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.GhostscriptBuilder
+open DocMake.Builder.GhostscriptHooks
  
 
 // Concat PDFs with Ghostscript

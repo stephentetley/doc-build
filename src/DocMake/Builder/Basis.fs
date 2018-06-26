@@ -48,10 +48,12 @@ let documentExtension (doc:Document<'a>) : string =
 let documentDirectory (doc:Document<'a>) : string = 
     System.IO.FileInfo(doc.DocumentPath).DirectoryName
 
-// TODO should this change the Phantom...
-let documentChangeExtension (extension: string) (doc:Document<'a>) : Document<'a> = 
+
+// TODO should this change assert the Phantom?
+let documentChangeExtension (extension: string) (doc:Document<'a>) : Document<'b> = 
     let d1 = System.IO.Path.ChangeExtension(doc.DocumentPath, extension)
     makeDocument d1
+
 
 let documentName (doc:Document<'a>) : string = 
     System.IO.FileInfo(doc.DocumentPath).Name

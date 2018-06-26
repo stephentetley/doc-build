@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module DocMake.Builder.PowerPointBuilder
+module DocMake.Builder.PowerPointHooks
 
 open System.IO
 open Microsoft.Office.Interop
@@ -14,8 +14,6 @@ open DocMake.Builder.Basis
 
 type PowerPointPhantom = class end
 type PowerPointDoc = Document<PowerPointPhantom>
-
-let castToPowerPointDoc (doc:Document<'a>) : PowerPointDoc = castDocument doc
 
 
 let private initPowerPoint () : PowerPoint.Application = 

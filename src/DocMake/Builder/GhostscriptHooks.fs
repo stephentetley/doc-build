@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module DocMake.Builder.GhostscriptBuilder
+module DocMake.Builder.GhostscriptHooks
 
 open System.IO
 
@@ -13,6 +13,7 @@ open DocMake.Builder.Basis
 
 type GsHandle = 
     { GhostscriptExePath: string }
+
 
 let ghostsciptBuilderHook (exePath:string) : BuilderHooks<GsHandle> = 
     { InitializeResource = fun _ ->  { GhostscriptExePath = exePath } 

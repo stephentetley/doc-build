@@ -8,7 +8,7 @@ module DocMake.Tasks.PdfRotate
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.PdftkBuilder
+open DocMake.Builder.PdftkHooks
 
 type PageRotation = int * DocMakePageOrientation
 

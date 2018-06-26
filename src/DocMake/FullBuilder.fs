@@ -7,20 +7,20 @@ open Microsoft.Office.Interop
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordBuilder
-open DocMake.Builder.ExcelBuilder
-open DocMake.Builder.PowerPointBuilder
-open DocMake.Builder.GhostscriptBuilder
-open DocMake.Builder.PdftkBuilder
+open DocMake.Builder.WordHooks
+open DocMake.Builder.ExcelHooks
+open DocMake.Builder.PowerPointHooks
+open DocMake.Builder.GhostscriptHooks
+open DocMake.Builder.PdftkHooks
 open DocMake.Tasks
 
 
-/// Note - we probably need to look at "by need" creation of Excel, 
-/// PowerPoint, etc. instances.
+/// Note - we need to look at "by need" creation of Excel, Word 
+/// and PowerPoint instances.
 type FullHandle = 
-    { WordApp : Word.Application
-      ExcelApp : Excel.Application 
-      PowerPointApp : PowerPoint.Application
+    { WordApp: Word.Application
+      ExcelApp: Excel.Application 
+      PowerPointApp: PowerPoint.Application
       Ghostscript: GsHandle
       Pdftk: PdftkHandle
       }
@@ -48,6 +48,10 @@ let fullBuilderHooks (gsPath:string) (pdftkPath:string) : BuilderHooks<FullHandl
       FinalizeResource = finalizeFullBuilder }
 
 
+// *************************************
+// Wraps DocMake.Tasks.DocFindReplace
+
+
 /// DocFindReplace Api has more than one entry point...
 let private docFindReplaceApi : DocFindReplace.DocFindReplace<FullHandle> = 
     DocFindReplace.makeAPI (fun (h:FullHandle) -> h.WordApp)
@@ -58,11 +62,10 @@ let getTemplateDoc (docPath:string) : FullBuild<WordDoc> =
 
 let docFindReplace (searchList:SearchList) (template:WordDoc) : FullBuild<WordDoc> = 
     docFindReplaceApi.docFindReplace searchList template
-    
 
-let docToPdf (wordDoc:WordDoc) : FullBuild<PdfDoc> = 
-    let api = DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
-    api.docToPdf wordDoc 
+
+// *************************************
+// Wraps DocMake.Tasks.XlsFindReplace
 
 /// XlsFindReplace Api has more than one entry point...
 let private xlsFindReplaceApi : XlsFindReplace.XlsFindReplace<FullHandle> = 
@@ -75,25 +78,51 @@ let getTemplateXls (xlsPath:string) : FullBuild<ExcelDoc> =
 let xlsFindReplace (searchList:SearchList) (template:ExcelDoc) : FullBuild<ExcelDoc> = 
     xlsFindReplaceApi.xlsFindReplace searchList template
 
+    
+
+// *************************************
+// Wraps DocMake.Tasks.DocToPdf
+
+let docToPdf (wordDoc:WordDoc) : FullBuild<PdfDoc> = 
+    let api = DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
+    api.docToPdf wordDoc 
+
+
+// *************************************
+// Wraps DocMake.Tasks.XlsToPdf
 
 let xlsToPdf (fitPage:bool) (xlsDoc:ExcelDoc) : FullBuild<PdfDoc> = 
     let api = XlsToPdf.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
     api.xlsToPdf fitPage xlsDoc
+
+    
+// *************************************
+// Wraps DocMake.Tasks.PptToPdf
 
 let pptToPdf (pptDoc:PowerPointDoc) : FullBuild<PdfDoc> = 
     let api = PptToPdf.makeAPI (fun (h:FullHandle) -> h.PowerPointApp)
     api.pptToPdf pptDoc
 
 
-let docPhotos (opts:DocPhotos.DocPhotosOptions) (sourceDirectories:string list) : FullBuild<WordDoc> = 
-    let api = DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
-    api.docPhotos opts sourceDirectories
+// *************************************
+// Wraps DocMake.Tasks.PdfConcat
 
 let pdfConcat (inputFiles:PdfDoc list) : FullBuild<PdfDoc> = 
     let api = PdfConcat.makeAPI (fun (h:FullHandle) -> h.Ghostscript)
     api.pdfConcat inputFiles
 
+
+// *************************************
+// Wraps DocMake.Tasks.PdfRotate
+
 let pdfRotate (rotations: PdfRotate.PageRotation list) (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
     let api = PdfRotate.makeAPI (fun (h:FullHandle) -> h.Pdftk)
     api.pdfRotate rotations pdfDoc
 
+
+// *************************************
+// Wraps DocMake.Tasks.DocPhotos
+
+let docPhotos (opts:DocPhotos.DocPhotosOptions) (sourceDirectories:string list) : FullBuild<WordDoc> = 
+    let api = DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
+    api.docPhotos opts sourceDirectories

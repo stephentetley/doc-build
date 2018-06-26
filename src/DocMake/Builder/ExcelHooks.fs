@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module DocMake.Builder.ExcelBuilder
+module DocMake.Builder.ExcelHooks
 
 open System.IO
 open Microsoft.Office.Interop
@@ -14,7 +14,6 @@ open DocMake.Builder.Basis
 type ExcelPhantom = class end
 type ExcelDoc = Document<ExcelPhantom>
 
-let castToExcelDoc (doc:Document<'a>) : ExcelDoc = castDocument doc
 
 
 let private initExcel () : Excel.Application = 

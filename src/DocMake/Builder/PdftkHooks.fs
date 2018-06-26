@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module DocMake.Builder.PdftkBuilder
+module DocMake.Builder.PdftkHooks
 
 open System.IO
 
@@ -12,6 +12,8 @@ open DocMake.Builder.Basis
 
 type PdftkHandle = 
     { PdftkExePath: string }
+
+
 let pdftkBuilderHook (exePath:string) : BuilderHooks<PdftkHandle> = 
 
     { InitializeResource = fun _ ->  { PdftkExePath = exePath } 

@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module DocMake.Builder.WordBuilder
+module DocMake.Builder.WordHooks
 
 open System.IO
 open Microsoft.Office.Interop
@@ -13,8 +13,6 @@ open DocMake.Builder.Basis
 
 type WordPhantom = class end
 type WordDoc = Document<WordPhantom>
-
-let castToWordDoc (doc:Document<'a>) : WordDoc = castDocument doc
 
 
 let private initWord () : Word.Application = 
