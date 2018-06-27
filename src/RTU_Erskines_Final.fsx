@@ -12,6 +12,11 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
+// Use FSharp.Data for CSV output
+#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#r @"FSharp.Data.dll"
+open FSharp.Data
+
 
 #I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
@@ -59,10 +64,12 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
+#load @"Proprietry.fs"
+open Proprietry
 
 
-let _inputRoot = @"G:\work\Projects\rtu\final-docs\input\Erskines_02"
-let _outputDir = @"G:\work\Projects\rtu\final-docs\output\erskine-output\batch02"
+let _inputRoot = @"G:\work\Projects\rtu\Erskines\edms-final-docs\input\input-june2018"
+let _outputDir = @"G:\work\Projects\rtu\Erskines\edms-final-docs\output\output-june2018"
 
 let generate1 (dir:string) : FullBuild<unit> = 
     match tryFindExactlyOneMatchingFile "*Erskine*.doc*" dir with
@@ -78,10 +85,36 @@ let generate1 (dir:string) : FullBuild<unit> =
             return ()
         }
 
-let buildScript () : FullBuild<unit>  = 
-    let childDirs = System.IO.Directory.GetDirectories(_inputRoot) |> Array.toList
-    mapMz generate1 childDirs
 
+let uploadReceipt (dirList:string list) : FullBuild<unit> = 
+    let siteFromPath (path:string) = 
+        slashName <| System.IO.DirectoryInfo(path).Name
+        
+    let config = 
+        { MakeTitle = 
+            fun name -> sprintf "%s Erskine Battery Asset Replacement" (name.Replace("/", " "))
+          MakeDocName =
+            fun name -> sprintf "%s Erskine Battery Asset Replacement.pdf" (name.Replace("/", "_"))
+          ConstantParams = 
+            { ProjectName = "RTU Asset Replacement"
+              ProjectCode = "S3953"
+              Category = "O & M Manuals"
+              ReferenceNumber = "S3953"
+              Revision = "1"
+              DocumentDate = standardDocumentDate ()
+              SheetVolume = "" } 
+        }/// Usually blank
+    buildMonad { 
+        let siteNames = List.map siteFromPath dirList
+        do! makeUploadForm siteNames config
+    }
+
+let buildScript () : FullBuild<unit>  = 
+    buildMonad { 
+        let childDirs = System.IO.Directory.GetDirectories(_inputRoot) |> Array.toList
+        do! mapMz generate1 childDirs
+        do! uploadReceipt childDirs
+    }
 
 let main () : unit = 
     let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
