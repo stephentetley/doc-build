@@ -117,15 +117,15 @@ let buildScript () : FullBuild<unit>  =
     }
 
 let main () : unit = 
-    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-    let pdftkExe = @"C:\programs\PDFtk Server\bin\pdftk.exe"
-    let hooks = fullBuilderHooks gsExe pdftkExe
-
     let env = 
         { WorkingDirectory = _outputDir
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
 
-    consoleRun env hooks (buildScript ()) 
+    let appConfig : FullBuildConfig = 
+            { GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+              PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe" } 
+
+    runFullBuild env appConfig (buildScript ()) 
 
 

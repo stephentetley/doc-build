@@ -250,11 +250,6 @@ let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:S
     | Ok (_,a) -> a
 
 
-    
-type BuilderHooks<'res> = 
-    { InitializeResource : unit -> 'res
-      FinalizeResource: 'res -> unit }
-
 
 let consoleRun (env:Env) (handle:'res) (finalizer:'res -> unit) (ma:BuildMonad<'res,'a>) : 'a = 
     let stateZero : State = 

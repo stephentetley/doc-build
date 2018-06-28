@@ -15,11 +15,6 @@ type GsHandle =
     { GhostscriptExePath: string }
 
 
-let ghostsciptBuilderHook (exePath:string) : BuilderHooks<GsHandle> = 
-    let active = { GhostscriptExePath = exePath } 
-    { InitializeResource = fun _ ->  active
-      FinalizeResource = fun _ -> () }
-
 
 let gsRunCommand (getHandle:'res -> GsHandle) (command:string) : BuildMonad<'res,unit> = 
     buildMonad { 

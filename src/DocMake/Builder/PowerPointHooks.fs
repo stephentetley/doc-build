@@ -25,11 +25,6 @@ let internal finalizePowerPoint (app:PowerPoint.Application) : unit =
     app.Quit ()
 
 
-let powerPointBuilderHooks () : BuilderHooks<PowerPoint.Application> = 
-    { InitializeResource = initPowerPoint
-      FinalizeResource = finalizePowerPoint }
-
-
 
 
 

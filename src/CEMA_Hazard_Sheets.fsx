@@ -96,8 +96,11 @@ let main () : unit =
         { WorkingDirectory = _outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
-    let hooks:BuilderHooks<Excel.Application> = excelBuilderHook
-    consoleRun env hooks (buildScript ())
+
+    let excelApp = initExcel ()
+    let excelKill = fun (app:Excel.Application) -> finalizeExcel app
+
+    consoleRun env excelApp excelKill (buildScript ())
 
 
 

@@ -22,13 +22,6 @@ let internal initWord () : Word.Application =
 let internal finalizeWord (app:Word.Application) : unit = app.Quit ()
 
 
-let wordBuilderHook : BuilderHooks<Word.Application> = 
-    { InitializeResource = initWord    
-      FinalizeResource = finalizeWord }
-
-
-
-
 let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
     proc >>= renameTo outputName
 

@@ -218,15 +218,15 @@ let buildScript (siteName:string) : FullBuild<unit> =
         }
 
 let main () : unit = 
-    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-    let pdftkExe = @"C:\programs\PDFtk Server\bin\pdftk.exe"
-    let hooks = fullBuilderHooks gsExe pdftkExe
-
     let env = 
         { WorkingDirectory = _outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
     
+    let appConfig : FullBuildConfig = 
+        { GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+          PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe" } 
+
     let proc : FullBuild<unit> = 
         let folders = 
             System.IO.Directory.GetDirectories(_inputRoot) |> Array.toList
@@ -238,5 +238,7 @@ let main () : unit =
                     buildScript name
                 else
                     breturn ()
-    consoleRun env hooks proc
+
+
+    runFullBuild env appConfig proc
 

@@ -260,5 +260,7 @@ let main (surveyBatch:string) (makeHazards:bool) : unit =
         { WorkingDirectory = _outputRoot
           PrintQuality = DocMakePrintQuality.PqScreen
           PdfQuality = PdfPrintSetting.PdfScreen }
-    let hooks:BuilderHooks<Word.Application> = wordBuilderHook
-    consoleRun env hooks (buildScript surveyBatch makeHazards)
+
+    let wordApp = initWord ()
+    let wordKill = fun (app:Word.Application) -> finalizeWord app
+    consoleRun env wordApp wordKill (buildScript surveyBatch makeHazards)
