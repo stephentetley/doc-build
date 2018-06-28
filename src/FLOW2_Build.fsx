@@ -39,7 +39,7 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
 
-
+#load @"DocMake\Tasks\IOActions.fs"
 #load @"DocMake\Tasks\DocFindReplace.fs"
 #load @"DocMake\Tasks\XlsFindReplace.fs"
 #load @"DocMake\Tasks\DocToPdf.fs"
@@ -72,20 +72,7 @@ let siteOutputDir       = _outputRoot </> cleanName
 let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
     siteOutputDir </> sprintf fmt cleanName
 
-let clean : FullBuild<unit> =
-    buildMonad { 
-        if Directory.Exists(siteOutputDir) then 
-            do printfn " --- Clean folder: '%s' ---" siteOutputDir
-            do! executeIO (fun () -> deleteDirectory siteOutputDir)
-        else 
-            do printfn " --- Clean --- : folder does not exist '%s' ---" siteOutputDir
-    }
 
-let outputDirectory : FullBuild<unit> =
-    buildMonad { 
-        do printfn  " --- Output folder: '%s' ---" siteOutputDir
-        do! executeIO (fun () -> maybeCreateDirectory siteOutputDir)
-    }
 
 
 // This should be a mandatory task
@@ -156,7 +143,7 @@ let installSheets () : FullBuild<PdfDoc list> =
 let buildScript (siteName:string) : FullBuild<unit> = 
     
     buildMonad { 
-        do! clean >>. outputDirectory
+        do! IOActions.clean () >>. IOActions.createOutputDirectory ()
         let! p1 = cover matches1
         let surveyJpegsPath = siteInputDir </> "Survey_Photos"
         let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"

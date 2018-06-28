@@ -58,7 +58,7 @@ let test01 () =
     let procM = 
         buildMonad { 
             let! (input:PdfDoc) = breturn <| makeDocument @"G:\work\working\In1.pdf"
-            let! _ =  pdfRotate [ (1,PoEast) ] input
+            let! _ =  pdfRotateEmbed [ (PdfRotate.rotationSinglePage 1 PoEast) ] input
             return ()
         }
 

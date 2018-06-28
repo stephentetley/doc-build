@@ -15,11 +15,11 @@ type WordPhantom = class end
 type WordDoc = Document<WordPhantom>
 
 
-let private initWord () : Word.Application = 
+let internal initWord () : Word.Application = 
     let app = new Word.ApplicationClass (Visible = true) :> Word.Application
     app
 
-let private finalizeWord (app:Word.Application) : unit = app.Quit ()
+let internal finalizeWord (app:Word.Application) : unit = app.Quit ()
 
 
 let wordBuilderHook : BuilderHooks<Word.Application> = 

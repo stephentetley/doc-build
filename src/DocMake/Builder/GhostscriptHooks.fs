@@ -16,7 +16,8 @@ type GsHandle =
 
 
 let ghostsciptBuilderHook (exePath:string) : BuilderHooks<GsHandle> = 
-    { InitializeResource = fun _ ->  { GhostscriptExePath = exePath } 
+    let active = { GhostscriptExePath = exePath } 
+    { InitializeResource = fun _ ->  active
       FinalizeResource = fun _ -> () }
 
 

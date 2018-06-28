@@ -12,7 +12,10 @@ open DocMake.Builder.Basis
 open DocMake.Builder.GhostscriptHooks
  
 
-// Concat PDFs with Ghostscript
+/// Concat PDFs with Ghostscript
+/// We favour Ghostscript because it lets us lower the print 
+/// quality (and reduce the file size).
+
  
 let private makeGsOptions (quality:PdfPrintSetting) : string =
     match ghostscriptPrintSetting quality with

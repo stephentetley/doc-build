@@ -31,7 +31,8 @@ let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuali
 
 
 
-let private pptToPdfImpl (getHandle:'res-> PowerPoint.Application) (pptDoc:PowerPointDoc) : BuildMonad<'res,PdfDoc> =
+let private pptToPdfImpl (getHandle:'res-> PowerPoint.Application) 
+                (pptDoc:PowerPointDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! (app:PowerPoint.Application) = asksU getHandle
         let  outName = documentName <| documentChangeExtension "pdf" pptDoc

@@ -1,8 +1,10 @@
-﻿module DocMake.FullBuilder
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
 
+
+module DocMake.FullBuilder
 
 open Microsoft.Office.Interop
-
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
@@ -14,38 +16,61 @@ open DocMake.Builder.GhostscriptHooks
 open DocMake.Builder.PdftkHooks
 open DocMake.Tasks
 
+type FullHandle (gs:GsHandle, pdftk:PdftkHandle) = 
+    let gsHandle = gs
+    let pdftkHandle = pdftk
+    let mutable wordApp:Word.Application = null
+    let mutable excelApp:Excel.Application = null
+    let mutable powerPointApp:PowerPoint.Application = null
 
-/// Note - we need to look at "by need" creation of Excel, Word 
-/// and PowerPoint instances.
-type FullHandle = 
-    { WordApp: Word.Application
-      ExcelApp: Excel.Application 
-      PowerPointApp: PowerPoint.Application
-      Ghostscript: GsHandle
-      Pdftk: PdftkHandle
-      }
+    member v.Ghostscript : GsHandle = gsHandle
+    member v.Pdftk : PdftkHandle = pdftkHandle    
+
+    member v.WordApp :Word.Application = 
+        match wordApp with
+        | null -> 
+            let word1 = initWord ()
+            wordApp <- word1
+            word1
+        | app -> app
+
+    member v.ExcelApp :Excel.Application  = 
+        match excelApp with
+        | null -> 
+            let excel1 = initExcel ()
+            excelApp <- excel1
+            excel1
+        | app -> app
+
+    member v.PowerPointApp :PowerPoint.Application  = 
+        match powerPointApp with
+        | null -> 
+            let powerPoint1 = initPowerPoint ()
+            powerPointApp <- powerPoint1
+            powerPoint1
+        | app -> app
+
+    member v.RunFinalize () = 
+        match wordApp with
+        | null -> () 
+        | app -> finalizeWord app
+        match excelApp with
+        | null -> ()
+        | app -> finalizeExcel app
+        match powerPointApp with
+        | null -> ()
+        | app -> finalizePowerPoint app
+
 
 type FullBuild<'a> = BuildMonad<FullHandle,'a>
 
-let private initFullBuilder (gsPath:string) (pdftkPath:string) : FullHandle = 
-    { WordApp = wordBuilderHook.InitializeResource ()
-      ExcelApp = excelBuilderHook.InitializeResource () 
-      PowerPointApp = powerPointBuilderHook.InitializeResource ()
-      Ghostscript = ghostsciptBuilderHook(gsPath).InitializeResource ()
-      Pdftk = pdftkBuilderHook(pdftkPath).InitializeResource ()
-      }
+type FullBuildConfig  = 
+    { GhostscriptPath: string
+      PdftkPath: string } 
 
-let private finalizeFullBuilder (handle:FullHandle) : unit = 
-    wordBuilderHook.FinalizeResource handle.WordApp
-    excelBuilderHook.FinalizeResource handle.ExcelApp
-    powerPointBuilderHook.FinalizeResource handle.PowerPointApp
-    // do nothing for Ghostscript
-    // do nothing for Pdftk
-
-
-let fullBuilderHooks (gsPath:string) (pdftkPath:string) : BuilderHooks<FullHandle> = 
-    { InitializeResource  = fun _ -> initFullBuilder gsPath pdftkPath
-      FinalizeResource = finalizeFullBuilder }
+let runFullBuild (env:Env) (config:FullBuildConfig) (ma:FullBuild<'a>) : 'a = 
+    let handle = new FullHandle({GhostscriptExePath = config.GhostscriptPath}, {PdftkExePath = config.PdftkPath })
+    consoleRun env handle (fun (h:FullHandle) -> h.RunFinalize () ) ma
 
 
 // *************************************
@@ -130,6 +155,21 @@ let pdfRotateExtract (rotations: PdfRotate.Rotation list) (pdfDoc:PdfDoc) : Full
 let pdfRotateAll (orientation: PageOrientation) (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
     pdfRotateApi.PdfRotateAll orientation pdfDoc
 
+let pdfRotateAllCw (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
+    pdfRotateApi.PdfRotateAllCw pdfDoc
+
+let pdfRotateAllCcw (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
+    pdfRotateApi.PdfRotateAllCcw pdfDoc
+
+
+let rotationRange (startPage:int) (endPage:int) (orientation:PageOrientation) : PdfRotate.Rotation = 
+    PdfRotate.rotationRange startPage endPage orientation
+
+let rotationSinglePage (pageNum:int) (orientation:PageOrientation) : PdfRotate.Rotation = 
+    PdfRotate.rotationSinglePage pageNum orientation
+
+let rotationToEnd (startPage:int) (orientation:PageOrientation) : PdfRotate.Rotation = 
+    PdfRotate.rotationToEnd startPage orientation
 
 // *************************************
 // Wraps DocMake.Tasks.DocPhotos

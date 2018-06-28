@@ -16,13 +16,13 @@ type ExcelDoc = Document<ExcelPhantom>
 
 
 
-let private initExcel () : Excel.Application = 
+let internal initExcel () : Excel.Application = 
     let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
     app.DisplayAlerts <- false
     app.EnableEvents <- false
     app
 
-let private finalizeExcel (app:Excel.Application) : unit = 
+let internal finalizeExcel (app:Excel.Application) : unit = 
         app.DisplayAlerts <- true
         app.EnableEvents <- true
         app.Quit ()

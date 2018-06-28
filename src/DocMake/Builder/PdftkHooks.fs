@@ -15,8 +15,8 @@ type PdftkHandle =
 
 
 let pdftkBuilderHook (exePath:string) : BuilderHooks<PdftkHandle> = 
-
-    { InitializeResource = fun _ ->  { PdftkExePath = exePath } 
+    let active = { PdftkExePath = exePath } 
+    { InitializeResource = fun _ ->  active
       FinalizeResource = fun _ -> () }
 
 

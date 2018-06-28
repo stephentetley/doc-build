@@ -118,24 +118,32 @@ let private pdfRotateEmbedImpl (getHandle:'res -> PdftkHandle) (rotations: Rotat
 
 
 /// This is part of the API (should it need instantiating?)
-let rotation (startPage:int) (endPage:int) (orientation:PageOrientation) : Rotation = 
+let rotationRange (startPage:int) (endPage:int) (orientation:PageOrientation) : Rotation = 
     { StartPage = startPage
       EndPage =  EndPageNumber endPage
       Orientation = orientation }
 
+let rotationSinglePage (pageNum:int) (orientation:PageOrientation) : Rotation = 
+    rotationRange pageNum pageNum orientation
 
 /// This is part of the API (should it need instantiating?)
-let rotationToEnd (startPage:int)  (orientation:PageOrientation) : Rotation = 
+let rotationToEnd (startPage:int) (orientation:PageOrientation) : Rotation = 
     { StartPage = startPage
       EndPage =  EndOfDoc
       Orientation = orientation }
 
+/// Design note 
+/// The "instantiated module" pattern is rather cumbersome when we have 
+/// derived operations in the API. Expert F# recommends object interface types
+/// instead.
 
 
 type PdfRotate<'res> = 
     { PdfRotateExtract: Rotation list -> PdfDoc -> BuildMonad<'res, PdfDoc>
       PdfRotateEmbed: Rotation list -> PdfDoc -> BuildMonad<'res, PdfDoc>
-      PdfRotateAll: PageOrientation -> PdfDoc -> BuildMonad<'res, PdfDoc> }
+      PdfRotateAll: PageOrientation -> PdfDoc -> BuildMonad<'res, PdfDoc>
+      PdfRotateAllCw: PdfDoc -> BuildMonad<'res, PdfDoc>
+      PdfRotateAllCcw: PdfDoc -> BuildMonad<'res, PdfDoc>}
 
      
 let makeAPI (getHandle:'res-> PdftkHandle) : PdfRotate<'res> = 
@@ -143,6 +151,10 @@ let makeAPI (getHandle:'res-> PdftkHandle) : PdfRotate<'res> =
       PdfRotateEmbed = pdfRotateEmbedImpl getHandle
       PdfRotateAll = 
         fun po pdf -> pdfRotateEmbedImpl getHandle [rotationToEnd 1 po] pdf
+      PdfRotateAllCw = 
+        fun pdf -> pdfRotateEmbedImpl getHandle [rotationToEnd 1 PoEast] pdf
+      PdfRotateAllCcw = 
+        fun pdf -> pdfRotateEmbedImpl getHandle [rotationToEnd 1 PoWest] pdf
         }
 
 

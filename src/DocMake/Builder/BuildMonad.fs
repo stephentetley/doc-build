@@ -256,12 +256,11 @@ type BuilderHooks<'res> =
       FinalizeResource: 'res -> unit }
 
 
-let consoleRun (env:Env) (builderHooks:BuilderHooks<'res>) (ma:BuildMonad<'res,'a>) : 'a = 
+let consoleRun (env:Env) (handle:'res) (finalizer:'res -> unit) (ma:BuildMonad<'res,'a>) : 'a = 
     let stateZero : State = 
         { MakeName = sprintf "temp%03i" 
           NameIndex = 1 }
-    let handle = builderHooks.InitializeResource ()
-    evalBuildMonad env handle builderHooks.FinalizeResource stateZero ma
+    evalBuildMonad env handle finalizer stateZero ma
 
 
 

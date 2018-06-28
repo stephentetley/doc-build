@@ -16,16 +16,16 @@ type PowerPointPhantom = class end
 type PowerPointDoc = Document<PowerPointPhantom>
 
 
-let private initPowerPoint () : PowerPoint.Application = 
+let internal initPowerPoint () : PowerPoint.Application = 
     let app = new PowerPoint.ApplicationClass() :> PowerPoint.Application
     app.Visible <- Microsoft.Office.Core.MsoTriState.msoTrue
     app
 
-let private finalizePowerPoint (app:PowerPoint.Application) : unit = 
+let internal finalizePowerPoint (app:PowerPoint.Application) : unit = 
     app.Quit ()
 
 
-let powerPointBuilderHook : BuilderHooks<PowerPoint.Application> = 
+let powerPointBuilderHooks () : BuilderHooks<PowerPoint.Application> = 
     { InitializeResource = initPowerPoint
       FinalizeResource = finalizePowerPoint }
 
