@@ -57,11 +57,11 @@ let private docFindReplaceApi : DocFindReplace.DocFindReplace<FullHandle> =
     DocFindReplace.makeAPI (fun (h:FullHandle) -> h.WordApp)
 
 let getTemplateDoc (docPath:string) : FullBuild<WordDoc> = 
-    docFindReplaceApi.getTemplateDoc docPath
+    docFindReplaceApi.GetTemplateDoc docPath
 
 
 let docFindReplace (searchList:SearchList) (template:WordDoc) : FullBuild<WordDoc> = 
-    docFindReplaceApi.docFindReplace searchList template
+    docFindReplaceApi.DocFindReplace searchList template
 
 
 // *************************************
@@ -72,11 +72,11 @@ let private xlsFindReplaceApi : XlsFindReplace.XlsFindReplace<FullHandle> =
     XlsFindReplace.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
 
 let getTemplateXls (xlsPath:string) : FullBuild<ExcelDoc> = 
-    xlsFindReplaceApi.getTemplateXls xlsPath
+    xlsFindReplaceApi.GetTemplateXls xlsPath
 
 
 let xlsFindReplace (searchList:SearchList) (template:ExcelDoc) : FullBuild<ExcelDoc> = 
-    xlsFindReplaceApi.xlsFindReplace searchList template
+    xlsFindReplaceApi.XlsFindReplace searchList template
 
     
 
@@ -85,7 +85,7 @@ let xlsFindReplace (searchList:SearchList) (template:ExcelDoc) : FullBuild<Excel
 
 let docToPdf (wordDoc:WordDoc) : FullBuild<PdfDoc> = 
     let api = DocToPdf.makeAPI (fun (h:FullHandle) -> h.WordApp)
-    api.docToPdf wordDoc 
+    api.DocToPdf wordDoc 
 
 
 // *************************************
@@ -93,7 +93,7 @@ let docToPdf (wordDoc:WordDoc) : FullBuild<PdfDoc> =
 
 let xlsToPdf (fitPage:bool) (xlsDoc:ExcelDoc) : FullBuild<PdfDoc> = 
     let api = XlsToPdf.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
-    api.xlsToPdf fitPage xlsDoc
+    api.XlsToPdf fitPage xlsDoc
 
     
 // *************************************
@@ -101,7 +101,7 @@ let xlsToPdf (fitPage:bool) (xlsDoc:ExcelDoc) : FullBuild<PdfDoc> =
 
 let pptToPdf (pptDoc:PowerPointDoc) : FullBuild<PdfDoc> = 
     let api = PptToPdf.makeAPI (fun (h:FullHandle) -> h.PowerPointApp)
-    api.pptToPdf pptDoc
+    api.PptToPdf pptDoc
 
 
 // *************************************
@@ -109,15 +109,26 @@ let pptToPdf (pptDoc:PowerPointDoc) : FullBuild<PdfDoc> =
 
 let pdfConcat (inputFiles:PdfDoc list) : FullBuild<PdfDoc> = 
     let api = PdfConcat.makeAPI (fun (h:FullHandle) -> h.Ghostscript)
-    api.pdfConcat inputFiles
+    api.PdfConcat inputFiles
 
 
 // *************************************
 // Wraps DocMake.Tasks.PdfRotate
 
-let pdfRotate (rotations: PdfRotate.PageRotation list) (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
-    let api = PdfRotate.makeAPI (fun (h:FullHandle) -> h.Pdftk)
-    api.pdfRotate rotations pdfDoc
+
+/// XlsFindReplace Api has more than one entry point...
+let private pdfRotateApi : PdfRotate.PdfRotate<FullHandle> = 
+    PdfRotate.makeAPI (fun (h:FullHandle) -> h.Pdftk)
+
+
+let pdfRotateEmbed (rotations: PdfRotate.Rotation list) (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
+    pdfRotateApi.PdfRotateEmbed rotations pdfDoc
+
+let pdfRotateExtract (rotations: PdfRotate.Rotation list) (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
+    pdfRotateApi.PdfRotateExtract rotations pdfDoc
+
+let pdfRotateAll (orientation: PageOrientation) (pdfDoc:PdfDoc) : FullBuild<PdfDoc> = 
+    pdfRotateApi.PdfRotateAll orientation pdfDoc
 
 
 // *************************************
@@ -125,4 +136,4 @@ let pdfRotate (rotations: PdfRotate.PageRotation list) (pdfDoc:PdfDoc) : FullBui
 
 let docPhotos (opts:DocPhotos.DocPhotosOptions) (sourceDirectories:string list) : FullBuild<WordDoc> = 
     let api = DocPhotos.makeAPI (fun (h:FullHandle) -> h.WordApp)
-    api.docPhotos opts sourceDirectories
+    api.DocPhotos opts sourceDirectories

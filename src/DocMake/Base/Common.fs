@@ -25,14 +25,16 @@ let ghostscriptPrintSetting (quality:PdfPrintSetting) : string =
     | PdfPrint -> @"/prepress"      // WARNING To check
     | PdfWhatever -> ""
 
-type DocMakePageOrientation = PoNorth | PoSouth | PoEast | PoWest
+type PageOrientation = 
+    PoNorth | PoSouth | PoEast | PoWest
+        member v.PdftkOrientation = 
+            match v with
+            | PoNorth -> "north"
+            | PoSouth -> "south"
+            | PoEast -> "east"
+            | PoWest -> "west"
 
-let pdftkPageOrientation (orientation:DocMakePageOrientation) : string = 
-    match orientation with
-    | PoNorth -> @"north"
-    | PoSouth -> @"south"
-    | PoEast -> @"east"
-    | PoWest -> @"west"
+
 
 // TODO - should escape, but that needs a new signature
 let doubleQuote (s:string) : string = "\"" + s + "\""

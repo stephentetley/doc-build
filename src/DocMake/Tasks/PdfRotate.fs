@@ -10,42 +10,139 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 open DocMake.Builder.PdftkHooks
 
-type PageRotation = int * DocMakePageOrientation
+// Note - the rotate "API" of Pdftk appears cryptic:
+// It can be used to extract rotated pages or "embed" rotate pages within the 
+// rest of the document.
+// 
+// This is command embeds two rotated regions:
+// pdftk slides.pdf cat 1 2-4east 5 6-8east 9-end output slides-rot2.pdf
+// 
+// This command extracts two rotated regions:
+// pdftk slides.pdf cat 2-4east 6-8east output slides-rot3.pdf
 
 
-let private makeRotateSpec (rotations: PageRotation list) : string = 
-    let rec work inlist start ac = 
-        match inlist with
+type private EndOfRange = 
+    | EndOfDoc
+    | EndPageNumber of int
+
+type Rotation = 
+    private 
+        { StartPage: int
+          EndPage: EndOfRange
+          Orientation: PageOrientation }
+
+
+let private rotationSpec1 (rot:Rotation) : string = 
+    let last = 
+        match rot.EndPage with
+        | EndOfDoc -> "end"
+        | EndPageNumber i -> i.ToString()
+    sprintf "%i-%s%s" rot.StartPage last rot.Orientation.PdftkOrientation
+
+let private regionSpec1 (startPage:int) (endPage:int) : string = 
+    if endPage > startPage then 
+        sprintf "%i-%i" startPage endPage
+    else
+        startPage.ToString()
+
+let private regionToEnd (startPage:int) : string = 
+    sprintf "%i-end" startPage
+
+
+
+let private rotSpecForExtract (rotations: Rotation list) : string = 
+    let rec work (ac:string list) rs = 
+        match rs with
+        | [] -> String.concat " " <| List.rev ac
+        | rot1 :: rest -> work (rotationSpec1 rot1 :: ac) rest
+    work [] rotations
+            
+
+
+let private rotSpecForEmbed (rotations: Rotation list) : string = 
+    let interRegion (prevStart:int) (nextStart:int) : option<string> = 
+        let endOfRegion = nextStart - 1
+        if endOfRegion >= prevStart then 
+            Some <| regionSpec1 prevStart endOfRegion
+        else None
+
+    let rec work (page:int) (ac:string list) (rs:Rotation list) = 
+        match rs with
         | [] -> 
-            let final = sprintf "A%i-end" start
-            List.rev (final::ac)
-        | (pageNum,po) :: rest -> 
-            if pageNum = start then 
-                let thisRotation = sprintf "A%i%s" pageNum (pdftkPageOrientation po)
-                work rest (pageNum+1) (thisRotation :: ac)
-            else 
-                let thisRotation = sprintf "A%i%s" pageNum (pdftkPageOrientation po)
-                let rangeAsIs = sprintf "A%i-%i" start (pageNum-1)
-                work rest (pageNum+1) (thisRotation :: rangeAsIs :: ac)
-    String.concat " " <| work rotations 1 []
+            let final = regionToEnd page 
+            in String.concat " " <| List.rev (final::ac)
+        | rot1 :: rest -> 
+            match rot1.EndPage with
+            | EndOfDoc -> 
+                let final = rotationSpec1 rot1
+                let ac1 = 
+                    match interRegion page rot1.StartPage with
+                    | Some inter -> (final::inter::ac)
+                    | None -> (final::ac)
+                String.concat " " ac1
+            | EndPageNumber i ->
+                let next = rotationSpec1 rot1
+                let ac1 = 
+                    match interRegion page rot1.StartPage with
+                    | Some inter -> (next::inter::ac)
+                    | None -> (next::ac)
+                work (i+1) ac1 rest
+    work 1 [] rotations
 
-let private makeCmd (inputFile:string) (outputFile:string) (rotations: PageRotation list)  : string = 
-    //let rotateSpec = "cat A1east A2-end" // temp
-    let rotateSpec = makeRotateSpec rotations
-    sprintf "A=\"%s\" %s output \"%s\"" inputFile rotateSpec outputFile 
 
 
-let private pdfRotateImpl (getHandle:'res -> PdftkHandle) (rotations: PageRotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
+
+let private makeExtractCmd (inputFile:string) (outputFile:string) (rotations: Rotation list)  : string = 
+    let rotateSpec = rotSpecForExtract rotations
+    sprintf "\"%s\" %s output \"%s\"" inputFile rotateSpec outputFile 
+
+let private makeEmbedCmd (inputFile:string) (outputFile:string) (rotations: Rotation list)  : string = 
+    let rotateSpec = rotSpecForEmbed rotations
+    sprintf "\"%s\" %s output \"%s\"" inputFile rotateSpec outputFile 
+
+
+let private pdfRotateExtractImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! outDoc = freshDocument ()
-        let! _ =  pdftkRunCommand getHandle <| makeCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
+        let! _ =  pdftkRunCommand getHandle <| makeExtractCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
         return outDoc
     }
 
-type PdfConcat<'res> = 
-    { pdfRotate : PageRotation list -> PdfDoc -> BuildMonad<'res, PdfDoc> }
 
-let makeAPI (getHandle:'res-> PdftkHandle) : PdfConcat<'res> = 
-    { pdfRotate = pdfRotateImpl getHandle }
+let private pdfRotateEmbedImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
+    buildMonad { 
+        let! outDoc = freshDocument ()
+        let! _ =  pdftkRunCommand getHandle <| makeEmbedCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
+        return outDoc
+    }
+
+
+/// This is part of the API (should it need instantiating?)
+let rotation (startPage:int) (endPage:int) (orientation:PageOrientation) : Rotation = 
+    { StartPage = startPage
+      EndPage =  EndPageNumber endPage
+      Orientation = orientation }
+
+
+/// This is part of the API (should it need instantiating?)
+let rotationToEnd (startPage:int)  (orientation:PageOrientation) : Rotation = 
+    { StartPage = startPage
+      EndPage =  EndOfDoc
+      Orientation = orientation }
+
+
+
+type PdfRotate<'res> = 
+    { PdfRotateExtract: Rotation list -> PdfDoc -> BuildMonad<'res, PdfDoc>
+      PdfRotateEmbed: Rotation list -> PdfDoc -> BuildMonad<'res, PdfDoc>
+      PdfRotateAll: PageOrientation -> PdfDoc -> BuildMonad<'res, PdfDoc> }
+
+     
+let makeAPI (getHandle:'res-> PdftkHandle) : PdfRotate<'res> = 
+    { PdfRotateExtract = pdfRotateExtractImpl getHandle 
+      PdfRotateEmbed = pdfRotateEmbedImpl getHandle
+      PdfRotateAll = 
+        fun po pdf -> pdfRotateEmbedImpl getHandle [rotationToEnd 1 po] pdf
+        }
 
 

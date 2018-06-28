@@ -68,9 +68,9 @@ let private xlsFindReplaceImpl (getHandle:'res-> Excel.Application) (matches:Sea
     
     
 type XlsFindReplace<'res> = 
-    { xlsFindReplace : SearchList -> ExcelDoc -> BuildMonad<'res,ExcelDoc>
-      getTemplateXls: string -> BuildMonad<'res,ExcelDoc> }
+    { XlsFindReplace : SearchList -> ExcelDoc -> BuildMonad<'res,ExcelDoc>
+      GetTemplateXls: string -> BuildMonad<'res,ExcelDoc> }
 
 let makeAPI (getHandle:'res-> Excel.Application) : XlsFindReplace<'res> = 
-    { xlsFindReplace = xlsFindReplaceImpl getHandle 
-      getTemplateXls = getTemplateImpl }
+    { XlsFindReplace = xlsFindReplaceImpl getHandle 
+      GetTemplateXls = getTemplateImpl }

@@ -48,10 +48,10 @@ let private pdfConcatImpl (getHandle:'res -> GsHandle) (inputFiles:PdfDoc list) 
 
 
 type PdfConcat<'res> = 
-    { pdfConcat : PdfDoc list -> BuildMonad<'res, PdfDoc> }
+    { PdfConcat : PdfDoc list -> BuildMonad<'res, PdfDoc> }
 
 let makeAPI (getHandle:'res-> GsHandle) : PdfConcat<'res> = 
-    { pdfConcat = pdfConcatImpl getHandle }
+    { PdfConcat = pdfConcatImpl getHandle }
 
     
   

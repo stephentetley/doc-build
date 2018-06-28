@@ -11,6 +11,10 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
+// Use FSharp.Data for CSV output
+#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#r @"FSharp.Data.dll"
+
 
 #I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"

@@ -42,7 +42,7 @@ let private docToPdfImpl (getHandle:'res-> Word.Application) (wordDoc:WordDoc) :
 
     
 type DocToPdf<'res> = 
-    { docToPdf : WordDoc -> BuildMonad<'res, PdfDoc> }
+    { DocToPdf : WordDoc -> BuildMonad<'res, PdfDoc> }
 
 let makeAPI (getHandle:'res-> Word.Application) : DocToPdf<'res> = 
-    { docToPdf = docToPdfImpl getHandle }
+    { DocToPdf = docToPdfImpl getHandle }

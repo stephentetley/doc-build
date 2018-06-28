@@ -54,6 +54,10 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
+// Use FSharp.Data for CSV output
+#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#r @"FSharp.Data.dll"
+
 
 #load "Proprietry.fs"
 open Proprietry
@@ -88,7 +92,7 @@ let cover (siteName:string) : FullBuild<PdfDoc> =
     }
 
 /// Survey / Disposed of / Install
-/// "*Survey*.docx", survey might not be the last word of the name
+/// "*Survey*.docx", "Survey" might not be the last word of the file name
 
 
 let processSheets (globPattern:string) (inputPath:string) : FullBuild<PdfDoc list> =

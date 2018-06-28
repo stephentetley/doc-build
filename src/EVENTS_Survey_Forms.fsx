@@ -195,8 +195,8 @@ type WordBuild<'a> = BuildMonad<WordRes,'a>
 
 // Just need the DocFindReplace API...
 let api = DocFindReplace.makeAPI (fun app -> app)
-let docFindReplace = api.docFindReplace
-let getTemplateDoc = api.getTemplateDoc
+let docFindReplace = api.DocFindReplace
+let getTemplateDoc = api.GetTemplateDoc
 
 let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
     buildMonad { 

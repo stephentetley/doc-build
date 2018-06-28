@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-// This file is functions and utilities to work with proprietry (clients) data.
+// This file contains functions and utilities to work with proprietry data 
+// (usually spreadsheets).
 // It is essentially "uninteresting".
 
 module Proprietry

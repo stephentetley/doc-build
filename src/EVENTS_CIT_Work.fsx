@@ -99,8 +99,8 @@ type EventsBuild<'a> = BuildMonad<EventsRes,'a>
 
 // Just need the DocFindReplace API...
 let api = DocFindReplace.makeAPI (fun app -> app)
-let docFindReplace = api.docFindReplace
-let getTemplate = api.getTemplateDoc
+let docFindReplace = api.DocFindReplace
+let getTemplate = api.GetTemplateDoc
 
 
 let scopeOfWorks (row:SiteRow) : EventsBuild<WordDoc> = 

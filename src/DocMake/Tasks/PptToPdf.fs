@@ -43,7 +43,7 @@ let private pptToPdfImpl (getHandle:'res-> PowerPoint.Application) (pptDoc:Power
     }
 
 type PptToPdf<'res> = 
-    { pptToPdf : PowerPointDoc -> BuildMonad<'res, PdfDoc> }
+    { PptToPdf : PowerPointDoc -> BuildMonad<'res, PdfDoc> }
 
 let makeAPI (getHandle:'res-> PowerPoint.Application) : PptToPdf<'res> = 
-    { pptToPdf = pptToPdfImpl getHandle }
+    { PptToPdf = pptToPdfImpl getHandle }

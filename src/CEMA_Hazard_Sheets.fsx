@@ -68,8 +68,8 @@ type ExcelBuild<'a> = BuildMonad<ExcelRes,'a>
 
 // Just need the XlsFindReplace API...
 let api = XlsFindReplace.makeAPI (fun app -> app)
-let xlsFindReplace = api.xlsFindReplace
-let getTemplate = api.getTemplateXls
+let xlsFindReplace = api.XlsFindReplace
+let getTemplate = api.GetTemplateXls
 
 
 
