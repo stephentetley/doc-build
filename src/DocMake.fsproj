@@ -67,8 +67,7 @@
     <Compile Include="DocMake\Builder\BuildMonad.fs" />
     <Compile Include="DocMake\Builder\Document.fs" />
     <Compile Include="DocMake\Builder\Basis.fs" />
-    <Compile Include="DocMake\Builder\PdftkHooks.fs" />
-    <Compile Include="DocMake\Builder\GhostscriptHooks.fs" />
+    <Compile Include="DocMake\Builder\ShellHooks.fs" />
     <Compile Include="DocMake\Tasks\IOActions.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\XlsFindReplace.fs" />

@@ -8,7 +8,7 @@ module DocMake.Tasks.PdfRotate
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
-open DocMake.Builder.PdftkHooks
+open DocMake.Builder.ShellHooks
 
 // Note - the rotate "API" of Pdftk appears cryptic:
 // It can be used to extract rotated pages or "embed" rotate pages within the 

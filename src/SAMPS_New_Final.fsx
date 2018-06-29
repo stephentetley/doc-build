@@ -34,8 +34,7 @@ open System.Text.RegularExpressions
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Document.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\GhostscriptHooks.fs"
-#load @"DocMake\Builder\PdftkHooks.fs"
+#load @"DocMake\Builder\ShellHooks.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
