@@ -17,7 +17,7 @@ open DocMake.Builder.WordHooks
 
     
 
-let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuality) (app:Word.Application) : unit = 
+let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (app:Word.Application) : unit = 
     try 
         let doc = app.Documents.Open(FileName = refobj inpath)
         doc.ExportAsFixedFormat (OutputFileName = outpath, 

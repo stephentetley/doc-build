@@ -94,8 +94,8 @@ let main () : unit =
 
     let env = 
         { WorkingDirectory = _outputRoot
-          PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfScreen }
+          PrintQuality = PrintQuality.PqScreen
+          PdfQuality = PdfPrintQuality.PdfScreen }
 
     let excelApp = initExcel ()
     let excelKill = fun (app:Excel.Application) -> finalizeExcel app

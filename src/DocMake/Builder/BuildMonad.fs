@@ -8,19 +8,17 @@ open System.Text
 open DocMake.Base.Common
 
 
-// There's a design issue that we probably won't explore, but it is very 
-// interesting (although complicated).
-// With continuations might enable us to have restartable builds, this could 
-// get us back to an idea of workflows that we have ignored for simplicity 
-// reasons.
-
 
 type Env = 
     { WorkingDirectory: string
-      PrintQuality: DocMakePrintQuality
-      PdfQuality: PdfPrintSetting }
+      PrintQuality: PrintQuality
+      PdfQuality: PdfPrintQuality }
 
 
+/// TODO - the API we have at the moment for generating temp file names 
+/// is rather substandard.
+/// Maybe we should have a histogram as the state that holds a counter for each 
+/// file type. e.g a map of type: Map<string,int>
 
 type State = 
     { MakeName: int -> string
@@ -269,6 +267,9 @@ let throwError (msg:string) : BuildMonad<'res,'a> =
     BuildMonad <| fun _ _ -> Err msg
 
 
+
+/// Execute an action that may throw an exception, capture the exception 
+/// as a failure in the monad.
 let attempt (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,res) st0 -> 
         try
@@ -276,7 +277,9 @@ let attempt (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'a> =
         with
         | _ -> Err "attempt failed"
 
-/// Execute an FSharp action that may use IO, throw an exception...
+
+
+/// Execute an arbitrary FSharp action that may use IO, throw an exception, etc.
 /// Capture any failure within the BuildMonad.
 /// (It seems like this proc needs to be guarded with a thunk)
 let executeIO (operation:unit -> 'a) : BuildMonad<'res,'a> = 

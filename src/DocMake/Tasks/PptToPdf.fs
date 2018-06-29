@@ -18,7 +18,7 @@ open DocMake.Builder.PowerPointHooks
    
 
 
-let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuality) (app:PowerPoint.Application) : unit = 
+let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (app:PowerPoint.Application) : unit = 
     try 
         let prez = app.Presentations.Open(inpath)
         prez.ExportAsFixedFormat (Path = outpath,

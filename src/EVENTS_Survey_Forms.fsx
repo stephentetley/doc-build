@@ -258,8 +258,8 @@ let buildScript (surveyBatch:string) (makeHazards:bool) : WordBuild<unit> =
 let main (surveyBatch:string) (makeHazards:bool) : unit = 
     let env = 
         { WorkingDirectory = _outputRoot
-          PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfScreen }
+          PrintQuality = PrintQuality.PqScreen
+          PdfQuality = PdfPrintQuality.PdfScreen }
 
     let wordApp = initWord ()
     let wordKill = fun (app:Word.Application) -> finalizeWord app

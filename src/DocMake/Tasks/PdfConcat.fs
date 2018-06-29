@@ -17,14 +17,14 @@ open DocMake.Builder.GhostscriptHooks
 /// quality (and reduce the file size).
 
  
-let private makeGsOptions (quality:PdfPrintSetting) : string =
+let private makeGsOptions (quality:PdfPrintQuality) : string =
     match ghostscriptPrintSetting quality with
     | "" -> @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite"
     | ss -> sprintf @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=%s" ss
 
 
 
-let private line1 (quality:PdfPrintSetting) (outputFile:string) : string =
+let private line1 (quality:PdfPrintQuality) (outputFile:string) : string =
     sprintf "%s -sOutputFile=\"%s\"" (makeGsOptions quality)  outputFile
 
 let private lineQuote (name:string) : string = sprintf "  \"%s\"" name
@@ -34,7 +34,7 @@ let private lineQuote (name:string) : string = sprintf "  \"%s\"" name
 let private unlinesS (lines: string list) : string = String.concat " " lines
 
 
-let private makeCmd (quality:PdfPrintSetting) (outputFile:string) (inputFiles: string list) : string = 
+let private makeCmd (quality:PdfPrintQuality) (outputFile:string) (inputFiles: string list) : string = 
     let first = line1 quality outputFile
     let rest = List.map lineQuote inputFiles
     unlinesS <| first :: rest

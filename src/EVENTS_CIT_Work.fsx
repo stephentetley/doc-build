@@ -132,8 +132,8 @@ let buildScript () : EventsBuild<unit> =
 let main () : unit = 
     let env = 
         { WorkingDirectory = _outputDirectory
-          PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfScreen }
+          PrintQuality = PrintQuality.PqScreen
+          PdfQuality = PdfPrintQuality.PdfScreen }
     
     let wordApp = initWord ()
     let wordKill = fun (app:Word.Application) -> finalizeWord app

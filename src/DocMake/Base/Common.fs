@@ -11,15 +11,15 @@ type SearchList = (string*string) list
 
 
 
-type DocMakePrintQuality = PqScreen | PqPrint
+type PrintQuality = PqScreen | PqPrint
 
 
 /// Use PdfWhatever for no optimization (can be faster and smaller in some cases...)
-type PdfPrintSetting = PdfPrint | PdfScreen | PdfWhatever
+type PdfPrintQuality = PdfPrint | PdfScreen | PdfWhatever
 
 
 // TODO options should be "/screen", "/ebook", "/printer", "/prepress", "/default"
-let ghostscriptPrintSetting (quality:PdfPrintSetting) : string = 
+let ghostscriptPrintSetting (quality:PdfPrintQuality) : string = 
     match quality with
     | PdfScreen -> @"/screen"
     | PdfPrint -> @"/prepress"      // WARNING To check

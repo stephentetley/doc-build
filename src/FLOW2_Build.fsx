@@ -161,8 +161,8 @@ let buildScript (siteName:string) : FullBuild<unit> =
 let main () : unit = 
     let env = 
         { WorkingDirectory = siteOutputDir
-          PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfScreen }
+          PrintQuality = PrintQuality.PqScreen
+          PdfQuality = PdfPrintQuality.PdfScreen }
 
     let appConfig : FullBuildConfig = 
         { GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"

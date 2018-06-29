@@ -27,6 +27,4 @@ let internal finalizePowerPoint (app:PowerPoint.Application) : unit =
 
 
 
-
-
     

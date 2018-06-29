@@ -17,7 +17,7 @@ open DocMake.Builder.ExcelHooks
 
 
 
-let private process1 (inpath:string) (outpath:string) (quality:DocMakePrintQuality) (fitWidth:bool) (app:Excel.Application)  : unit = 
+let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (fitWidth:bool) (app:Excel.Application)  : unit = 
     try 
         let workbook : Excel.Workbook = app.Workbooks.Open(inpath)
         if fitWidth then 
