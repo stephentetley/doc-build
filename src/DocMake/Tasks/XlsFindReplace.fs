@@ -12,8 +12,8 @@ open Microsoft.Office.Interop
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Document
 open DocMake.Builder.Basis
-open DocMake.Builder.ExcelHooks
 
 
 let private sheetReplaces1 (worksheet:Excel.Worksheet) (search:string, replace:string) : unit = 
@@ -62,7 +62,7 @@ let private xlsFindReplaceImpl (getHandle:'res-> Excel.Application) (matches:Sea
         let! outName = freshFileName ()
         let! app = asksU getHandle
         process1 xlsDoc.DocumentPath outName matches app
-        return (makeDocument outName)
+        return (makeDocument outName |> castToXls)
         }
 
     

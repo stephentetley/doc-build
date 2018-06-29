@@ -11,52 +11,12 @@ open System.Threading
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Document
 
 
 
 
 
-/// Document has a Phantom Type so we can distinguish between different types 
-/// (Word, Excel, Pdf, ...)
-/// Maybe we ought to store whether a file has been derived in the build process
-/// (and so deletable)... 
-type Document<'a> = { DocumentPath : string }
-
-let castDocument (doc:Document<'a>) : Document<'b> = 
-    { DocumentPath = doc.DocumentPath }
-    
-
-
-type PdfPhantom = class end
-type PdfDoc = Document<PdfPhantom>
-
-let castToPdfDoc (doc:Document<'a>) : PdfDoc = castDocument doc
-
-
-
-let makeDocument (filePath:string) : Document<'a> = 
-    { DocumentPath = filePath }
-
-
-let freshDocument () : BuildMonad<'res,Document<'a>> = 
-    fmapM makeDocument <| freshFileName ()
-
-let documentExtension (doc:Document<'a>) : string = 
-    System.IO.FileInfo(doc.DocumentPath).Extension
-
-
-let documentDirectory (doc:Document<'a>) : string = 
-    System.IO.FileInfo(doc.DocumentPath).DirectoryName
-
-
-// TODO should this change assert the Phantom?
-let documentChangeExtension (extension: string) (doc:Document<'a>) : Document<'b> = 
-    let d1 = System.IO.Path.ChangeExtension(doc.DocumentPath, extension)
-    makeDocument d1
-
-
-let documentName (doc:Document<'a>) : string = 
-    System.IO.FileInfo(doc.DocumentPath).Name
 
 
 let assertFile(fileName:string) : BuildMonad<'res,string> =  
@@ -145,3 +105,12 @@ let shellRun (toolPath:string) (command:string)  (errMsg:string) : BuildMonad<'r
 let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) : BuildMonad<'res, PdfDoc> = 
     proc >>= renameTo outputName
 
+
+let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
+    proc >>= renameTo outputName
+
+let withDocxNamer (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    withNameGen (sprintf "temp%03i.docx") ma
+
+let withXlsxNamer (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    withNameGen (sprintf "temp%03i.xlsx") ma

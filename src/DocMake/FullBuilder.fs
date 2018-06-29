@@ -7,11 +7,9 @@ module DocMake.FullBuilder
 open Microsoft.Office.Interop
 
 open DocMake.Base.Common
+open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
-open DocMake.Builder.Basis
-open DocMake.Builder.WordHooks
-open DocMake.Builder.ExcelHooks
-open DocMake.Builder.PowerPointHooks
+open DocMake.Builder.Document
 open DocMake.Builder.GhostscriptHooks
 open DocMake.Builder.PdftkHooks
 open DocMake.Tasks

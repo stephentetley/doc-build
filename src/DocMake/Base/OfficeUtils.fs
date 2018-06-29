@@ -11,6 +11,37 @@ open DocMake.Base.Common
 let refobj (x:'a) : ref<obj> = ref (x :> obj)
 
 
+let internal initWord () : Word.Application = 
+    let app = new Word.ApplicationClass (Visible = true) :> Word.Application
+    app
+
+let internal finalizeWord (app:Word.Application) : unit = app.Quit ()
+
+
+let internal initExcel () : Excel.Application = 
+    let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
+    app.DisplayAlerts <- false
+    app.EnableEvents <- false
+    app
+
+let internal finalizeExcel (app:Excel.Application) : unit = 
+        app.DisplayAlerts <- true
+        app.EnableEvents <- true
+        app.Quit ()
+
+
+
+let internal initPowerPoint () : PowerPoint.Application = 
+    let app = new PowerPoint.ApplicationClass() :> PowerPoint.Application
+    app.Visible <- Microsoft.Office.Core.MsoTriState.msoTrue
+    app
+
+let internal finalizePowerPoint (app:PowerPoint.Application) : unit = 
+    app.Quit ()
+
+
+
+
 
 let wordPrintQuality (quality:PrintQuality) : Word.WdExportOptimizeFor = 
     match quality with

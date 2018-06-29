@@ -8,7 +8,7 @@ module DocMake.Tasks.PdfConcat
 
 open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
-open DocMake.Builder.Basis
+open DocMake.Builder.Document
 open DocMake.Builder.GhostscriptHooks
  
 
@@ -46,7 +46,7 @@ let private pdfConcatImpl (getHandle:'res -> GsHandle) (inputFiles:PdfDoc list) 
         let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PdfQuality)
         let! _ =  gsRunCommand getHandle <| makeCmd quality outDoc.DocumentPath paths
-        return (castToPdfDoc outDoc)
+        return (castToPdf outDoc)
     }
 
 

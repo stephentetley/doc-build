@@ -27,13 +27,14 @@ open System.IO
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
+#load @"DocMake\Builder\Document.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\WordHooks.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
+open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Document
 open DocMake.Builder.Basis
-open DocMake.Builder.WordHooks
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Tasks

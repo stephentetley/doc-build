@@ -13,8 +13,8 @@ open DocMake.Base.FakeLike
 open DocMake.Base.ImageMagickUtils
 open DocMake.Base.SimpleDocOutput
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Document
 open DocMake.Builder.Basis
-open DocMake.Builder.WordHooks
 
 
 

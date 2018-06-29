@@ -24,12 +24,13 @@ open FSharp.ExcelProvider
 #load @"DocMake\Base\FakeLike.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
+#load @"DocMake\Builder\Document.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\ExcelHooks.fs"
 open DocMake.Base.Common
+open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
+open DocMake.Builder.Document
 open DocMake.Builder.Basis
-open DocMake.Builder.ExcelHooks
 
 #load @"DocMake\Tasks\XlsFindReplace.fs"
 open DocMake.Tasks

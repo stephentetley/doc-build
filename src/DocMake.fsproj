@@ -65,10 +65,8 @@
     <Compile Include="DocMake\Base\CopyRename.fs" />
     <Compile Include="DocMake\Base\SimpleDocOutput.fs" />
     <Compile Include="DocMake\Builder\BuildMonad.fs" />
+    <Compile Include="DocMake\Builder\Document.fs" />
     <Compile Include="DocMake\Builder\Basis.fs" />
-    <Compile Include="DocMake\Builder\WordHooks.fs" />
-    <Compile Include="DocMake\Builder\ExcelHooks.fs" />
-    <Compile Include="DocMake\Builder\PowerPointHooks.fs" />
     <Compile Include="DocMake\Builder\PdftkHooks.fs" />
     <Compile Include="DocMake\Builder\GhostscriptHooks.fs" />
     <Compile Include="DocMake\Tasks\IOActions.fs" />

@@ -39,10 +39,8 @@ open DocMake.Base.Common
 open DocMake.Base.FakeLike
 
 #load @"DocMake\Builder\BuildMonad.fs"
+#load @"DocMake\Builder\Document.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\WordHooks.fs"
-#load @"DocMake\Builder\ExcelHooks.fs"
-#load @"DocMake\Builder\PowerPointHooks.fs"
 #load @"DocMake\Builder\GhostscriptHooks.fs"
 #load @"DocMake\Builder\PdftkHooks.fs"
 open DocMake.Base.Common
