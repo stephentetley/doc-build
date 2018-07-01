@@ -16,6 +16,7 @@ type Result<'a> =
 // Word Output Monad
 // Output is to a handle so this is not properly a writer monad
 // (all output must be sequential)
+// Look to Pandoc for generating anything but the most simple of documents.
 
 type WordDoc = Word.Document
 

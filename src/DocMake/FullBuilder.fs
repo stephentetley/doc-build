@@ -13,15 +13,17 @@ open DocMake.Builder.Document
 open DocMake.Builder.ShellHooks
 open DocMake.Tasks
 
-type FullHandle (gs:GsHandle, pdftk:PdftkHandle) = 
+type FullHandle (gs:GsHandle, pdftk:PdftkHandle, pandoc:PandocHandle) = 
     let gsHandle = gs
     let pdftkHandle = pdftk
+    let pandocHandle = pandoc
     let mutable wordApp:Word.Application = null
     let mutable excelApp:Excel.Application = null
     let mutable powerPointApp:PowerPoint.Application = null
 
     member v.Ghostscript : GsHandle = gsHandle
     member v.Pdftk : PdftkHandle = pdftkHandle    
+    member v.Pandoc : PandocHandle = pandocHandle
 
     member v.WordApp :Word.Application = 
         match wordApp with
@@ -63,10 +65,14 @@ type FullBuild<'a> = BuildMonad<FullHandle,'a>
 
 type FullBuildConfig  = 
     { GhostscriptPath: string
-      PdftkPath: string } 
+      PdftkPath: string
+      PandocPath: string } 
 
 let runFullBuild (env:Env) (config:FullBuildConfig) (ma:FullBuild<'a>) : 'a = 
-    let handle = new FullHandle({GhostscriptExePath = config.GhostscriptPath}, {PdftkExePath = config.PdftkPath })
+    let handle = 
+        new FullHandle( {GhostscriptExePath = config.GhostscriptPath}, 
+            {PdftkExePath = config.PdftkPath },
+            {PandocExePath = config.PandocPath} )
     consoleRun env handle (fun (h:FullHandle) -> h.RunFinalize () ) ma
 
 

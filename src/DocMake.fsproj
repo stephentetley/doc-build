@@ -125,6 +125,9 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="CSharpFormat">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\CSharpFormat.dll</HintPath>
+    </Reference>
     <Reference Include="Excel">
       <HintPath>..\packages\ExcelProvider.0.8.2\lib\Excel.dll</HintPath>
     </Reference>
@@ -140,11 +143,32 @@
     <Reference Include="FParsecCS">
       <HintPath>..\packages\FParsec.1.0.3\lib\net40-client\FParsecCS.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.CodeFormat">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\FSharp.CodeFormat.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Compiler.Service">
+      <HintPath>..\packages\FSharp.Compiler.Service.2.0.0.6\lib\net45\FSharp.Compiler.Service.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Data">
       <HintPath>..\packages\FSharp.Data.3.0.0-beta3\lib\net45\FSharp.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Formatting.Common">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\FSharp.Formatting.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Literate">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\FSharp.Literate.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Markdown">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\FSharp.Markdown.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.MetadataFormat">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\FSharp.MetadataFormat.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharpVSPowerTools.Core">
+      <HintPath>..\packages\FSharpVSPowerTools.Core.2.3.0\lib\net45\FSharpVSPowerTools.Core.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\ExcelProvider.0.8.2\lib\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -159,6 +183,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="RazorEngine">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\RazorEngine.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -172,6 +199,9 @@
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Web.Razor">
+      <HintPath>..\packages\FSharp.Formatting.3.0.0-beta01\lib\net40\System.Web.Razor.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />

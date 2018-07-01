@@ -42,3 +42,17 @@ let pdftkRunCommand (getHandle:'res -> PdftkHandle) (command:string) : BuildMona
     }
 
 
+// *************************************
+// Pandoc
+
+
+type PandocHandle = 
+    { PandocExePath: string }
+
+
+let pandocRunCommand (getHandle:'res -> PandocHandle) (command:string) : BuildMonad<'res,unit> = 
+    buildMonad { 
+        let! toolPath = asksU (getHandle >> fun e -> e.PandocExePath) 
+        do! shellRun toolPath command "Pandoc failed"
+    }
+

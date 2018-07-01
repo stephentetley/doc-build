@@ -15,10 +15,6 @@ open DocMake.Builder.Document
 
 
 
-
-
-
-
 let assertFile(fileName:string) : BuildMonad<'res,string> =  
     if File.Exists(fileName) then 
         breturn(fileName)
