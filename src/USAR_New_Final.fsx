@@ -17,10 +17,14 @@ open Microsoft.Office.Interop
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
+// Use FSharp.Data for CSV output (Proprietry.fs)
+#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#r @"FSharp.Data.dll"
 
+// Use ExcelProvider to read SAI numbers spreadsheet (Proprietry.fs)
 #I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
-open FSharp.ExcelProvider
+
 
 open System.IO
 
@@ -52,13 +56,10 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
-// Use FSharp.Data for CSV output
-#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
-#r @"FSharp.Data.dll"
-
-
 #load "Proprietry.fs"
 open Proprietry
+
+
 
 let _templateRoot       = @"G:\work\Projects\usar\final-docs\__Templates"
 let _inputRoot          = @"G:\work\Projects\usar\final-docs\input\June2018_INPUT"
@@ -79,7 +80,7 @@ let cover (siteName:string) : FullBuild<PdfDoc> =
     buildMonad { 
         let templatePath = _templateRoot </> @"USAR Cover Sheet.docx"
         let! template = getTemplateDoc templatePath
-        let docOutName = sprintf "%s cover-sheet.docx" (safeName siteName)
+        let docOutName = sprintf "%s cover-sheet.docx" (underscoreName siteName)
         let lookups = getSaiLookups ()
         match makeCoverMatches siteName lookups with
         | Some matches -> 
@@ -116,12 +117,12 @@ let installSheets (inputPath:string) : FullBuild<PdfDoc list> =
 
 
 let buildScript1 (inputPath:string) : FullBuild<PdfDoc> = 
-    let siteName    = FileInfo(inputPath).Name |> (fun s -> s.Replace("_", "/"))
+    let siteName    = slashName <| FileInfo(inputPath).Name
     let cleanName   = safeName siteName
-    let finalName   = sprintf "%s S3820 Ultrasonic Asset Replacement.pdf" cleanName
     localSubDirectory cleanName <| 
         buildMonad { 
             // do! clean () >>. outputDirectory ()
+            let finalName   = sprintf "%s S3820 Ultrasonic Asset Replacement.pdf" cleanName
             let! p1 = cover siteName
             let! ps2 = surveySheets inputPath
             let! ps3 = disposedOfSheets inputPath
@@ -134,8 +135,7 @@ let buildScript1 (inputPath:string) : FullBuild<PdfDoc> =
 let buildScript () : FullBuild<unit> = 
     let inputs = 
         System.IO.Directory.GetDirectories(_inputRoot) 
-            |> Array.toList
-            
+            |> Array.toList            
     mapMz buildScript1 inputs
 
     

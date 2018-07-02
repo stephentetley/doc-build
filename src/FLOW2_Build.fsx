@@ -16,6 +16,13 @@
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
+// Use FSharp.Data for CSV output (Proprietry.fs)
+#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#r @"FSharp.Data.dll"
+
+// Use ExcelProvider to read SAI numbers spreadsheet (Proprietry.fs)
+#I @"..\packages\ExcelProvider.0.8.2\lib"
+#r "ExcelProvider.dll"
 
 open System.IO
 
@@ -50,39 +57,47 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
+#load "Proprietry.fs"
+open Proprietry
 
-let _filestoreRoot  = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
-let _outputRoot     = @"G:\work\Projects\flow2\final-docs\output"
+
+let _inputRoot      = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
+let _outputRoot     = @"G:\work\Projects\flow2\final-docs\Output\Batch02"
 let _templateRoot   = @"G:\work\Projects\flow2\final-docs\__Templates"
 
 
-let siteName = "CHESTNUT AVENUE/SPS"
-let matches1 : SearchList = 
-    [ "#SITENAME", "CHESTNUT AVENUE/SPS"
-    ; "#SAINUM", "SAI00004009"
-    ]
+let makeCoverMatches (siteName:string) (saiLookups:SaiLookups) : option<SearchList> =  
+    match getSaiNumber siteName saiLookups with
+    | None -> None
+    | Some sai -> 
+        Some <| 
+            [ "#SITENAME",      siteName   
+            ; "#SAINUM" ,       sai
+            ]
 
-let cleanName           = safeName siteName
-let siteInputDir        = _filestoreRoot </> cleanName
-let siteOutputDir       = _outputRoot </> cleanName
 
 
-let makeSiteOutputName (fmt:Printf.StringFormat<string->string>) : string = 
-    siteOutputDir </> sprintf fmt cleanName
 
 
 
 
 // This should be a mandatory task
-let cover (matches:SearchList) : FullBuild<PdfDoc> = 
+let cover (siteName:string) : FullBuild<PdfDoc> = 
     buildMonad { 
-        let templatePath = _templateRoot </> "FC2 Cover TEMPLATE.docx"
+        let templatePath = _templateRoot </> "TEMPLATE Flow Confirmation Phase2 Cover.docx"
         let! template = getTemplateDoc templatePath
-        let! d1 = docFindReplace matches template >>= docToPdf >>= renameTo "cover-sheet.pdf"
-        return d1 }
+        let docOutName = sprintf "%s cover-sheet.docx" (underscoreName siteName)
+        let lookups = getSaiLookups ()
+        match makeCoverMatches siteName lookups with
+        | Some matches -> 
+            let! d1 = docFindReplace matches template >>= renameTo docOutName 
+            let! d2 = docToPdf d1
+            return d2
+        | None -> throwError "cover - no sai number" |> ignore
+    }
 
 
-
+// Common procedure for both survey and Install photos
 let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : FullBuild<PdfDoc> = 
     let photoOpts:DocPhotos.DocPhotosOptions = 
         { DocTitle = Some docTitle; ShowFileName = true; CopyToSubDirectory = "Photos" } 
@@ -94,16 +109,16 @@ let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : FullBuil
         }
     
 
-let scopeOfWorks () : BuildMonad<'res,PdfDoc> = 
-    match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" siteInputDir with
+let scopeOfWorks (inputPath:string) : BuildMonad<'res,PdfDoc> = 
+    match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" inputPath with
     | Some source -> copyToWorkingDirectory source
     | None -> throwError "NO SCOPE OF WORKS"
 
 
 
-let citWork () : FullBuild<PdfDoc list> = 
+let citWork (inputPath) : FullBuild<PdfDoc list> = 
     let proc (glob:string) (renamer:int->string) : FullBuild<PdfDoc list> = 
-        findAllMatchingFiles glob siteInputDir |>
+        findAllMatchingFiles glob inputPath |>
             foriM (fun i source ->  
                         copyToWorkingDirectory source >>= renameTo (renamer (i+1)))
 
@@ -116,9 +131,9 @@ let citWork () : FullBuild<PdfDoc list> =
 
 
     // If this isn't thunkified it will launch Excel when the code is loaded in FSI
-let installSheets () : FullBuild<PdfDoc list> = 
+let installSheets (inputPath:string) : FullBuild<PdfDoc list> = 
     let pdfGen (glob:string) (warnMsg:string) : FullBuild<PdfDoc list> = 
-        match findAllMatchingFiles glob siteInputDir with
+        match findAllMatchingFiles glob inputPath with
         | [] -> 
             printfn "%s" warnMsg; breturn []
              
@@ -138,27 +153,35 @@ let installSheets () : FullBuild<PdfDoc list> =
 // *******************************************************
 
 
-let buildScript (siteName:string) : FullBuild<unit> = 
-    
-    buildMonad { 
-        do! IOActions.clean () >>. IOActions.createOutputDirectory ()
-        let! p1 = cover matches1
-        let surveyJpegsPath = siteInputDir </> "Survey_Photos"
-        let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
-        let! p3 = makePdf "scope-of-works.pdf"  <| scopeOfWorks () 
-        let! ps1 = citWork ()
-        let! ps2 = installSheets ()
-        let surveyJpegsPath = siteInputDir </> "Install_Photos"
-        let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
-        let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ ps2 @ [pZ])
-        let! (final:PdfDoc) = pdfConcat pdfs >>= renameTo "FINAL.pdf"
-        return ()                 
-    }
+let buildScript1 (inputPath:string) : FullBuild<PdfDoc> = 
+    let siteName    = slashName <| FileInfo(inputPath).Name
+    let cleanName   = safeName siteName
+    localSubDirectory cleanName <|
+        buildMonad { 
+            do! IOActions.clean () >>. IOActions.createOutputDirectory ()
+            let siteInputDir = _inputRoot </> underscoreName siteName
+            let! p1 = cover siteName
+            let surveyJpegsPath = siteInputDir </> "Survey_Photos"
+            let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
+            let! p3 = makePdf "scope-of-works.pdf"  <| scopeOfWorks siteInputDir 
+            let! ps1 = citWork siteInputDir
+            let! ps2 = installSheets siteInputDir
+            let surveyJpegsPath = siteInputDir </> "Install_Photos"
+            let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
+            let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ ps2 @ [pZ])
+            let! (final:PdfDoc) = pdfConcat pdfs >>= renameTo "FINAL.pdf"
+            return final                 
+        }
 
+let buildScript () : FullBuild<unit>  = 
+    let inputs = 
+        System.IO.Directory.GetDirectories(_inputRoot) 
+            |> Array.toList
+    mapMz buildScript1 inputs
 
 let main () : unit = 
     let env = 
-        { WorkingDirectory = siteOutputDir
+        { WorkingDirectory = _outputRoot
           PrintQuality = PrintQuality.PqScreen
           PdfQuality = PdfPrintQuality.PdfScreen }
 
@@ -167,6 +190,6 @@ let main () : unit =
           PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe"
           PandocPath = @"pandoc" } 
 
-    runFullBuild env appConfig (buildScript siteName) 
+    runFullBuild env appConfig <| buildScript ()
 
 
