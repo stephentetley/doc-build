@@ -74,6 +74,7 @@
     <Compile Include="DocMake\Tasks\DocToPdf.fs" />
     <Compile Include="DocMake\Tasks\XlsToPdf.fs" />
     <Compile Include="DocMake\Tasks\PptToPdf.fs" />
+    <Compile Include="DocMake\Tasks\MdToDoc.fs" />
     <Compile Include="DocMake\Tasks\PdfConcat.fs" />
     <Compile Include="DocMake\Tasks\PdfRotate.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />

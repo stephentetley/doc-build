@@ -33,6 +33,8 @@ type PowerPointDoc = Document<PowerPointPhantom>
 type PdfPhantom = class end
 type PdfDoc = Document<PdfPhantom>
 
+type MarkdownPhantom = class end
+type MarkdownDoc = Document<MarkdownPhantom>
 
 
 let makeDocument (filePath:string) : Document<'a> = 

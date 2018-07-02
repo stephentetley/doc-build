@@ -133,6 +133,14 @@ let pptToPdf (pptDoc:PowerPointDoc) : FullBuild<PdfDoc> =
 
 
 // *************************************
+// Wraps DocMake.Tasks.MdToDoc
+
+let mdToDoc (mdDoc:MarkdownDoc) : FullBuild<WordDoc> = 
+    let api = MdToDoc.makeAPI (fun (h:FullHandle) -> h.Pandoc)
+    api.MdToPdf mdDoc
+
+
+// *************************************
 // Wraps DocMake.Tasks.PdfConcat
 
 let pdfConcat (inputFiles:PdfDoc list) : FullBuild<PdfDoc> = 

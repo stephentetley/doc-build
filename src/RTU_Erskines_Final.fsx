@@ -54,6 +54,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Tasks\DocToPdf.fs"
 #load @"DocMake\Tasks\XlsToPdf.fs"
 #load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\MdToDoc.fs"
 #load @"DocMake\Tasks\PdfConcat.fs"
 #load @"DocMake\Tasks\PdfRotate.fs"
 #load @"DocMake\Tasks\DocPhotos.fs"
@@ -121,7 +122,8 @@ let main () : unit =
 
     let appConfig : FullBuildConfig = 
             { GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-              PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe" } 
+              PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe"
+              PandocPath = @"pandoc" } 
 
     runFullBuild env appConfig (buildScript ()) 
 

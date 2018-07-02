@@ -42,6 +42,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Tasks\DocToPdf.fs"
 #load @"DocMake\Tasks\XlsToPdf.fs"
 #load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\MdToDoc.fs"
 #load @"DocMake\Tasks\PdfConcat.fs"
 #load @"DocMake\Tasks\PdfRotate.fs"
 #load @"DocMake\Tasks\DocPhotos.fs"
