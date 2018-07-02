@@ -224,7 +224,7 @@ let main () : unit =
     let appConfig : FullBuildConfig = 
         { GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
           PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe"
-          PandocPath = @ "pandoc" } 
+          PandocPath = @"pandoc" } 
 
     let proc : FullBuild<unit> = 
         let folders = 

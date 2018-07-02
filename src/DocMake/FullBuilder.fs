@@ -81,7 +81,7 @@ let runFullBuild (env:Env) (config:FullBuildConfig) (ma:FullBuild<'a>) : 'a =
 
 
 /// DocFindReplace Api has more than one entry point...
-let private docFindReplaceApi : DocFindReplace.DocFindReplace<FullHandle> = 
+let private docFindReplaceApi : DocFindReplace.DocFindReplaceApi<FullHandle> = 
     DocFindReplace.makeAPI (fun (h:FullHandle) -> h.WordApp)
 
 let getTemplateDoc (docPath:string) : FullBuild<WordDoc> = 
@@ -96,7 +96,7 @@ let docFindReplace (searchList:SearchList) (template:WordDoc) : FullBuild<WordDo
 // Wraps DocMake.Tasks.XlsFindReplace
 
 /// XlsFindReplace Api has more than one entry point...
-let private xlsFindReplaceApi : XlsFindReplace.XlsFindReplace<FullHandle> = 
+let private xlsFindReplaceApi : XlsFindReplace.XlsFindReplaceApi<FullHandle> = 
     XlsFindReplace.makeAPI (fun (h:FullHandle) -> h.ExcelApp)
 
 let getTemplateXls (xlsPath:string) : FullBuild<ExcelDoc> = 
@@ -153,7 +153,7 @@ let pdfConcat (inputFiles:PdfDoc list) : FullBuild<PdfDoc> =
 
 
 /// XlsFindReplace Api has more than one entry point...
-let private pdfRotateApi : PdfRotate.PdfRotate<FullHandle> = 
+let private pdfRotateApi : PdfRotate.PdfRotateApi<FullHandle> = 
     PdfRotate.makeAPI (fun (h:FullHandle) -> h.Pdftk)
 
 

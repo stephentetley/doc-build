@@ -43,8 +43,8 @@ let private pptToPdfImpl (getHandle:'res-> PowerPoint.Application)
         return final
     }
 
-type PptToPdf<'res> = 
+type PptToPdfApi<'res> = 
     { PptToPdf : PowerPointDoc -> BuildMonad<'res, PdfDoc> }
 
-let makeAPI (getHandle:'res-> PowerPoint.Application) : PptToPdf<'res> = 
+let makeAPI (getHandle:'res-> PowerPoint.Application) : PptToPdfApi<'res> = 
     { PptToPdf = pptToPdfImpl getHandle }

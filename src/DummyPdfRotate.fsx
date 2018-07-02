@@ -20,16 +20,13 @@
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
+#load @"DocMake\Builder\Document.fs"
 #load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\WordHooks.fs"
-#load @"DocMake\Builder\ExcelHooks.fs"
-#load @"DocMake\Builder\PowerPointHooks.fs"
-#load @"DocMake\Builder\GhostscriptHooks.fs"
-#load @"DocMake\Builder\PdftkHooks.fs"
+#load @"DocMake\Builder\ShellHooks.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
-open DocMake.Builder.Basis
+open DocMake.Builder.Document
 
 
 #load @"DocMake\Tasks\DocFindReplace.fs"
@@ -37,6 +34,7 @@ open DocMake.Builder.Basis
 #load @"DocMake\Tasks\DocToPdf.fs"
 #load @"DocMake\Tasks\XlsToPdf.fs"
 #load @"DocMake\Tasks\PptToPdf.fs"
+#load @"DocMake\Tasks\MdToDoc.fs"
 #load @"DocMake\Tasks\PdfConcat.fs"
 #load @"DocMake\Tasks\PdfRotate.fs"
 #load @"DocMake\Tasks\DocPhotos.fs"
@@ -49,11 +47,14 @@ open DocMake.Tasks
 let test01 () = 
     let env = 
         { WorkingDirectory = @"D:\coding\fsharp\DocMake\data"
-          PrintQuality = DocMakePrintQuality.PqScreen
-          PdfQuality = PdfPrintSetting.PdfPrint }
-    let gsExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-    let pdftkExe = @"C:\programs\PDFtk Server\bin\pdftk.exe"
-    let hooks = fullBuilderHooks gsExe pdftkExe
+          PrintQuality = PrintQuality.PqScreen
+          PdfQuality = PdfPrintQuality.PdfPrint }
+
+    let appConfig : FullBuildConfig = 
+        { GhostscriptPath = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+          PdftkPath = @"C:\programs\PDFtk Server\bin\pdftk.exe" 
+          PandocPath = @"pandoc" } 
+
 
     let procM = 
         buildMonad { 
@@ -62,4 +63,4 @@ let test01 () =
             return ()
         }
 
-    consoleRun env hooks procM
+    runFullBuild env appConfig procM

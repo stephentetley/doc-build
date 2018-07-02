@@ -90,11 +90,11 @@ let private docFindReplaceImpl (getHandle:'res-> Word.Application) (matches:Sear
 
 
     
-type DocFindReplace<'res> = 
+type DocFindReplaceApi<'res> = 
     { DocFindReplace : SearchList -> WordDoc -> BuildMonad<'res,WordDoc>
       GetTemplateDoc: string -> BuildMonad<'res,WordDoc> }
 
-let makeAPI (getHandle:'res-> Word.Application) : DocFindReplace<'res> = 
+let makeAPI (getHandle:'res-> Word.Application) : DocFindReplaceApi<'res> = 
     { DocFindReplace = docFindReplaceImpl getHandle
       GetTemplateDoc = getTemplateImpl }
 

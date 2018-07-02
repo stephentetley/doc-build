@@ -94,8 +94,8 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOpti
         } 
     
 
-type DocPhotos<'res> = 
+type DocPhotosApi<'res> = 
     { DocPhotos : DocPhotosOptions -> string list -> BuildMonad<'res, WordDoc> }
 
-let makeAPI (getHandle:'res -> Word.Application) : DocPhotos<'res> = 
+let makeAPI (getHandle:'res -> Word.Application) : DocPhotosApi<'res> = 
     { DocPhotos = photoDocImpl getHandle }

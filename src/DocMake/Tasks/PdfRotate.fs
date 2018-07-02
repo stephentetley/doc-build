@@ -138,7 +138,7 @@ let rotationToEnd (startPage:int) (orientation:PageOrientation) : Rotation =
 /// instead.
 
 
-type PdfRotate<'res> = 
+type PdfRotateApi<'res> = 
     { PdfRotateExtract: Rotation list -> PdfDoc -> BuildMonad<'res, PdfDoc>
       PdfRotateEmbed: Rotation list -> PdfDoc -> BuildMonad<'res, PdfDoc>
       PdfRotateAll: PageOrientation -> PdfDoc -> BuildMonad<'res, PdfDoc>
@@ -146,7 +146,7 @@ type PdfRotate<'res> =
       PdfRotateAllCcw: PdfDoc -> BuildMonad<'res, PdfDoc>}
 
      
-let makeAPI (getHandle:'res-> PdftkHandle) : PdfRotate<'res> = 
+let makeAPI (getHandle:'res-> PdftkHandle) : PdfRotateApi<'res> = 
     { PdfRotateExtract = pdfRotateExtractImpl getHandle 
       PdfRotateEmbed = pdfRotateEmbedImpl getHandle
       PdfRotateAll = 

@@ -53,8 +53,8 @@ let private xlsToPdfImpl (getHandle:'res-> Excel.Application) (fitWidth:bool) (x
     }    
     
 
-type XlsToPdf<'res> = 
+type XlsToPdfApi<'res> = 
     { XlsToPdf : bool -> ExcelDoc -> BuildMonad<'res, PdfDoc> }
 
-let makeAPI (getHandle:'res-> Excel.Application) : XlsToPdf<'res> = 
+let makeAPI (getHandle:'res-> Excel.Application) : XlsToPdfApi<'res> = 
     { XlsToPdf = xlsToPdfImpl getHandle }
