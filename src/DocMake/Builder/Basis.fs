@@ -40,7 +40,7 @@ let copyToWorkingDirectory (fileName:string) : BuildMonad<'res,Document<'a>> =
             return (makeDocument dest)
         }
     else 
-        throwError <| sprintf "getDocument failed: '%s'" fileName
+        throwError <| sprintf "copyToWorkingDirectory failed: '%s'" fileName
 
 
 

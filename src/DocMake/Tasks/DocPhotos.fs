@@ -24,18 +24,20 @@ type DocPhotosOptions =
       ShowFileName: bool }
 
 
-let private getJPEGs (dir:string) : string list = 
+let private getJPEGs1 (dirPath:string) : string list = 
     let re = new Regex("\.je?pg$", RegexOptions.IgnoreCase)
-    Directory.GetFiles(dir) 
-        |> Array.filter (fun s -> re.Match(s).Success)
-        |> Array.toList
+    if System.IO.DirectoryInfo(dirPath).Exists then 
+        Directory.GetFiles(dirPath) 
+            |> Array.filter (fun s -> re.Match(s).Success)
+            |> Array.toList
+    else []        
 
     
 
 let private copyJPEGs (jpgSrcDirectory:string) (outputSubDirectory:string) : BuildMonad<'res,string> = 
     localSubDirectory outputSubDirectory <| 
         buildMonad { 
-            let jpegs = getJPEGs jpgSrcDirectory
+            let jpegs = getJPEGs1 jpgSrcDirectory
             do! mapMz copyToWorkingDirectory jpegs
             let! cwd = askWorkingDirectory ()
             do optimizePhotos cwd 
@@ -77,7 +79,7 @@ let private insertPhotos (action1:PictureFun) (files:string list) : DocOutput<un
 // TODO inputPaths should be paired with an optional rename procedure
 let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOptions) (inputPaths:string list) : BuildMonad<'res,WordDoc> =
     let docProc (jpegFolder:string) : DocOutput<unit>  = 
-        let jpegs = getJPEGs jpegFolder
+        let jpegs = getJPEGs1 jpegFolder
         let stepFun = if opts.ShowFileName then stepWithLabel else stepWithoutLabel
         docOutput { 
             do! addTitle opts.DocTitle
@@ -88,12 +90,15 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOpti
         do! mapMz (fun jpg -> copyJPEGs jpg opts.CopyToSubDirectory) inputPaths
         let! outDoc = freshDocument "docx"
         let! app = asksU getHandle
-        let! tempLoc = (fun d -> d </> opts.CopyToSubDirectory) <<| askWorkingDirectory ()
+        let! jpegCopiesLoc = (fun d -> d </> opts.CopyToSubDirectory) <<| askWorkingDirectory ()
         match outDoc.GetPath with
         | None -> return zeroDocument
         | Some outPath -> 
-            let _ = runDocOutput2 outPath app (docProc tempLoc)
-            return outDoc
+            if System.IO.Directory.Exists(jpegCopiesLoc) && System.IO.Directory.GetFiles(jpegCopiesLoc).Length > 0 then
+                let _ = runDocOutput2 outPath app (docProc jpegCopiesLoc)
+                return outDoc
+            else
+                return zeroDocument
         } 
     
 

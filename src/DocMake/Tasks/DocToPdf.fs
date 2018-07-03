@@ -31,6 +31,8 @@ let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (ap
 
 /// Name is derived from the original name
 /// Document is created in the working directory
+/// WARNING - the naming startegy is  bad - if the file is "temp0??.docx"
+/// it can potentially overwrite other working files.
 let private docToPdfImpl (getHandle:'res-> Word.Application) (wordDoc:WordDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! (app:Word.Application) = asksU getHandle

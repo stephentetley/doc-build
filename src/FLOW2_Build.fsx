@@ -78,9 +78,6 @@ let makeCoverMatches (siteName:string) (saiLookups:SaiLookups) : option<SearchLi
 
 
 
-
-
-
 // This should be a mandatory task
 let cover (siteName:string) : FullBuild<PdfDoc> = 
     buildMonad { 
@@ -105,9 +102,9 @@ let photosDoc (docTitle:string) (jpegSrcDirectory:string) (pdfName:string) : Ful
 
     buildMonad { 
         let! d1 = docPhotos photoOpts [jpegSrcDirectory]
-        let! d2 = breturn d1 >>= docToPdf >>= renameTo pdfName
+        let! d2 = docToPdf d1 >>= renameTo pdfName
         return d2
-        }
+        } <|> breturn zeroDocument
     
 /// Scope of works should be a Word file
 let scopeOfWorks (inputPath:string) : FullBuild<PdfDoc> = 
@@ -125,7 +122,7 @@ let asBuilts (inputPath) : FullBuild<PdfDoc list> =
     let renamer (ix:int) = sprintf "cit-cad-drawing-%03i.pdf" ix
 
     let proc1 (ix:int) (srcPath:string) : FullBuild<PdfDoc> = 
-        copyToWorkingDirectory srcPath >>= renameTo (renamer (ix+1)) >>= pdfRotateAllCcw 
+        copyToWorkingDirectory srcPath >>= pdfRotateAllCcw >>= renameTo (renamer (ix+1)) 
 
     findAllMatchingFiles "*.pdf" (inputPath </> "As_builts")
         |> mapiM proc1
@@ -156,7 +153,7 @@ let installSheets (inputPath:string) : FullBuild<PdfDoc list> =
 
 
 let makeFinalPdfName (siteName:string) : string = 
-    sprintf "%s S3402 Flow Confirmation Manual.pdf" (underscoreName siteName)
+    sprintf "%s S4102 Flow Confirmation Manual.pdf" (underscoreName siteName)
 
 let uploadReceipt (dirList:string list) : FullBuild<unit> = 
     let siteFromPath (path:string) = 
@@ -164,7 +161,7 @@ let uploadReceipt (dirList:string list) : FullBuild<unit> =
         
     let config = 
         { MakeTitle = 
-            fun name -> sprintf "%s S3402 Flow Confirmation Manual" (name.Replace("/", " "))
+            fun name -> sprintf "%s S4102 Flow Confirmation Manual" (name.Replace("/", " "))
           MakeDocName = makeFinalPdfName
           
           ConstantParams = 
