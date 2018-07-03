@@ -15,14 +15,20 @@ type Env =
       PdfQuality: PdfPrintQuality }
 
 
-/// TODO - the API we have at the moment for generating temp file names 
-/// is rather substandard.
-/// Maybe we should have a histogram as the state that holds a counter for each 
+
+/// State is a histogram as the state that holds a counter for each 
 /// file type. e.g a map of type: Map<string,int>
 
-type State = 
-    { MakeName: int -> string
-      NameIndex: int }
+
+/// Map: extension -> count
+type FileTypeHistogram = Map<string,int>
+
+let fileTypeHistogramNext (extension:string) (histo:FileTypeHistogram) : FileTypeHistogram * int = 
+    match Map.tryFind extension histo with
+    | None -> (Map.add extension 1 histo, 1)
+    | Some i -> (Map.add extension (i+1) histo, i+ 1)
+
+type State = FileTypeHistogram
 
 type FailMsg = string
 
@@ -30,9 +36,6 @@ type BuildResult<'a> =
     | Err of FailMsg
     | Ok of State * 'a
 
-
-let private incrNameIndex (st:State) : State = 
-    let i = st.NameIndex in {st with NameIndex = i + 1 }
 
 
 
@@ -252,9 +255,7 @@ let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:S
 
 
 let consoleRun (env:Env) (handle:'res) (finalizer:'res -> unit) (ma:BuildMonad<'res,'a>) : 'a = 
-    let stateZero : State = 
-        { MakeName = sprintf "temp%03i" 
-          NameIndex = 1 }
+    let stateZero : State = Map.empty
     evalBuildMonad env handle finalizer stateZero ma
 
 
@@ -318,18 +319,11 @@ let localEnv (modify:Env -> Env) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> 
 /// imperatively.
 
 
-/// Note the file number increases with each file generated, not each type of file generated.
-let withNameGen (namer:int -> string) (ma:BuildMonad<'res,'a>): BuildMonad<'res,'a> =
-    BuildMonad <| fun (env,res) st0 -> 
-        let fun1 = st0.MakeName
-        match apply1 ma (env,res) {st0 with MakeName = namer} with
-        | Err msg -> Err msg
-        | Ok (st1,a) -> Ok ({st1 with MakeName = fun1}, a)
 
 // TODO - if this took a file extension it might simplify things
-let freshFileName () : BuildMonad<'res, string> = 
+let freshFileName (extension:string) : BuildMonad<'res, string> = 
     BuildMonad <| fun (env,_) st0 -> 
-        let i = st0.NameIndex
-        let name1 = st0.MakeName i
+        let (st1,i) = fileTypeHistogramNext extension st0
+        let name1 = sprintf "temp%03i.%s" i extension
         let outPath = System.IO.Path.Combine(env.WorkingDirectory,name1)
-        Ok (incrNameIndex st0, outPath)
+        Ok (st1, outPath)

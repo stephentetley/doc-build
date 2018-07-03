@@ -10,6 +10,7 @@ open Microsoft.Office.Interop
 
 
 open DocMake.Base.Common
+open DocMake.Base.FakeLike
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
@@ -28,16 +29,20 @@ let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (ap
     | ex -> printfn "Some error occured - %s - %s" inpath ex.Message
 
 
-
+/// Name is derived from the original name
+/// Document is created in the working directory
 let private docToPdfImpl (getHandle:'res-> Word.Application) (wordDoc:WordDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! (app:Word.Application) = asksU getHandle
-        let  outPath = documentName <| documentChangeExtension "pdf" wordDoc
-        let! outTemp = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ = process1 wordDoc.DocumentPath outTemp.DocumentPath quality app
-        let! final =  renameTo outPath outTemp 
-        return final
+        match wordDoc.GetPath with
+        | None -> return zeroDocument
+        | Some docPath ->
+            let name1 = System.IO.FileInfo(docPath).Name
+            let! path1 = askWorkingDirectory () |>> (fun cwd -> cwd </> name1)
+            let outPath = System.IO.Path.ChangeExtension(path1, "pdf") 
+            let _ = process1 docPath outPath quality app
+            return (makeDocument outPath)
     }
 
     

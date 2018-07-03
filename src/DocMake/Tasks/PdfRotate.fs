@@ -103,17 +103,23 @@ let private makeEmbedCmd (inputFile:string) (outputFile:string) (rotations: Rota
 
 let private pdfRotateExtractImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
-        let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
-        let! _ =  pdftkRunCommand getHandle <| makeExtractCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
-        return outDoc
+        let! outDoc = freshDocument "pdf"
+        match pdfDoc.GetPath, outDoc.GetPath with
+            | Some pathIn, Some pathOut -> 
+                let! _ = pdftkRunCommand getHandle <| makeExtractCmd pathIn pathOut rotations
+                return outDoc
+            | _, _  -> return zeroDocument
     }
 
 
 let private pdfRotateEmbedImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
-        let! outDoc = freshDocument () |>> documentChangeExtension "pdf" 
-        let! _ =  pdftkRunCommand getHandle <| makeEmbedCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
-        return outDoc
+        let! outDoc = freshDocument "pdf"
+        match pdfDoc.GetPath, outDoc.GetPath with
+            | Some pathIn, Some pathOut -> 
+                let! _ = pdftkRunCommand getHandle <| makeEmbedCmd pathIn pathOut rotations
+                return outDoc
+            | _, _  -> return zeroDocument
     }
 
 

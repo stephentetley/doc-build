@@ -40,14 +40,24 @@ let private makeCmd (quality:PdfPrintQuality) (outputFile:string) (inputFiles: s
     unlinesS <| first :: rest
 
 
-let private pdfConcatImpl (getHandle:'res -> GsHandle) (inputFiles:PdfDoc list) : BuildMonad<'res,PdfDoc> = 
-    buildMonad { 
-        let paths = List.map (fun (a:PdfDoc) -> a.DocumentPath) inputFiles
-        let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
-        let! quality = asksEnv (fun s -> s.PdfQuality)
-        let! _ =  gsRunCommand getHandle <| makeCmd quality outDoc.DocumentPath paths
-        return (castToPdf outDoc)
-    }
+let private pdfConcatImpl (getHandle:'res -> GsHandle) 
+            (inputFiles:PdfDoc list) : BuildMonad<'res,PdfDoc> = 
+    let paths = 
+        List.choose id <| List.map (fun (a:PdfDoc) -> a.GetPath) inputFiles
+
+    match paths with
+    | [] -> breturn zeroDocument
+    | _ -> 
+        buildMonad { 
+            let! outDoc = freshDocument "pdf"
+            let! quality = asksEnv (fun s -> s.PdfQuality)
+            match outDoc.GetPath with
+            | None -> return zeroDocument
+            | Some outPath -> 
+                let! _ = gsRunCommand getHandle (makeCmd quality outPath paths)
+                return outDoc
+        }
+  
 
 
 type PdfConcatApi<'res> = 

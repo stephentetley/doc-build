@@ -75,17 +75,20 @@ let private process1  (inpath:string) (outpath:string) (ss:SearchList) (app:Word
 
 /// TODO - this should assert the file extension is *.doc or *.docx...
 let private getTemplateImpl (filePath:string) : BuildMonad<'res,WordDoc> =
-    assertFile filePath |>> (fun s -> {DocumentPath = s})
+    assertFile filePath |>> makeDocument
 
 
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
 let private docFindReplaceImpl (getHandle:'res-> Word.Application) (matches:SearchList)  (template:WordDoc) : BuildMonad<'res,WordDoc> =
-    withDocxNamer <| buildMonad { 
-        let! outName = freshFileName ()
+    buildMonad { 
+        let! outName = freshFileName "docx"
         let! app = asksU getHandle
-        process1 template.DocumentPath outName matches app
-        return (makeDocument outName)
+        match template.GetPath with
+        | None -> return zeroDocument
+        | Some templatePath -> 
+            process1 templatePath outName matches app
+            return (makeDocument outName)
         }
 
 

@@ -134,22 +134,22 @@ let asBuilts (inputPath) : FullBuild<PdfDoc list> =
 
     // If this isn't thunkified it will launch Excel when the code is loaded in FSI
 let installSheets (inputPath:string) : FullBuild<PdfDoc list> = 
-    let pdfGen (glob:string) (warnMsg:string) : FullBuild<PdfDoc list> = 
+    let pdfGen (glob:string) (warnMsg:string) (namer:Printf.StringFormat<int -> string>) : FullBuild<PdfDoc list> = 
         match findAllMatchingFiles glob inputPath with
         | [] -> 
             printfn "%s" warnMsg; breturn []
              
         | xs -> 
-            forM xs (fun path -> 
+            foriM xs (fun ix path -> 
+                let name1 = sprintf namer ix
                 printfn "installSheet: %s" path
-                getDocument path >>= xlsToPdf true )
+                getDocument path >>= xlsToPdf true >>= renameTo name1)
     
-    withNameGen (sprintf "install-%03i.pdf") <| 
-        buildMonad { 
-            let! ds1 = pdfGen "*Flow meter*.xls*" "NO FLOW METER INSTALL SHEETS"
-            let! ds2 = pdfGen "*Pressure inst*.xls*" "NO PRESSURE SENSOR INSTALL SHEET"
-            return ds1 @ ds2
-            }
+    buildMonad { 
+        let! ds1 = pdfGen "*Flow meter*.xls*" "NO FLOW METER INSTALL SHEETS" "Flow-meter-%i03-install.pdf"
+        let! ds2 = pdfGen "*Pressure inst*.xls*" "NO PRESSURE SENSOR INSTALL SHEET" "Pressure-sensor-%i03-install.pdf"
+        return ds1 @ ds2
+    }
 
 
 // *******************************************************

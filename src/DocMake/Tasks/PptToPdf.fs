@@ -8,8 +8,8 @@ module DocMake.Tasks.PptToPdf
 // Open at .Interop rather than .PowerPoint then the PowerPoint API has to be qualified
 open Microsoft.Office.Interop
 
-
 open DocMake.Base.Common
+open DocMake.Base.FakeLike
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
@@ -30,17 +30,21 @@ let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (ap
 
 
 
-
+/// Name is derived from the original name
+/// Document is created in the working directory
 let private pptToPdfImpl (getHandle:'res-> PowerPoint.Application) 
                 (pptDoc:PowerPointDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
         let! (app:PowerPoint.Application) = asksU getHandle
-        let  outName = documentName <| documentChangeExtension "pdf" pptDoc
-        let! outTemp = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ =  process1 pptDoc.DocumentPath outTemp.DocumentPath quality app
-        let! final = renameTo outName outTemp
-        return final
+        match pptDoc.GetPath with
+        | None -> return zeroDocument
+        | Some pptPath -> 
+            let name1 = System.IO.FileInfo(pptPath).Name
+            let! path1 = askWorkingDirectory () |>> (fun cwd -> cwd </> name1)
+            let outPath = System.IO.Path.ChangeExtension(path1, "pdf") 
+            let _ =  process1 pptPath outPath quality app
+            return (makeDocument outPath)
     }
 
 type PptToPdfApi<'res> = 

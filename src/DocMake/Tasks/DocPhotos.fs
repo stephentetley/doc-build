@@ -86,11 +86,14 @@ let private photoDocImpl (getHandle:'res-> Word.Application) (opts:DocPhotosOpti
 
     buildMonad { 
         do! mapMz (fun jpg -> copyJPEGs jpg opts.CopyToSubDirectory) inputPaths
-        let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
+        let! outDoc = freshDocument "docx"
         let! app = asksU getHandle
         let! tempLoc = (fun d -> d </> opts.CopyToSubDirectory) <<| askWorkingDirectory ()
-        let _ = runDocOutput2 outDoc.DocumentPath app (docProc tempLoc)
-        return outDoc
+        match outDoc.GetPath with
+        | None -> return zeroDocument
+        | Some outPath -> 
+            let _ = runDocOutput2 outPath app (docProc tempLoc)
+            return outDoc
         } 
     
 

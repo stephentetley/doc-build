@@ -25,7 +25,7 @@ let assertFile(fileName:string) : BuildMonad<'res,string> =
 
 let getDocument (fileName:string) : BuildMonad<'res,Document<'a>> =   
     if File.Exists(fileName) then 
-        breturn({DocumentPath=fileName})
+        breturn (makeDocument fileName)
     else 
         throwError <| sprintf "getDocument failed: '%s'" fileName
 
@@ -46,14 +46,16 @@ let copyToWorkingDirectory (fileName:string) : BuildMonad<'res,Document<'a>> =
 
 
 
-let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'a>> =  
-    executeIO <| fun () -> 
-        let srcPath = src.DocumentPath
-        let pathTo = documentDirectory src
-        let outPath = System.IO.Path.Combine(pathTo,dest)
-        if System.IO.File.Exists(outPath) then System.IO.File.Delete(outPath)
-        System.IO.File.Move(srcPath,outPath)
-        {DocumentPath=outPath}
+let renameDocument (src:Document<'a>) (dest:string) : BuildMonad<'res,Document<'a>> = 
+    match src.GetPath with
+    | None -> breturn src
+    | Some srcPath -> 
+        executeIO <| fun () -> 
+            let pathTo = System.IO.FileInfo(srcPath).DirectoryName
+            let outPath = System.IO.Path.Combine(pathTo,dest)
+            if System.IO.File.Exists(outPath) then System.IO.File.Delete(outPath)
+            System.IO.File.Move(srcPath,outPath)
+            makeDocument outPath
 
 let renameTo (dest:string) (src:Document<'a>) : BuildMonad<'res,Document<'a>> = 
     renameDocument src dest
@@ -107,8 +109,3 @@ let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) : BuildMonad<'re
 let makeWordDoc (outputName:string) (proc:BuildMonad<'res, WordDoc>) :BuildMonad<'res, WordDoc> = 
     proc >>= renameTo outputName
 
-let withDocxNamer (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
-    withNameGen (sprintf "temp%03i.docx") ma
-
-let withXlsxNamer (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
-    withNameGen (sprintf "temp%03i.xlsx") ma

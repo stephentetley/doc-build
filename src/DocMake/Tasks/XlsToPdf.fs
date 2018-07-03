@@ -10,6 +10,7 @@ open Microsoft.Office.Interop
 
 
 open DocMake.Base.Common
+open DocMake.Base.FakeLike
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
@@ -39,17 +40,20 @@ let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (fi
 
 
 
-
-
+/// Name is derived from the original name
+/// Document is created in the working directory
 let private xlsToPdfImpl (getHandle:'res-> Excel.Application) (fitWidth:bool) (xlsDoc:ExcelDoc) : BuildMonad<'res, PdfDoc> =
     buildMonad { 
         let! (app:Excel.Application) = asksU getHandle
-        let  outName = documentName <| documentChangeExtension "pdf" xlsDoc
-        let! outTemp = freshDocument () |>> documentChangeExtension "pdf"
         let! quality = asksEnv (fun s -> s.PrintQuality)
-        let _ =  process1 xlsDoc.DocumentPath outTemp.DocumentPath quality fitWidth app
-        let! final = renameTo outName outTemp
-        return final
+        match xlsDoc.GetPath with
+        | None -> return zeroDocument
+        | Some xlsPath -> 
+            let name1 = System.IO.FileInfo(xlsPath).Name
+            let! path1 = askWorkingDirectory () |>> (fun cwd -> cwd </> name1)
+            let outPath = System.IO.Path.ChangeExtension(path1, "pdf") 
+            let _ =  process1 xlsPath outPath quality fitWidth app
+            return (makeDocument outPath)
     }    
     
 

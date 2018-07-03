@@ -53,16 +53,19 @@ let private process1 (inpath:string) (outpath:string) (ss:SearchList) (app:Excel
 
 /// TODO - this should assert the file extension is *.xlsx or *.xlsm...
 let private getTemplateImpl (filePath:string) : BuildMonad<'res,ExcelDoc> =
-    assertFile filePath |>> (fun s -> {DocumentPath = s})
+    assertFile filePath |>> makeDocument
 
 // What to do about outfile name?
 // If we generate a tempfile, we can have a more compact pipeline
 let private xlsFindReplaceImpl (getHandle:'res-> Excel.Application) (matches:SearchList)  (xlsDoc:ExcelDoc) : BuildMonad<'res,ExcelDoc> =
-    withXlsxNamer <| buildMonad { 
-        let! outName = freshFileName ()
+    buildMonad { 
+        let! outName = freshFileName "xlsx"
         let! app = asksU getHandle
-        process1 xlsDoc.DocumentPath outName matches app
-        return (makeDocument outName |> castToXls)
+        match xlsDoc.GetPath with
+        | None -> return zeroDocument
+        | Some xlsPath -> 
+            process1 xlsPath outName matches app
+            return (makeDocument outName)
         }
 
     
