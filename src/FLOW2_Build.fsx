@@ -61,8 +61,8 @@ open DocMake.Tasks
 open Proprietry
 
 
-let _inputRoot      = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
-let _outputRoot     = @"G:\work\Projects\flow2\final-docs\Output\Batch02"
+let _inputRoot      = @"G:\work\Projects\flow2\final-docs\Input\Year3-Batch2"
+let _outputRoot     = @"G:\work\Projects\flow2\final-docs\Output\Year3-Batch2"
 let _templateRoot   = @"G:\work\Projects\flow2\final-docs\__Templates"
 
 
@@ -98,36 +98,35 @@ let cover (siteName:string) : FullBuild<PdfDoc> =
 
 
 // Common procedure for both survey and Install photos
-let photosDoc (docTitle:string) (jpegSrcPath:string) (pdfName:string) : FullBuild<PdfDoc> = 
+let photosDoc (docTitle:string) (jpegSrcDirectory:string) (pdfName:string) : FullBuild<PdfDoc> = 
+    let folderName = DirectoryInfo(jpegSrcDirectory).Name
     let photoOpts:DocPhotos.DocPhotosOptions = 
-        { DocTitle = Some docTitle; ShowFileName = true; CopyToSubDirectory = "Photos" } 
+        { DocTitle = Some docTitle; ShowFileName = true; CopyToSubDirectory = folderName } 
 
     buildMonad { 
-        let! d1 = docPhotos photoOpts [jpegSrcPath]
+        let! d1 = docPhotos photoOpts [jpegSrcDirectory]
         let! d2 = breturn d1 >>= docToPdf >>= renameTo pdfName
         return d2
         }
     
 
 let scopeOfWorks (inputPath:string) : BuildMonad<'res,PdfDoc> = 
-    match tryFindExactlyOneMatchingFile "*Scope of Works*.pdf*" inputPath with
+    match tryFindExactlyOneMatchingFile "*Scope ?f Works*.pdf*" inputPath with
     | Some source -> copyToWorkingDirectory source
     | None -> throwError "NO SCOPE OF WORKS"
 
 
 
-let citWork (inputPath) : FullBuild<PdfDoc list> = 
-    let proc (glob:string) (renamer:int->string) : FullBuild<PdfDoc list> = 
-        findAllMatchingFiles glob inputPath |>
-            foriM (fun i source ->  
-                        copyToWorkingDirectory source >>= renameTo (renamer (i+1)))
+/// As-builts are in a subfulder ```As_builts```
+let asBuilts (inputPath) : FullBuild<PdfDoc list> = 
+    let renamer (ix:int) = sprintf "cit-cad-drawing-%03i.pdf" ix
 
-    buildMonad {
-        let! ds1 = proc "2018-S4371*.pdf" (sprintf "electricals-%03i.pdf")
-        let! ds2 = proc "*Prop Works*.pdf" (sprintf "cad-drawing-%03i.pdf")
-        return ds1 @ ds2 
-    }
+    let proc1 (ix:int) (srcPath:string) : FullBuild<PdfDoc> = 
+        copyToWorkingDirectory srcPath >>= pdfRotateAllCw >>= renameTo (renamer (ix+1))
 
+    findAllMatchingFiles "*.pdf" (inputPath </> "As_builts")
+        |> mapiM proc1
+    
 
 
     // If this isn't thunkified it will launch Excel when the code is loaded in FSI
@@ -152,9 +151,9 @@ let installSheets (inputPath:string) : FullBuild<PdfDoc list> =
 
 // *******************************************************
 
-
+/// inputPath points to site input directory 
 let buildScript1 (inputPath:string) : FullBuild<PdfDoc> = 
-    let siteName    = slashName <| FileInfo(inputPath).Name
+    let siteName    = slashName <| DirectoryInfo(inputPath).Name
     let cleanName   = safeName siteName
     localSubDirectory cleanName <|
         buildMonad { 
@@ -164,7 +163,7 @@ let buildScript1 (inputPath:string) : FullBuild<PdfDoc> =
             let surveyJpegsPath = siteInputDir </> "Survey_Photos"
             let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
             let! p3 = makePdf "scope-of-works.pdf"  <| scopeOfWorks siteInputDir 
-            let! ps1 = citWork siteInputDir
+            let! ps1 = asBuilts siteInputDir
             let! ps2 = installSheets siteInputDir
             let surveyJpegsPath = siteInputDir </> "Install_Photos"
             let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"

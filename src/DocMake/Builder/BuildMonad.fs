@@ -173,9 +173,11 @@ let mapiMz (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,
                 | Ok (st1, _) -> work (ix+1) st1 zs
         work 0 state xs
 
-let foriM (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,'b list> =
+/// Flipped mapiM
+let foriM (xs:'a list) (fn:int -> 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b list> =
     mapiM fn xs
 
+/// Flipped mapiMz
 let foriMz (xs:'a list) (fn:int -> 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,unit> =
     mapiMz fn xs
 
