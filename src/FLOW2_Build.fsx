@@ -109,20 +109,23 @@ let photosDoc (docTitle:string) (jpegSrcDirectory:string) (pdfName:string) : Ful
         return d2
         }
     
-
-let scopeOfWorks (inputPath:string) : BuildMonad<'res,PdfDoc> = 
-    match tryFindExactlyOneMatchingFile "*Scope ?f Works*.pdf*" inputPath with
-    | Some source -> copyToWorkingDirectory source
+/// Scope of works should be a Word file
+let scopeOfWorks (inputPath:string) : FullBuild<PdfDoc> = 
+    match tryFindExactlyOneMatchingFile "*Scope ?f Works*.doc*" inputPath with
     | None -> throwError "NO SCOPE OF WORKS"
+    | Some src -> getDocument src >>= docToPdf
+
+    
 
 
 
-/// As-builts are in a subfulder ```As_builts```
+/// As-builts are in a subfolder ```As_builts```
+/// As-builts names may cause problems for pdftk...
 let asBuilts (inputPath) : FullBuild<PdfDoc list> = 
     let renamer (ix:int) = sprintf "cit-cad-drawing-%03i.pdf" ix
 
     let proc1 (ix:int) (srcPath:string) : FullBuild<PdfDoc> = 
-        copyToWorkingDirectory srcPath >>= pdfRotateAllCw >>= renameTo (renamer (ix+1))
+        copyToWorkingDirectory srcPath >>= renameTo (renamer (ix+1)) >>= pdfRotateAllCcw 
 
     findAllMatchingFiles "*.pdf" (inputPath </> "As_builts")
         |> mapiM proc1
@@ -151,10 +154,39 @@ let installSheets (inputPath:string) : FullBuild<PdfDoc list> =
 
 // *******************************************************
 
+
+let makeFinalPdfName (siteName:string) : string = 
+    sprintf "%s S3402 Flow Confirmation Manual.pdf" (underscoreName siteName)
+
+let uploadReceipt (dirList:string list) : FullBuild<unit> = 
+    let siteFromPath (path:string) = 
+        slashName <| System.IO.DirectoryInfo(path).Name
+        
+    let config = 
+        { MakeTitle = 
+            fun name -> sprintf "%s S3402 Flow Confirmation Manual" (name.Replace("/", " "))
+          MakeDocName = makeFinalPdfName
+          
+          ConstantParams = 
+            { ProjectName = "Flow Confirmation"
+              ProjectCode = "S4102"
+              Category = "O & M Manuals"
+              ReferenceNumber = "S4102"
+              Revision = "1"
+              DocumentDate = standardDocumentDate ()
+              SheetVolume = "" } 
+        }/// Usually blank
+    buildMonad { 
+        let siteNames = List.map siteFromPath dirList
+        do! makeUploadForm siteNames config
+    }
+
+
 /// inputPath points to site input directory 
 let buildScript1 (inputPath:string) : FullBuild<PdfDoc> = 
     let siteName    = slashName <| DirectoryInfo(inputPath).Name
     let cleanName   = safeName siteName
+    let finalPdf = makeFinalPdfName siteName
     localSubDirectory cleanName <|
         buildMonad { 
             do! IOActions.clean () >>. IOActions.createOutputDirectory ()
@@ -168,15 +200,21 @@ let buildScript1 (inputPath:string) : FullBuild<PdfDoc> =
             let surveyJpegsPath = siteInputDir </> "Install_Photos"
             let! pZ = photosDoc "Install Photos" surveyJpegsPath "install-photos.pdf"
             let (pdfs:PdfDoc list) = p1 :: p2 :: p3 :: (ps1 @ ps2 @ [pZ])
-            let! (final:PdfDoc) = pdfConcat pdfs >>= renameTo "FINAL.pdf"
+            let! (final:PdfDoc) = pdfConcat pdfs >>= renameTo finalPdf
             return final                 
         }
 
+/// Also make upload receipt...
 let buildScript () : FullBuild<unit>  = 
-    let inputs = 
-        System.IO.Directory.GetDirectories(_inputRoot) 
-            |> Array.toList
-    mapMz buildScript1 inputs
+    buildMonad { 
+        let inputs = 
+            System.IO.Directory.GetDirectories(_inputRoot) 
+                |> Array.toList
+        do! mapMz buildScript1 inputs
+        do! uploadReceipt inputs
+        return () 
+    }
+
 
 let main () : unit = 
     let env = 

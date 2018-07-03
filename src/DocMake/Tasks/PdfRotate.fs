@@ -94,16 +94,16 @@ let private rotSpecForEmbed (rotations: Rotation list) : string =
 
 let private makeExtractCmd (inputFile:string) (outputFile:string) (rotations: Rotation list)  : string = 
     let rotateSpec = rotSpecForExtract rotations
-    sprintf "\"%s\" %s output \"%s\"" inputFile rotateSpec outputFile 
+    sprintf "\"%s\" cat %s output \"%s\"" inputFile rotateSpec outputFile 
 
 let private makeEmbedCmd (inputFile:string) (outputFile:string) (rotations: Rotation list)  : string = 
     let rotateSpec = rotSpecForEmbed rotations
-    sprintf "\"%s\" %s output \"%s\"" inputFile rotateSpec outputFile 
+    sprintf "\"%s\" cat %s output \"%s\"" inputFile rotateSpec outputFile 
 
 
 let private pdfRotateExtractImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
-        let! outDoc = freshDocument ()
+        let! outDoc = freshDocument () |>> documentChangeExtension "pdf"
         let! _ =  pdftkRunCommand getHandle <| makeExtractCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
         return outDoc
     }
@@ -111,7 +111,7 @@ let private pdfRotateExtractImpl (getHandle:'res -> PdftkHandle) (rotations: Rot
 
 let private pdfRotateEmbedImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
     buildMonad { 
-        let! outDoc = freshDocument ()
+        let! outDoc = freshDocument () |>> documentChangeExtension "pdf" 
         let! _ =  pdftkRunCommand getHandle <| makeEmbedCmd pdfDoc.DocumentPath outDoc.DocumentPath rotations
         return outDoc
     }

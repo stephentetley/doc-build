@@ -89,13 +89,15 @@ let localSubDirectory (subdir:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res
 
 
 let shellRun (toolPath:string) (command:string)  (errMsg:string) : BuildMonad<'res, unit> = 
+    printfn "----------\n%s %s\n----------\n" toolPath command
     try
         if 0 <> executeProcess toolPath command then
             throwError errMsg
         else            
             breturn ()
     with
-    | ex -> throwError (sprintf "shellRun: \n%s" ex.Message)
+    | ex -> 
+        throwError (sprintf "shellRun: \n%s" ex.Message)
 
 
 let makePdf (outputName:string) (proc:BuildMonad<'res, PdfDoc>) : BuildMonad<'res, PdfDoc> = 
