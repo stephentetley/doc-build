@@ -61,8 +61,8 @@ open DocMake.Tasks
 open Proprietry
 
 
-let _inputRoot      = @"G:\work\Projects\flow2\final-docs\Input\Year3-Batch2"
-let _outputRoot     = @"G:\work\Projects\flow2\final-docs\Output\Year3-Batch2"
+let _inputRoot      = @"G:\work\Projects\flow2\final-docs\Input\Batch02"
+let _outputRoot     = @"G:\work\Projects\flow2\final-docs\Output\Batch02"
 let _templateRoot   = @"G:\work\Projects\flow2\final-docs\__Templates"
 
 
@@ -106,11 +106,24 @@ let photosDoc (docTitle:string) (jpegSrcDirectory:string) (pdfName:string) : Ful
         return d2
         } <|> breturn zeroDocument
     
-/// Scope of works should be a Word file
+/// Scope of works should be a Word file or a Pdf 
 let scopeOfWorks (inputPath:string) : FullBuild<PdfDoc> = 
-    match tryFindExactlyOneMatchingFile "*Scope ?f Works*.doc*" inputPath with
-    | None -> throwError "NO SCOPE OF WORKS"
-    | Some src -> getDocument src >>= docToPdf
+    let sowDoc = 
+        match tryFindExactlyOneMatchingFile "*Scope ?f Works*.doc*" inputPath with
+        | None -> throwError "NO SCOPE OF WORKS"
+        | Some src -> 
+            printfn "Found: %s" src
+            getDocument src >>= docToPdf >>= renameTo "scope-of-works.pdf"
+
+    let sowPdf = 
+        match tryFindExactlyOneMatchingFile "*Scope ?f Works*.pdf" inputPath with
+        | None -> throwError "NO SCOPE OF WORKS"
+        | Some src -> 
+            printfn "Found: %s" src
+            copyToWorkingDirectory src >>= renameTo "scope-of-works.pdf"
+
+    sowDoc <|> sowPdf <&?> "scope-of-works"
+
 
     
 
@@ -122,7 +135,12 @@ let asBuilts (inputPath) : FullBuild<PdfDoc list> =
     let renamer (ix:int) = sprintf "cit-cad-drawing-%03i.pdf" ix
 
     let proc1 (ix:int) (srcPath:string) : FullBuild<PdfDoc> = 
-        copyToWorkingDirectory srcPath >>= pdfRotateAllCcw >>= renameTo (renamer (ix+1)) 
+        if System.Text.RegularExpressions.Regex.IsMatch(srcPath, "\.ccw\.pdf") then 
+            copyToWorkingDirectory srcPath >>= pdfRotateAllCcw >>= renameTo (renamer (ix+1)) 
+        else if System.Text.RegularExpressions.Regex.IsMatch(srcPath, "\.cw\.pdf") then 
+            copyToWorkingDirectory srcPath >>= pdfRotateAllCw >>= renameTo (renamer (ix+1)) 
+        else
+            copyToWorkingDirectory srcPath >>= renameTo (renamer (ix+1)) 
 
     findAllMatchingFiles "*.pdf" (inputPath </> "As_builts")
         |> mapiM proc1
@@ -191,7 +209,7 @@ let buildScript1 (inputPath:string) : FullBuild<PdfDoc> =
             let! p1 = cover siteName
             let surveyJpegsPath = siteInputDir </> "Survey_Photos"
             let! p2 = photosDoc "Survey Photos" surveyJpegsPath "survey-photos.pdf"
-            let! p3 = makePdf "scope-of-works.pdf"  <| scopeOfWorks siteInputDir 
+            let! p3 = scopeOfWorks siteInputDir 
             let! ps1 = asBuilts siteInputDir
             let! ps2 = installSheets siteInputDir
             let surveyJpegsPath = siteInputDir </> "Install_Photos"

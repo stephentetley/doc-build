@@ -79,15 +79,14 @@ let workingDocument (docName:string) : BuildMonad<'res,Document<'a>> =
     }
 
 
+/// sserts the document is not empty and that it exists on disk.
+let assertDocument (doc:Document<'a>) : BuildMonad<'res,unit> = 
+    match doc.GetPath with
+    | None -> throwError "assertDocument failed (empty)"
+    | Some path -> 
+        if System.IO.File.Exists(path) then 
+            breturn ()
+        else
+            throwError "assertDocument failed (does not exist)"
+        
 
-
-
-
-
-
-
-
-//let castToPdf (doc:Document<'a>) : PdfDoc = castDocument doc
-//let castToXls (doc:Document<'a>) : ExcelDoc = castDocument doc
-//let castToDoc (doc:Document<'a>) : WordDoc = castDocument doc
-//let castToPpt (doc:Document<'a>) : PowerPointDoc = castDocument doc
