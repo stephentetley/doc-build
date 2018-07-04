@@ -30,10 +30,32 @@ let fileTypeHistogramNext (extension:string) (histo:FileTypeHistogram) : FileTyp
 
 type State = FileTypeHistogram
 
+
 type FailMsg = string
 
+type BuildError = BuildError of string * list<BuildError>
+
+let getErrorLog (err:BuildError) : string = 
+    let writeLine (depth:int) (str:string) (sb:StringBuilder) : StringBuilder = 
+        let line = sprintf "%s %s" (String.replicate depth "*") str
+        sb.AppendLine(line)
+    let rec work (e1:BuildError) (depth:int) (sb:StringBuilder) : StringBuilder  = 
+        match e1 with
+        | BuildError (s,[]) -> writeLine depth s sb
+        | BuildError (s,xs) ->
+            let sb1 = writeLine depth s sb
+            List.fold (fun buf branch -> work branch (depth+1) buf) sb1 xs
+    work err 0 (new StringBuilder()) |> fun sb -> sb.ToString()
+
+/// Create a BuildError
+let buildError (errMsg:string) : BuildError = 
+    BuildError(errMsg, [])
+
+let concatBuildErrors (errMsg:string) (failures:BuildError list) : BuildError = 
+    BuildError(errMsg,failures)
+    
 type BuildResult<'a> =
-    | Err of FailMsg
+    | Err of BuildError
     | Ok of State * 'a
 
 
@@ -52,7 +74,7 @@ let inline breturn (x:'a) : BuildMonad<'res,'a> =
     BuildMonad (fun _ st -> Ok (st,x))
 
 let private failM : BuildMonad<'res,'a> = 
-    BuildMonad (fun _ st -> Err "failM")
+    BuildMonad (fun _ st -> Err (buildError "failM"))
 
 
 let inline private bindM (ma:BuildMonad<'res,'a>) (f : 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b> =
@@ -65,7 +87,10 @@ let inline private bindM (ma:BuildMonad<'res,'a>) (f : 'a -> BuildMonad<'res,'b>
 let inline private altM (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : BuildMonad<'res,'a> =
     BuildMonad <| fun res st0 -> 
         match apply1 ma res st0 with 
-        | Err msg -> apply1 mb res st0
+        | Err stk1 -> 
+            match apply1 mb res st0 with
+            | Err stk2 -> Err (concatBuildErrors "altM" [stk1;stk2])
+            | Ok (st2,b) -> Ok (st2,b)
         | Ok (st1,a) -> Ok (st1, a)
 
 /// This is Haskell's (>>).
@@ -249,7 +274,7 @@ let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:S
     let ans = runBuildMonad env handle stateZero ma
     finalizer handle
     match ans with
-    | Err msg -> failwith msg
+    | Err stk -> failwith (getErrorLog stk)
     | Ok (_,a) -> a
 
 
@@ -267,8 +292,21 @@ let withUserHandle (handle:'uhandle) (finalizer:'uhandle -> unit) (ma:BuildMonad
         ans
 
 let throwError (msg:string) : BuildMonad<'res,'a> = 
-    BuildMonad <| fun _ _ -> Err msg
+    BuildMonad <| fun _ _ -> Err (buildError msg)
 
+
+let swapError (msg:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    BuildMonad <| fun (env,res) st0 -> 
+        match apply1 ma (env, res) st0 with
+        | Err (BuildError (_,stk)) -> Err (BuildError (msg,stk))
+        | Ok (pos1,a) -> Ok (pos1,a)
+
+
+let (<&?>) (ma:BuildMonad<'res,'a>) (msg:string) : BuildMonad<'res,'a> = 
+    swapError msg ma
+
+let (<?&>) (msg:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
+    swapError msg ma
 
 
 /// Execute an action that may throw an exception, capture the exception 
@@ -278,7 +316,7 @@ let attempt (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'a> =
         try
             apply1 ma (env, res) st0
         with
-        | _ -> Err "attempt failed"
+        | _ -> Err (buildError "attempt failed")
 
 
 
@@ -290,7 +328,7 @@ let executeIO (operation:unit -> 'a) : BuildMonad<'res,'a> =
     try 
         let ans = operation () in Ok (st0, ans)
     with
-    | ex -> Err ex.Message
+    | ex -> Err (buildError (sprintf "executeIO: %s" ex.Message))
 
 
 
