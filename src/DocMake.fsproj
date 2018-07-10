@@ -79,6 +79,7 @@
     <Compile Include="DocMake\Tasks\PdfRotate.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\FullBuilder.fs" />
+    <Compile Include="DocMake\WordBuilder.fs" />
     <Compile Include="Proprietry.fs" />
     <None Include="DummyRename.fsx" />
     <None Include="DummyPdfRotate.fsx" />

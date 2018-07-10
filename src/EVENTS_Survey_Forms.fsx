@@ -34,15 +34,15 @@ open FSharp.ExcelProvider
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Document.fs"
 #load @"DocMake\Builder\Basis.fs"
+#load @"DocMake\Tasks\DocFindReplace.fs"
+#load @"DocMake\WordBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
-
-#load @"DocMake\Tasks\DocFindReplace.fs"
-open DocMake.Tasks
+open DocMake.WordBuilder
 
 
 /// This is a one-to-many build (one site list, many docs), so 
@@ -190,14 +190,14 @@ let buildSites (rows: SiteRow list) : Site list =
 // Build script
 
 
-type WordRes = Word.Application
+//type WordRes = Word.Application
 
-type WordBuild<'a> = BuildMonad<WordRes,'a>
+//type WordBuild<'a> = BuildMonad<WordRes,'a>
 
-// Just need the DocFindReplace API...
-let api = DocFindReplace.makeAPI (fun app -> app)
-let docFindReplace = api.DocFindReplace
-let getTemplateDoc = api.GetTemplateDoc
+//// Just need the DocFindReplace API...
+//let api = DocFindReplace.makeAPI (fun app -> app)
+//let docFindReplace = api.DocFindReplace
+//let getTemplateDoc = api.GetTemplateDoc
 
 let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
     buildMonad { 
@@ -262,6 +262,4 @@ let main (surveyBatch:string) (makeHazards:bool) : unit =
           PrintQuality = PrintQuality.PqScreen
           PdfQuality = PdfPrintQuality.PdfScreen }
 
-    let wordApp = initWord ()
-    let wordKill = fun (app:Word.Application) -> finalizeWord app
-    consoleRun env wordApp wordKill (buildScript surveyBatch makeHazards)
+    runWordBuild env (buildScript surveyBatch makeHazards)
