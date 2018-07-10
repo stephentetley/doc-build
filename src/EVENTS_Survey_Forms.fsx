@@ -45,8 +45,7 @@ open DocMake.Builder.Basis
 open DocMake.WordBuilder
 
 
-/// This is a one-to-many build (one site list, many docs), so 
-// we don't use FAKE directly, we just use it as a library.
+/// This is a one-to-many build - one site list, many docs.
 
 
 let _templateRoot   = @"G:\work\Projects\events2\gen-surveys-risks\__Templates"
@@ -190,14 +189,6 @@ let buildSites (rows: SiteRow list) : Site list =
 // Build script
 
 
-//type WordRes = Word.Application
-
-//type WordBuild<'a> = BuildMonad<WordRes,'a>
-
-//// Just need the DocFindReplace API...
-//let api = DocFindReplace.makeAPI (fun app -> app)
-//let docFindReplace = api.DocFindReplace
-//let getTemplateDoc = api.GetTemplateDoc
 
 let genHazardSheet (workGroup:string)  (site:Site) : WordBuild<WordDoc> =
     buildMonad { 

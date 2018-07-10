@@ -57,9 +57,17 @@ let getSaiNumber (siteName:string) (saiLookups:SaiLookups) : option<string> =
 // *************************************
 // Name helpers
 
+let noParens (input:string) : string = 
+    let parens = ['('; ')'; '['; ']'; '{'; '}']
+    let ans1 = List.fold (fun (s:string) (c:char) -> s.Replace(c.ToString(), "")) input parens
+    ans1.Trim() 
+
+/// Does not replace parens, squares, braces...
 let slashName (siteName:string) : string =
     siteName.Replace("_","/")
 
+
+/// Does not replace parens, squares, braces...
 let underscoreName (siteName:string) : string = 
     siteName.Replace("/","_")
 
