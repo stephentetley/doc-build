@@ -70,13 +70,13 @@ open DocMake.WordBuilder
 open Proprietry
 
 
-let _templateRoot   = @"G:\work\Projects\rtu\AR-asset-expired-2011\forms\__Templates"
-let _outputRoot     = @"G:\work\Projects\rtu\AR-asset-expired-2011\forms\output"
+let _templateRoot   = @"G:\work\Projects\rtu\AR-asset-expired-mmims-c2010\forms\__Templates"
+let _outputRoot     = @"G:\work\Projects\rtu\AR-asset-expired-mmims-c2010\output"
 
 
 type SiteTable = 
-    ExcelFile< @"G:\work\Projects\rtu\AR-asset-expired-2011\Site_List1.xlsx",
-               SheetName = "SITE_LIST",
+    ExcelFile< @"G:\work\Projects\rtu\AR-asset-expired-mmims-c2010\SiteList-2010-2011-2012.xlsx",
+               SheetName = "Sites_2010",
                ForceString = true >
 
 type SiteRow = SiteTable.Row
@@ -99,18 +99,18 @@ let makeSurveyMatches (row:SiteRow) : SearchList =
         | _ -> str
 
     [ "#SITENAME",          getString <| row.``Site Name``
-    ; "#SAINUMBER" ,        getString <| row.``SAI Number``
+    ; "#SAINUMBER" ,        getString <| row.``Sai Number``
     ; "#SITE_ADDRESS",      getString <| row.``Site Address``
     ; "#GRIDREF",           getString <| row.``Grid Ref``
     ; "#WORK_CENTER",       getString <| row.``Work Center``
     ; "#OPCONTACT",         getString <| ""
-    ; "#RTS_OUTSTATION",    getString <| row.``OS Name (currently)``
+    ; "#RTS_OUTSTATION",    getString <| row.``Outstation Name``
     ; "#OUTSTATION_ADDR",   getString <| row.``RTU Address``
     ]
 
 let makeHazardsMatches (site:SiteRow) : SearchList = 
     [ "#SITENAME",          site.``Site Name``
-    ; "#SAINUMBER" ,        site.``SAI Number``
+    ; "#SAINUMBER" ,        site.``Sai Number``
     ]
 
 let genHazardSheet (row:SiteRow) : WordBuild<WordDoc> =
@@ -141,7 +141,7 @@ let build1 (row:SiteRow) : WordBuild<unit> =
         (genHazardSheet row >>. genSurvey row >>. breturn ())
             
 let buildScript () : WordBuild<unit> = 
-    let siteRows = List.take 5 <| getSiteRows ()
+    let siteRows = getSiteRows ()
     mapMz build1 siteRows
 
         
