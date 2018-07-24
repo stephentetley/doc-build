@@ -152,29 +152,34 @@ let buildScript1 (inputPath:string) : FullBuild<PdfDoc> =
             return final            
         }
 
+let makeUploadRow (name:SiteName) (sai:SAINumber) : UploadRow = 
+    let docTitle = 
+        sprintf "%s S3953 RTU Replacement" (name.Replace("/", " "))
+    let docName = 
+        sprintf "%s S3953 RTU Replacement.pdf" (underscoreName name)
+    UploadTable.Row(assetName = name,
+                    assetReference = sai,
+                    projectName = "RTU Asset Replacement",
+                    projectCode = "S3953",
+                    title = docTitle,
+                    category = "O & M Manuals",
+                    referenceNumber = "S3953", 
+                    revision = "1",
+                    documentName = docName,
+                    documentDate = standardDocumentDate (),
+                    sheetVolume = "" )
 
 let uploadReceipt (dirList:string list) : FullBuild<unit> = 
     let makeSiteName (path:string) = 
         slashName <| System.IO.DirectoryInfo(path).Name
 
-    let config = 
-        { MakeTitle = 
-            fun name -> 
-                sprintf "%s S3953 RTU Asset Replacement" (name.Replace("/", " "))
-          MakeDocName =
-            fun name -> sprintf "%s S3953 RTU Replacement.pdf" (name.Replace("/", "_"))
-          ConstantParams = 
-            { ProjectName = "RTU Asset Replacement"
-              ProjectCode = "S3953"
-              Category = "O & M Manuals"
-              ReferenceNumber = "S3953"
-              Revision = "1"
-              DocumentDate = standardDocumentDate ()
-              SheetVolume = "" } 
-        }/// Usually blank
+    let uploadHelper () = 
+        { new IUploadHelper
+          with member this.MakeUploadRow name sai = makeUploadRow name sai }
+
     buildMonad { 
         let siteNames = List.map makeSiteName dirList
-        do! makeUploadForm siteNames config
+        do! makeUploadForm2  (uploadHelper ()) siteNames
     }
 
 let buildScript () : FullBuild<unit> = 

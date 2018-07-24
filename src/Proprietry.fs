@@ -105,6 +105,7 @@ let private outputUploadsCsv (source:seq<UploadRow>) (outputPath:string) : unit 
     table.Save(writer = sw, separator = ',', quote = '"' )
 
 
+
 /// DocumentDate is usually: System.DateTime.Now.ToString("dd/MM/yyyy")
 type UploadConstants = 
     { ProjectName: string           /// e.g. "RTU Asset Replacement"
@@ -169,5 +170,24 @@ let makeUploadForm (siteNames:string list)
     }
 
                     
-                        
+
+/// F# design guidelines say favour object-interfaces rather than records of functions...
+type IUploadHelper = 
+    abstract member MakeUploadRow : SiteName -> SAINumber -> UploadRow
+    
+
+let makeUploadForm2 (helper:IUploadHelper) 
+                    (siteNames:string list) : BuildMonad<'res,unit> = 
+    buildMonad { 
+        let saiDict = getSaiLookups ()
+        let makeRow1 (name:SiteName) :UploadRow = 
+            match getSaiNumber name saiDict with
+            | Some sai -> helper.MakeUploadRow name sai
+            | None -> makeBadRow name
+        let rows = 
+            List.map makeRow1 siteNames
+        let! cwd = askWorkingDirectory () 
+        let outPath = cwd </> "__EDMS_Upload.csv"
+        do! executeIO (fun () -> outputUploadsCsv rows outPath)
+    }       
 
