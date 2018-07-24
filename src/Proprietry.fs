@@ -106,23 +106,8 @@ let private outputUploadsCsv (source:seq<UploadRow>) (outputPath:string) : unit 
 
 
 
-/// DocumentDate is usually: System.DateTime.Now.ToString("dd/MM/yyyy")
-type UploadConstants = 
-    { ProjectName: string           /// e.g. "RTU Asset Replacement"
-      ProjectCode: string           /// Project code, e.g. "S3945"
-      Category: string              /// e.g. "O & M Manuals"
-      ReferenceNumber: string       /// Project code, e.g. "S3945"
-      Revision:string               /// Usually "1"
-      DocumentDate: string          /// Date in "dd/MM/yyyy" format
-      SheetVolume: string }         /// Usually blank
  
 let standardDocumentDate () : string  = System.DateTime.Now.ToString("dd/MM/yyyy") 
-
-type UploadConfig = 
-    { MakeTitle: SiteName -> string
-      MakeDocName: SiteName -> string
-      ConstantParams: UploadConstants }
-
 
 
 let private makeBadRow (name:SiteName) : UploadRow  = 
@@ -139,44 +124,15 @@ let private makeBadRow (name:SiteName) : UploadRow  =
                     documentDate = "",
                     sheetVolume = "" )
 
-let private makeUploadRow (siteName:string) (saiNum:string) 
-                (config:UploadConfig) : UploadRow =       
-    UploadTable.Row(assetName = siteName,
-                    assetReference = saiNum,
-                    projectName = config.ConstantParams.ProjectName,
-                    projectCode = config.ConstantParams.ProjectCode,
-                    title = config.MakeTitle siteName,
-                    category = config.ConstantParams.Category,
-                    referenceNumber = config.ConstantParams.ProjectCode, 
-                    revision = config.ConstantParams.Revision,
-                    documentName = config.MakeDocName siteName,
-                    documentDate = config.ConstantParams.DocumentDate,
-                    sheetVolume = config.ConstantParams.SheetVolume )
 
 
-let makeUploadForm (siteNames:string list) 
-                    (config:UploadConfig) : BuildMonad<'res,unit> = 
-    buildMonad { 
-        let saiDict = getSaiLookups ()
-        let makeRow1 (name:SiteName) :UploadRow = 
-            match getSaiNumber name saiDict with
-            | Some sai -> makeUploadRow name sai config
-            | None -> makeBadRow name
-        let rows = 
-            List.map makeRow1 siteNames
-        let! cwd = askWorkingDirectory () 
-        let outPath = cwd </> "__EDMS_Upload.csv"
-        do! executeIO (fun () -> outputUploadsCsv rows outPath)
-    }
-
-                    
 
 /// F# design guidelines say favour object-interfaces rather than records of functions...
 type IUploadHelper = 
     abstract member MakeUploadRow : SiteName -> SAINumber -> UploadRow
     
 
-let makeUploadForm2 (helper:IUploadHelper) 
+let makeUploadForm (helper:IUploadHelper) 
                     (siteNames:string list) : BuildMonad<'res,unit> = 
     buildMonad { 
         let saiDict = getSaiLookups ()

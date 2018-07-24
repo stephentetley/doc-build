@@ -173,13 +173,13 @@ let uploadReceipt (dirList:string list) : FullBuild<unit> =
     let makeSiteName (path:string) = 
         slashName <| System.IO.DirectoryInfo(path).Name
 
-    let uploadHelper () = 
+    let uploadHelper = 
         { new IUploadHelper
           with member this.MakeUploadRow name sai = makeUploadRow name sai }
 
     buildMonad { 
         let siteNames = List.map makeSiteName dirList
-        do! makeUploadForm2  (uploadHelper ()) siteNames
+        do! makeUploadForm  uploadHelper siteNames
     }
 
 let buildScript () : FullBuild<unit> = 
