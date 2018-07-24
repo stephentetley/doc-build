@@ -76,6 +76,12 @@ let underscoreName (siteName:string) : string =
 // *************************************
 // Upload spreadsheet
 
+
+
+type SiteName = string
+type SAINumber = string
+
+
 // [<Literal>]
 // let uploadSchema = @"Title(string), Sheet/Volume(string), Revision(string), Reference(string), Category(string), Project Name(string), File Format(string), File Date(string), Contractor(string)"
 // let uploadHeaders = @"Title,Sheet/Volume,Revision,Reference,Category,Project Name,File Format,File Date,Contractor"
@@ -112,47 +118,51 @@ type UploadConstants =
 let standardDocumentDate () : string  = System.DateTime.Now.ToString("dd/MM/yyyy") 
 
 type UploadConfig = 
-    { MakeTitle: string -> string
-      MakeDocName: string -> string
+    { MakeTitle: SiteName -> string
+      MakeDocName: SiteName -> string
       ConstantParams: UploadConstants }
 
 
 
-let private uploadRow (siteName:string) (saiNum:option<string>) 
-                (config:UploadConfig) : UploadRow = 
-    match saiNum with
-    | None -> 
-        UploadTable.Row(assetName = siteName,
-                        assetReference = "BAD",
-                        projectName = "",
-                        projectCode = "",
-                        title = "",
-                        category = "",
-                        referenceNumber = "", 
-                        revision = "",
-                        documentName = "",
-                        documentDate = "",
-                        sheetVolume = "" )
-    | Some saiNumber ->         
-        UploadTable.Row(assetName = siteName,
-                        assetReference = saiNumber,
-                        projectName = config.ConstantParams.ProjectName,
-                        projectCode = config.ConstantParams.ProjectCode,
-                        title = config.MakeTitle siteName,
-                        category = config.ConstantParams.Category,
-                        referenceNumber = config.ConstantParams.ProjectCode, 
-                        revision = config.ConstantParams.Revision,
-                        documentName = config.MakeDocName siteName,
-                        documentDate = config.ConstantParams.DocumentDate,
-                        sheetVolume = config.ConstantParams.SheetVolume )
+let private makeBadRow (name:SiteName) : UploadRow  = 
+    printfn "Bad UploadRow: %s\n" name
+    UploadTable.Row(assetName = name,
+                    assetReference = "BAD",
+                    projectName = "#####",
+                    projectCode = "",
+                    title = "#####",
+                    category = "",
+                    referenceNumber = "", 
+                    revision = "",
+                    documentName = "#####",
+                    documentDate = "",
+                    sheetVolume = "" )
+
+let private makeUploadRow (siteName:string) (saiNum:string) 
+                (config:UploadConfig) : UploadRow =       
+    UploadTable.Row(assetName = siteName,
+                    assetReference = saiNum,
+                    projectName = config.ConstantParams.ProjectName,
+                    projectCode = config.ConstantParams.ProjectCode,
+                    title = config.MakeTitle siteName,
+                    category = config.ConstantParams.Category,
+                    referenceNumber = config.ConstantParams.ProjectCode, 
+                    revision = config.ConstantParams.Revision,
+                    documentName = config.MakeDocName siteName,
+                    documentDate = config.ConstantParams.DocumentDate,
+                    sheetVolume = config.ConstantParams.SheetVolume )
+
 
 let makeUploadForm (siteNames:string list) 
                     (config:UploadConfig) : BuildMonad<'res,unit> = 
     buildMonad { 
         let saiDict = getSaiLookups ()
+        let makeRow1 (name:SiteName) :UploadRow = 
+            match getSaiNumber name saiDict with
+            | Some sai -> makeUploadRow name sai config
+            | None -> makeBadRow name
         let rows = 
-            List.map (fun (name:string) -> 
-                        uploadRow name (getSaiNumber name saiDict) config) siteNames
+            List.map makeRow1 siteNames
         let! cwd = askWorkingDirectory () 
         let outPath = cwd </> "__EDMS_Upload.csv"
         do! executeIO (fun () -> outputUploadsCsv rows outPath)

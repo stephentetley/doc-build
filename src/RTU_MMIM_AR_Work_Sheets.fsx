@@ -70,13 +70,13 @@ open DocMake.WordBuilder
 open Proprietry
 
 
-let _templateRoot   = @"G:\work\Projects\rtu\AR-asset-expired-mmims-c2010\forms\__Templates"
-let _outputRoot     = @"G:\work\Projects\rtu\AR-asset-expired-mmims-c2010\output"
+let _templateRoot   = @"G:\work\Projects\rtu\MK5 MMIM Replacement\forms\__Templates"
+let _outputRoot     = @"G:\work\Projects\rtu\MK5 MMIM Replacement\forms\output"
 
 
 type SiteTable = 
-    ExcelFile< @"G:\work\Projects\rtu\AR-asset-expired-mmims-c2010\SiteList-2010-2011-2012.xlsx",
-               SheetName = "Sites_2010",
+    ExcelFile< @"G:\work\Projects\rtu\MK5 MMIM Replacement\SiteList-2010-2011-2012.xlsx",
+               SheetName = "Sites2011",
                ForceString = true >
 
 type SiteRow = SiteTable.Row
@@ -102,8 +102,8 @@ let makeSurveyMatches (row:SiteRow) : SearchList =
     ; "#SAINUMBER" ,        getString <| row.``Sai Number``
     ; "#SITE_ADDRESS",      getString <| row.``Site Address``
     ; "#GRIDREF",           getString <| row.``Grid Ref``
-    ; "#WORK_CENTER",       getString <| row.``Work Center``
-    ; "#OPCONTACT",         getString <| ""
+    ; "#WORK_CENTRE",       getString <| row.``Work Centre``
+    ; "#OPCONTACT",         getString <| row.``Operational Contact``
     ; "#RTS_OUTSTATION",    getString <| row.``Outstation Name``
     ; "#OUTSTATION_ADDR",   getString <| row.``RTU Address``
     ]
