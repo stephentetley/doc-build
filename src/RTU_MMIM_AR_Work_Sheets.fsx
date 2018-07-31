@@ -31,12 +31,14 @@ open ImageMagick
 
 
 #load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\FakeLike.fs"
+#load @"DocMake\Base\ExcelProviderHelper.fs"
+#load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\ImageMagickUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
+open DocMake.Base.ExcelProviderHelper
 
 #load @"DocMake\Builder\BuildMonad.fs"
 #load @"DocMake\Builder\Document.fs"
@@ -76,20 +78,19 @@ let _outputRoot     = @"G:\work\Projects\rtu\MK5 MMIM Replacement\forms\output"
 
 type SiteTable = 
     ExcelFile< @"G:\work\Projects\rtu\MK5 MMIM Replacement\SiteList-2010-2011-2012.xlsx",
-               SheetName = "Sites2011",
+               SheetName = "Sites_2012",
                ForceString = true >
 
 type SiteRow = SiteTable.Row
 
-let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
-
-let getSiteRows () : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) 
-        |> Seq.toList
-
+let readSiteRows () : SiteRow list = 
+    let helper = 
+        { new IExcelProviderHelper<SiteTable,SiteRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
+    excelReadRowsAsList helper (new SiteTable())
 
 
 let makeSurveyMatches (row:SiteRow) : SearchList = 
@@ -141,7 +142,7 @@ let build1 (row:SiteRow) : WordBuild<unit> =
         (genHazardSheet row >>. genSurvey row >>. breturn ())
             
 let buildScript () : WordBuild<unit> = 
-    let siteRows = getSiteRows ()
+    let siteRows = readSiteRows ()
     mapMz build1 siteRows
 
         

@@ -59,6 +59,7 @@
     <Compile Include="DocMake\Base\Common.fs" />
     <Compile Include="DocMake\Base\String.fs" />
     <Compile Include="DocMake\Base\FakeLike.fs" />
+    <Compile Include="DocMake\Base\ExcelProviderHelper.fs" />
     <Compile Include="DocMake\Base\ImageMagickUtils.fs" />
     <Compile Include="DocMake\Base\JsonUtils.fs" />
     <Compile Include="DocMake\Base\OfficeUtils.fs" />
