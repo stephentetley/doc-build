@@ -97,6 +97,8 @@ let makeSiteFolder (batchName:string) (siteName:string) : unit =
 let makeSurveyName (siteName:string) (dischargeName:string) : string = 
     sprintf "%s %s Survey.docx" (safeName siteName) (safeName dischargeName)
 
+let makeUSRecalcName (siteName:string) (dischargeName:string) : string = 
+    sprintf "%s %s US Calibration.docx" (safeName siteName) (safeName dischargeName)
 
 type SiteProps = 
     { SiteName: string
@@ -139,6 +141,14 @@ let makeSurveySearches (site:SiteProps) (discharge:Discharge) : SearchList =
 let makeHazardsSearches (site:SiteProps) : SearchList = 
     [ "#SITENAME",          site.SiteName   
     ; "#SAINUMBER" ,        site.SiteUid
+
+    ]
+
+
+let makeUSRecalcSearches (site:SiteProps) (discharge:Discharge) : SearchList = 
+    [ "#SITENAME",                  site.SiteName   
+    ; "#SAINUMBER" ,                site.SiteUid
+    ; "#DISCHARGENAME",             discharge.DischargeName
     ]
 
 let makeSiteProps (row:SiteRow) : SiteProps = 
@@ -223,6 +233,22 @@ let genSurvey (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : 
         return d1
     }
 
+    
+let genUSRecalc (workGroup:string)  (siteProps:SiteProps) (discharge:Discharge) : WordBuild<WordDoc> = 
+    buildMonad { 
+        let surveyTemplate = _templateRoot </> "TEMPLATE US Calibration Record.docx"
+        let subPath = safeName workGroup </> safeName siteProps.SiteName
+        let outName = makeUSRecalcName siteProps.SiteName discharge.DischargeName
+        let matches = makeUSRecalcSearches siteProps discharge
+        let! d1 = 
+            localSubDirectory subPath <| 
+                buildMonad { 
+                    let! template = getTemplateDoc surveyTemplate
+                    let! d1 = docFindReplace matches template >>= renameTo outName 
+                    return d1
+                }
+        return d1
+    }
 // Generating all takes too long just generate a batch.
 
 // TODO SHEFFIELD , YORK
@@ -236,10 +262,14 @@ let buildScript (surveyBatch:string) (makeHazards:bool) : WordBuild<unit> =
         buildMonad { 
             do printfn "Generating %i of %i: %s ..." (ix+1) todoCount site.SiteProps.SiteName
             // do makeSiteFolder safeBatchName site.SiteProps.SiteName
-            do! forMz site.Discharges (genSurvey safeBatchName site.SiteProps) 
+            
+            // Survey
+            // do! forMz site.Discharges (genSurvey safeBatchName site.SiteProps) 
             if makeHazards then 
                 do! genHazardSheet safeBatchName site |>> ignore
             else return ()
+            // US Calibration
+            do! forMz site.Discharges (genUSRecalc safeBatchName site.SiteProps) 
             return ()
         }
 
