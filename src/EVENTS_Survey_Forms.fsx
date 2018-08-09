@@ -29,6 +29,7 @@ open FSharp.ExcelProvider
 
 #load @"DocMake\Base\Common.fs"
 #load @"DocMake\Base\FakeLike.fs"
+#load @"DocMake\Base\ExcelProviderHelper.fs"
 #load @"DocMake\Base\OfficeUtils.fs"
 #load @"DocMake\Base\SimpleDocOutput.fs"
 #load @"DocMake\Builder\BuildMonad.fs"
@@ -38,7 +39,7 @@ open FSharp.ExcelProvider
 #load @"DocMake\WordBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
-open DocMake.Base.OfficeUtils
+open DocMake.Base.ExcelProviderHelper
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
@@ -60,18 +61,14 @@ type SiteTable =
 
 type SiteRow = SiteTable.Row
 
-let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
 
+let readSiteRows () : SiteRow list = 
+    let helper = 
+        { new IExcelProviderHelper<SiteTable,SiteRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+    excelReadRowsAsList helper (new SiteTable())
 
-
-let filterByWorkGroup (workGroup:string) (source:SiteRow list) : SiteRow list = 
-    let testRow (row:SiteRow) : bool = 
-        match row.``Work Group`` with
-        | null -> false
-        | ans -> ans = workGroup
-    List.filter testRow source
 
 let filterBySurveyBatch (batch:string) (source:SiteRow list) : SiteRow list = 
     let testRow (row:SiteRow) : bool = 
@@ -81,8 +78,7 @@ let filterBySurveyBatch (batch:string) (source:SiteRow list) : SiteRow list =
     List.filter testRow source
 
 let getSiteRows (surveyBatch:string) : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) 
-        |> Seq.toList
+    readSiteRows ()
         |> filterBySurveyBatch surveyBatch
 
 
@@ -284,3 +280,16 @@ let main (surveyBatch:string) (makeHazards:bool) : unit =
           PdfQuality = PdfPrintQuality.PdfScreen }
 
     runWordBuild env (buildScript surveyBatch makeHazards)
+
+let allBatches () : Set<string> = 
+    let allRows = readSiteRows ()
+    let add1 = 
+        fun ac (row:SiteRow) -> 
+            match row.``Survey Batch`` with
+            | null -> ac
+            | name -> Set.add name ac
+    List.fold add1 Set.empty allRows
+
+let main2 () = 
+    allBatches () 
+        |> Set.iter (fun name -> main name false)
