@@ -293,3 +293,55 @@ let allBatches () : Set<string> =
 let main2 () = 
     allBatches () 
         |> Set.iter (fun name -> main name false)
+
+
+        
+let hlrSites () : SiteRow list = 
+    let testRow (row:SiteRow) : bool = 
+        match row.``Site Type`` with
+        | null -> false
+        | "HLR" -> true
+        | "Manhole" -> true
+        | _ -> false
+    readSiteRows () |> List.filter testRow
+
+
+let makeHLRSearches (row:SiteRow) : SearchList = 
+    [ "#SITE_NAME",                 row.``Site Common Name``
+    ; "#SAI_NUMBER" ,               row.``SAI Number``
+    ; "#SITE_ADDRESS",              row.``Site Address``
+    ; "#SITE_GRIDREF",              row.``Site Grid Ref``
+    ; "#OPNAME",                    row.``Operational Responsibility``
+     
+    ; "#DISCHARGE_NAME",            row.``Discharge Name``
+    ; "#CONSENT_NAME",              row.``Consent Name``
+    ; "#OUTFALL_GRIDREF",           row.``Outfall Grid Ref (from IW sheet, may lack precision)``
+    ; "#OUTFALL_STC25",             row.``STC25 Ref of Outfall (Discharge point to watercourse) from Odyssey``
+    ; "#RECEIVING_WATERCOURSE",     row.``Receiving Watercourse``
+    ]
+
+let genHLRSheet (row:SiteRow) : WordBuild<WordDoc> =
+    buildMonad { 
+        let templatePath = _templateRoot </> "TEMPLATE EDM2-overflow-survey 2018-08-24.docx"
+        let cleanName = safeName row.``Site Common Name``
+        let outName = sprintf "%s Hazard Identification Check List.docx" cleanName   
+        let matches = makeHLRSearches row 
+        let! d1 = 
+            localSubDirectory "HLR_manhole" <| 
+                buildMonad { 
+                    let! template = getTemplateDoc templatePath
+                    let! d1 = docFindReplace matches template >>= renameTo outName 
+                    return d1
+                }
+        return d1
+    }
+
+    
+let mainHLR (): unit = 
+    let env = 
+        { WorkingDirectory = _outputRoot
+          PrintQuality = PrintQuality.PqScreen
+          PdfQuality = PdfPrintQuality.PdfScreen }
+
+    let siteList = hlrSites () 
+    runWordBuild env (forMz siteList genHLRSheet)

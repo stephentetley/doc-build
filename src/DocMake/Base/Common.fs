@@ -41,10 +41,12 @@ let doubleQuote (s:string) : string = "\"" + s + "\""
 
 let safeName (input:string) : string = 
     let parens = ['('; ')'; '['; ']'; '{'; '}']
-    let bads = ['\\'; '/'; ':'; '?']
+    let bads = ['\\'; '/'; ':'; '?'] 
+    let white = ['\n'; '\t']
     let ans1 = List.fold (fun (s:string) (c:char) -> s.Replace(c.ToString(), "")) input parens
     let ans2 = List.fold (fun (s:string) (c:char) -> s.Replace(c,'_')) ans1 bads
-    ans2.Trim() 
+    let ans3 = List.fold (fun (s:string) (c:char) -> s.Replace(c,'_')) ans2 white
+    ans3.Trim() 
 
 
 let zeroPad (width:int) (value:int) = 
