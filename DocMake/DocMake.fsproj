@@ -81,21 +81,6 @@
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\FullBuilder.fs" />
     <Compile Include="DocMake\WordBuilder.fs" />
-    <Compile Include="Proprietry.fs" />
-    <None Include="DummyRename.fsx" />
-    <None Include="DummyPdfRotate.fsx" />
-    <None Include="DummyFindReplace.fsx" />
-    <None Include="CEMA_Hazard_Sheets.fsx" />
-    <None Include="EVENTS_CIT_Work.fsx" />
-    <None Include="EVENTS_Survey_Forms.fsx" />
-    <None Include="FLOW2_Build.fsx" />
-    <None Include="RTU_Erskines_Final.fsx" />
-    <None Include="RTU_IS_Barriers_Final.fsx" />
-    <None Include="RTU_Gen_Site_Work_Sheets.fsx" />
-    <None Include="RTU_MMIM_AR_Work_Sheets.fsx" />
-    <None Include="RTU_Final_Doc.fsx" />
-    <None Include="SAMPS_New_Final.fsx" />
-    <None Include="USAR_New_Final.fsx" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
       <Guid>{00020813-0000-0000-c000-000000000046}</Guid>
       <VersionMajor>1</VersionMajor>

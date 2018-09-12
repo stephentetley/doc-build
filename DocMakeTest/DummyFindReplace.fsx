@@ -14,23 +14,24 @@
 //#I @"..\packages\FAKE.5.0.0-beta005\tools"
 //#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
-#load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeLike.fs"
-#load @"DocMake\Base\OfficeUtils.fs"
-#load @"DocMake\Builder\BuildMonad.fs"
-#load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\WordHooks.fs"
-
-#load @"DocMake\Tasks\DocFindReplace.fs"
-#load @"DocMake\Tasks\DocToPdf.fs"
-open DocMake.Base.Common
+#load "..\DocMake\DocMake\Base\Common.fs"
+#load "..\DocMake\DocMake\Base\FakeLike.fs"
+#load "..\DocMake\DocMake\Base\OfficeUtils.fs"
+#load "..\DocMake\DocMake\Builder\BuildMonad.fs"
+#load "..\DocMake\DocMake\Builder\Document.fs"
+#load "..\DocMake\DocMake\Builder\Basis.fs"
+#load "..\DocMake\DocMake\Tasks\DocFindReplace.fs"
+#load "..\DocMake\DocMake\Tasks\DocToPdf.fs"
+#load "..\DocMake\DocMake\WordBuilder.fs"
+open DocMake.Builder.Document
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
-open DocMake.Builder.WordHooks
 open DocMake.Tasks
+open DocMake.WordBuilder
 
 let matches1 = [ "#before", "after" ]
 
+// Out of date...
 
 let test0 () = 
     let doc:WordDoc = { DocumentPath = @"D:\coding\fsharp\DocMake\data\TESTDOC1.docx"}

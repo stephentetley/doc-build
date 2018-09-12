@@ -2,9 +2,9 @@
 // License: BSD 3 Clause
 
 
-#load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeLike.fs"
-#load @"DocMake\Base\CopyRename.fs"
+#load @"..\DocMake\DocMake\Base\Common.fs"
+#load @"..\DocMake\DocMake\Base\FakeLike.fs"
+#load @"..\DocMake\DocMake\Base\CopyRename.fs"
 open DocMake.Base.FakeLike
 open DocMake.Base.CopyRename
 

@@ -20,19 +20,19 @@ open FSharp.ExcelProvider
 
 
 
-#load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeLike.fs"
-#load @"DocMake\Base\OfficeUtils.fs"
-#load @"DocMake\Builder\BuildMonad.fs"
-#load @"DocMake\Builder\Document.fs"
-#load @"DocMake\Builder\Basis.fs"
+#load "..\DocMake\DocMake\Base\Common.fs"
+#load "..\DocMake\DocMake\Base\FakeLike.fs"
+#load "..\DocMake\DocMake\Base\OfficeUtils.fs"
+#load "..\DocMake\DocMake\Builder\BuildMonad.fs"
+#load "..\DocMake\DocMake\Builder\Document.fs"
+#load "..\DocMake\DocMake\Builder\Basis.fs"
 open DocMake.Base.Common
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
 
-#load @"DocMake\Tasks\XlsFindReplace.fs"
+#load "..\DocMake\DocMake\Tasks\XlsFindReplace.fs"
 open DocMake.Tasks
 
 

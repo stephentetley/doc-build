@@ -27,32 +27,32 @@ open System.IO
 
 
 
-#load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeLike.fs"
-#load @"DocMake\Base\ImageMagickUtils.fs"
-#load @"DocMake\Base\OfficeUtils.fs"
-#load @"DocMake\Base\SimpleDocOutput.fs"
-#load @"DocMake\Builder\BuildMonad.fs"
-#load @"DocMake\Builder\Document.fs"
-#load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Builder\ShellHooks.fs"
+#load "..\DocMake\DocMake\Base\Common.fs"
+#load "..\DocMake\DocMake\Base\FakeLike.fs"
+#load "..\DocMake\DocMake\Base\ImageMagickUtils.fs"
+#load "..\DocMake\DocMake\Base\OfficeUtils.fs"
+#load "..\DocMake\DocMake\Base\SimpleDocOutput.fs"
+#load "..\DocMake\DocMake\Builder\BuildMonad.fs"
+#load "..\DocMake\DocMake\Builder\Document.fs"
+#load "..\DocMake\DocMake\Builder\Basis.fs"
+#load "..\DocMake\DocMake\Builder\ShellHooks.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
 
-#load @"DocMake\Tasks\IOActions.fs"
-#load @"DocMake\Tasks\DocFindReplace.fs"
-#load @"DocMake\Tasks\XlsFindReplace.fs"
-#load @"DocMake\Tasks\DocToPdf.fs"
-#load @"DocMake\Tasks\XlsToPdf.fs"
-#load @"DocMake\Tasks\PptToPdf.fs"
-#load @"DocMake\Tasks\MdToDoc.fs"
-#load @"DocMake\Tasks\PdfConcat.fs"
-#load @"DocMake\Tasks\PdfRotate.fs"
-#load @"DocMake\Tasks\DocPhotos.fs"
-#load @"DocMake\FullBuilder.fs"
+#load "..\DocMake\DocMake\Tasks\IOActions.fs"
+#load "..\DocMake\DocMake\Tasks\DocFindReplace.fs"
+#load "..\DocMake\DocMake\Tasks\XlsFindReplace.fs"
+#load "..\DocMake\DocMake\Tasks\DocToPdf.fs"
+#load "..\DocMake\DocMake\Tasks\XlsToPdf.fs"
+#load "..\DocMake\DocMake\Tasks\PptToPdf.fs"
+#load "..\DocMake\DocMake\Tasks\MdToDoc.fs"
+#load "..\DocMake\DocMake\Tasks\PdfConcat.fs"
+#load "..\DocMake\DocMake\Tasks\PdfRotate.fs"
+#load "..\DocMake\DocMake\Tasks\DocPhotos.fs"
+#load "..\DocMake\DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
 open DocMake.Tasks
 

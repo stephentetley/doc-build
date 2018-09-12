@@ -27,16 +27,16 @@ open FSharp.ExcelProvider
 
 
 
-#load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeLike.fs"
-#load @"DocMake\Base\ExcelProviderHelper.fs"
-#load @"DocMake\Base\OfficeUtils.fs"
-#load @"DocMake\Base\SimpleDocOutput.fs"
-#load @"DocMake\Builder\BuildMonad.fs"
-#load @"DocMake\Builder\Document.fs"
-#load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Tasks\DocFindReplace.fs"
-#load @"DocMake\WordBuilder.fs"
+#load "..\DocMake\DocMake\Base\Common.fs"
+#load "..\DocMake\DocMake\Base\FakeLike.fs"
+#load "..\DocMake\DocMake\Base\ExcelProviderHelper.fs"
+#load "..\DocMake\DocMake\Base\OfficeUtils.fs"
+#load "..\DocMake\DocMake\Base\SimpleDocOutput.fs"
+#load "..\DocMake\DocMake\Builder\BuildMonad.fs"
+#load "..\DocMake\DocMake\Builder\Document.fs"
+#load "..\DocMake\DocMake\Builder\Basis.fs"
+#load "..\DocMake\DocMake\Tasks\DocFindReplace.fs"
+#load "..\DocMake\DocMake\WordBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Base.ExcelProviderHelper
@@ -316,7 +316,7 @@ let makeHLRSearches (row:SiteRow) : SearchList =
     ; "#DISCHARGE_NAME",            row.``Discharge Name``
     ; "#CONSENT_NAME",              row.``Consent Name``
     ; "#OUTFALL_GRIDREF",           row.``Outfall Grid Ref (from IW sheet, may lack precision)``
-    ; "#OUTFALL_STC25",             row.``STC25 Ref of Outfall (Discharge point to watercourse) from Odyssey``
+    ; "#OUTFALL_STC25",             row.``STC25 Ref of Discharge Point from Odyssey``
     ; "#RECEIVING_WATERCOURSE",     row.``Receiving Watercourse``
     ]
 

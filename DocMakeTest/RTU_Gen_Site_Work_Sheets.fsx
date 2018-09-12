@@ -21,13 +21,13 @@ open Microsoft.Office.Interop
 #r "ExcelProvider.dll"
 open FSharp.ExcelProvider
 
-#load @"DocMake\Base\Common.fs"
-#load @"DocMake\Base\FakeLike.fs"
-#load @"DocMake\Base\OfficeUtils.fs"
-#load @"DocMake\Builder\BuildMonad.fs"
-#load @"DocMake\Builder\Document.fs"
-#load @"DocMake\Builder\Basis.fs"
-#load @"DocMake\Tasks\DocFindReplace.fs"
+#load "..\DocMake\DocMake\Base\Common.fs"
+#load "..\DocMake\DocMake\Base\FakeLike.fs"
+#load "..\DocMake\DocMake\Base\OfficeUtils.fs"
+#load "..\DocMake\DocMake\Builder\BuildMonad.fs"
+#load "..\DocMake\DocMake\Builder\Document.fs"
+#load "..\DocMake\DocMake\Builder\Basis.fs"
+#load "..\DocMake\DocMake\Tasks\DocFindReplace.fs"
 #load @"Proprietry.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
