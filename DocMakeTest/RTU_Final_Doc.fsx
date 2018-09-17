@@ -130,7 +130,7 @@ let surveyPhotos (siteName:string) : FullBuild<PdfDoc> =
 
 let installPhotos (siteName:string) : FullBuild<PdfDoc> = 
     let jpegsDir = _inputRoot </> safeName siteName </> @"Install_Photos"
-    let pdfName = sprintf "%s survey-photos.pdf" (safeName siteName)
+    let pdfName = sprintf "%s install-photos.pdf" (safeName siteName)
     printfn "Install Photos: %s" pdfName
     makePhotosDoc "Install Photos" jpegsDir pdfName @"install_photos"
 
@@ -185,7 +185,7 @@ let uploadReceipt (dirList:string list) : FullBuild<unit> =
 let buildScript () : FullBuild<unit> = 
     buildMonad { 
         let childFolders = 
-            System.IO.Directory.GetDirectories(_inputRoot) |> Array.toList            
+            System.IO.Directory.GetDirectories(_inputRoot) |> Array.toList
         do! mapMz buildScript1 childFolders
         do! uploadReceipt childFolders
         return () 

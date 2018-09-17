@@ -75,10 +75,11 @@ open Proprietry
 let _templateRoot   = @"G:\work\Projects\rtu\MK5 MMIM Replacement\forms\__Templates"
 let _outputRoot     = @"G:\work\Projects\rtu\MK5 MMIM Replacement\forms\output"
 
-
+// Note - suffixing the sheet name with "!" seems to be needed
+// when the required sheet is not the first sheet.
 type SiteTable = 
     ExcelFile< @"G:\work\Projects\rtu\MK5 MMIM Replacement\SiteList-2010-2011-2012.xlsx",
-               SheetName = "Sites_2012",
+               SheetName = "Sites_2010!",
                ForceString = true >
 
 type SiteRow = SiteTable.Row
