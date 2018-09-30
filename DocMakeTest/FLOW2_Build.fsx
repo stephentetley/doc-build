@@ -12,7 +12,7 @@
 #r "office"
 
 
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.8.0\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
@@ -21,8 +21,14 @@ open ImageMagick
 #r @"FSharp.Data.dll"
 
 // Use ExcelProvider to read SAI numbers spreadsheet (Proprietry.fs)
-#I @"..\packages\ExcelProvider.0.8.2\lib"
-#r "ExcelProvider.dll"
+#I @"..\packages\ExcelProvider.1.0.1\lib\net45"
+#r "ExcelProvider.Runtime.dll"
+
+#I @"..\packages\ExcelProvider.1.0.1\typeproviders\fsharp41\net45"
+#r "ExcelDataReader.DataSet.dll"
+#r "ExcelDataReader.dll"
+#r "ExcelProvider.DesignTime.dll"
+open FSharp.Interop.Excel
 
 open System.IO
 
@@ -173,27 +179,34 @@ let installSheets (inputPath:string) : FullBuild<PdfDoc list> =
 let makeFinalPdfName (siteName:string) : string = 
     sprintf "%s S4102 Flow Confirmation Manual.pdf" (underscoreName siteName)
 
+let makeUploadRow (name:SiteName) (sai:SAINumber) : UploadRow = 
+    let docTitle = 
+        sprintf "%s S4102 Flow Confirmation Manual" (name.Replace("/", " "))
+    let docName = 
+        sprintf "%s S4102 Flow Confirmation Manual.pdf" (underscoreName name)
+    UploadTable.Row(assetName = name,
+                    assetReference = sai,
+                    projectName = "Flow Confirmation",
+                    projectCode = "S4102",
+                    title = docTitle,
+                    category = "O & M Manuals",
+                    referenceNumber = "S4102", 
+                    revision = "1",
+                    documentName = docName,
+                    documentDate = standardDocumentDate (),
+                    sheetVolume = "" )
+
 let uploadReceipt (dirList:string list) : FullBuild<unit> = 
     let siteFromPath (path:string) = 
         slashName <| System.IO.DirectoryInfo(path).Name
         
-    let config = 
-        { MakeTitle = 
-            fun name -> sprintf "%s S4102 Flow Confirmation Manual" (name.Replace("/", " "))
-          MakeDocName = makeFinalPdfName
-          
-          ConstantParams = 
-            { ProjectName = "Flow Confirmation"
-              ProjectCode = "S4102"
-              Category = "O & M Manuals"
-              ReferenceNumber = "S4102"
-              Revision = "1"
-              DocumentDate = standardDocumentDate ()
-              SheetVolume = "" } 
-        }/// Usually blank
+    let uploadHelper = 
+        { new IUploadHelper
+          with member this.MakeUploadRow name sai = makeUploadRow name sai }
+
     buildMonad { 
         let siteNames = List.map siteFromPath dirList
-        do! makeUploadForm siteNames config
+        do! makeUploadForm uploadHelper siteNames
     }
 
 

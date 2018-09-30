@@ -8,7 +8,7 @@
 module Proprietry
 
 open FSharp.Data
-open FSharp.ExcelProvider
+open FSharp.Interop.Excel
 
 open DocMake.Base.Common
 open DocMake.Base.FakeLike

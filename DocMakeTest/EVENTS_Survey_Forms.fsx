@@ -21,9 +21,14 @@ open Microsoft.Office.Interop
 open Newtonsoft.Json
 
 
-#I @"..\packages\ExcelProvider.0.8.2\lib"
-#r "ExcelProvider.dll"
-open FSharp.ExcelProvider
+#I @"..\packages\ExcelProvider.1.0.1\lib\net45"
+#r "ExcelProvider.Runtime.dll"
+
+#I @"..\packages\ExcelProvider.1.0.1\typeproviders\fsharp41\net45"
+#r "ExcelDataReader.DataSet.dll"
+#r "ExcelDataReader.dll"
+#r "ExcelProvider.DesignTime.dll"
+open FSharp.Interop.Excel
 
 
 
