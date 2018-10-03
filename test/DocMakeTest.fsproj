@@ -49,6 +49,7 @@
     <None Include="CEMA_Hazard_Sheets.fsx" />
     <None Include="EVENTS_CIT_Work.fsx" />
     <None Include="EVENTS_Survey_Forms.fsx" />
+    <None Include="EVENTS_Point_Blue.fsx" />
     <None Include="FLOW2_Build.fsx" />
     <None Include="RTU_Erskines_Final.fsx" />
     <None Include="RTU_IS_Barriers_Final.fsx" />
