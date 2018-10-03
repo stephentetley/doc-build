@@ -14,15 +14,15 @@
 //#I @"..\packages\FAKE.5.0.0-beta005\tools"
 //#r @"..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll"
 
-#load "..\DocMake\DocMake\Base\Common.fs"
-#load "..\DocMake\DocMake\Base\FakeLike.fs"
-#load "..\DocMake\DocMake\Base\OfficeUtils.fs"
-#load "..\DocMake\DocMake\Builder\BuildMonad.fs"
-#load "..\DocMake\DocMake\Builder\Document.fs"
-#load "..\DocMake\DocMake\Builder\Basis.fs"
-#load "..\DocMake\DocMake\Tasks\DocFindReplace.fs"
-#load "..\DocMake\DocMake\Tasks\DocToPdf.fs"
-#load "..\DocMake\DocMake\WordBuilder.fs"
+#load "..\src\DocMake\Base\Common.fs"
+#load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\OfficeUtils.fs"
+#load "..\src\DocMake\Builder\BuildMonad.fs"
+#load "..\src\DocMake\Builder\Document.fs"
+#load "..\src\DocMake\Builder\Basis.fs"
+#load "..\src\DocMake\Tasks\DocFindReplace.fs"
+#load "..\src\DocMake\Tasks\DocToPdf.fs"
+#load "..\src\DocMake\WordBuilder.fs"
 open DocMake.Builder.Document
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis

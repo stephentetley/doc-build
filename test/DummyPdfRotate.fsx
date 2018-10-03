@@ -10,35 +10,35 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.4.6\lib\net40"
+#I @"..\packages\Magick.NET-Q8-AnyCPU.7.8.0\lib\net40"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 
 
-#load "..\DocMake\DocMake\Base\Common.fs"
-#load "..\DocMake\DocMake\Base\FakeLike.fs"
-#load "..\DocMake\DocMake\Base\ImageMagickUtils.fs"
-#load "..\DocMake\DocMake\Base\OfficeUtils.fs"
-#load "..\DocMake\DocMake\Base\SimpleDocOutput.fs"
-#load "..\DocMake\DocMake\Builder\BuildMonad.fs"
-#load "..\DocMake\DocMake\Builder\Document.fs"
-#load "..\DocMake\DocMake\Builder\Basis.fs"
-#load "..\DocMake\DocMake\Builder\ShellHooks.fs"
+#load "..\src\DocMake\Base\Common.fs"
+#load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\ImageMagickUtils.fs"
+#load "..\src\DocMake\Base\OfficeUtils.fs"
+#load "..\src\DocMake\Base\SimpleDocOutput.fs"
+#load "..\src\DocMake\Builder\BuildMonad.fs"
+#load "..\src\DocMake\Builder\Document.fs"
+#load "..\src\DocMake\Builder\Basis.fs"
+#load "..\src\DocMake\Builder\ShellHooks.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 
 
-#load "..\DocMake\DocMake\Tasks\DocFindReplace.fs"
-#load "..\DocMake\DocMake\Tasks\XlsFindReplace.fs"
-#load "..\DocMake\DocMake\Tasks\DocToPdf.fs"
-#load "..\DocMake\DocMake\Tasks\XlsToPdf.fs"
-#load "..\DocMake\DocMake\Tasks\PptToPdf.fs"
-#load "..\DocMake\DocMake\Tasks\MdToDoc.fs"
-#load "..\DocMake\DocMake\Tasks\PdfConcat.fs"
-#load "..\DocMake\DocMake\Tasks\PdfRotate.fs"
-#load "..\DocMake\DocMake\Tasks\DocPhotos.fs"
-#load "..\DocMake\DocMake\FullBuilder.fs"
+#load "..\src\DocMake\Tasks\DocFindReplace.fs"
+#load "..\src\DocMake\Tasks\XlsFindReplace.fs"
+#load "..\src\DocMake\Tasks\DocToPdf.fs"
+#load "..\src\DocMake\Tasks\XlsToPdf.fs"
+#load "..\src\DocMake\Tasks\PptToPdf.fs"
+#load "..\src\DocMake\Tasks\MdToDoc.fs"
+#load "..\src\DocMake\Tasks\PdfConcat.fs"
+#load "..\src\DocMake\Tasks\PdfRotate.fs"
+#load "..\src\DocMake\Tasks\DocPhotos.fs"
+#load "..\src\DocMake\FullBuilder.fs"
 open DocMake.FullBuilder
 open DocMake.Tasks
 

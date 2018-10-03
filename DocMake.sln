@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2019
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocMake", "DocMake\DocMake.fsproj", "{31ED1853-B245-414F-8DF6-796580FD1EC3}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocMake", "src\DocMake.fsproj", "{31ED1853-B245-414F-8DF6-796580FD1EC3}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocMakeTest", "DocMakeTest\DocMakeTest.fsproj", "{9303B10C-8391-4632-8687-2333E4D825A7}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocMakeTest", "test\DocMakeTest.fsproj", "{9303B10C-8391-4632-8687-2333E4D825A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
