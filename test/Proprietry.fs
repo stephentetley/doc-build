@@ -8,7 +8,6 @@
 module Proprietry
 
 open FSharp.Data
-open FSharp.Interop.Excel
 
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
@@ -16,42 +15,6 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Basis
 
 
-
-// *************************************
-// SAI numbers
-
-
-// SAI numbers are the uids for a proprietry data set we use.
-// There is nothing interesting about them, they just form a dictionary - name-to-uid.
-
-[<Literal>]
-let SaiFilePath = __SOURCE_DIRECTORY__ + @"\..\data\SaiNumbers.xlsx"
-
-type SaiTable = 
-    ExcelFile< SaiFilePath,
-                SheetName = "SAI_Data",
-                ForceString = true >
-
-type SaiRow = SaiTable.Row
-
-let saiTableMethods : ExcelProviderHelperDict<SaiTable, SaiRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with null -> false | _ -> true }
-
-let getSaiRows () : seq<SaiRow> = 
-    excelTableGetRows saiTableMethods (new SaiTable())
-
-type SaiLookups = Map<string, string>
-
-let getSaiLookups () : SaiLookups = 
-    let insert1 (ac:SaiLookups) (saiRow:SaiRow) = 
-        Map.add saiRow.InstCommonName saiRow.InstReference ac
-
-    getSaiRows () 
-        |> Seq.fold insert1 Map.empty
-
-let getSaiNumber (siteName:string) (saiLookups:SaiLookups) : option<string> = 
-    Map.tryFind siteName saiLookups
 
 
 // *************************************
@@ -110,38 +73,24 @@ let private outputUploadsCsv (source:seq<UploadRow>) (outputPath:string) : unit 
 let standardDocumentDate () : string  = System.DateTime.Now.ToString("dd/MM/yyyy") 
 
 
-let private makeBadRow (name:SiteName) : UploadRow  = 
-    printfn "Bad UploadRow: %s\n" name
-    UploadTable.Row(assetName = name,
-                    assetReference = "BAD",
-                    projectName = "#####",
-                    projectCode = "",
-                    title = "#####",
-                    category = "",
-                    referenceNumber = "", 
-                    revision = "",
-                    documentName = "#####",
-                    documentDate = "",
-                    sheetVolume = "" )
-
-
-
+type SiteRecord = 
+    { SiteName: string 
+      Uid: string }
 
 /// F# design guidelines say favour object-interfaces rather than records of functions...
-type IUploadHelper = 
+type IUploadHelper<'a> = 
     abstract member MakeUploadRow : SiteName -> SAINumber -> UploadRow
-    
+    abstract member ToSiteRecord : 'a -> SiteRecord
 
-let makeUploadForm (helper:IUploadHelper) 
-                    (siteNames:string list) : BuildMonad<'res,unit> = 
+
+let makeUploadForm (helper:IUploadHelper<'site>) 
+                    (siteRecords:'site list) : BuildMonad<'res,unit> = 
     buildMonad { 
         let saiDict = getSaiLookups ()
-        let makeRow1 (name:SiteName) :UploadRow = 
-            match getSaiNumber name saiDict with
-            | Some sai -> helper.MakeUploadRow name sai
-            | None -> makeBadRow name
-        let rows = 
-            List.map makeRow1 siteNames
+        let makeRow1 (osite:'site) : UploadRow = 
+            let siteRec = helper.ToSiteRecord osite
+            helper.MakeUploadRow siteRec.SiteName siteRec.Uid
+        let rows = List.map makeRow1 siteRecords
         let! cwd = askWorkingDirectory () 
         let outPath = cwd </> "__EDMS_Upload.csv"
         do! executeIO (fun () -> outputUploadsCsv rows outPath)

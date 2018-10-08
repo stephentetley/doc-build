@@ -71,27 +71,24 @@ let _outputRoot     = @"G:\work\Projects\events2\point-blue\output"
 // Generate output from a work list
 
 type InputTable = 
-    CsvProvider< @"G:\work\Projects\events2\point-blue\prolog\output.csv",
+    CsvProvider< @"G:\work\Projects\events2\point-blue\missing.csv",
                  HasHeaders = true >
 
 type InputRow = InputTable.Row
 
 
-/// Alternatively = @"..\data\coversheet-schema.csv"
-let inputFile = @"G:\work\Projects\events2\point-blue\prolog\output.csv"
-
 let rows () : InputRow list  = (new InputTable()).Rows |> Seq.toList
 
 
-let cover (siteName:string) (phase:string) : FullBuild<PdfDoc> = 
+let cover (newSiteName:string) (scheme:string) : FullBuild<PdfDoc> = 
     let coversLocation = 
-        match phase with
-        | "PHASE ONE" -> @"G:\work\Projects\events2\point-blue\cover-sheets\phase1"
-        | "PHASE TWO" -> @"G:\work\Projects\events2\point-blue\cover-sheets\phase2"
+        match scheme with
+        | "T0877" -> @"G:\work\Projects\events2\point-blue\cover-sheets\phase1"
+        | "T0942" -> @"G:\work\Projects\events2\point-blue\cover-sheets\phase2"
         // Look somewhere we won't find it...
         | _ -> @"G:\work\Projects\events2\point-blue\cover-sheets"
 
-    let pattern1 = sprintf "%s*" (underscoreName siteName)
+    let pattern1 = sprintf "%s*" (underscoreName newSiteName)
     printfn "Pattern: '%s'" pattern1
     buildMonad { 
         match tryFindExactlyOneMatchingFile pattern1 coversLocation with
@@ -103,9 +100,9 @@ let cover (siteName:string) (phase:string) : FullBuild<PdfDoc> =
             throwError "cover - no sheet" |> ignore
     }
 
-let workSheet (siteName:string) : FullBuild<PdfDoc> = 
+let workSheet (oldSiteName:string) : FullBuild<PdfDoc> = 
     let formsLoc =  @"G:\work\Projects\events2\point-blue\pb-commissioning-forms"
-    let pattern1 = sprintf "%s*" (underscoreName siteName)
+    let pattern1 = sprintf "%s*" (underscoreName oldSiteName)
     buildMonad { 
         match tryFindExactlyOneMatchingFile pattern1 formsLoc with
         | Some doc -> 
@@ -115,13 +112,8 @@ let workSheet (siteName:string) : FullBuild<PdfDoc> =
             throwError "work-sheet - no sheet" |> ignore
     }
 
-let makeFinal (siteName:string) (phase:string) (cover:PdfDoc) (worksheet:PdfDoc) : FullBuild<PdfDoc> = 
-    let scheme = 
-        match phase with
-        | "PHASE ONE" -> "T0877"
-        | "PHASE TWO" -> "T0942"
-        | _ -> "Unknown"
-    let finalName = sprintf "%s %s Hawkeye Asset Replacement.pdf" (safeName siteName) scheme
+let makeFinal (newSiteName:string) (scheme:string) (cover:PdfDoc) (worksheet:PdfDoc) : FullBuild<PdfDoc> = 
+    let finalName = sprintf "%s %s Hawkeye Asset Replacement.pdf" (safeName newSiteName) scheme
     buildMonad { 
         let pdfs : PdfDoc list = [cover; worksheet]
         printfn "Final: '%s'" finalName
@@ -132,15 +124,15 @@ let makeFinal (siteName:string) (phase:string) (cover:PdfDoc) (worksheet:PdfDoc)
 
 let build1 (row:InputRow) : FullBuild<PdfDoc> = 
     let phaseFolder = 
-        match row.Phase with
-        | "PHASE ONE" -> "phase1"
-        | "PHASE TWO" -> "phase2"
+        match row.Scheme with
+        | "T0877" -> "phase1"
+        | "T0942" -> "phase2"
         | _ -> "phase2"
     localSubDirectory phaseFolder
         <| buildMonad {
-            let! d1 = cover row.``Site Name`` row.Phase
-            let! d2 = workSheet row.``Site Name``
-            let! final = makeFinal row.``Site Name`` row.Phase d1 d2
+            let! d1 = cover row.``New AI2 Name`` row.Scheme
+            let! d2 = workSheet row.Missing
+            let! final = makeFinal row.``New AI2 Name`` row.Scheme d1 d2
             return final
         }
 
@@ -166,27 +158,28 @@ let makeUploadRow (name:SiteName) (sai:SAINumber) (projCode:string) : UploadRow 
 
 
 let uploadReceipts (rows:InputRow list): FullBuild<unit> = 
-    let siteNames (phase:string) : string list = 
-        List.map (fun (row:InputRow) -> row.``Site Name``)
-            <| List.filter (fun (row:InputRow) -> row.Phase = phase) rows
+    let filterScheme (scheme:string) : InputRow list = 
+        List.filter (fun (row:InputRow) -> row.Scheme = scheme) rows
 
     let uploadHelper (projCode:string) = 
-        { new IUploadHelper
-          with member this.MakeUploadRow name sai = makeUploadRow name sai projCode }
+        { new IUploadHelper<InputRow>
+          with member __.MakeUploadRow name sai = makeUploadRow name sai projCode
+               member __.ToSiteRecord row = { SiteName = row.``New AI2 Name``
+                                            ; Uid = row.``SAI number`` } }
     
     buildMonad { 
-        do! localSubDirectory "phase1" (makeUploadForm  (uploadHelper "T0877") (siteNames "PHASE ONE"))
-        do! localSubDirectory "phase2" (makeUploadForm  (uploadHelper "T0942") (siteNames "PHASE TWO"))
+        do! localSubDirectory "phase1" (makeUploadForm  (uploadHelper "T0877") (filterScheme "T0877"))
+        do! localSubDirectory "phase2" (makeUploadForm  (uploadHelper "T0942") (filterScheme "T0942"))
         return ()
     }       
 
 
 let buildScript () : FullBuild<unit> = 
     buildMonad { 
-        let siteList = rows () |> List.take 4
+        let siteList = rows () 
         let count = siteList.Length
         do! foriMz siteList <| fun ix row -> 
-                printfn "Site %i of %i (%s):" (ix+1) count row.``Site Name``
+                printfn "Site %i of %i (%s):" (ix+1) count row.``New AI2 Name``
                 fmapM ignore <| build1 row
 
         do! uploadReceipts siteList
