@@ -35,6 +35,7 @@ open System.IO
 
 #load "..\src\DocMake\Base\Common.fs"
 #load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\ExcelProviderHelper.fs"
 #load "..\src\DocMake\Base\ImageMagickUtils.fs"
 #load "..\src\DocMake\Base\OfficeUtils.fs"
 #load "..\src\DocMake\Base\SimpleDocOutput.fs"
@@ -68,6 +69,8 @@ open Proprietry
 let _templateRoot       = @"G:\work\Projects\usar\final-docs\__Templates"
 let _inputRoot          = @"G:\work\Projects\usar\final-docs\input\June2018_INPUT"
 let _outputRoot         = @"G:\work\Projects\usar\final-docs\output\June2018"
+
+
 
 let makeCoverMatches (siteName:string) (saiLookups:SaiLookups) : option<SearchList> =  
     match getSaiNumber siteName saiLookups with
