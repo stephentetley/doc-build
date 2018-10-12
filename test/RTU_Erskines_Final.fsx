@@ -60,8 +60,8 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
-#load @"Proprietry.fs"
-open Proprietry
+#load @"Proprietary.fs"
+open Proprietary
 
 
 let _inputRoot = @"G:\work\Projects\rtu\Erskines\edms-final-docs\input\input-june2018"

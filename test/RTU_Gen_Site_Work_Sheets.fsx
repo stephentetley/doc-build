@@ -12,7 +12,7 @@
 #r "office"
 open Microsoft.Office.Interop
 
-// Use FSharp.Data for CSV output (Proprietry.fs)
+
 #I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
 #r @"FSharp.Data.dll"
 
@@ -40,8 +40,8 @@ open DocMake.Builder.Document
 open DocMake.Builder.Basis
 open DocMake.Tasks
 
-#load "Proprietry.fs"
-open Proprietry
+#load "Proprietary.fs"
+open Proprietary
 
 /// TODO - update to work with BuildMonad
 

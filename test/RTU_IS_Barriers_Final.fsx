@@ -61,8 +61,8 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
-#load "Proprietry.fs" 
-open Proprietry
+#load "Proprietary.fs" 
+open Proprietary
 
 
 // Output is just "Site Works" doc and the collected "Photo doc"

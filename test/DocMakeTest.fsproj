@@ -42,7 +42,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Proprietry.fs" />
+    <Compile Include="Proprietary.fs" />
     <None Include="DummyRename.fsx" />
     <None Include="DummyPdfRotate.fsx" />
     <None Include="DummyFindReplace.fsx" />

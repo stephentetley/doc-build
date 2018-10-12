@@ -17,7 +17,6 @@ open Microsoft.Office.Interop
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
-// Use FSharp.Data for CSV output (Proprietry.fs)
 #I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
 #r @"FSharp.Data.dll"
 
@@ -61,8 +60,8 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
-#load "Proprietry.fs"
-open Proprietry
+#load "Proprietary.fs"
+open Proprietary
 
 
 

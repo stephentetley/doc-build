@@ -124,9 +124,6 @@
     <Reference Include="ExcelProvider.Runtime">
       <HintPath>..\packages\ExcelProvider.1.0.1\lib\net45\ExcelProvider.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="FakeLib">
-      <HintPath>..\packages\FAKE.5.0.0-beta005\tools\FakeLib.dll</HintPath>
-    </Reference>
     <Reference Include="FParsec">
       <HintPath>..\packages\FParsec.1.0.3\lib\net40-client\FParsec.dll</HintPath>
     </Reference>

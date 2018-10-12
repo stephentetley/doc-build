@@ -16,11 +16,11 @@
 #r @"Magick.NET-Q8-AnyCPU.dll"
 open ImageMagick
 
-// Use FSharp.Data for CSV output (Proprietry.fs)
+
 #I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
 #r @"FSharp.Data.dll"
 
-// Use ExcelProvider to read SAI numbers spreadsheet (Proprietry.fs)
+
 #I @"..\packages\ExcelProvider.1.0.1\lib\net45"
 #r "ExcelProvider.Runtime.dll"
 
@@ -62,8 +62,8 @@ open DocMake.Builder.Basis
 open DocMake.FullBuilder
 open DocMake.Tasks
 
-#load "Proprietry.fs"
-open Proprietry
+#load "Proprietary.fs"
+open Proprietary
 
 
 let _inputRoot      = @"G:\work\Projects\flow2\final-docs\Input\Batch02"

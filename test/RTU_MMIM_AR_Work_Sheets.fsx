@@ -67,8 +67,8 @@ open DocMake.Builder.Document
 open DocMake.Builder.Basis
 open DocMake.WordBuilder
 
-#load @"Proprietry.fs"
-open Proprietry
+#load @"Proprietary.fs"
+open Proprietary
 
 
 let _templateRoot   = @"G:\work\Projects\rtu\MK5 MMIM Replacement\forms\__Templates"

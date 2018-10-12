@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-// This file contains functions and utilities to work with proprietry data 
+// This file contains functions and utilities to work with proprietary data 
 // (usually spreadsheets).
 // It is essentially "uninteresting".
 
-module Proprietry
+module Proprietary
 
 open FSharp.Data
 open FSharp.Interop.Excel
@@ -103,7 +103,7 @@ let makeUploadForm (helper:IUploadHelper<'site>)
 // SAI numbers
 
 
-// SAI numbers are the uids for a proprietry data set we use.
+// SAI numbers are the uids for a proprietary data set we use.
 // There is nothing interesting about them, they just form a dictionary - name-to-uid.
 
 [<Literal>]
