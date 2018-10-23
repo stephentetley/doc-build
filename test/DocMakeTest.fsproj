@@ -58,6 +58,7 @@
     <None Include="RTU_Final_Doc.fsx" />
     <None Include="SAMPS_New_Final.fsx" />
     <None Include="USAR_New_Final.fsx" />
+    <None Include="TempMarkdown.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -35,6 +35,7 @@ open System.IO
 
 #load "..\src\DocMake\Base\Common.fs"
 #load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\ExcelProviderHelper.fs"
 #load "..\src\DocMake\Base\ImageMagickUtils.fs"
 #load "..\src\DocMake\Base\OfficeUtils.fs"
 #load "..\src\DocMake\Base\SimpleDocOutput.fs"
@@ -55,6 +56,7 @@ open System.IO
 #load "..\src\DocMake\FullBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
+open DocMake.Base.ExcelProviderHelper
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
