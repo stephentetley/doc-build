@@ -79,3 +79,8 @@ let generateDocx (doc:Markdown) (outputPath:string) (otherOptions: PandocOption 
         breturn (Document.makeDocument outputPath)
 
 
+let generateDocxFromFile (inputPath:string) (outputPath:string) (otherOptions: PandocOption list) : PandocRunner<WordDoc> = 
+    PandocRunner <| fun env ->
+        let stylesDoc = Option.defaultValue "" env.DocxReferenceDoc
+        runPandocDocx env.WorkingDirectory inputPath stylesDoc outputPath otherOptions
+        breturn (Document.makeDocument outputPath)

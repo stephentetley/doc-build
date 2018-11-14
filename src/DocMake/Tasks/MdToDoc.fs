@@ -11,8 +11,9 @@ open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
 open DocMake.Builder.ShellHooks
+open DocMake.Builder.PandocRunner
 
-    
+open DocMake.Tasks
 
 
 let makeCmd (infile:string) (outfile:string) : string = 
@@ -40,3 +41,19 @@ type MdToDocApi<'res> =
 
 let makeAPI (getHandle:'res-> PandocHandle) : MdToDocApi<'res> = 
     { MdToPdf = docToPdfImpl getHandle }
+
+// ****************************************************************************
+
+/// New API
+
+let markdownToPdf (doc:MarkdownDoc) (outputName:string) : PandocRunner<PdfDoc> = 
+    let docxName = System.IO.Path.ChangeExtension(outputName, "docx")
+    match doc.GetPath with
+    | None -> liftBM <| throwError "markdownToPdf - invalid input file"
+    | Some docPath -> 
+        pandocRunner { 
+            let! wordDoc = generateDocxFromFile docPath docxName []
+            let! pdfDoc = liftBM (DocToPdf.runDocToPdf wordDoc outputName)
+            return pdfDoc
+        }
+

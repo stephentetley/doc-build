@@ -15,10 +15,11 @@ open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
-
+open DocMake.Builder.WordRunner
+open System.IO
     
 
-let private process1 (inpath:string) (outpath:string) (quality:PrintQuality) (app:Word.Application) : unit = 
+let private process1 (app:Word.Application) (inpath:string) (outpath:string) (quality:PrintQuality)  : unit = 
     try 
         let doc = app.Documents.Open(FileName = refobj inpath)
         doc.ExportAsFixedFormat (OutputFileName = outpath, 
@@ -43,7 +44,7 @@ let private docToPdfImpl (getHandle:'res-> Word.Application) (wordDoc:WordDoc) :
             let name1 = System.IO.FileInfo(docPath).Name
             let! path1 = askWorkingDirectory () |>> (fun cwd -> cwd </> name1)
             let outPath = System.IO.Path.ChangeExtension(path1, "pdf") 
-            let _ = process1 docPath outPath quality app
+            let _ = process1 app docPath outPath quality 
             return (makeDocument outPath)
     }
 
@@ -53,3 +54,23 @@ type DocToPdfApi<'res> =
 
 let makeAPI (getHandle:'res-> Word.Application) : DocToPdfApi<'res> = 
     { DocToPdf = docToPdfImpl getHandle }
+
+// ****************************************************************************
+
+/// New API
+
+let docToPdf (doc:WordDoc) (outputPath:string) : WordRunner<PdfDoc> = 
+    match doc.GetPath with
+    | None -> liftBM <| throwError "invalid Doc path"
+    | Some path-> 
+        wordRunner { 
+            let! quality = liftBM <| asksEnv (fun s -> s.PrintQuality)
+            let! _ = 
+                wordExec <| fun wordApp -> 
+                    process1 wordApp path outputPath quality 
+            return (makeDocument outputPath)
+        }
+
+
+let runDocToPdf (doc:WordDoc) (outputPath:string) : BuildMonad<unit, PdfDoc> = 
+    wordRun (docToPdf doc outputPath)

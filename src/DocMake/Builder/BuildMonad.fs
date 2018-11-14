@@ -6,8 +6,6 @@ module DocMake.Builder.BuildMonad
 open System.Text
 
 open DocMake.Base.Common
-open DocMake.Builder.Base
-
 
 
 type Env = 
