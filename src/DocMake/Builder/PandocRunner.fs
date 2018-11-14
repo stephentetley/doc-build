@@ -7,9 +7,7 @@ module DocMake.Builder.PandocRunner
 open MarkdownDoc
 open MarkdownDoc.Pandoc
 
-type Result<'a> =
-    | Err of string
-    | Ok of 'a
+open DocMake.Builder.Base
 
 type PandocEnv = 
     { WorkingDirectory: string
@@ -27,7 +25,7 @@ let inline preturn (x:'a) : PandocRunner<'a> =
     PandocRunner (fun _ -> Ok x)
 
 let private failM : PandocRunner<'a> = 
-    PandocRunner (fun _ -> Err "failM")
+    PandocRunner (fun _ -> Err (buildError "failM"))
 
 
 
@@ -41,9 +39,9 @@ let inline private bindM (ma:PandocRunner<'a>) (f : 'a -> PandocRunner<'b>) : Pa
 let inline private altM (ma:PandocRunner<'a>) (mb:PandocRunner<'a>) : PandocRunner<'a> =
     PandocRunner <| fun env -> 
         match apply1 ma env with 
-        | Err _ -> 
+        | Err stk1 -> 
             match apply1 mb env with
-            | Err _ -> Err "altM"
+            | Err stk2 -> Err (concatBuildErrors "altM" [stk1;stk2])
             | Ok b -> Ok b
         | Ok a -> Ok a
 

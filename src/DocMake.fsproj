@@ -65,11 +65,13 @@
     <Compile Include="DocMake\Base\OfficeUtils.fs" />
     <Compile Include="DocMake\Base\CopyRename.fs" />
     <Compile Include="DocMake\Base\SimpleDocOutput.fs" />
+    <Compile Include="DocMake\Builder\Base.fs" />
     <Compile Include="DocMake\Builder\BuildMonad.fs" />
     <Compile Include="DocMake\Builder\Document.fs" />
     <Compile Include="DocMake\Builder\Basis.fs" />
     <Compile Include="DocMake\Builder\ShellHooks.fs" />
     <Compile Include="DocMake\Builder\PandocRunner.fs" />
+    <Compile Include="DocMake\Builder\PdftkRunner.fs" />
     <Compile Include="DocMake\Tasks\IOActions.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\XlsFindReplace.fs" />
