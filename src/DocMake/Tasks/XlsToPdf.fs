@@ -57,6 +57,9 @@ let private xlsToPdfImpl (getHandle:'res-> Excel.Application) (fitWidth:bool) (x
     }    
     
 
+// The handle API is good that it loosely couples 
+// resources (Excel, etc.) but it is too complicated.
+
 type XlsToPdfApi<'res> = 
     { XlsToPdf : bool -> ExcelDoc -> BuildMonad<'res, PdfDoc> }
 

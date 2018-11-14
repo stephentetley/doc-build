@@ -27,12 +27,14 @@ open FSharp.Interop.Excel
 
 #load "..\src\DocMake\Base\Common.fs"
 #load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\ExcelProviderHelper.fs"
 #load "..\src\DocMake\Base\OfficeUtils.fs"
 #load "..\src\DocMake\Builder\BuildMonad.fs"
 #load "..\src\DocMake\Builder\Document.fs"
 #load "..\src\DocMake\Builder\Basis.fs"
 #load "..\src\DocMake\Tasks\XlsFindReplace.fs"
 open DocMake.Base.Common
+open DocMake.Base.ExcelProviderHelper
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
@@ -47,13 +49,14 @@ type InputTable =
 
 type InputRow = InputTable.Row
 
-let inputTableDict : ExcelProviderHelperDict<InputTable, InputRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(1) with | null -> false | _ -> true }
-
+let inputTableHelper = 
+    { new IExcelProviderHelper<InputTable, InputRow> 
+      with member this.ReadTableRows table = table.Data 
+           member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
 
 let getSiteRows () : InputRow list = 
-    excelTableGetRows inputTableDict (new InputTable()) |> Seq.toList
+    excelReadRowsAsList inputTableHelper (new InputTable())
 
 
 let makeSearches (row:InputRow) : SearchList = 

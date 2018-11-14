@@ -9,8 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>DocMake</RootNamespace>
     <AssemblyName>DocMake</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.3.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>DocMake</Name>
     <TargetFrameworkProfile />
@@ -69,6 +69,7 @@
     <Compile Include="DocMake\Builder\Document.fs" />
     <Compile Include="DocMake\Builder\Basis.fs" />
     <Compile Include="DocMake\Builder\ShellHooks.fs" />
+    <Compile Include="DocMake\Builder\PandocRunner.fs" />
     <Compile Include="DocMake\Tasks\IOActions.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\XlsFindReplace.fs" />
@@ -79,6 +80,7 @@
     <Compile Include="DocMake\Tasks\PdfConcat.fs" />
     <Compile Include="DocMake\Tasks\PdfRotate.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
+    <Compile Include="DocMake\Tasks\DocPhotos2.fs" />
     <Compile Include="DocMake\FullBuilder.fs" />
     <Compile Include="DocMake\WordBuilder.fs" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
@@ -144,6 +146,10 @@
     </Reference>
     <Reference Include="Magick.NET-Q8-AnyCPU">
       <HintPath>..\packages\Magick.NET-Q8-AnyCPU.7.8.0\lib\net40\Magick.NET-Q8-AnyCPU.dll</HintPath>
+    </Reference>
+    <Reference Include="MarkdownDoc">
+      <HintPath>..\packages\__MY_LIBS__\lib\net45\MarkdownDoc.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

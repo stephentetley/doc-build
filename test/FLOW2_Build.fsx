@@ -36,6 +36,7 @@ open System.IO
 
 #load "..\src\DocMake\Base\Common.fs"
 #load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\ExcelProviderHelper.fs"
 #load "..\src\DocMake\Base\ImageMagickUtils.fs"
 #load "..\src\DocMake\Base\OfficeUtils.fs"
 #load "..\src\DocMake\Base\SimpleDocOutput.fs"
@@ -202,6 +203,7 @@ let uploadReceipt (dirList:string list) : FullBuild<unit> =
     let uploadHelper = 
         { new IUploadHelper
           with member this.MakeUploadRow name sai = makeUploadRow name sai }
+
 
     buildMonad { 
         let siteNames = List.map siteFromPath dirList

@@ -87,7 +87,7 @@
     <ProjectReference Include="..\src\DocMake.fsproj">
       <Name>DocMake</Name>
       <Project>{31ed1853-b245-414f-8df6-796580fd1ec3}</Project>
-      <Private>True</Private>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

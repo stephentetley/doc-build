@@ -27,6 +27,7 @@ open FSharp.Interop.Excel
 
 #load "..\src\DocMake\Base\Common.fs"
 #load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\ExcelProviderHelper.fs"
 #load "..\src\DocMake\Base\OfficeUtils.fs"
 #load "..\src\DocMake\Builder\BuildMonad.fs"
 #load "..\src\DocMake\Builder\Document.fs"
@@ -34,6 +35,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
+open DocMake.Base.ExcelProviderHelper
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
@@ -60,14 +62,14 @@ type SiteTable =
 
 type SiteRow = SiteTable.Row
 
-let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
-
-
-
 let getSiteRows () : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) |> Seq.toList
+    let helper = 
+        { new IExcelProviderHelper<SiteTable,SiteRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+    excelReadRowsAsList helper (new SiteTable())
+
+
 
 
 

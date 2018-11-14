@@ -116,12 +116,13 @@ type SaiTable =
 
 type SaiRow = SaiTable.Row
 
-let saiTableMethods : ExcelProviderHelperDict<SaiTable, SaiRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with null -> false | _ -> true }
-
+let saiTableHelper = 
+    { new IExcelProviderHelper<SaiTable,SaiRow>
+      with member this.ReadTableRows table = table.Data 
+           member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
 let getSaiRows () : seq<SaiRow> = 
-    excelTableGetRows saiTableMethods (new SaiTable())
+    excelReadRows saiTableHelper (new SaiTable())
 
 type SaiLookups = Map<string, string>
 

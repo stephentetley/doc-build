@@ -33,6 +33,7 @@ open System.Text.RegularExpressions
 
 #load "..\src\DocMake\Base\Common.fs"
 #load "..\src\DocMake\Base\FakeLike.fs"
+#load "..\src\DocMake\Base\ExcelProviderHelper.fs"
 #load "..\src\DocMake\Base\ImageMagickUtils.fs"
 #load "..\src\DocMake\Base\OfficeUtils.fs"
 #load "..\src\DocMake\Base\SimpleDocOutput.fs"
@@ -52,6 +53,7 @@ open System.Text.RegularExpressions
 #load "..\src\DocMake\FullBuilder.fs"
 open DocMake.Base.Common
 open DocMake.Base.FakeLike
+open DocMake.Base.ExcelProviderHelper
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.Basis
@@ -71,12 +73,17 @@ type UidTable =
 
 type UidRow = UidTable.Row
 
-let uidsTableDict : ExcelProviderHelperDict<UidTable, UidRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
+
+let readUidRows () : UidRow list = 
+    let helper = 
+        { new IExcelProviderHelper<UidTable,UidRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
+    excelReadRowsAsList helper (new UidTable())
 
 let uidDict : Map<string,string> = 
-    excelTableGetRows uidsTableDict (new UidTable()) 
+    readUidRows ()
         |> Seq.map (fun (row:UidRow) -> row.``Common Name``, row.UID)
         |> Map.ofSeq
 

@@ -36,19 +36,19 @@ let nbsp2 : Markdown =
     preformatted [nbsp; nbsp]
 
 let logo : Markdown = 
-    tile (inlineImage (rawtext " ") @"include/YW-logo.jpg" None)
+    tile (inlineImage (text " ") @"include/YW-logo.jpg" None)
 
 let title1 : Markdown = 
-    h1 (rawtext "T0975 - Event Duration Monitoring Phase 2 (EDM2)")
+    h1 (text "T0975 - Event Duration Monitoring Phase 2 (EDM2)")
     
 
 let title2 (sai:string) (name:string) : Markdown = 
-    h2 (rawtext sai ^+^ rawtext name)
+    h2 (text sai ^+^ text name)
 
 
 
 let contents (workItems:string list) : Markdown = 
-    h3 (rawtext "Contents") + unordList (List.map (tile << rawtext) workItems)
+    h3 (text "Contents") ^@^ unordList (List.map (tile << rawtext) workItems)
 
 let documentControl : Markdown = 
     h3 (rawtext "Document Control")
@@ -74,4 +74,31 @@ let generateDocx (workingDirectory:string) (mdInputPath:string) (outputDocxName:
 
 let test01 () = 
     printfn "%s" <| render 80 (makeDoc { Uid = "SAI01"; Name = "OTHER/SML"; Worklist = [] }) ;; 
+
+// ***** PHOTO DOC *****
+
+let page1 (title:string) (imagePath:string) : Markdown = 
+    let imageName = System.IO.Path.GetFileNameWithoutExtension imagePath
+    concat [ h1 (text title)
+           ; tile <| nbsp       // should be Markdown...
+           ; tile <| inlineImage (text " ") imagePath None
+           ; tile <| text imageName
+           ]
+
+let pageRest (title:string) (imagePath:string) : Markdown = 
+    let imageName = System.IO.Path.GetFileNameWithoutExtension imagePath
+    concat [ openxmlPagebreak
+           ; h2 (text title)
+           ; tile <| nbsp       // should be Markdown...
+           ; tile <| inlineImage (text " ") imagePath None
+           ; tile <| text imageName
+           ]
+
+let makePhotoDoc (title:string) (imagePaths: string list) : Markdown = 
+    match imagePaths with
+    | x :: xs -> 
+        let rest = List.map (pageRest title) xs
+        concat (page1 title x :: rest)
+    | [] -> h1 (text title)
+
 

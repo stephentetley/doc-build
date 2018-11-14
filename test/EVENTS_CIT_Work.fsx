@@ -28,6 +28,7 @@ open System.IO
 
 
 #load "..\src\DocMake\Base\Common.fs"
+#load "..\src\DocMake\Base\ExcelProviderHelper.fs"
 #load "..\src\DocMake\Base\FakeLike.fs"
 #load "..\src\DocMake\Base\OfficeUtils.fs"
 #load "..\src\DocMake\Base\SimpleDocOutput.fs"
@@ -36,6 +37,7 @@ open System.IO
 #load "..\src\DocMake\Builder\Basis.fs"
 #load "..\src\DocMake\Tasks\DocFindReplace.fs"
 open DocMake.Base.Common
+open DocMake.Base.ExcelProviderHelper
 open DocMake.Base.FakeLike
 open DocMake.Base.OfficeUtils
 open DocMake.Builder.BuildMonad
@@ -60,9 +62,11 @@ type SiteTable =
 
 type SiteRow = SiteTable.Row
 
-let siteTableDict : ExcelProviderHelperDict<SiteTable, SiteRow> = 
-    { GetRows     = fun imports -> imports.Data 
-      NotNullProc = fun row -> match row.GetValue(0) with | null -> false | _ -> true }
+let siteTableHelper = 
+    { new IExcelProviderHelper<SiteTable, SiteRow> 
+      with member this.ReadTableRows table = table.Data 
+           member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
 
 let filterBySurveyComplete (source:SiteRow list) : SiteRow list = 
     let testRow (row:SiteRow) : bool = 
@@ -72,8 +76,7 @@ let filterBySurveyComplete (source:SiteRow list) : SiteRow list =
     List.filter (not << testRow) source
 
 let getSiteRows () : SiteRow list = 
-    excelTableGetRows siteTableDict (new SiteTable()) 
-        |> Seq.toList 
+    excelReadRowsAsList siteTableHelper (new SiteTable()) 
         |> filterBySurveyComplete
 
 

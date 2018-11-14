@@ -30,6 +30,10 @@ open ImageMagick
 open FSharp.Interop.Excel
 
 
+#I @"..\packages\__MY_LIBS__\lib\net45"
+#r "MarkdownDoc.dll"
+
+
 open System.IO
 
 #load "..\src\DocMake\Base\Common.fs"
