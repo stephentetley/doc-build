@@ -53,7 +53,7 @@ let private makePhotoDocMd (title:string) (imagePaths: string list) : Markdown =
 
 
 let makePhotoDocx (title:string) (imagePaths: string list) 
-                    (outputDocx:string) : PandocRunner<unit> = 
+                    (outputDocx:string) : PandocRunner<WordDoc> = 
     let mdDoc = makePhotoDocMd title imagePaths
     generateDocx mdDoc outputDocx []
 

@@ -6,6 +6,7 @@ module DocMake.Builder.BuildMonad
 open System.Text
 
 open DocMake.Base.Common
+open DocMake.Builder.Base
 
 
 
@@ -21,14 +22,14 @@ type Env =
 
 
 /// Map: extension -> count
-type FileTypeHistogram = Map<string,int>
+type FileCountHistogram = Map<string,int>
 
-let fileTypeHistogramNext (extension:string) (histo:FileTypeHistogram) : FileTypeHistogram * int = 
+let fileCountHistogramNext (extension:string) (histo:FileCountHistogram) : FileCountHistogram * int = 
     match Map.tryFind extension histo with
     | None -> (Map.add extension 1 histo, 1)
     | Some i -> (Map.add extension (i+1) histo, i+ 1)
 
-type State = FileTypeHistogram
+type State = FileCountHistogram
 
 
 type FailMsg = string
@@ -54,9 +55,12 @@ let buildError (errMsg:string) : BuildError =
 let concatBuildErrors (errMsg:string) (failures:BuildError list) : BuildError = 
     BuildError(errMsg,failures)
     
-type BuildMonadResult<'a> =
-    | BmErr of BuildError
-    | BmOk of State * 'a
+
+
+    
+type BuildResult<'a> =
+    | Err of BuildError
+    | Ok of State * 'a
 
 
 
@@ -64,44 +68,44 @@ type BuildMonadResult<'a> =
 // Note - keeping log in a StringBuilder means we only see it "at the end",
 // any direct console writes are visible before the log is shown.
 type BuildMonad<'res,'a> = 
-    private BuildMonad of ((Env * 'res)  -> State -> BuildMonadResult<'a>)
+    private BuildMonad of ((Env * 'res)  -> State -> BuildResult<'a>)
 
-let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (st:State) : BuildMonadResult<'a> = 
+let inline private apply1 (ma : BuildMonad<'res,'a>) (handle:Env * 'res) (st:State) : BuildResult<'a> = 
     let (BuildMonad f) = ma in f handle st
 
 // Return in the BuildMonad
 let inline breturn (x:'a) : BuildMonad<'res,'a> = 
-    BuildMonad (fun _ st -> BmOk (st,x))
+    BuildMonad (fun _ st -> Ok (st,x))
 
 let private failM : BuildMonad<'res,'a> = 
-    BuildMonad (fun _ st -> BmErr (buildError "failM"))
+    BuildMonad (fun _ st -> Err (buildError "failM"))
 
 
 let inline private bindM (ma:BuildMonad<'res,'a>) (f : 'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b> =
     BuildMonad <| fun res st0 -> 
         match apply1 ma res st0 with
-        | BmErr msg -> BmErr msg
-        | BmOk (st1,a) -> apply1 (f a) res st1
+        | Err msg -> Err msg
+        | Ok (st1,a) -> apply1 (f a) res st1
 
 
 let inline private altM (ma:BuildMonad<'res,'a>) (mb:BuildMonad<'res,'a>) : BuildMonad<'res,'a> =
     BuildMonad <| fun res st0 -> 
         match apply1 ma res st0 with 
-        | BmErr stk1 -> 
+        | Err stk1 -> 
             match apply1 mb res st0 with
-            | BmErr stk2 -> BmErr (concatBuildErrors "altM" [stk1;stk2])
-            | BmOk (st2,b) -> BmOk (st2,b)
-        | BmOk (st1,a) -> BmOk (st1, a)
+            | Err stk2 -> Err (concatBuildErrors "altM" [stk1;stk2])
+            | Ok (st2,b) -> Ok (st2,b)
+        | Ok (st1,a) -> Ok (st1, a)
 
 /// This is Haskell's (>>).
 let inline private combineM (ma:BuildMonad<'res,unit>) (mb:BuildMonad<'res,'b>) : BuildMonad<'res,'b> = 
     BuildMonad <| fun res st0 -> 
         match apply1 ma res st0 with
-        | BmErr msg -> BmErr msg
-        | BmOk (st1,_) -> 
+        | Err msg -> Err msg
+        | Ok (st1,_) -> 
             match apply1 mb res st1 with
-            | BmErr msg -> BmErr msg
-            | BmOk (st2,b) -> BmOk (st2, b)
+            | Err msg -> Err msg
+            | Ok (st2,b) -> Ok (st2, b)
 
 let inline private delayM (fn:unit -> BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     bindM (breturn ()) fn 
@@ -121,19 +125,19 @@ let (buildMonad:BuildMonadBuilder) = new BuildMonadBuilder()
 let fmapM (fn:'a -> 'b) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'b> = 
     BuildMonad <| fun res st0 ->
         match apply1 ma res st0  with
-        | BmErr msg -> BmErr msg
-        | BmOk (st1,a) -> BmOk (st1, fn a)
+        | Err msg -> Err msg
+        | Ok (st1,a) -> Ok (st1, fn a)
 
 
 let mapM (fn:'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,'b list> =
     BuildMonad <| fun res state -> 
         let rec work ac (st0:State) ys = 
             match ys with
-            | [] -> BmOk (st0, List.rev ac)
+            | [] -> Ok (st0, List.rev ac)
             | z :: zs ->
                 match apply1 (fn z) res st0 with
-                | BmErr msg -> BmErr msg 
-                | BmOk(st1, a) -> work (a::ac) st1 zs
+                | Err msg -> Err msg 
+                | Ok(st1, a) -> work (a::ac) st1 zs
         work [] state xs
 
 let forM (xs:'a list) (fn:'a -> BuildMonad<'res,'b>) : BuildMonad<'res,'b list> = 
@@ -144,11 +148,11 @@ let mapMz (fn:'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,unit> =
     BuildMonad <| fun res state -> 
         let rec work st0 ys = 
             match ys with
-            | [] -> BmOk (st0, ())
+            | [] -> Ok (st0, ())
             | z :: zs ->
                 match apply1 (fn z) res st0 with
-                | BmErr msg -> BmErr msg
-                | BmOk (st1,_) -> work st1 zs
+                | Err msg -> Err msg
+                | Ok (st1,_) -> work st1 zs
         work state xs
 
 
@@ -172,7 +176,7 @@ let forMz (xs:'a list) (fn:'a -> BuildMonad<'res,'b>) : BuildMonad<'res,unit> =
 //        try 
 //            Seq.fold (fun ac x -> 
 //                        let ans  = apply1Ex (fn x) res sbuf in ac) 
-//                     (BmOk ())
+//                     (Ok ())
 //                     source 
 //        with
 //        | ex -> Err (ex.Message)
@@ -183,22 +187,22 @@ let mapiM (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,'
     BuildMonad <| fun res state -> 
         let rec work ac ix st0 ys = 
             match ys with
-            | [] -> BmOk (st0,List.rev ac)
+            | [] -> Ok (st0,List.rev ac)
             | z :: zs ->
                 match apply1 (fn ix z) res st0 with
-                | BmErr msg -> BmErr msg
-                | BmOk (st1,a) -> work (a::ac) (ix+1) st1 zs
+                | Err msg -> Err msg
+                | Ok (st1,a) -> work (a::ac) (ix+1) st1 zs
         work [] 0 state xs
 
 let mapiMz (fn:int -> 'a -> BuildMonad<'res,'b>) (xs:'a list) : BuildMonad<'res,unit> =
     BuildMonad <| fun res state -> 
         let rec work ix st0 ys = 
             match ys with
-            | [] -> BmOk (st0, ())
+            | [] -> Ok (st0, ())
             | z :: zs ->
                 match apply1 (fn ix z) res st0 with
-                | BmErr msg -> BmErr msg
-                | BmOk (st1, _) -> work (ix+1) st1 zs
+                | Err msg -> Err msg
+                | Ok (st1, _) -> work (ix+1) st1 zs
         work 0 state xs
 
 /// Flipped mapiM
@@ -262,7 +266,7 @@ let (=<<) (k: 'a -> BuildMonad<'res,'b>) (ma: BuildMonad<'res,'a>) : BuildMonad<
 // *********************************************************
 
 // BuildMonad operations
-let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,'a>) : BuildMonadResult<'a>= 
+let runBuildMonad (env:Env) (handle:'res) (stateZero:State) (ma:BuildMonad<'res,'a>) : BuildResult<'a>= 
     match ma with 
     | BuildMonad fn ->  fn (env,handle) stateZero
 
@@ -274,8 +278,8 @@ let evalBuildMonad (env:Env) (handle:'res) (finalizer:'res -> unit) (stateZero:S
     let ans = runBuildMonad env handle stateZero ma
     finalizer handle
     match ans with
-    | BmErr stk -> failwith (getErrorLog stk)
-    | BmOk (_,a) -> a
+    | Err stk -> failwith (getErrorLog stk)
+    | Ok (_,a) -> a
 
 
 
@@ -292,14 +296,14 @@ let withUserHandle (handle:'uhandle) (finalizer:'uhandle -> unit) (ma:BuildMonad
         ans
 
 let throwError (msg:string) : BuildMonad<'res,'a> = 
-    BuildMonad <| fun _ _ -> BmErr (buildError msg)
+    BuildMonad <| fun _ _ -> Err (buildError msg)
 
 
 let swapError (msg:string) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,res) st0 -> 
         match apply1 ma (env, res) st0 with
-        | BmErr (BuildError (_,stk)) -> BmErr (BuildError (msg,stk))
-        | BmOk (pos1,a) -> BmOk (pos1,a)
+        | Err (BuildError (_,stk)) -> Err (BuildError (msg,stk))
+        | Ok (pos1,a) -> Ok (pos1,a)
 
 
 let (<&?>) (ma:BuildMonad<'res,'a>) (msg:string) : BuildMonad<'res,'a> = 
@@ -316,7 +320,7 @@ let attempt (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'a> =
         try
             apply1 ma (env, res) st0
         with
-        | _ -> BmErr (buildError "attempt failed")
+        | _ -> Err (buildError "attempt failed")
 
 
 
@@ -326,28 +330,28 @@ let attempt (ma: BuildMonad<'res,'a>) : BuildMonad<'res,'a> =
 let executeIO (operation:unit -> 'a) : BuildMonad<'res,'a> = 
     BuildMonad <| fun _ st0 -> 
     try 
-        let ans = operation () in BmOk (st0, ans)
+        let ans = operation () in Ok (st0, ans)
     with
-    | ex -> BmErr (buildError (sprintf "executeIO: %s" ex.Message))
+    | ex -> Err (buildError (sprintf "executeIO: %s" ex.Message))
 
 
 
 /// Note unit param to avoid value restriction.
 let askU () : BuildMonad<'res,'res> = 
-    BuildMonad <| fun (_,res) st0 -> BmOk (st0, res)
+    BuildMonad <| fun (_,res) st0 -> Ok (st0, res)
 
 let asksU (project:'res -> 'a) : BuildMonad<'res,'a> = 
-    BuildMonad <| fun (_,res) st0 -> BmOk (st0, project res)
+    BuildMonad <| fun (_,res) st0 -> Ok (st0, project res)
 
 let localU (modify:'res -> 'res) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,res) st0 -> apply1 ma (env, modify res) st0
 
     // PrintQuality
 let askEnv () : BuildMonad<'res,Env> = 
-    BuildMonad <| fun (env,_) st0 -> BmOk (st0, env)
+    BuildMonad <| fun (env,_) st0 -> Ok (st0, env)
 
 let asksEnv (project:Env -> 'a) : BuildMonad<'res,'a> = 
-    BuildMonad <| fun (env,_) st0 -> BmOk (st0, project env)
+    BuildMonad <| fun (env,_) st0 -> Ok (st0, project env)
 
 let localEnv (modify:Env -> Env) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> = 
     BuildMonad <| fun (env,res) st0 -> apply1 ma (modify env, res) st0
@@ -358,10 +362,10 @@ let localEnv (modify:Env -> Env) (ma:BuildMonad<'res,'a>) : BuildMonad<'res,'a> 
 
 
 
-// TODO - if this took a file extension it might simplify things
+
 let freshFileName (extension:string) : BuildMonad<'res, string> = 
     BuildMonad <| fun (env,_) st0 -> 
-        let (st1,i) = fileTypeHistogramNext extension st0
+        let (st1,i) = fileCountHistogramNext extension st0
         let name1 = sprintf "temp%03i.%s" i extension
         let outPath = System.IO.Path.Combine(env.WorkingDirectory,name1)
-        BmOk (st1, outPath)
+        Ok (st1, outPath)

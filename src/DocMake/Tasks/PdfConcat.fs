@@ -10,7 +10,7 @@ open DocMake.Base.Common
 open DocMake.Builder.BuildMonad
 open DocMake.Builder.Document
 open DocMake.Builder.ShellHooks
- 
+open DocMake.Builder.GhostscriptRunner
 
 /// Concat PDFs with Ghostscript
 /// We favour Ghostscript because it lets us lower the print 
@@ -66,6 +66,27 @@ type PdfConcatApi<'res> =
 let makeAPI (getHandle:'res-> GsHandle) : PdfConcatApi<'res> = 
     { PdfConcat = pdfConcatImpl getHandle }
 
+
+// ****************************************************************************
+
+/// New API
+
+let pdfConcat (inputFiles:PdfDoc list) (outfileName:string) : GhostscriptRunner<PdfDoc> = 
+    let paths = 
+        List.choose id <| List.map (fun (a:PdfDoc) -> a.GetPath) inputFiles
+
+    match paths with
+    | [] -> mreturn zeroDocument
+    | _ -> 
+        ghostscriptRunner { 
+            let! outDoc = liftBM <| freshDocument "pdf"
+            let! quality = liftBM <| asksEnv (fun s -> s.PdfQuality)
+            match outDoc.GetPath with
+            | None -> return zeroDocument
+            | Some outPath -> 
+                let! _ = ghostscriptExec (makeCmd quality outPath paths)
+                return outDoc
+        }
     
   
 
