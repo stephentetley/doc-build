@@ -72,6 +72,7 @@
     <Compile Include="DocMake\Builder\PandocRunner.fs" />
     <Compile Include="DocMake\Builder\PdftkRunner.fs" />
     <Compile Include="DocMake\Builder\GhostscriptRunner.fs" />
+    <Compile Include="DocMake\Builder\ExcelRunner.fs" />
     <Compile Include="DocMake\Tasks\IOActions.fs" />
     <Compile Include="DocMake\Tasks\DocFindReplace.fs" />
     <Compile Include="DocMake\Tasks\XlsFindReplace.fs" />
