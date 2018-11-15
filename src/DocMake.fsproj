@@ -57,6 +57,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
     <Compile Include="DocMake\Base\Common.fs" />
+    <Compile Include="DocMake\Base\RunProcess.fs" />
     <Compile Include="DocMake\Base\String.fs" />
     <Compile Include="DocMake\Base\FakeLike.fs" />
     <Compile Include="DocMake\Base\ExcelProviderHelper.fs" />
@@ -86,6 +87,7 @@
     <Compile Include="DocMake\Tasks\PdfRotate.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos.fs" />
     <Compile Include="DocMake\Tasks\DocPhotos2.fs" />
+    <Compile Include="DocMake\PdfDoc.fs" />
     <Compile Include="DocMake\FullBuilder.fs" />
     <Compile Include="DocMake\WordBuilder.fs" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">

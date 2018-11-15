@@ -59,6 +59,7 @@
     <None Include="SAMPS_New_Final.fsx" />
     <None Include="USAR_New_Final.fsx" />
     <None Include="TempMarkdown.fsx" />
+    <None Include="TempPdfDoc.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
