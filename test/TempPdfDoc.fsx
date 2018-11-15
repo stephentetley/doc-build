@@ -11,12 +11,12 @@
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
 
-#load "..\src\DocMake\Base\Common.fs"
-#load "..\src\DocMake\Base\RunProcess.fs"
-#load "..\src\DocMake\PdfDoc.fs"
-#load "..\src\DocMake\WordDoc.fs"
-open DocMake.PdfDoc
-open DocMake.WordDoc
+
+#load "..\src\DocBuild\Internal\RunProcess.fs"
+#load "..\src\DocBuild\PdfDoc.fs"
+#load "..\src\DocBuild\WordDoc.fs"
+open DocBuild.PdfDoc
+open DocBuild.WordDoc
 
 let demo01 () = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")

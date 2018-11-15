@@ -2,13 +2,13 @@
 // License: BSD 3 Clause
 
 
-module DocMake.WordDoc
+module DocBuild.WordDoc
 
 
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-open DocMake.PdfDoc
+open DocBuild.PdfDoc
 
 let private rbox (x:'a) : ref<obj> = ref (x :> obj)
 

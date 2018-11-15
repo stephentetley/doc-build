@@ -2,9 +2,9 @@
 // License: BSD 3 Clause
 
 
-module DocMake.PdfDoc
+module DocBuild.PdfDoc
 
-open DocMake.Base.RunProcess
+open DocBuild.Internal.RunProcess
 
 /// Concat PDFs with Ghostscript
 /// We favour Ghostscript because it lets us lower the print 

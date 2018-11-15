@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-module DocMake.Base.RunProcess
+module DocBuild.Internal.RunProcess
 
 
 /// Return `Choice2Of2 0` indicates Success
