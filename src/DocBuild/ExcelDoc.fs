@@ -66,8 +66,8 @@ type ExcelDoc =
             | ex -> failwith ex.Message
 
 
-        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfDoc =
-            let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
-            v.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
+    member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfDoc =
+        let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
+        v.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
 
 let excelDoc (path:string) : ExcelDoc = new ExcelDoc (filePath = path)

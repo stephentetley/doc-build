@@ -50,10 +50,9 @@ type WordDoc =
             with
             | ex -> failwithf "Some error occured - %s - %s" v.Body ex.Message
 
-
-        member v.ExportAsPdf(quality:WordExportQuality) : PdfDoc =
-            let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
-            v.ExportAsPdf(quality= quality, outFile = outFile)
+    member v.ExportAsPdf(quality:WordExportQuality) : PdfDoc =
+        let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
+        v.ExportAsPdf(quality= quality, outFile = outFile)
 
 let wordDoc (path:string) : WordDoc = new WordDoc (filePath = path)
 
