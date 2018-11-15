@@ -12,11 +12,20 @@
 #r "office"
 
 
+#load "..\src\DocBuild\Internal\Common.fs"
 #load "..\src\DocBuild\Internal\RunProcess.fs"
 #load "..\src\DocBuild\PdfDoc.fs"
+#load "..\src\DocBuild\ExcelDoc.fs"
 #load "..\src\DocBuild\WordDoc.fs"
+#load "..\src\DocBuild\PowerPointDoc.fs"
 open DocBuild.PdfDoc
+open DocBuild.ExcelDoc
 open DocBuild.WordDoc
+open DocBuild.PowerPointDoc
+
+let getWorkingFile (name:string) = 
+    let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
+    System.IO.Path.Combine(working, name)
 
 let demo01 () = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
@@ -25,11 +34,15 @@ let demo01 () =
         ; GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe" 
         ; PrintQuality = GsPdfScreen
         }
-    let p1 = System.IO.Path.Combine(working, "One.pdf")
-    let p2 = System.IO.Path.Combine(working, "Two.pdf")
-    let p3 = System.IO.Path.Combine(working, "Three.pdf")
-    let p4 = System.IO.Path.Combine(working, "FR-output2.docx")
-    let d1 = (concat <| List.map pdfDoc [p1;p2;p3]) ^^ (wordDoc p4).ExportAsPdf(WordForScreen)
+    let p1 = getWorkingFile "One.pdf"
+    let p2 = getWorkingFile "Two.pdf"
+    let p3 = getWorkingFile "Three.pdf"
+    let p4 = getWorkingFile "FR-output2.docx"
+    let xl1 = excelDoc <| getWorkingFile "sheet1.xlsx"
+    let d1 = (concat <| List.map pdfDoc [p1;p2;p3]) 
+                ^^ (wordDoc p4).ExportAsPdf(WordForScreen)
+                ^^ xl1.ExportAsPdf(true, ExcelQualityMinimum)
+
     d1.Save(options, "concat.pdf")
 
 

@@ -8,9 +8,9 @@ module DocBuild.WordDoc
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
+open DocBuild.Internal.Common
 open DocBuild.PdfDoc
 
-let private rbox (x:'a) : ref<obj> = ref (x :> obj)
 
 let private withWordApp (operation:Word.Application -> 'a) : 'a = 
     let app = new Word.ApplicationClass (Visible = true) :> Word.Application
@@ -23,7 +23,7 @@ type WordExportQuality =
     | WordForPrint
 
 
-let private wordPrintQuality (quality:WordExportQuality) : Word.WdExportOptimizeFor = 
+let private wordExportQuality (quality:WordExportQuality) : Word.WdExportOptimizeFor = 
     match quality with
     | WordForScreen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
     | WordForPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
@@ -39,12 +39,12 @@ type WordDoc =
         with get() : string = v.DocPath
 
     member v.ExportAsPdf(quality:WordExportQuality, outFile:string) : PdfDoc = 
-        withWordApp <| fun wordApp -> 
+        withWordApp <| fun app -> 
             try 
-                let doc:(Word.Document) = wordApp.Documents.Open(FileName = rbox v.Body)
+                let doc:(Word.Document) = app.Documents.Open(FileName = rbox v.Body)
                 doc.ExportAsFixedFormat (OutputFileName = outFile, 
                                           ExportFormat = Word.WdExportFormat.wdExportFormatPDF,
-                                          OptimizeFor = wordPrintQuality quality)
+                                          OptimizeFor = wordExportQuality quality)
                 doc.Close (SaveChanges = rbox false)
                 pdfDoc outFile
             with
@@ -56,3 +56,4 @@ type WordDoc =
             v.ExportAsPdf(quality= quality, outFile = outFile)
 
 let wordDoc (path:string) : WordDoc = new WordDoc (filePath = path)
+
