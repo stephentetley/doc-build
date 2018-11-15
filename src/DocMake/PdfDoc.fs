@@ -4,15 +4,32 @@
 
 module DocMake.PdfDoc
 
-open DocMake.Base.Common
 open DocMake.Base.RunProcess
 
 /// Concat PDFs with Ghostscript
 /// We favour Ghostscript because it lets us lower the print 
 /// quality (and reduce the file size).
 
+type GsPdfSettings = 
+    | GsPdfScreen 
+    | GsPdfEbook
+    | GsPdfPrinter
+    | GsPdfPrepress
+    | GsPdfDefault
+    | GsPdfNone
+
+
+let private ghostscriptPrintSetting (quality:GsPdfSettings) : string = 
+    match quality with
+    | GsPdfScreen ->  @"/screen"
+    | GsPdfEbook -> @"/ebook"
+    | GsPdfPrinter -> @"/printer"
+    | GsPdfPrepress -> @"/prepress"
+    | GsPdfDefault -> @"/default"
+    | GsPdfNone -> ""
+
  
-let private gsOptions (quality:PdfPrintQuality) : string =
+let private gsOptions (quality:GsPdfSettings) : string =
     match ghostscriptPrintSetting quality with
     | "" -> @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite"
     | ss -> sprintf @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=%s" ss
@@ -24,7 +41,7 @@ let private gsInputFile (fileName:string) : string = sprintf "\"%s\"" fileName
 
 
 /// Apparently we cannot send multiline commands to execProcess.
-let private makeGsCommand (quality:PdfPrintQuality) (outputFile:string) (inputFiles: string list) : string = 
+let private makeGsCommand (quality:GsPdfSettings) (outputFile:string) (inputFiles: string list) : string = 
     let line1 = gsOptions quality + " " + gsOutputFile outputFile
     let rest = List.map gsInputFile inputFiles
     String.concat " " (line1 :: rest)
@@ -36,7 +53,7 @@ type PdfPath = string
 type GhostscriptOptions = 
     { WorkingDirectory: string 
       GhostscriptExe: string 
-      PrintQuality: PdfPrintQuality         // Make this Ghostscript specific?
+      PrintQuality: GsPdfSettings
     }
 
 /// A PdfDoc is actually a list of Pdf files that are rendered 
