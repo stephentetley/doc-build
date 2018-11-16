@@ -6,6 +6,7 @@ module DocBuild.Internal.CommonUtils
 open System.IO
 open System.Text.RegularExpressions
 
+
 let rbox (x:'a) : ref<obj> = ref (x :> obj)
 
 
@@ -14,7 +15,6 @@ let rbox (x:'a) : ref<obj> = ref (x :> obj)
 /// If the file already contains with ``DBU`` before the extension, 
 /// return the file name so it can be overwritten.
 let getTempFileName (filePath:string) : string = 
-    
     let justfile = System.IO.Path.GetFileNameWithoutExtension filePath
     if Regex.Match(justfile, "\.DBU$").Success then 
         filePath

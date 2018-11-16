@@ -9,14 +9,10 @@ module DocBuild.WordDoc
 open Microsoft.Office.Interop
 
 open DocBuild.Internal.CommonUtils
+open DocBuild.Internal.WordUtils
 open DocBuild.PdfDoc
 
 
-let private withWordApp (operation:Word.Application -> 'a) : 'a = 
-    let app = new Word.ApplicationClass (Visible = true) :> Word.Application
-    let result = operation app
-    app.Quit()
-    result
 
 type WordExportQuality = 
     | WordForScreen

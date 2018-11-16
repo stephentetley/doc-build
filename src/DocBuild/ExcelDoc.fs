@@ -8,19 +8,10 @@ module DocBuild.ExcelDoc
 // Open at .Interop rather than .Excel then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-
+open DocBuild.Internal.ExcelUtils
 open DocBuild.PdfDoc
 
 
-let private withExcelApp (operation:Excel.Application -> 'a) : 'a = 
-    let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
-    app.DisplayAlerts <- false
-    app.EnableEvents <- false
-    let result = operation app
-    app.DisplayAlerts <- true
-    app.EnableEvents <- true
-    app.Quit ()
-    result
 
 type ExcelExportQuality = 
     | ExcelQualityMinimum

@@ -23,6 +23,8 @@
 #load "..\src\DocBuild\Internal\CommonUtils.fs"
 #load "..\src\DocBuild\Internal\RunProcess.fs"
 #load "..\src\DocBuild\Internal\ImageMagickUtils.fs"
+#load "..\src\DocBuild\Internal\ExcelUtils.fs"
+#load "..\src\DocBuild\Internal\WordUtils.fs"
 #load "..\src\DocBuild\PdfDoc.fs"
 #load "..\src\DocBuild\ExcelDoc.fs"
 #load "..\src\DocBuild\WordDoc.fs"
