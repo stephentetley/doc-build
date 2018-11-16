@@ -37,10 +37,16 @@ type JpegDoc =
                 System.IO.File.Copy(v.SourcePath, v.TempPath)
                 v.TempPath
 
-    member v.SaveAs(outputPath: string) :JpegDoc = 
-        let updatedFile = v.TempFile
-        System.IO.File.Move(updatedFile, outputPath)
-        new JpegDoc(filePath = outputPath)
+    member internal v.Updated 
+        with get() : bool = System.IO.File.Exists(v.TempPath)
+        
+
+    member v.SaveAs(outputPath: string) : unit = 
+        if v.Updated then 
+            System.IO.File.Move(v.TempPath, outputPath)
+        else
+            System.IO.File.Copy(v.SourcePath, outputPath)
+
 
 
     member v.AutoOrient() : JpegDoc = 

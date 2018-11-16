@@ -75,7 +75,7 @@ type PdfDoc =
     member internal v.Body 
         with get() : PdfPath list = v.Documents
 
-    member v.Save(options: GhostscriptOptions, outputPath: string) : unit = 
+    member v.SaveAs(options: GhostscriptOptions, outputPath: string) : unit = 
         let command = makeGsCommand options.PrintQuality outputPath v.Body
         match executeProcess options.WorkingDirectory options.GhostscriptExe command with
         | Choice2Of2 i when i = 0 -> ()

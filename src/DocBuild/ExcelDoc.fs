@@ -77,6 +77,12 @@ type ExcelDoc =
         let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
         v.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
 
+    member v.SaveAs(outputPath: string) : unit = 
+        if v.Updated then 
+            System.IO.File.Move(v.TempPath, outputPath)
+        else
+            System.IO.File.Copy(v.SourcePath, outputPath)
+
     member v.FindReplace(searches:SearchList) : ExcelDoc = 
         withExcelApp <| fun app -> 
             let tempFile = v.TempFile

@@ -69,7 +69,7 @@ let demo01 () =
                 ^^ (wordDoc p4).ExportAsPdf(WordForScreen)
                 ^^ xl1.ExportAsPdf(true, ExcelQualityMinimum)
                 ^^ md1.ExportAsPdf(pandocOptions)
-    d1.Save(gsOptions, "concat.pdf")
+    d1.SaveAs(gsOptions, "concat.pdf")
 
 
     // TODO Pdf rotate

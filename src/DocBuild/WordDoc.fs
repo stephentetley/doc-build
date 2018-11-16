@@ -71,11 +71,19 @@ type WordDoc =
         v.ExportAsPdf(quality= quality, outFile = outFile)
 
 
+    member v.SaveAs(outputPath: string) : unit = 
+        if v.Updated then 
+            System.IO.File.Move(v.TempPath, outputPath)
+        else
+            System.IO.File.Copy(v.SourcePath, outputPath)
+
+
     member v.FindReplace(searches:SearchList) : WordDoc = 
         withWordApp <| fun app -> 
             let tempFile = v.TempFile
             wordFindReplace app tempFile None searches
         v
+
 
 let wordDoc (path:string) : WordDoc = new WordDoc (filePath = path)
 

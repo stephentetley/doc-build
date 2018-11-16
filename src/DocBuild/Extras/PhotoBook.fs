@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-[<RequireQualifiedAccess>]
-module DocMake.Tasks.DocPhotos2
+module DocMake.Tasks.PhotoBook
 
 
 open System.IO
@@ -11,13 +10,20 @@ open System.IO
 open MarkdownDoc
 open MarkdownDoc.Pandoc
 
+open DocBuild.Common
 open DocBuild.MarkdownDoc
-
+open DocBuild.JpegDoc
 
 // Note 
 // For simplicity of the API we should resize and AutoOrient the photos first.
 
 // TODO - optimize images...
+
+let optimizeImage (imagePath:string) : string = 
+    let outputname = suffixFileName "TEMP" imagePath
+    (jpegDoc imagePath).AutoOrient().ResizeForWord().SaveAs(outputname)
+    outputname
+        
 
 let private makePage1 (title:string) (imagePath:string) : Markdown = 
     let imageName = System.IO.Path.GetFileNameWithoutExtension imagePath
@@ -47,8 +53,9 @@ let private photoBookMarkdown (title:string) (imagePaths: string list) : Markdow
 
 
 let makePhotoBook (title:string) (imagePaths: string list) 
-                    (outFile:string) : MarkdownDoc = 
-    let book = photoBookMarkdown title imagePaths
+                    (outFile:string) : MarkdownDoc =
+    let newImages = List.map optimizeImage imagePaths                        
+    let book = photoBookMarkdown title newImages
     new MarkdownDoc (markdown = book, filePath = outFile)
 
 
