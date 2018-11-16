@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-module DocMake.Base.ImageMagickUtils
+module DocBuild.Internal.ImageMagickUtils
 
 open System
 
 open ImageMagick
 
-open DocMake.Base.FakeLike
 
 type PhotoOrientation = PhotoPortrait | PhotoLandscape
 
@@ -40,10 +39,15 @@ let calculateNewPixelSize (info:MagickImageInfo) (maxWidth:int, maxHeight:int) :
         (scale info.Width scaling, maxHeight)
 
 
-let autoOrient (filePath:string) : unit = 
-    use (img:MagickImage) = new MagickImage(filePath)
-    img.AutoOrient () // May have Exif rotation problems...
-    img.Write filePath
+type IMQuery<'a> = MagickImage -> 'a
+type IMTransform = MagickImage -> unit
+
+let autoOrient : IMTransform = fun img -> img.AutoOrient ()
+
+//let autoOrient (filePath:string) : unit = 
+//    use (img:MagickImage) = new MagickImage(filePath)
+//    img.AutoOrient () // May have Exif rotation problems...
+//    img.Write filePath
 
 
 
@@ -58,8 +62,8 @@ let optimizeForMsWord (filePath:string) : unit =
 
 
 
-let optimizePhotos (jpegFolderPath:string) : unit =
-    let (jpegFiles :string list) = getFilesMatching jpegFolderPath "*.jpg"
-    List.iter (fun file -> autoOrient file; optimizeForMsWord file) jpegFiles
+//let optimizePhotos (jpegFolderPath:string) : unit =
+//    let (jpegFiles :string list) = getFilesMatching jpegFolderPath "*.jpg"
+//    List.iter (fun file -> autoOrient file; optimizeForMsWord file) jpegFiles
     
 

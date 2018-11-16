@@ -35,7 +35,7 @@ let excelExportQuality (quality:ExcelExportQuality) : Excel.XlFixedFormatQuality
 
 
 type ExcelDoc = 
-    val XlsPath : string
+    val private XlsPath : string
 
     new (filePath:string) = 
         { XlsPath = filePath }

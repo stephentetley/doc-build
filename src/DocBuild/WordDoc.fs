@@ -30,7 +30,7 @@ let private wordExportQuality (quality:WordExportQuality) : Word.WdExportOptimiz
 
 
 type WordDoc = 
-    val DocPath : string
+    val private DocPath : string
 
     new (filePath:string) = 
         { DocPath = filePath }

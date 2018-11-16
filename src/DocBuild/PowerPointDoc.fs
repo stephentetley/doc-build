@@ -19,6 +19,7 @@ let private withPowerPointApp (operation:PowerPoint.Application -> 'a) : 'a =
     app.Quit ()
     result
 
+
 type PowerPointExportQuality = 
     | PowerPointForScreen
     | PowerPointForPrint
@@ -31,7 +32,7 @@ let private powerpointExportQuality (quality:PowerPointExportQuality) : PowerPoi
 
 
 type PowerPointDoc = 
-    val PptPath : string
+    val private PptPath : string
 
     new (filePath:string) = 
         { PptPath = filePath }

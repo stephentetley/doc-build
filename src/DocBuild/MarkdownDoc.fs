@@ -33,7 +33,7 @@ type MarkdownDoc =
     // Path is consistent with other objects and we can always render 
     // ``Markdown`` to text.
 
-    val MarkdownPath : string
+    val private MarkdownPath : string
 
     new (filePath:string) = 
         { MarkdownPath = filePath }

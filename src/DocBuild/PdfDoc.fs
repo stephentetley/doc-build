@@ -60,7 +60,7 @@ type GhostscriptOptions =
 /// to a single document with Ghostscript.
 /// This means we have monodial concatenation.
 type PdfDoc = 
-    val Documents : PdfPath list
+    val private Documents : PdfPath list
 
     new () = 
         { Documents = [] }
