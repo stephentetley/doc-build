@@ -32,6 +32,7 @@
 #load "..\src\DocBuild\PowerPointDoc.fs"
 #load "..\src\DocBuild\MarkdownDoc.fs"
 #load "..\src\DocBuild\JpegDoc.fs"
+#load "..\src\DocBuild\Extras\PhotoBook.fs"
 open DocBuild.PdfDoc
 open DocBuild.ExcelDoc
 open DocBuild.WordDoc
@@ -71,5 +72,5 @@ let demo01 () =
     d1.Save(gsOptions, "concat.pdf")
 
 
-    // TODO Word and Excel find and replace...
+    // TODO Pdf rotate
 

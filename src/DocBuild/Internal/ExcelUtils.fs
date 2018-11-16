@@ -39,8 +39,22 @@ let private sheetFindReplaceList (worksheet:Excel.Worksheet) (searches:(string *
     List.iter (sheetFindReplace worksheet) searches
 
 
-let excelFindReplace (workbook:Excel.Workbook) (searches:(string * string) list) : unit = 
+let workbookFindReplace (workbook:Excel.Workbook) (searches:(string * string) list) : unit = 
     workbook.Worksheets 
         |> Seq.cast<Excel.Worksheet> 
         |> Seq.iter (fun (sheet:Excel.Worksheet) -> sheetFindReplaceList sheet searches)
 
+let excelFindReplace (app:Excel.Application) 
+                        (inpath:string) 
+                        (outpath:option<string>) 
+                        (ss:(string * string) list) : unit = 
+    let workbook : Excel.Workbook = app.Workbooks.Open(inpath)
+    workbookFindReplace workbook ss
+    try 
+        match outpath with 
+        | None -> workbook.Save()
+        | Some filename -> 
+            printfn "Outpath: %s" filename
+            workbook.SaveAs (Filename = filename)
+    finally 
+        workbook.Close (SaveChanges = false)

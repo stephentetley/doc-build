@@ -8,7 +8,9 @@ module DocBuild.ExcelDoc
 // Open at .Interop rather than .Excel then the Word API has to be qualified
 open Microsoft.Office.Interop
 
+open DocBuild.Internal.CommonUtils
 open DocBuild.Internal.ExcelUtils
+open DocBuild.Common
 open DocBuild.PdfDoc
 
 
@@ -26,18 +28,30 @@ let excelExportQuality (quality:ExcelExportQuality) : Excel.XlFixedFormatQuality
 
 
 type ExcelDoc = 
-    val private XlsPath : string
+    val private SourcePath : string
+    val private TempPath : string
 
     new (filePath:string) = 
-        { XlsPath = filePath }
+        { SourcePath = filePath
+        ; TempPath = getTempFileName filePath }
 
-    member internal v.Body 
-        with get() : string = v.XlsPath
+    member internal v.TempFile
+        with get() : string = 
+            if System.IO.File.Exists(v.TempPath) then
+                v.TempPath
+            else
+                System.IO.File.Copy(v.SourcePath, v.TempPath)
+                v.TempPath
+    
+    member internal v.Updated 
+        with get() : bool = System.IO.File.Exists(v.TempPath)
 
     member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality, outFile:string) : PdfDoc = 
+        // Don't make a temp file if we don't have to
+        let srcFile = if v.Updated then v.TempPath else v.SourcePath
         withExcelApp <| fun app -> 
             try 
-                let workbook : Excel.Workbook = app.Workbooks.Open(v.Body)
+                let workbook : Excel.Workbook = app.Workbooks.Open(srcFile)
                 if fitWidth then 
                     workbook.Sheets 
                         |> Seq.cast<Excel.Worksheet>
@@ -58,7 +72,15 @@ type ExcelDoc =
 
 
     member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfDoc =
-        let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
+        // Don't make a temp file if we don't have to
+        let srcFile = if v.Updated then v.TempPath else v.SourcePath
+        let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
         v.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
+
+    member v.FindReplace(searches:SearchList) : ExcelDoc = 
+        withExcelApp <| fun app -> 
+            let tempFile = v.TempFile
+            excelFindReplace app tempFile None searches
+        v
 
 let excelDoc (path:string) : ExcelDoc = new ExcelDoc (filePath = path)
