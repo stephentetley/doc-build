@@ -4,10 +4,7 @@
 
 module DocBuild.MarkdownDoc
 
-
-
 open MarkdownDoc
-open MarkdownDoc.Pandoc
 
 open DocBuild.Internal.RunProcess
 open DocBuild.PdfDoc

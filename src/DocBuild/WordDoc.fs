@@ -8,7 +8,7 @@ module DocBuild.WordDoc
 // Open at .Interop rather than .Word then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-open DocBuild.Internal.Common
+open DocBuild.Internal.CommonUtils
 open DocBuild.PdfDoc
 
 
@@ -27,6 +27,10 @@ let private wordExportQuality (quality:WordExportQuality) : Word.WdExportOptimiz
     match quality with
     | WordForScreen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
     | WordForPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
+
+/// TODO WordDoc should be updateable (e.g. by Find/Replace)
+/// But it would be nice not to generate a temp file if all
+/// we are doing is exporting to PDF (with no modications).
 
 
 type WordDoc = 

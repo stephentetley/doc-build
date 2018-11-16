@@ -8,7 +8,7 @@ module DocBuild.PowerPointDoc
 // Open at .Interop rather than .PowerPoint then the PowerPoint API has to be qualified
 open Microsoft.Office.Interop
 
-open DocBuild.Internal.Common
+open DocBuild.Internal.CommonUtils
 open DocBuild.PdfDoc
 
 

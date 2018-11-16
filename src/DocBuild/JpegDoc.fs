@@ -5,7 +5,7 @@
 module DocBuild.JpegDoc
 
 
-open DocBuild.Internal.Common
+open DocBuild.Internal.CommonUtils
 open DocBuild.Internal.ImageMagickUtils
 
 
@@ -22,11 +22,11 @@ open DocBuild.Internal.ImageMagickUtils
 
 
 type JpegDoc = 
-    val private JpegPath : string
+    val private SourcePath : string
     val private TempPath : string
 
     new (filePath:string) = 
-        { JpegPath = filePath
+        { SourcePath = filePath
         ; TempPath = getTempFileName filePath }
 
     member internal v.TempFile
@@ -34,7 +34,7 @@ type JpegDoc =
             if System.IO.File.Exists(v.TempPath) then
                 v.TempPath
             else
-                System.IO.File.Copy(v.JpegPath, v.TempPath)
+                System.IO.File.Copy(v.SourcePath, v.TempPath)
                 v.TempPath
 
     member v.SaveAs(outputPath: string) :JpegDoc = 

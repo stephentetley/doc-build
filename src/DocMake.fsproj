@@ -88,9 +88,10 @@
     <Compile Include="DocMake\Tasks\DocPhotos2.fs" />
     <Compile Include="DocMake\FullBuilder.fs" />
     <Compile Include="DocMake\WordBuilder.fs" />
-    <Compile Include="DocBuild\Internal\Common.fs" />
+    <Compile Include="DocBuild\Internal\CommonUtils.fs" />
     <Compile Include="DocBuild\Internal\RunProcess.fs" />
     <Compile Include="DocBuild\Internal\ImageMagickUtils.fs" />
+    <Compile Include="DocBuild\Common.fs" />
     <Compile Include="DocBuild\PdfDoc.fs" />
     <Compile Include="DocBuild\ExcelDoc.fs" />
     <Compile Include="DocBuild\WordDoc.fs" />

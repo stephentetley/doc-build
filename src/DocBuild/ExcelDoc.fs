@@ -8,7 +8,7 @@ module DocBuild.ExcelDoc
 // Open at .Interop rather than .Excel then the Word API has to be qualified
 open Microsoft.Office.Interop
 
-open DocBuild.Internal.Common
+
 open DocBuild.PdfDoc
 
 

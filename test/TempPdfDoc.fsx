@@ -20,7 +20,7 @@
 #r @"MarkdownDoc.dll"
 
 
-#load "..\src\DocBuild\Internal\Common.fs"
+#load "..\src\DocBuild\Internal\CommonUtils.fs"
 #load "..\src\DocBuild\Internal\RunProcess.fs"
 #load "..\src\DocBuild\Internal\ImageMagickUtils.fs"
 #load "..\src\DocBuild\PdfDoc.fs"
