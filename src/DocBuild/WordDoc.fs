@@ -10,6 +10,7 @@ open Microsoft.Office.Interop
 
 open DocBuild.Internal.CommonUtils
 open DocBuild.Internal.WordUtils
+open DocBuild.Common
 open DocBuild.PdfDoc
 
 
@@ -30,29 +31,51 @@ let private wordExportQuality (quality:WordExportQuality) : Word.WdExportOptimiz
 
 
 type WordDoc = 
-    val private DocPath : string
+    val private SourcePath : string
+    val private TempPath : string
 
     new (filePath:string) = 
-        { DocPath = filePath }
+        { SourcePath = filePath
+        ; TempPath = getTempFileName filePath }
 
-    member internal v.Body 
-        with get() : string = v.DocPath
+    member internal v.TempFile
+        with get() : string = 
+            if System.IO.File.Exists(v.TempPath) then
+                v.TempPath
+            else
+                System.IO.File.Copy(v.SourcePath, v.TempPath)
+                v.TempPath
+    
+    member internal v.Updated 
+        with get() : bool = System.IO.File.Exists(v.TempPath)
+            
 
     member v.ExportAsPdf(quality:WordExportQuality, outFile:string) : PdfDoc = 
+        // Don't make a temp file if we don't have to
+        let srcFile = if v.Updated then v.TempPath else v.SourcePath
         withWordApp <| fun app -> 
             try 
-                let doc:(Word.Document) = app.Documents.Open(FileName = rbox v.Body)
+                let doc:(Word.Document) = app.Documents.Open(FileName = rbox srcFile)
                 doc.ExportAsFixedFormat (OutputFileName = outFile, 
                                           ExportFormat = Word.WdExportFormat.wdExportFormatPDF,
                                           OptimizeFor = wordExportQuality quality)
                 doc.Close (SaveChanges = rbox false)
                 pdfDoc outFile
             with
-            | ex -> failwithf "Some error occured - %s - %s" v.Body ex.Message
+            | ex -> failwithf "Some error occured - %s - %s" srcFile ex.Message
 
     member v.ExportAsPdf(quality:WordExportQuality) : PdfDoc =
-        let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
+        // Don't make a temp file if we don't have to
+        let srcFile = if v.Updated then v.TempPath else v.SourcePath
+        let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
         v.ExportAsPdf(quality= quality, outFile = outFile)
+
+
+    member v.FindReplace(searches:SearchList) : WordDoc = 
+        withWordApp <| fun app -> 
+            let tempFile = v.TempFile
+            wordFindReplace app tempFile None searches
+        v
 
 let wordDoc (path:string) : WordDoc = new WordDoc (filePath = path)
 

@@ -60,7 +60,24 @@ let private replacer (doc:Word.Document) (search:string, replace:string) : unit 
 //
 // It can make debug output confusing though. 
 
-let wordFindReplace (doc:Word.Document) 
+let documentFindReplace (doc:Word.Document) 
                         (searches:(string * string) list) : unit = 
     List.iter (replacer doc) searches 
     updateTableOfContents doc
+
+
+let wordFindReplace (app:Word.Application) 
+                        (inpath:string) 
+                        (outpath:option<string>) 
+                        (ss:(string * string) list) : unit = 
+    let doc = app.Documents.Open(FileName = rbox inpath)
+    documentFindReplace doc ss
+    try 
+        match outpath with 
+        | None -> doc.Save()
+        | Some filename -> 
+            let outpath1 = doubleQuote filename
+            printfn "Outpath: %s" outpath1
+            doc.SaveAs (FileName = rbox outpath1)
+    finally 
+        doc.Close (SaveChanges = rbox false)

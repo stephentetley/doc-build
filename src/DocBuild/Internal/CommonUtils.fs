@@ -6,6 +6,8 @@ module DocBuild.Internal.CommonUtils
 open System.IO
 open System.Text.RegularExpressions
 
+let doubleQuote (s:string) : string = "\"" + s + "\""
+
 
 let rbox (x:'a) : ref<obj> = ref (x :> obj)
 
