@@ -15,13 +15,7 @@ type PhotoOrientation = PhotoPortrait | PhotoLandscape
 // orientation is stored as an Exif tag.
 let getOrientation (info:MagickImageInfo) : PhotoOrientation = 
     if info.Width > info.Height then PhotoLandscape else PhotoPortrait
-    
-let makeRevisedFileName (annotation:string)  (filePath:string) : string = 
-    let root = System.IO.Path.GetDirectoryName filePath
-    let justfile = System.IO.Path.GetFileNameWithoutExtension filePath
-    let ext  = System.IO.Path.GetExtension filePath
-    let newfile = sprintf "%s.%s%s" justfile annotation ext
-    IO.Path.Combine(root, newfile)
+
 
 // todo should have maxwidth, maxheight
 let calculateNewPixelSize (info:MagickImageInfo) (maxWidth:int, maxHeight:int) : (int * int) = 
@@ -39,15 +33,11 @@ let calculateNewPixelSize (info:MagickImageInfo) (maxWidth:int, maxHeight:int) :
         (scale info.Width scaling, maxHeight)
 
 
-type IMQuery<'a> = MagickImage -> 'a
-type IMTransform = MagickImage -> unit
 
-let autoOrient : IMTransform = fun img -> img.AutoOrient ()
-
-//let autoOrient (filePath:string) : unit = 
-//    use (img:MagickImage) = new MagickImage(filePath)
-//    img.AutoOrient () // May have Exif rotation problems...
-//    img.Write filePath
+let autoOrient (filePath:string) : unit = 
+    use (img:MagickImage) = new MagickImage(filePath)
+    img.AutoOrient () // May have Exif rotation problems...
+    img.Write filePath
 
 
 
@@ -62,8 +52,4 @@ let optimizeForMsWord (filePath:string) : unit =
 
 
 
-//let optimizePhotos (jpegFolderPath:string) : unit =
-//    let (jpegFiles :string list) = getFilesMatching jpegFolderPath "*.jpg"
-//    List.iter (fun file -> autoOrient file; optimizeForMsWord file) jpegFiles
-    
 
