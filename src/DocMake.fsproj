@@ -93,13 +93,13 @@
     <Compile Include="DocBuild\Internal\ImageMagickUtils.fs" />
     <Compile Include="DocBuild\Internal\ExcelUtils.fs" />
     <Compile Include="DocBuild\Internal\WordUtils.fs" />
-    <Compile Include="DocBuild\Common.fs" />
-    <Compile Include="DocBuild\PdfDoc.fs" />
-    <Compile Include="DocBuild\ExcelDoc.fs" />
-    <Compile Include="DocBuild\WordDoc.fs" />
-    <Compile Include="DocBuild\PowerPointDoc.fs" />
-    <Compile Include="DocBuild\MarkdownDoc.fs" />
-    <Compile Include="DocBuild\JpegDoc.fs" />
+    <Compile Include="DocBuild\Base\Common.fs" />
+    <Compile Include="DocBuild\Base\Document.fs" />
+    <Compile Include="DocBuild\Objects\ExcelDoc.fs" />
+    <Compile Include="DocBuild\Objects\WordDoc.fs" />
+    <Compile Include="DocBuild\Objects\PowerPointDoc.fs" />
+    <Compile Include="DocBuild\Objects\MarkdownDoc.fs" />
+    <Compile Include="DocBuild\Objects\JpegDoc.fs" />
     <Compile Include="DocBuild\Extras\PhotoBook.fs" />
     <COMReference Include="Microsoft Excel 16.0 Object Library">
       <Guid>{00020813-0000-0000-c000-000000000046}</Guid>

@@ -25,20 +25,16 @@
 #load "..\src\DocBuild\Internal\ImageMagickUtils.fs"
 #load "..\src\DocBuild\Internal\ExcelUtils.fs"
 #load "..\src\DocBuild\Internal\WordUtils.fs"
-#load "..\src\DocBuild\Common.fs"
-#load "..\src\DocBuild\PdfDoc.fs"
-#load "..\src\DocBuild\ExcelDoc.fs"
-#load "..\src\DocBuild\WordDoc.fs"
-#load "..\src\DocBuild\PowerPointDoc.fs"
-#load "..\src\DocBuild\MarkdownDoc.fs"
-#load "..\src\DocBuild\JpegDoc.fs"
+#load "..\src\DocBuild\Base\Common.fs"
+#load "..\src\DocBuild\Base\Document.fs"
+#load "..\src\DocBuild\Objects\ExcelDoc.fs"
+#load "..\src\DocBuild\Objects\WordDoc.fs"
+#load "..\src\DocBuild\Objects\PowerPointDoc.fs"
+#load "..\src\DocBuild\Objects\MarkdownDoc.fs"
+#load "..\src\DocBuild\Objects\JpegDoc.fs"
 #load "..\src\DocBuild\Extras\PhotoBook.fs"
-open DocBuild.PdfDoc
-open DocBuild.ExcelDoc
-open DocBuild.WordDoc
-open DocBuild.PowerPointDoc
-open DocBuild.MarkdownDoc
-open DocBuild.JpegDoc
+open DocBuild
+
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
