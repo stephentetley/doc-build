@@ -53,7 +53,8 @@ module WordDoc =
             with get() : bool = System.IO.File.Exists(v.TempPath)
             
 
-        member v.ExportAsPdf(quality:WordExportQuality, outFile:string) : PdfDoc = 
+        member v.ExportAsPdf( quality:WordExportQuality
+                            , outFile:string ) : Document = 
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             withWordApp <| fun app -> 
@@ -67,7 +68,7 @@ module WordDoc =
                 with
                 | ex -> failwithf "Some error occured - %s - %s" srcFile ex.Message
 
-        member v.ExportAsPdf(quality:WordExportQuality) : PdfDoc =
+        member v.ExportAsPdf(quality:WordExportQuality) : Document =
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")

@@ -60,13 +60,13 @@ module MarkdownDoc =
             let wordOut:string = System.IO.Path.ChangeExtension(v.Body, "docx")
             v.ExportAsWord(options = options, outFile = wordOut)
 
-        member v.ExportAsPdf(options:PandocOptions, outFile:string) : PdfDoc = 
+        member v.ExportAsPdf(options:PandocOptions, outFile:string) : Document = 
             let wordOut:string = System.IO.Path.ChangeExtension(outFile, "docx")
             let wordDoc = v.ExportAsWord(options = options, outFile = wordOut)
             wordDoc.ExportAsPdf(quality = WordForScreen, outFile = outFile)
 
 
-        member v.ExportAsPdf(options:PandocOptions) : PdfDoc =
+        member v.ExportAsPdf(options:PandocOptions) : Document =
             let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
             v.ExportAsPdf(options = options, outFile = outFile)
 

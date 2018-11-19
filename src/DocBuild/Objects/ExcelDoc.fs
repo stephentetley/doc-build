@@ -49,7 +49,9 @@ module ExcelDoc =
         member internal v.Updated 
             with get() : bool = System.IO.File.Exists(v.TempPath)
 
-        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality, outFile:string) : PdfDoc = 
+        member v.ExportAsPdf( fitWidth:bool
+                            , quality:ExcelExportQuality
+                            , outFile:string ) : Document = 
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             withExcelApp <| fun app -> 
@@ -74,7 +76,7 @@ module ExcelDoc =
                 | ex -> failwith ex.Message
 
 
-        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfDoc =
+        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : Document =
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
