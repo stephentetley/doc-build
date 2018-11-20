@@ -19,15 +19,15 @@
 #I @"..\packages\__MY_LIBS__\lib\net45"
 #r @"MarkdownDoc.dll"
 
-
+#load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Internal\CommonUtils.fs"
 #load "..\src\DocBuild\Internal\RunProcess.fs"
 #load "..\src\DocBuild\Internal\PdftkRotate.fs"
 #load "..\src\DocBuild\Internal\ImageMagickUtils.fs"
 #load "..\src\DocBuild\Internal\ExcelUtils.fs"
 #load "..\src\DocBuild\Internal\WordUtils.fs"
-#load "..\src\DocBuild\Base\Common.fs"
-#load "..\src\DocBuild\Base\Document.fs"
+#load "..\src\DocBuild\Objects\Document.fs"
+#load "..\src\DocBuild\Objects\PdfDoc.fs"
 #load "..\src\DocBuild\Objects\ExcelDoc.fs"
 #load "..\src\DocBuild\Objects\WordDoc.fs"
 #load "..\src\DocBuild\Objects\PowerPointDoc.fs"
@@ -35,7 +35,7 @@
 #load "..\src\DocBuild\Objects\JpegDoc.fs"
 #load "..\src\DocBuild\Extras\PhotoBook.fs"
 open DocBuild
-
+open DocBuild.Base
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
@@ -61,11 +61,11 @@ let demo01 () =
     let ppt1 = powerPointDoc <| getWorkingFile "slides1.pptx"
     let xl1 = excelDoc <| getWorkingFile "sheet1.xlsx"
     let md1 = markdownDoc <| getWorkingFile "sample.md"
-    let d1 = (concat <| List.map pdfDoc [p1;p2;p3]) 
-                ^^ ppt1.ExportAsPdf(PowerPointForScreen)
-                ^^ (wordDoc p4).ExportAsPdf(WordForScreen)
-                ^^ xl1.ExportAsPdf(true, ExcelQualityMinimum)
-                ^^ md1.ExportAsPdf(pandocOptions)
+    let d1 = (concat <| List.map (fun x -> (pdfDoc x).ToDocument()) [p1;p2;p3]) 
+                ^^ (toDocument <| ppt1.ExportAsPdf(PowerPointForScreen))
+                ^^ (toDocument <| (wordDoc p4).ExportAsPdf(WordForScreen))
+                ^^ (toDocument <| xl1.ExportAsPdf(true, ExcelQualityMinimum))
+                ^^ (toDocument <| md1.ExportAsPdf(pandocOptions))
     d1.SaveAs(gsOptions, "concat.pdf")
 
 

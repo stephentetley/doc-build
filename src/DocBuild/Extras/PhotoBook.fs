@@ -11,7 +11,7 @@ module PhotoBook =
     open MarkdownDoc
     open MarkdownDoc.Pandoc
 
-    open DocBuild.Common
+    open DocBuild.Base
     open DocBuild.MarkdownDoc
     open DocBuild.JpegDoc
 

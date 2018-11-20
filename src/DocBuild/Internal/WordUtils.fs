@@ -3,12 +3,14 @@
 
 namespace DocBuild.Internal.WordUtils
 
-open Microsoft.Office.Interop
-open DocBuild.Internal.CommonUtils
+
 
 [<AutoOpen>]
 module WordUtils = 
 
+    open Microsoft.Office.Interop
+    
+    open DocBuild.Internal.CommonUtils
 
     let internal withWordApp (operation:Word.Application -> 'a) : 'a = 
         let app = new Word.ApplicationClass (Visible = true) :> Word.Application

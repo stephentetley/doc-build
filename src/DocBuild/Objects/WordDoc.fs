@@ -12,6 +12,7 @@ module WordDoc =
     // Open at .Interop rather than .Word then the Word API has to be qualified
     open Microsoft.Office.Interop
 
+    open DocBuild.Base
     open DocBuild.Internal.CommonUtils
     open DocBuild.Internal.WordUtils
     open DocBuild
@@ -54,7 +55,7 @@ module WordDoc =
             
 
         member v.ExportAsPdf( quality:WordExportQuality
-                            , outFile:string ) : Document = 
+                            , outFile:string ) : PdfDoc = 
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             withWordApp <| fun app -> 
@@ -68,7 +69,7 @@ module WordDoc =
                 with
                 | ex -> failwithf "Some error occured - %s - %s" srcFile ex.Message
 
-        member v.ExportAsPdf(quality:WordExportQuality) : Document =
+        member v.ExportAsPdf(quality:WordExportQuality) : PdfDoc =
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")

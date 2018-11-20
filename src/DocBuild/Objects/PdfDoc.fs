@@ -10,6 +10,7 @@ namespace DocBuild
 [<AutoOpen>]
 module PdfDoc = 
 
+    open DocBuild.Base
     open DocBuild.Internal.CommonUtils
 
     type PdfDoc = 
@@ -38,6 +39,18 @@ module PdfDoc =
             else
                 System.IO.File.Copy(v.SourcePath, outputPath)
 
+        member v.ToDocument() : Document = 
+            if v.Updated then 
+                document v.TempPath
+            else
+                document v.SourcePath
+                
+        //member v.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : PdfDoc = 
+        //    autoOrient(v.TempFile)
+        //    v
 
     let pdfDoc (path:string) : PdfDoc = new PdfDoc (filePath = path)
+
+    let toDocument (pdfDoc:PdfDoc) : Document = 
+        pdfDoc.ToDocument()
 

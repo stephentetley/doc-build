@@ -13,7 +13,6 @@ module PowerPointDoc =
     // API has to be qualified
     open Microsoft.Office.Interop
 
-    open DocBuild.Internal.CommonUtils
     open DocBuild
 
 
@@ -46,7 +45,7 @@ module PowerPointDoc =
             with get() : string = v.PptPath
 
         member v.ExportAsPdf( quality:PowerPointExportQuality
-                            , outFile:string) : Document = 
+                            , outFile:string) : PdfDoc = 
             withPowerPointApp <| fun app -> 
                 try 
                     let prez = app.Presentations.Open(v.Body)
@@ -59,7 +58,7 @@ module PowerPointDoc =
                 | ex -> failwithf "PptToPdf - Some error occured for %s - '%s'" v.Body ex.Message
 
 
-        member v.ExportAsPdf(quality:PowerPointExportQuality) : Document =
+        member v.ExportAsPdf(quality:PowerPointExportQuality) : PdfDoc =
             let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
             v.ExportAsPdf(quality= quality, outFile = outFile)
 

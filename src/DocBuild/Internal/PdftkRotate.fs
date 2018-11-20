@@ -1,20 +1,13 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-
 namespace DocBuild.Internal.PdftkRotate
-
 
 [<AutoOpen>]
 module PdftkRotate = 
 
+    open DocBuild.Base
     open DocBuild.Internal.RunProcess
-
-    type PdftkOptions = 
-        { WorkingDirectory: string 
-          PdftkExe: string 
-        }
-
 
     let runPdftk (options:PdftkOptions) (command:string) : Choice<string,int> = 
         executeProcess options.WorkingDirectory options.PdftkExe command
@@ -118,26 +111,20 @@ module PdftkRotate =
         sprintf "\"%s\" cat %s output \"%s\"" inputFile rotateSpec outputFile 
 
 
-    //let private pdfRotateExtractImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
-    //    buildMonad { 
-    //        let! outDoc = freshDocument "pdf"
-    //        match pdfDoc.GetPath, outDoc.GetPath with
-    //            | Some pathIn, Some pathOut -> 
-    //                let! _ = pdftkRunCommand getHandle <| makeExtractCmd pathIn pathOut rotations
-    //                return outDoc
-    //            | _, _  -> return zeroDocument
-    //    }
+    let pdfRotateExtract (options:PdftkOptions) 
+                         (rotations: Rotation list) 
+                         (inputFile:string) 
+                         (outputFile:string) : Choice<string,int> =
+        runPdftk options <| makeExtractCmd inputFile outputFile rotations
 
 
-    //let private pdfRotateEmbedImpl (getHandle:'res -> PdftkHandle) (rotations: Rotation list) (pdfDoc:PdfDoc) : BuildMonad<'res,PdfDoc> =
-    //    buildMonad { 
-    //        let! outDoc = freshDocument "pdf"
-    //        match pdfDoc.GetPath, outDoc.GetPath with
-    //            | Some pathIn, Some pathOut -> 
-    //                let! _ = pdftkRunCommand getHandle <| makeEmbedCmd pathIn pathOut rotations
-    //                return outDoc
-    //            | _, _  -> return zeroDocument
-    //    }
+
+    let pdfRotateEmbed (options:PdftkOptions) 
+                        (rotations: Rotation list) 
+                        (inputFile:string) 
+                        (outputFile:string) : Choice<string,int> =
+        runPdftk options <|  makeEmbedCmd inputFile outputFile rotations
+
 
 
     /// This is part of the API (should it need instantiating?)

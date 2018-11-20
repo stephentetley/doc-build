@@ -12,6 +12,7 @@ module ExcelDoc =
     // Open at .Interop rather than .Excel then the Word API has to be qualified
     open Microsoft.Office.Interop
 
+    open DocBuild.Base
     open DocBuild.Internal.CommonUtils
     open DocBuild.Internal.ExcelUtils
     open DocBuild
@@ -51,7 +52,7 @@ module ExcelDoc =
 
         member v.ExportAsPdf( fitWidth:bool
                             , quality:ExcelExportQuality
-                            , outFile:string ) : Document = 
+                            , outFile:string ) : PdfDoc = 
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             withExcelApp <| fun app -> 
@@ -76,7 +77,7 @@ module ExcelDoc =
                 | ex -> failwith ex.Message
 
 
-        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : Document =
+        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfDoc =
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")

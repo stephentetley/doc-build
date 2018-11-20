@@ -5,36 +5,21 @@
 namespace DocBuild
 
 
+
 [<AutoOpen>]
 module Document = 
 
+    open DocBuild.Base
     open DocBuild.Internal.RunProcess
 
     /// Concat PDFs with Ghostscript
     /// We favour Ghostscript because it lets us lower the print 
     /// quality (and reduce the file size).
 
-    type GsPdfSettings = 
-        | GsPdfScreen 
-        | GsPdfEbook
-        | GsPdfPrinter
-        | GsPdfPrepress
-        | GsPdfDefault
-        | GsPdfNone
-
-
-    let private ghostscriptPrintSetting (quality:GsPdfSettings) : string = 
-        match quality with
-        | GsPdfScreen ->  @"/screen"
-        | GsPdfEbook -> @"/ebook"
-        | GsPdfPrinter -> @"/printer"
-        | GsPdfPrepress -> @"/prepress"
-        | GsPdfDefault -> @"/default"
-        | GsPdfNone -> ""
 
  
     let private gsOptions (quality:GsPdfSettings) : string =
-        match ghostscriptPrintSetting quality with
+        match quality.PrintSetting with
         | "" -> @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite"
         | ss -> sprintf @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=%s" ss
 
@@ -54,11 +39,7 @@ module Document =
 
     type PdfPath = string
 
-    type GhostscriptOptions = 
-        { WorkingDirectory: string 
-          GhostscriptExe: string 
-          PrintQuality: GsPdfSettings
-        }
+
 
     let private runGhostscript (options:GhostscriptOptions) (command:string) : Choice<string,int> = 
         executeProcess options.WorkingDirectory options.GhostscriptExe command
@@ -95,7 +76,7 @@ module Document =
 
     let emptyDocument: Document = new Document ()
 
-    let pdfDoc (path:PdfPath) : Document = new Document (filePath = path)
+    let document (path:PdfPath) : Document = new Document (filePath = path)
 
     let (^^) (x:Document) (y:Document) : Document = 
         new Document(paths = x.Body @ y.Body)
