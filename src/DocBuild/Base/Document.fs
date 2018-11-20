@@ -60,6 +60,9 @@ module Document =
           PrintQuality: GsPdfSettings
         }
 
+    let private runGhostscript (options:GhostscriptOptions) (command:string) : Choice<string,int> = 
+        executeProcess options.WorkingDirectory options.GhostscriptExe command
+
     /// A PdfDoc is actually a list of Pdf files that are rendered 
     /// to a single document with Ghostscript.
     /// This means we have monodial concatenation.
@@ -81,7 +84,7 @@ module Document =
 
         member v.SaveAs(options: GhostscriptOptions, outputPath: string) : unit = 
             let command = makeGsCommand options.PrintQuality outputPath v.Body
-            match executeProcess options.WorkingDirectory options.GhostscriptExe command with
+            match runGhostscript options command with
             | Choice2Of2 i when i = 0 -> ()
             | Choice2Of2 i -> 
                 printfn "%s" command; failwithf "PdfDoc.Save - error code %i" i

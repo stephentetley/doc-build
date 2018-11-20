@@ -90,6 +90,7 @@
     <Compile Include="DocMake\WordBuilder.fs" />
     <Compile Include="DocBuild\Internal\CommonUtils.fs" />
     <Compile Include="DocBuild\Internal\RunProcess.fs" />
+    <Compile Include="DocBuild\Internal\PdftkRotate.fs" />
     <Compile Include="DocBuild\Internal\ImageMagickUtils.fs" />
     <Compile Include="DocBuild\Internal\ExcelUtils.fs" />
     <Compile Include="DocBuild\Internal\WordUtils.fs" />
