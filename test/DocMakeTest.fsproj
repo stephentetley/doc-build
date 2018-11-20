@@ -57,7 +57,8 @@
     <None Include="RTU_MMIM_AR_Work_Sheets.fsx" />
     <None Include="RTU_Final_Doc.fsx" />
     <None Include="SAMPS_New_Final.fsx" />
-    <None Include="USAR_New_Final.fsx" />
+    <None Include="USAR_Old_Final.fsx" />
+    <None Include="USAR_Final_Doc.fsx" />
     <None Include="TempMarkdown.fsx" />
     <None Include="TempDocument.fsx" />
     <Content Include="packages.config" />

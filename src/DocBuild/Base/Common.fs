@@ -77,9 +77,25 @@ module Common =
           EndPage =  EndOfDoc
           Orientation = orientation }
 
+    // ************************************************************************
+    // Find and replace
+
 
     type SearchList = (string * string) list
 
+
+    // ************************************************************************
+    // File name helpers
+
+
+    let safeName (input:string) : string = 
+        let parens = ['('; ')'; '['; ']'; '{'; '}']
+        let bads = ['\\'; '/'; ':'; '?'; '*'] 
+        let white = ['\n'; '\t']
+        let ans1 = List.fold (fun (s:string) (c:char) -> s.Replace(c.ToString(), "")) input parens
+        let ans2 = List.fold (fun (s:string) (c:char) -> s.Replace(c,'_')) ans1 bads
+        let ans3 = List.fold (fun (s:string) (c:char) -> s.Replace(c,'_')) ans2 white
+        ans3.Trim() 
 
 
     /// Suffix a file name _before_ the extension.

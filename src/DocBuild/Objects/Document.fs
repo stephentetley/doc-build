@@ -66,6 +66,7 @@ module Document =
         static member (^^) (doc1:Document, doc2:Document) : Document = 
             new Document(paths = doc1.Body @ doc2.Body)
 
+
         member v.SaveAs(options: GhostscriptOptions, outputPath: string) : unit = 
             let command = makeGsCommand options.PrintQuality outputPath v.Body
             match runGhostscript options command with

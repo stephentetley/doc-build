@@ -9,7 +9,7 @@ namespace DocBuild.Internal.WordUtils
 module WordUtils = 
 
     open Microsoft.Office.Interop
-    
+    open DocBuild.Base
     open DocBuild.Internal.CommonUtils
 
     let internal withWordApp (operation:Word.Application -> 'a) : 'a = 
@@ -65,17 +65,17 @@ module WordUtils =
     // It can make debug output confusing though. 
 
     let documentFindReplace (doc:Word.Document) 
-                            (searches:(string * string) list) : unit = 
+                            (searches:SearchList) : unit = 
         List.iter (replacer doc) searches 
         updateTableOfContents doc
 
 
     let wordFindReplace (app:Word.Application) 
-                            (inpath:string) 
-                            (outpath:option<string>) 
-                            (ss:(string * string) list) : unit = 
+                        (inpath:string) 
+                        (outpath:option<string>) 
+                        (searches:SearchList) : unit = 
         let doc = app.Documents.Open(FileName = rbox inpath)
-        documentFindReplace doc ss
+        documentFindReplace doc searches
         try 
             match outpath with 
             | None -> doc.Save()

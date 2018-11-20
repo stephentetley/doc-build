@@ -9,7 +9,7 @@ module ExcelUtils =
 
     open Microsoft.Office.Interop
 
-
+    open DocBuild.Base
 
     let internal withExcelApp (operation:Excel.Application -> 'a) : 'a = 
         let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
@@ -39,21 +39,22 @@ module ExcelUtils =
                           ReplaceFormat = false ) |> ignore
 
     
-    let private sheetFindReplaceList (worksheet:Excel.Worksheet) (searches:(string * string) list) : unit =                      
+    let private sheetFindReplaceList (worksheet:Excel.Worksheet) (searches:SearchList) : unit =                      
         List.iter (sheetFindReplace worksheet) searches
 
 
-    let workbookFindReplace (workbook:Excel.Workbook) (searches:(string * string) list) : unit = 
+    let workbookFindReplace (workbook:Excel.Workbook) (searches:SearchList) : unit = 
         workbook.Worksheets 
             |> Seq.cast<Excel.Worksheet> 
             |> Seq.iter (fun (sheet:Excel.Worksheet) -> sheetFindReplaceList sheet searches)
 
+
     let excelFindReplace (app:Excel.Application) 
-                            (inpath:string) 
-                            (outpath:option<string>) 
-                            (ss:(string * string) list) : unit = 
+                         (inpath:string) 
+                         (outpath:option<string>) 
+                         (searches:SearchList) : unit = 
         let workbook : Excel.Workbook = app.Workbooks.Open(inpath)
-        workbookFindReplace workbook ss
+        workbookFindReplace workbook searches
         try 
             match outpath with 
             | None -> workbook.Save()
