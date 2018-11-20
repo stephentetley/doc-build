@@ -39,6 +39,45 @@ module Common =
         }
 
 
+    // ************************************************************************
+    // Rotation
+
+    type PageOrientation = 
+        PoNorth | PoSouth | PoEast | PoWest
+        member v.PdftkOrientation 
+            with get () = 
+                match v with
+                | PoNorth -> "north"
+                | PoSouth -> "south"
+                | PoEast -> "east"
+                | PoWest -> "west"
+
+    type internal EndOfRange = 
+        | EndOfDoc
+        | EndPageNumber of int
+
+    type Rotation = 
+        internal 
+            { StartPage: int
+              EndPage: EndOfRange
+              Orientation: PageOrientation }
+
+    /// This is part of the API (should it need instantiating?)
+    let rotationRange (startPage:int) (endPage:int) (orientation:PageOrientation) : Rotation = 
+        { StartPage = startPage
+          EndPage =  EndPageNumber endPage
+          Orientation = orientation }
+
+    let rotationSinglePage (pageNum:int) (orientation:PageOrientation) : Rotation = 
+        rotationRange pageNum pageNum orientation
+
+    /// This is part of the API (should it need instantiating?)
+    let rotationToEnd (startPage:int) (orientation:PageOrientation) : Rotation = 
+        { StartPage = startPage
+          EndPage =  EndOfDoc
+          Orientation = orientation }
+
+
     type SearchList = (string * string) list
 
 

@@ -12,6 +12,7 @@ module PdfDoc =
 
     open DocBuild.Base
     open DocBuild.Internal.CommonUtils
+    open DocBuild.Internal.PdftkRotate
 
     type PdfDoc = 
         val private SourcePath : string
@@ -45,9 +46,21 @@ module PdfDoc =
             else
                 document v.SourcePath
                 
-        //member v.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : PdfDoc = 
-        //    autoOrient(v.TempFile)
-        //    v
+        member v.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : PdfDoc = 
+            match pdfRotateEmbed options rotations v.TempFile v.TempFile with
+            | Choice2Of2 i when i = 0 -> v
+            | Choice2Of2 i -> 
+                failwithf "PdfDoc.RotateEmbed - error code %i" i
+            | Choice1Of2 msg -> 
+                failwithf "PdfDoc.RotateEmbed - '%s'" msg
+                
+        member v.RotateExtract(options:PdftkOptions, rotations: Rotation list)  : PdfDoc = 
+            match pdfRotateExtract options rotations v.TempFile v.TempFile with
+            | Choice2Of2 i when i = 0 -> v
+            | Choice2Of2 i -> 
+                failwithf "PdfDoc.RotateEmbed - error code %i" i
+            | Choice1Of2 msg -> 
+                failwithf "PdfDoc.RotateEmbed - '%s'" msg
 
     let pdfDoc (path:string) : PdfDoc = new PdfDoc (filePath = path)
 

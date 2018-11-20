@@ -22,24 +22,7 @@ module PdftkRotate =
     // This command extracts two rotated regions:
     // pdftk slides.pdf cat 2-4east 6-8east output slides-rot3.pdf
 
-    type PageOrientation = 
-        PoNorth | PoSouth | PoEast | PoWest
-        member v.PdftkOrientation = 
-            match v with
-            | PoNorth -> "north"
-            | PoSouth -> "south"
-            | PoEast -> "east"
-            | PoWest -> "west"
 
-    type private EndOfRange = 
-        | EndOfDoc
-        | EndPageNumber of int
-
-    type Rotation = 
-        private 
-            { StartPage: int
-              EndPage: EndOfRange
-              Orientation: PageOrientation }
 
 
     let private rotationSpec1 (rot:Rotation) : string = 
@@ -127,20 +110,7 @@ module PdftkRotate =
 
 
 
-    /// This is part of the API (should it need instantiating?)
-    let rotationRange (startPage:int) (endPage:int) (orientation:PageOrientation) : Rotation = 
-        { StartPage = startPage
-          EndPage =  EndPageNumber endPage
-          Orientation = orientation }
 
-    let rotationSinglePage (pageNum:int) (orientation:PageOrientation) : Rotation = 
-        rotationRange pageNum pageNum orientation
-
-    /// This is part of the API (should it need instantiating?)
-    let rotationToEnd (startPage:int) (orientation:PageOrientation) : Rotation = 
-        { StartPage = startPage
-          EndPage =  EndOfDoc
-          Orientation = orientation }
 
 
 
