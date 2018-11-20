@@ -62,6 +62,9 @@ module Document =
 
         member internal v.Body 
             with get() : PdfPath list = v.Documents
+        
+        static member (^^) (doc1:Document, doc2:Document) : Document = 
+            new Document(paths = doc1.Body @ doc2.Body)
 
         member v.SaveAs(options: GhostscriptOptions, outputPath: string) : unit = 
             let command = makeGsCommand options.PrintQuality outputPath v.Body
@@ -78,8 +81,6 @@ module Document =
 
     let document (path:PdfPath) : Document = new Document (filePath = path)
 
-    let (^^) (x:Document) (y:Document) : Document = 
-        new Document(paths = x.Body @ y.Body)
 
     let concat (docs:Document list) = 
         let xs = List.concat (List.map (fun (d:Document) -> d.Body) docs)

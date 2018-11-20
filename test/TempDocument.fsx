@@ -62,10 +62,10 @@ let demo01 () =
     let xl1 = excelDoc <| getWorkingFile "sheet1.xlsx"
     let md1 = markdownDoc <| getWorkingFile "sample.md"
     let d1 = (concat <| List.map (fun x -> (pdfDoc x).ToDocument()) [p1;p2;p3]) 
-                ^^ (toDocument <| ppt1.ExportAsPdf(PowerPointForScreen))
-                ^^ (toDocument <| (wordDoc p4).ExportAsPdf(WordForScreen))
-                ^^ (toDocument <| xl1.ExportAsPdf(true, ExcelQualityMinimum))
-                ^^ (toDocument <| md1.ExportAsPdf(pandocOptions))
+                *^^ ppt1.ExportAsPdf(PowerPointForScreen)
+                *^^ (wordDoc p4).ExportAsPdf(WordForScreen)
+                *^^ xl1.ExportAsPdf(true, ExcelQualityMinimum)
+                *^^ md1.ExportAsPdf(pandocOptions)
     d1.SaveAs(gsOptions, "concat.pdf")
 
 

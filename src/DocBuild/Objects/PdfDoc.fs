@@ -45,7 +45,8 @@ module PdfDoc =
                 document v.TempPath
             else
                 document v.SourcePath
-                
+
+            
         member v.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : PdfDoc = 
             match pdfRotateEmbed options rotations v.TempFile v.TempFile with
             | Choice2Of2 i when i = 0 -> v
@@ -67,3 +68,5 @@ module PdfDoc =
     let toDocument (pdfDoc:PdfDoc) : Document = 
         pdfDoc.ToDocument()
 
+    let ( *^^ ) (doc:Document) (pdf:PdfDoc) : Document = 
+        doc ^^ pdf.ToDocument()
