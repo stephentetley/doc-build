@@ -63,7 +63,7 @@ module Document =
     /// A PdfDoc is actually a list of Pdf files that are rendered 
     /// to a single document with Ghostscript.
     /// This means we have monodial concatenation.
-    type PdfDoc = 
+    type Document = 
         val private Documents : PdfPath list
 
         new () = 
@@ -90,13 +90,13 @@ module Document =
 
 
 
-    let emptyPdf : PdfDoc = new PdfDoc ()
+    let emptyDocument: Document = new Document ()
 
-    let pdfDoc (path:PdfPath) : PdfDoc = new PdfDoc (filePath = path)
+    let pdfDoc (path:PdfPath) : Document = new Document (filePath = path)
 
-    let (^^) (x:PdfDoc) (y:PdfDoc) : PdfDoc = 
-        new PdfDoc(paths = x.Body @ y.Body)
+    let (^^) (x:Document) (y:Document) : Document = 
+        new Document(paths = x.Body @ y.Body)
 
-    let concat (docs:PdfDoc list) = 
-        let xs = List.concat (List.map (fun (d:PdfDoc) -> d.Body) docs)
-        new PdfDoc(paths = xs)
+    let concat (docs:Document list) = 
+        let xs = List.concat (List.map (fun (d:Document) -> d.Body) docs)
+        new Document(paths = xs)

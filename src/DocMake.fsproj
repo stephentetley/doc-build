@@ -95,6 +95,7 @@
     <Compile Include="DocBuild\Internal\WordUtils.fs" />
     <Compile Include="DocBuild\Base\Common.fs" />
     <Compile Include="DocBuild\Base\Document.fs" />
+    <Compile Include="DocBuild\Objects\PdfDoc.fs" />
     <Compile Include="DocBuild\Objects\ExcelDoc.fs" />
     <Compile Include="DocBuild\Objects\WordDoc.fs" />
     <Compile Include="DocBuild\Objects\PowerPointDoc.fs" />
