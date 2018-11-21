@@ -20,6 +20,7 @@
 #r @"MarkdownDoc.dll"
 
 #load "..\src\DocBuild\Base\Common.fs"
+#load "..\src\DocBuild\Base\FakeLike.fs"
 #load "..\src\DocBuild\Internal\CommonUtils.fs"
 #load "..\src\DocBuild\Internal\RunProcess.fs"
 #load "..\src\DocBuild\Internal\PdftkRotate.fs"
@@ -36,10 +37,22 @@
 #load "..\src\DocBuild\Extras\PhotoBook.fs"
 open DocBuild
 open DocBuild.Base
+open DocBuild.Base.FakeLike
 
 
+let _templateRoot       = @"G:\work\Projects\usar\final-docs\__Templates"
+let _inputRoot          = @"G:\work\Projects\usar\final-docs\input\June2018_INPUT"
+let _outputRoot         = @"G:\work\Projects\usar\final-docs\output\June2018"
 
-//let cover (siteName:string) (saiNumber:string) : PdfDoc = 
-//    let docName = sprintf "%s cover-sheet.docx" (safeName siteName)
-//    let word = wordDoc 
+let cover (siteName:string) (saiNumber:string) : PdfDoc = 
+    let templatePath = _templateRoot </> @"USAR Cover Sheet.docx"
+    let docName = sprintf "%s cover-sheet.docx" (safeName siteName)
+    let pdfName = _outputRoot </> sprintf "%s cover-sheet.pdf" (safeName siteName)
+    let word:WordDoc = wordDoc templatePath
+    let searches:SearchList = 
+        [ ("#SITENAME", siteName)
+        ; ("#SAINUM" ,       saiNumber) ]
+    let word2 = word.FindReplace(searches) 
+    word2.ExportAsPdf(WordExportQuality.WordForScreen, pdfName)
+
 
