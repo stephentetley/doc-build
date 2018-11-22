@@ -1,4 +1,4 @@
-# DocMake
+# doc-build
 Using F# to automate document production.
 
 DocMake is document build tool inspired by Make and Fake, but tasks are implemented as
