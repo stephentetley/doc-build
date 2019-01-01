@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+#r "netstandard"
+
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.Word"
@@ -12,12 +14,14 @@
 #r "office"
 
 // ImageMagick
-#I @"..\packages\Magick.NET-Q8-AnyCPU.7.8.0\lib\net40"
+#I @"C:\Users\stephen\.nuget\packages\Magick.NET-Q8-AnyCPU\7.9.2\lib\netstandard20"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 
 
-#I @"..\packages\__MY_LIBS__\lib\net45"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.0\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
+
+#r "netstandard"
 
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Internal\CommonUtils.fs"

@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="DocBuild\Base\Common.fs" />
+    <Compile Include="DocBuild\Base\FakeLike.fs" />
+    <Compile Include="DocBuild\Internal\CommonUtils.fs" />
+    <Compile Include="DocBuild\Internal\RunProcess.fs" />
+    <Compile Include="DocBuild\Internal\PdftkRotate.fs" />
+    <Compile Include="DocBuild\Internal\ImageMagickUtils.fs" />
+    <Compile Include="DocBuild\Internal\ExcelUtils.fs" />
+    <Compile Include="DocBuild\Internal\WordUtils.fs" />
+    <Compile Include="DocBuild\Objects\Document.fs" />
+    <Compile Include="DocBuild\Objects\PdfDoc.fs" />
+    <Compile Include="DocBuild\Objects\ExcelDoc.fs" />
+    <Compile Include="DocBuild\Objects\WordDoc.fs" />
+    <Compile Include="DocBuild\Objects\PowerPointDoc.fs" />
+    <Compile Include="DocBuild\Objects\MarkdownDoc.fs" />
+    <Compile Include="DocBuild\Objects\JpegDoc.fs" />
+    <Compile Include="DocBuild\Extras\PhotoBook.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="7.9.2" />
+    <PackageReference Include="MarkdownDoc" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>
