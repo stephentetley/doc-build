@@ -15,28 +15,7 @@ module Common =
           PdftkExe: string 
         }
 
-    type GsPdfSettings = 
-        | GsPdfScreen 
-        | GsPdfEbook
-        | GsPdfPrinter
-        | GsPdfPrepress
-        | GsPdfDefault
-        | GsPdfNone
-        member v.PrintSetting 
-            with get() = 
-                match v with
-                | GsPdfScreen ->  @"/screen"
-                | GsPdfEbook -> @"/ebook"
-                | GsPdfPrinter -> @"/printer"
-                | GsPdfPrepress -> @"/prepress"
-                | GsPdfDefault -> @"/default"
-                | GsPdfNone -> ""
 
-    type GhostscriptOptions = 
-        { WorkingDirectory: string 
-          GhostscriptExe: string 
-          PrintQuality: GsPdfSettings
-        }
 
 
     // ************************************************************************

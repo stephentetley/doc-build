@@ -9,10 +9,11 @@
     <Compile Include="DocBuild\Base\FakeLike.fs" />
     <Compile Include="DocBuild\Base\Document.fs" />
     <Compile Include="DocBuild\Base\Temp.fs" />
+    <Compile Include="DocBuild\Raw\Ghostscript.fs" />
     <Compile Include="DocBuild\Raw\ImageMagick.fs" />
+    <Compile Include="DocBuild\Raw\PdftkRotate.fs" />
     <Compile Include="DocBuild\Raw\MsoExcel.fs" />
     <Compile Include="DocBuild\Raw\MsoWord.fs" />
-    <Compile Include="DocBuild\Raw\PdftkRotate.fs" />
     <Compile Include="DocBuild\Objects\Document.fs" />
     <Compile Include="DocBuild\Objects\PdfDoc.fs" />
     <Compile Include="DocBuild\Objects\ExcelDoc.fs" />

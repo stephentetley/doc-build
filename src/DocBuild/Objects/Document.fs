@@ -8,38 +8,19 @@ namespace DocBuild
 module Document = 
 
     open DocBuild.Base
+    open DocBuild.Raw.Ghostscript
 
     /// Concat PDFs with Ghostscript
     /// We favour Ghostscript because it lets us lower the print 
     /// quality (and reduce the file size).
 
-
- 
-    let private gsOptions (quality:GsPdfSettings) : string =
-        match quality.PrintSetting with
-        | "" -> @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite"
-        | ss -> sprintf @"-dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=%s" ss
-
-    let private gsOutputFile (fileName:string) : string = 
-        sprintf "-sOutputFile=\"%s\"" fileName
-
-    let private gsInputFile (fileName:string) : string = sprintf "\"%s\"" fileName
-
-
-    /// Apparently we cannot send multiline commands to execProcess.
-    let private makeGsCommand (quality:GsPdfSettings) (outputFile:string) (inputFiles: string list) : string = 
-        let line1 = gsOptions quality + " " + gsOutputFile outputFile
-        let rest = List.map gsInputFile inputFiles
-        String.concat " " (line1 :: rest)
-
-
+    type GhostscriptOptions = DocBuild.Raw.Ghostscript.GhostscriptOptions
+    type GsPdfQuality = DocBuild.Raw.Ghostscript.GsPdfQuality
 
     type PdfPath = string
 
 
 
-    let private runGhostscript (options:GhostscriptOptions) (command:string) : Choice<string,int> = 
-        executeProcess options.WorkingDirectory options.GhostscriptExe command
 
     /// A PdfDoc is actually a list of Pdf files that are rendered 
     /// to a single document with Ghostscript.
@@ -65,7 +46,7 @@ module Document =
 
 
         member v.SaveAs(options: GhostscriptOptions, outputPath: string) : unit = 
-            let command = makeGsCommand options.PrintQuality outputPath v.Body
+            let command = makeGsConcatCommand options.PrintQuality outputPath v.Body
             match runGhostscript options command with
             | Choice2Of2 i when i = 0 -> ()
             | Choice2Of2 i -> 
