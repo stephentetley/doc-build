@@ -11,8 +11,9 @@ namespace DocBuild
 module PdfDoc = 
 
     open DocBuild.Base
-    open DocBuild.Internal.CommonUtils
-    open DocBuild.Internal.PdftkRotate
+    open DocBuild.Raw.PdftkRotate
+    
+    
 
     type PdfDoc = 
         val private SourcePath : string
@@ -20,7 +21,7 @@ module PdfDoc =
 
         new (filePath:string) = 
             { SourcePath = filePath
-            ; TempPath = getTempFileName filePath }
+            ; TempPath = Temp.getTempFileName filePath }
 
         member internal v.TempFile
             with get() : string = 

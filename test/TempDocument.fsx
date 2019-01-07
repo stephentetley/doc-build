@@ -23,12 +23,11 @@
 
 
 #load "..\src\DocBuild\Base\Common.fs"
+#load "..\src\DocBuild\Base\Temp.fs"
 #load "..\src\DocBuild\Raw\ImageMagick.fs"
 #load "..\src\DocBuild\Raw\MsoExcel.fs"
 #load "..\src\DocBuild\Raw\MsoWord.fs"
-#load "..\src\DocBuild\Internal\CommonUtils.fs"
-#load "..\src\DocBuild\Internal\RunProcess.fs"
-#load "..\src\DocBuild\Internal\PdftkRotate.fs"
+#load "..\src\DocBuild\Raw\PdftkRotate.fs"
 #load "..\src\DocBuild\Objects\Document.fs"
 #load "..\src\DocBuild\Objects\PdfDoc.fs"
 #load "..\src\DocBuild\Objects\ExcelDoc.fs"

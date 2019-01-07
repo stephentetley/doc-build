@@ -14,7 +14,6 @@ module ExcelDoc =
 
     open DocBuild.Base
     open DocBuild.Raw.MsoExcel
-    open DocBuild.Internal.CommonUtils
     open DocBuild
 
 
@@ -37,7 +36,7 @@ module ExcelDoc =
 
         new (filePath:string) = 
             { SourcePath = filePath
-            ; TempPath = getTempFileName filePath }
+            ; TempPath = Temp.getTempFileName filePath }
 
         member internal v.TempFile
             with get() : string = 

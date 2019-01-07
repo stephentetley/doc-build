@@ -8,7 +8,6 @@ namespace DocBuild
 module Document = 
 
     open DocBuild.Base
-    open DocBuild.Internal.RunProcess
 
     /// Concat PDFs with Ghostscript
     /// We favour Ghostscript because it lets us lower the print 

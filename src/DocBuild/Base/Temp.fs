@@ -1,20 +1,14 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Internal.CommonUtils
+namespace DocBuild.Base
 
 
-[<AutoOpen>]
-module CommonUtils = 
+[<RequireQualifiedAccess>]
+module Temp = 
 
     open System.IO
     open System.Text.RegularExpressions
-
-    let doubleQuote (s:string) : string = "\"" + s + "\""
-
-
-    let rbox (x:'a) : ref<obj> = ref (x :> obj)
-
 
     /// Make a file name for "destructive update".
     /// Returns a file name with ``TEMP`` before the extension.

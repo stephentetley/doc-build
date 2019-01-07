@@ -10,8 +10,7 @@ module MarkdownDoc =
 
     open MarkdownDoc
 
-    open DocBuild.Internal.RunProcess
-    open DocBuild
+    open DocBuild.Base
 
 
     // pandoc -f markdown -t docx+table_captions <INFILE> --reference-doc=<CUSTOM_REF> -s -o <OUTFILE>

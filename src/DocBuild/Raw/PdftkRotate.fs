@@ -1,13 +1,13 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018, 2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Internal.PdftkRotate
+namespace DocBuild.Raw.PdftkRotate
 
 [<AutoOpen>]
 module PdftkRotate = 
 
     open DocBuild.Base
-    open DocBuild.Internal.RunProcess
+
 
     let runPdftk (options:PdftkOptions) (command:string) : Choice<string,int> = 
         executeProcess options.WorkingDirectory options.PdftkExe command

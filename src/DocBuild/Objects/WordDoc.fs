@@ -13,7 +13,6 @@ module WordDoc =
     open Microsoft.Office.Interop
     open DocBuild.Raw.MsoWord
     open DocBuild.Base
-    open DocBuild.Internal.CommonUtils
     open DocBuild
 
 
@@ -39,7 +38,7 @@ module WordDoc =
 
         new (filePath:string) = 
             { SourcePath = filePath
-            ; TempPath = getTempFileName filePath }
+            ; TempPath = Temp.getTempFileName filePath }
 
         member internal v.TempFile
             with get() : string = 

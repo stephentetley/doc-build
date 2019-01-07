@@ -9,7 +9,7 @@ namespace DocBuild
 module JpegDoc = 
 
 
-    open DocBuild.Internal.CommonUtils
+    open DocBuild.Base
     open DocBuild.Raw.ImageMagick
 
 
@@ -31,7 +31,7 @@ module JpegDoc =
 
         new (filePath:string) = 
             { SourcePath = filePath
-            ; TempPath = getTempFileName filePath }
+            ; TempPath = Temp.getTempFileName filePath }
 
         member internal v.TempFile
             with get() : string = 
