@@ -14,11 +14,11 @@ Options-centric:
 PhotoCollection(Path = "path/to/photos", Optimize=true, Output= "MyPhotos.pdf")
 ~~~~~
 
-An operations-centric is more flexible.
+An operations-centric API is more flexible.
 
 Base types `Document` and `Aggregate`.
 
-`Document` *tracks* original file name and derived name after modifications.
+A `Document` tracks the original file name and the derived temporary name after modifications. No modifications are performed on the original file.
 
 
 

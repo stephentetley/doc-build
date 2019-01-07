@@ -23,6 +23,8 @@
 
 
 #load "..\src\DocBuild\Base\Document.fs"
+#load "..\src\DocBuild\Raw\ImageMagick.fs"
+#load "..\src\DocBuild\Document\Jpeg.fs"
 open DocBuild.Base.Document
 
 

@@ -13,7 +13,7 @@ module PhotoBook =
 
     open DocBuild.Base
     open DocBuild.MarkdownDoc
-    open DocBuild.JpegDoc
+    open DocBuild.Document.Jpeg
 
     // Note 
     // For simplicity of the API, we should resize and AutoOrient the photos first.
@@ -22,7 +22,10 @@ module PhotoBook =
 
     let optimizeImage (imagePath:string) : string = 
         let outputname = suffixFileName "TEMP" imagePath
-        (jpegDoc imagePath).AutoOrient().ResizeForWord().SaveAs(outputname)
+        (jpegDoc imagePath) 
+            |> autoOrient
+            |> resizeForWord
+            |> saveJpeg outputname
         outputname
         
 

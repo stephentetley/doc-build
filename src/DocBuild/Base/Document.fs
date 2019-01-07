@@ -2,9 +2,9 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Base
+namespace DocBuild.Base.Document
 
-
+[<AutoOpen>]
 module Document = 
 
     open System.Text.RegularExpressions

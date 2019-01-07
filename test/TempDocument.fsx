@@ -23,6 +23,7 @@
 
 
 #load "..\src\DocBuild\Base\Common.fs"
+#load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Temp.fs"
 #load "..\src\DocBuild\Raw\Ghostscript.fs"
 #load "..\src\DocBuild\Raw\Pdftk.fs"
@@ -30,14 +31,14 @@
 #load "..\src\DocBuild\Raw\MsoExcel.fs"
 #load "..\src\DocBuild\Raw\MsoWord.fs"
 #load "..\src\DocBuild\Raw\PdftkRotate.fs"
+#load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Objects\Document.fs"
 #load "..\src\DocBuild\Objects\PdfDoc.fs"
 #load "..\src\DocBuild\Objects\ExcelDoc.fs"
 #load "..\src\DocBuild\Objects\WordDoc.fs"
 #load "..\src\DocBuild\Objects\PowerPointDoc.fs"
 #load "..\src\DocBuild\Objects\MarkdownDoc.fs"
-#load "..\src\DocBuild\Objects\JpegDoc.fs"
-#load "..\src\DocBuild\Extras\PhotoBook.fs"
+#load "..\src\DocBuild\Extra\PhotoBook.fs"
 open DocBuild
 open DocBuild.Base
 

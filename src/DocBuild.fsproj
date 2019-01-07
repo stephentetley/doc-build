@@ -15,13 +15,13 @@
     <Compile Include="DocBuild\Raw\PdftkRotate.fs" />
     <Compile Include="DocBuild\Raw\MsoExcel.fs" />
     <Compile Include="DocBuild\Raw\MsoWord.fs" />
+    <Compile Include="DocBuild\Document\Jpeg.fs" />
     <Compile Include="DocBuild\Objects\Document.fs" />
     <Compile Include="DocBuild\Objects\PdfDoc.fs" />
     <Compile Include="DocBuild\Objects\ExcelDoc.fs" />
     <Compile Include="DocBuild\Objects\WordDoc.fs" />
     <Compile Include="DocBuild\Objects\PowerPointDoc.fs" />
     <Compile Include="DocBuild\Objects\MarkdownDoc.fs" />
-    <Compile Include="DocBuild\Objects\JpegDoc.fs" />
     <Compile Include="DocBuild\Extra\PhotoBook.fs" />
   </ItemGroup>
 
