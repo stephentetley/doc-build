@@ -25,6 +25,7 @@
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Temp.fs"
 #load "..\src\DocBuild\Raw\Ghostscript.fs"
+#load "..\src\DocBuild\Raw\Pdftk.fs"
 #load "..\src\DocBuild\Raw\ImageMagick.fs"
 #load "..\src\DocBuild\Raw\MsoExcel.fs"
 #load "..\src\DocBuild\Raw\MsoWord.fs"

@@ -9,10 +9,47 @@ namespace DocBuild.Raw.PdftkRotate
 module PdftkRotate = 
 
     open DocBuild.Base
+    open DocBuild.Raw.Pdftk
+
+    // ************************************************************************
+    // Rotation
+
+    type PageOrientation = 
+        PoNorth | PoSouth | PoEast | PoWest
+        member v.PdftkOrientation 
+            with get () = 
+                match v with
+                | PoNorth -> "north"
+                | PoSouth -> "south"
+                | PoEast -> "east"
+                | PoWest -> "west"
+
+    type internal EndOfRange = 
+        | EndOfDoc
+        | EndPageNumber of int
+
+    type Rotation = 
+        internal 
+            { StartPage: int
+              EndPage: EndOfRange
+              Orientation: PageOrientation }
+
+    /// This is part of the API (should it need instantiating?)
+    let rotationRange (startPage:int) (endPage:int) (orientation:PageOrientation) : Rotation = 
+        { StartPage = startPage
+          EndPage =  EndPageNumber endPage
+          Orientation = orientation }
+
+    let rotationSinglePage (pageNum:int) (orientation:PageOrientation) : Rotation = 
+        rotationRange pageNum pageNum orientation
+
+    /// This is part of the API (should it need instantiating?)
+    let rotationToEnd (startPage:int) (orientation:PageOrientation) : Rotation = 
+        { StartPage = startPage
+          EndPage =  EndOfDoc
+          Orientation = orientation }
 
 
-    let runPdftk (options:PdftkOptions) (command:string) : Choice<string,int> = 
-        executeProcess options.WorkingDirectory options.PdftkExe command
 
     // Note - the rotate "API" of Pdftk appears cryptic:
     // It can be used to extract rotated pages or "embed" rotate pages within the 

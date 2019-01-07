@@ -10,6 +10,7 @@
     <Compile Include="DocBuild\Base\Document.fs" />
     <Compile Include="DocBuild\Base\Temp.fs" />
     <Compile Include="DocBuild\Raw\Ghostscript.fs" />
+    <Compile Include="DocBuild\Raw\Pdftk.fs" />
     <Compile Include="DocBuild\Raw\ImageMagick.fs" />
     <Compile Include="DocBuild\Raw\PdftkRotate.fs" />
     <Compile Include="DocBuild\Raw\MsoExcel.fs" />

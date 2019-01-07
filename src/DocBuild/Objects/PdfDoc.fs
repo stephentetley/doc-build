@@ -11,6 +11,7 @@ namespace DocBuild
 module PdfDoc = 
 
     open DocBuild.Base
+    open DocBuild.Raw.Pdftk
     open DocBuild.Raw.PdftkRotate
     
     
