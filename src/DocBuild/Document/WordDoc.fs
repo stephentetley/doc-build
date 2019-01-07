@@ -1,8 +1,8 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 
-namespace DocBuild
+namespace DocBuild.Document
 
 
 [<AutoOpen>]
@@ -13,7 +13,7 @@ module WordDoc =
     open Microsoft.Office.Interop
     open DocBuild.Raw.MsoWord
     open DocBuild.Base
-    open DocBuild
+    open DocBuild.Base.Document
 
 
 
@@ -32,30 +32,18 @@ module WordDoc =
     /// we are doing is exporting to PDF (with no modications).
 
 
-    type WordDoc = 
-        val private SourcePath : string
-        val private TempPath : string
+    type WordFile = 
+        val private WordDoc : Document
 
         new (filePath:string) = 
-            { SourcePath = filePath
-            ; TempPath = Temp.getTempFileName filePath }
+            { WordDoc = new Document(filePath = filePath) }
 
-        member internal v.TempFile
-            with get() : string = 
-                if System.IO.File.Exists(v.TempPath) then
-                    v.TempPath
-                else
-                    System.IO.File.Copy(v.SourcePath, v.TempPath)
-                    v.TempPath
-    
-        member internal v.Updated 
-            with get() : bool = System.IO.File.Exists(v.TempPath)
-            
 
-        member v.ExportAsPdf( quality:WordExportQuality
-                            , outFile:string ) : PdfDoc = 
+
+        member x.ExportAsPdf( quality:WordExportQuality
+                            , outFile:string ) : unit = 
             // Don't make a temp file if we don't have to
-            let srcFile = if v.Updated then v.TempPath else v.SourcePath
+            let srcFile = x.WordDoc.TempFile
             withWordApp <| fun app -> 
                 try 
                     let doc:(Word.Document) = app.Documents.Open(FileName = rbox srcFile)
@@ -63,30 +51,26 @@ module WordDoc =
                                               ExportFormat = Word.WdExportFormat.wdExportFormatPDF,
                                               OptimizeFor = wordExportQuality quality)
                     doc.Close (SaveChanges = rbox false)
-                    pdfDoc outFile
                 with
                 | ex -> failwithf "Some error occured - %s - %s" srcFile ex.Message
 
-        member v.ExportAsPdf(quality:WordExportQuality) : PdfDoc =
+        member x.ExportAsPdf(quality:WordExportQuality) : unit =
             // Don't make a temp file if we don't have to
-            let srcFile = if v.Updated then v.TempPath else v.SourcePath
+            let srcFile = x.WordDoc.TempFile
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
-            v.ExportAsPdf(quality= quality, outFile = outFile)
+            x.ExportAsPdf(quality= quality, outFile = outFile)
 
 
-        member v.SaveAs(outputPath: string) : unit = 
-            if v.Updated then 
-                System.IO.File.Move(v.TempPath, outputPath)
-            else
-                System.IO.File.Copy(v.SourcePath, outputPath)
+        member x.SaveAs(outputPath: string) : unit = 
+            x.SaveAs outputPath
 
 
-        member v.FindReplace(searches:SearchList) : WordDoc = 
+        member x.FindReplace(searches:SearchList) : unit = 
             withWordApp <| fun app -> 
-                let tempFile = v.TempFile
+                let tempFile = x.WordDoc.TempFile
                 wordFindReplace app tempFile None searches
-            v
 
 
-    let wordDoc (path:string) : WordDoc = new WordDoc (filePath = path)
+
+    let wordFile (path:string) : WordFile = new WordFile (filePath = path)
 

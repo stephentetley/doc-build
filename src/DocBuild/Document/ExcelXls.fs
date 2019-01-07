@@ -1,12 +1,12 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 
-namespace DocBuild
+namespace DocBuild.Document
 
 
 [<AutoOpen>]
-module ExcelDoc = 
+module ExcelXls = 
 
 
     // Open at .Interop rather than .Excel then the Word API has to be qualified
@@ -14,7 +14,7 @@ module ExcelDoc =
 
     open DocBuild.Base
     open DocBuild.Raw.MsoExcel
-    open DocBuild
+    open DocBuild.Document.Pdf
 
 
 
@@ -51,7 +51,7 @@ module ExcelDoc =
 
         member v.ExportAsPdf( fitWidth:bool
                             , quality:ExcelExportQuality
-                            , outFile:string ) : PdfDoc = 
+                            , outFile:string ) : PdfFile = 
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             withExcelApp <| fun app -> 
@@ -71,12 +71,12 @@ module ExcelDoc =
                                                      Quality = excelExportQuality quality
                                                      )
                     workbook.Close (SaveChanges = false)
-                    pdfDoc outFile
+                    pdfFile outFile
                 with
                 | ex -> failwith ex.Message
 
 
-        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfDoc =
+        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfFile =
             // Don't make a temp file if we don't have to
             let srcFile = if v.Updated then v.TempPath else v.SourcePath
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")

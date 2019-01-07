@@ -1,19 +1,19 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 
-namespace DocBuild
+namespace DocBuild.Document
 
 
 [<AutoOpen>]
-module PowerPointDoc = 
+module PowerPointPpt = 
 
 
     // Open at .Interop rather than .PowerPoint then the PowerPoint 
     // API has to be qualified
     open Microsoft.Office.Interop
 
-    open DocBuild
+    open DocBuild.Document.Pdf
 
 
     let private withPowerPointApp (operation:PowerPoint.Application -> 'a) : 'a = 
@@ -45,7 +45,7 @@ module PowerPointDoc =
             with get() : string = v.PptPath
 
         member v.ExportAsPdf( quality:PowerPointExportQuality
-                            , outFile:string) : PdfDoc = 
+                            , outFile:string) : PdfFile = 
             withPowerPointApp <| fun app -> 
                 try 
                     let prez = app.Presentations.Open(v.Body)
@@ -53,12 +53,12 @@ module PowerPointDoc =
                                                 FixedFormatType = PowerPoint.PpFixedFormatType.ppFixedFormatTypePDF,
                                                 Intent = powerpointExportQuality quality ) 
                     prez.Close()
-                    pdfDoc outFile
+                    pdfFile outFile
                 with
                 | ex -> failwithf "PptToPdf - Some error occured for %s - '%s'" v.Body ex.Message
 
 
-        member v.ExportAsPdf(quality:PowerPointExportQuality) : PdfDoc =
+        member v.ExportAsPdf(quality:PowerPointExportQuality) : PdfFile =
             let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
             v.ExportAsPdf(quality= quality, outFile = outFile)
 

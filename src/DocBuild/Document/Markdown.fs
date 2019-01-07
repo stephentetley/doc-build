@@ -1,4 +1,4 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 
@@ -10,29 +10,17 @@ module Markdown =
     open MarkdownDoc
     open MarkdownDoc.Pandoc
 
-    open DocBuild.Base
-    open DocBuild.Raw
+    open DocBuild.Base.Document
 
 
     type PandocOptions = DocBuild.Raw.Pandoc.PandocOptions
 
     type MarkdownFile = 
-    
-        // Design note - path or Markdown (from MarkdownDoc)
-        // Path is consistent with other objects and we can always render 
-        // ``Markdown`` to text.
-
-        val private MarkdownPath : string
+        val private MarkdownDoc : Document
 
         new (filePath:string) = 
-            { MarkdownPath = filePath }
+            { MarkdownDoc = new Document(filePath = filePath) }
 
-        new (markdown:Markdown, filePath:string) = 
-            markdown.Save(filePath); { MarkdownPath = filePath }
-
-
-        member internal v.Body 
-            with get() : string = v.MarkdownPath
 
         //member v.ExportAsWord(options:PandocOptions, outFile:string) : WordDoc = 
         //    let command = 
@@ -62,6 +50,6 @@ module Markdown =
     let markdownDoc (path:string) : MarkdownFile = 
         new MarkdownFile (filePath = path)
 
-    let markdownDoc2 (path:string) (markdown:Markdown) : MarkdownFile = 
-        new MarkdownFile (markdown = markdown, filePath = path)
+    //let markdownDoc2 (path:string) (markdown:Markdown) : MarkdownFile = 
+    //    new MarkdownFile (markdown = markdown, filePath = path)
 

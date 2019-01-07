@@ -60,7 +60,8 @@ module PhotoBook =
                         (outFile:string) : MarkdownFile =
         let newImages = List.map optimizeImage imagePaths                        
         let book = photoBookMarkdown title newImages
-        new MarkdownFile (markdown = book, filePath = outFile)
+        ignore <| book.Save(outFile)
+        new MarkdownFile (filePath = outFile)
 
 
 
