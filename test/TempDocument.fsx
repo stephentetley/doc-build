@@ -21,7 +21,6 @@
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.0\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-#r "netstandard"
 
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Internal\CommonUtils.fs"

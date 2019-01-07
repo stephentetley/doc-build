@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="DocBuild\Base\Common.fs" />
     <Compile Include="DocBuild\Base\FakeLike.fs" />
+    <Compile Include="DocBuild\Base\Document.fs" />
     <Compile Include="DocBuild\Internal\CommonUtils.fs" />
     <Compile Include="DocBuild\Internal\RunProcess.fs" />
     <Compile Include="DocBuild\Internal\PdftkRotate.fs" />
