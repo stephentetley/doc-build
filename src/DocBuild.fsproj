@@ -22,7 +22,7 @@
     <Compile Include="DocBuild\Objects\PowerPointDoc.fs" />
     <Compile Include="DocBuild\Objects\MarkdownDoc.fs" />
     <Compile Include="DocBuild\Objects\JpegDoc.fs" />
-    <Compile Include="DocBuild\Extras\PhotoBook.fs" />
+    <Compile Include="DocBuild\Extra\PhotoBook.fs" />
   </ItemGroup>
 
   <ItemGroup>

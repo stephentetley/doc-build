@@ -1,7 +1,7 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-namespace DocMake.Extras.PhotoBook
+namespace DocMake.Extra.PhotoBook
 
 module PhotoBook = 
 
@@ -16,7 +16,7 @@ module PhotoBook =
     open DocBuild.JpegDoc
 
     // Note 
-    // For simplicity of the API we should resize and AutoOrient the photos first.
+    // For simplicity of the API, we should resize and AutoOrient the photos first.
 
     // TODO - optimize images...
 
