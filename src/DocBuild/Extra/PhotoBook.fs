@@ -12,7 +12,7 @@ module PhotoBook =
     open MarkdownDoc.Pandoc
 
     open DocBuild.Base
-    open DocBuild.MarkdownDoc
+    open DocBuild.Document.Markdown
     open DocBuild.Document.Jpeg
 
     // Note 
@@ -22,10 +22,10 @@ module PhotoBook =
 
     let optimizeImage (imagePath:string) : string = 
         let outputname = suffixFileName "TEMP" imagePath
-        (jpegDoc imagePath) 
+        (jpegFile imagePath) 
             |> autoOrient
             |> resizeForWord
-            |> saveJpeg outputname
+            |> saveJpegFile outputname
         outputname
         
 
@@ -57,10 +57,10 @@ module PhotoBook =
 
 
     let makePhotoBook (title:string) (imagePaths: string list) 
-                        (outFile:string) : MarkdownDoc =
+                        (outFile:string) : MarkdownFile =
         let newImages = List.map optimizeImage imagePaths                        
         let book = photoBookMarkdown title newImages
-        new MarkdownDoc (markdown = book, filePath = outFile)
+        new MarkdownFile (markdown = book, filePath = outFile)
 
 
 

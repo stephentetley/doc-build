@@ -23,11 +23,11 @@ module Jpeg =
 
 
 
-    type JpegDoc = 
-        val private JpegFile : Document
+    type JpegFile = 
+        val private JpegDoc : Document
 
         new (filePath:string) = 
-            { JpegFile = new Document(filePath = filePath) }
+            { JpegDoc = new Document(filePath = filePath) }
 
 
         
@@ -36,27 +36,27 @@ module Jpeg =
         /// If we intend getting rid of the TEMP file, it looks
         /// like we will need a destructor.
         member x.SaveAs(outputPath: string) : unit =  
-            x.JpegFile.SaveAs(outputPath)
+            x.JpegDoc.SaveAs(outputPath)
 
 
 
         member x.AutoOrient() : unit = 
-            autoOrient x.JpegFile.TempFile
+            autoOrient x.JpegDoc.TempFile
 
 
         member x.ResizeForWord() : unit = 
-            optimizeForMsWord x.JpegFile.TempFile
+            optimizeForMsWord x.JpegDoc.TempFile
 
 
-    let jpegDoc (path:string) : JpegDoc = new JpegDoc (filePath = path)
+    let jpegFile (path:string) : JpegFile = new JpegFile (filePath = path)
 
-    let autoOrient (src:JpegDoc) : JpegDoc = 
+    let autoOrient (src:JpegFile) : JpegFile = 
         ignore <| src.AutoOrient() ; src
 
-    let resizeForWord (src:JpegDoc) : JpegDoc = 
+    let resizeForWord (src:JpegFile) : JpegFile = 
         ignore <| src.ResizeForWord() ; src
 
-    let saveJpeg (outputName:string) (doc:JpegDoc) : unit = 
+    let saveJpegFile (outputName:string) (doc:JpegFile) : unit = 
         doc.SaveAs(outputPath = outputName)
 
 
