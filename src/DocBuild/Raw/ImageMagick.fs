@@ -1,10 +1,10 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018, 2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Internal.ImageMagickUtils
+namespace DocBuild.Raw.ImageMagick
 
 [<AutoOpen>]
-module ImageMagickUtils = 
+module ImageMagick = 
 
     open System
 

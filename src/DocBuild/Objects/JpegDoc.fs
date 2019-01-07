@@ -10,7 +10,7 @@ module JpegDoc =
 
 
     open DocBuild.Internal.CommonUtils
-    open DocBuild.Internal.ImageMagickUtils
+    open DocBuild.Raw.ImageMagick
 
 
 

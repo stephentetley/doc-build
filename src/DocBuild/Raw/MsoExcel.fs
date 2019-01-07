@@ -1,11 +1,11 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018, 2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Internal.ExcelUtils
+namespace DocBuild.Raw.MsoExcel
 
 
 [<AutoOpen>]
-module ExcelUtils = 
+module MsoExcel = 
 
     open Microsoft.Office.Interop
 

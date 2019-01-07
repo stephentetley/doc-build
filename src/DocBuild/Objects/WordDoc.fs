@@ -11,10 +11,9 @@ module WordDoc =
 
     // Open at .Interop rather than .Word then the Word API has to be qualified
     open Microsoft.Office.Interop
-
+    open DocBuild.Raw.MsoWord
     open DocBuild.Base
     open DocBuild.Internal.CommonUtils
-    open DocBuild.Internal.WordUtils
     open DocBuild
 
 

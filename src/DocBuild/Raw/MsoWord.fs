@@ -1,16 +1,19 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018, 2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Internal.WordUtils
+namespace DocBuild.Raw.MsoWord
 
 
 
 [<AutoOpen>]
-module WordUtils = 
+module MsoWord = 
 
     open Microsoft.Office.Interop
     open DocBuild.Base
-    open DocBuild.Internal.CommonUtils
+
+
+    let internal rbox (x:'a) : ref<obj> = ref (x :> obj)
+
 
     let internal withWordApp (operation:Word.Application -> 'a) : 'a = 
         let app = new Word.ApplicationClass (Visible = true) :> Word.Application
@@ -69,6 +72,8 @@ module WordUtils =
         List.iter (replacer doc) searches 
         updateTableOfContents doc
 
+
+    let private doubleQuote (s:string) : string = "\"" + s + "\""
 
     let wordFindReplace (app:Word.Application) 
                         (inpath:string) 

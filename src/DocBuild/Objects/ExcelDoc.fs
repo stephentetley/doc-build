@@ -13,8 +13,8 @@ module ExcelDoc =
     open Microsoft.Office.Interop
 
     open DocBuild.Base
+    open DocBuild.Raw.MsoExcel
     open DocBuild.Internal.CommonUtils
-    open DocBuild.Internal.ExcelUtils
     open DocBuild
 
 
