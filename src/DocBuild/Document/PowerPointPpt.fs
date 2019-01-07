@@ -13,6 +13,7 @@ module PowerPointPpt =
     // API has to be qualified
     open Microsoft.Office.Interop
 
+    open DocBuild.Base.Document
     open DocBuild.Document.Pdf
 
 
@@ -36,31 +37,30 @@ module PowerPointPpt =
 
 
     type PowerPointDoc = 
-        val private PptPath : string
+        val private PowerPointDoc : Document
 
         new (filePath:string) = 
-            { PptPath = filePath }
+            { PowerPointDoc = new Document(filePath = filePath) }
 
-        member internal v.Body 
-            with get() : string = v.PptPath
-
-        member v.ExportAsPdf( quality:PowerPointExportQuality
-                            , outFile:string) : PdfFile = 
+        member x.ExportAsPdf( quality:PowerPointExportQuality
+                            , outFile:string) : unit = 
             withPowerPointApp <| fun app -> 
-                try 
-                    let prez = app.Presentations.Open(v.Body)
+                let srcFile = x.PowerPointDoc.TempFile
+                try                     
+                    let prez = app.Presentations.Open(srcFile)
                     prez.ExportAsFixedFormat (Path = outFile,
                                                 FixedFormatType = PowerPoint.PpFixedFormatType.ppFixedFormatTypePDF,
                                                 Intent = powerpointExportQuality quality ) 
                     prez.Close()
-                    pdfFile outFile
                 with
-                | ex -> failwithf "PptToPdf - Some error occured for %s - '%s'" v.Body ex.Message
+                | ex -> failwithf "PptToPdf - Some error occured for %s - '%s'" srcFile ex.Message
 
 
-        member v.ExportAsPdf(quality:PowerPointExportQuality) : PdfFile =
-            let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
-            v.ExportAsPdf(quality= quality, outFile = outFile)
+        member x.ExportAsPdf(quality:PowerPointExportQuality) : unit =
+            // Don't make a temp file if we don't have to
+            let srcFile = x.PowerPointDoc.TempFile
+            let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
+            x.ExportAsPdf(quality= quality, outFile = outFile)
 
     let powerPointDoc (path:string) : PowerPointDoc = new PowerPointDoc (filePath = path)
 

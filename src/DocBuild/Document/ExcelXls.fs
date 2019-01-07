@@ -13,6 +13,7 @@ module ExcelXls =
     open Microsoft.Office.Interop
 
     open DocBuild.Base
+    open DocBuild.Base.Document
     open DocBuild.Raw.MsoExcel
     open DocBuild.Document.Pdf
 
@@ -31,29 +32,18 @@ module ExcelXls =
 
 
     type ExcelDoc = 
-        val private SourcePath : string
-        val private TempPath : string
+        val private ExcelDoc : Document
 
         new (filePath:string) = 
-            { SourcePath = filePath
-            ; TempPath = Temp.getTempFileName filePath }
+            { ExcelDoc = new Document(filePath = filePath) }
 
-        member internal v.TempFile
-            with get() : string = 
-                if System.IO.File.Exists(v.TempPath) then
-                    v.TempPath
-                else
-                    System.IO.File.Copy(v.SourcePath, v.TempPath)
-                    v.TempPath
-    
-        member internal v.Updated 
-            with get() : bool = System.IO.File.Exists(v.TempPath)
 
-        member v.ExportAsPdf( fitWidth:bool
+
+        member x.ExportAsPdf( fitWidth:bool
                             , quality:ExcelExportQuality
-                            , outFile:string ) : PdfFile = 
+                            , outFile:string ) : unit = 
             // Don't make a temp file if we don't have to
-            let srcFile = if v.Updated then v.TempPath else v.SourcePath
+            let srcFile = x.ExcelDoc.TempFile
             withExcelApp <| fun app -> 
                 try 
                     let workbook : Excel.Workbook = app.Workbooks.Open(srcFile)
@@ -71,28 +61,24 @@ module ExcelXls =
                                                      Quality = excelExportQuality quality
                                                      )
                     workbook.Close (SaveChanges = false)
-                    pdfFile outFile
                 with
                 | ex -> failwith ex.Message
 
 
-        member v.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : PdfFile =
+        member x.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : unit =
             // Don't make a temp file if we don't have to
-            let srcFile = if v.Updated then v.TempPath else v.SourcePath
+            let srcFile = x.ExcelDoc.TempFile
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
-            v.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
+            x.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
 
-        member v.SaveAs(outputPath: string) : unit = 
-            if v.Updated then 
-                System.IO.File.Move(v.TempPath, outputPath)
-            else
-                System.IO.File.Copy(v.SourcePath, outputPath)
+        member x.SaveAs(outputPath: string) : unit = 
+            x.ExcelDoc.SaveAs outputPath
 
-        member v.FindReplace(searches:SearchList) : ExcelDoc = 
+        member x.FindReplace(searches:SearchList) : unit = 
             withExcelApp <| fun app -> 
-                let tempFile = v.TempFile
+                let tempFile = x.ExcelDoc.TempFile
                 excelFindReplace app tempFile None searches
-            v
+
 
     let excelDoc (path:string) : ExcelDoc = new ExcelDoc (filePath = path)
 
