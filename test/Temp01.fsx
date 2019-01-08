@@ -21,10 +21,13 @@
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.0\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-
+#load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Raw\ImageMagick.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
+open DocBuild.Base.Shell
 open DocBuild.Base.Document
 
+let temp01 () = 
+    executeProcess @"D:\coding\fsharp\doc-build\notes" "pdftk" " notes.pdf dump_data"
 
