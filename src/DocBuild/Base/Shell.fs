@@ -84,3 +84,6 @@ module Shell =
 
     let noArg (name:string) : CommandArgs = 
         new CommandArgs(arg = NoArg(name))
+
+    let emptyArgs : CommandArgs = 
+        new CommandArgs(args = [])

@@ -47,6 +47,7 @@ open DocBuild
 open DocBuild.Document.Markdown
 
 open DocBuild.Raw.Ghostscript
+open DocBuild.Base.Shell.Shell
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
@@ -54,15 +55,13 @@ let getWorkingFile (name:string) =
 
 let demo01 () = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-    let gsOptions : GhostscriptOptions = 
+    let gsOptions : ProcessOptions = 
         { WorkingDirectory = working
-        ; GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe" 
-        ; PrintQuality = GsPdfQuality.GsPdfScreen
+        ; ExecutableName = @"C:\programs\gs\gs9.15\bin\gswin64c.exe" 
         }
-    let pandocOptions : PandocOptions  = 
+    let pandocOptions : ProcessOptions  = 
         { WorkingDirectory = working
-        ; PandocExe = "pandoc"
-        ; DocxReferenceDoc = @"include/custom-reference1.docx"
+        ; ExecutableName = "pandoc"
         }
 
     let p1 = getWorkingFile "One.pdf"

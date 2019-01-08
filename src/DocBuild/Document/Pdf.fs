@@ -60,6 +60,25 @@ module Pdf =
 
     let pdfFile (path:string) : PdfFile = new PdfFile (filePath = path)
 
+    
+    type GsQuality = 
+        | GsScreen 
+        | GsEbook
+        | GsPrinter
+        | GsPrepress
+        | GsDefault
+        | GsNone
+        member v.QualityArgs
+            with get() : CommandArgs = 
+                match v with
+                | GsScreen ->  reqArg "-dPDFSETTINGS" @"/screen"
+                | GsEbook -> reqArg "-dPDFSETTINGS" @"/ebook"
+                | GsPrinter -> reqArg "-dPDFSETTINGS" @"/printer"
+                | GsPrepress -> reqArg "-dPDFSETTINGS" @"/prepress"
+                | GsDefault -> reqArg "-dPDFSETTINGS" @"/default"
+                | GsNone -> emptyArgs
+
+
 
     type PdfColl = 
         val private Pdfs : Collective
@@ -78,7 +97,7 @@ module Pdf =
                          , outputFile:string
                          , quality:GsQuality) : ProcessResult = 
             let inputs = x.Pdfs.Documents |> List.map (fun d -> d.ActiveFile)
-            let cmd = makeGsConcatCommand quality outputFile inputs
+            let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
             runGhostscript options cmd
 
 
@@ -87,5 +106,5 @@ module Pdf =
                             (inputfiles:PdfColl)
                             (outputFile:string) : ProcessResult = 
             let inputs = inputfiles.Documents |> List.map (fun d -> d.ActiveFile)
-            let cmd = makeGsConcatCommand quality outputFile inputs
+            let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
             runGhostscript options cmd

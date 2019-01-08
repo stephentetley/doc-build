@@ -11,31 +11,13 @@ module Ghostscript =
     open DocBuild.Base.Common
     open DocBuild.Base.Shell
 
-    type GsQuality = 
-        | GsScreen 
-        | GsEbook
-        | GsPrinter
-        | GsPrepress
-        | GsDefault
-        | GsNone
-        member v.Quality
-            with get() = 
-                match v with
-                | GsScreen ->  @"/screen"
-                | GsEbook -> @"/ebook"
-                | GsPrinter -> @"/printer"
-                | GsPrepress -> @"/prepress"
-                | GsDefault -> @"/default"
-                | GsNone -> ""
-
 
     /// -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite [-dPDFSETTINGS=/screen]
-    let private gsConcatOptions (quality:GsQuality) : CommandArgs =
-        let common = 
-            noArg "-dBATCH" ^^ noArg "-dNOPAUSE" ^^ noArg "-q" ^^ reqArg "-sDEVICE" "pdfwrite"
-        match quality.Quality with
-        | "" -> common
-        | ss -> common ^^ reqArg "-dPDFSETTINGS" ss
+    let private gsConcatOptions (quality:CommandArgs) : CommandArgs =
+        noArg "-dBATCH" ^^ noArg "-dNOPAUSE" 
+                        ^^ noArg "-q" 
+                        ^^ reqArg "-sDEVICE" "pdfwrite"
+                        ^^ quality
 
 
     /// -sOutputFile="somefile.pdf"
@@ -48,7 +30,7 @@ module Ghostscript =
 
 
     /// Apparently we cannot send multiline commands to execProcess.
-    let makeGsConcatCommand (quality:GsQuality) (outputFile:string) (inputFiles: string list) : CommandArgs = 
+    let makeGsConcatCommand (quality:CommandArgs) (outputFile:string) (inputFiles: string list) : CommandArgs = 
         gsConcatOptions quality  
             ^^ gsOutputFile outputFile 
             ^^ gsInputFiles inputFiles
