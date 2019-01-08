@@ -39,11 +39,11 @@ module Jpeg =
 
 
         member x.AutoOrient() : unit = 
-            autoOrient x.JpegDoc.TempFile
+            autoOrient x.JpegDoc.ActiveFile
 
 
         member x.ResizeForWord() : unit = 
-            optimizeForMsWord x.JpegDoc.TempFile
+            optimizeForMsWord x.JpegDoc.ActiveFile
 
 
     let jpegFile (path:string) : JpegFile = new JpegFile (filePath = path)

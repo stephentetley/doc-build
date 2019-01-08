@@ -4,12 +4,13 @@
 namespace DocBuild.Office.MsoExcel
 
 
+
 [<AutoOpen>]
 module MsoExcel = 
 
     open Microsoft.Office.Interop
 
-    open DocBuild.Base
+    open DocBuild.Base.Common
 
     let internal withExcelApp (operation:Excel.Application -> 'a) : 'a = 
         let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application

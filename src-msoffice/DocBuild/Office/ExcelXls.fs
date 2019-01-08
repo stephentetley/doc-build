@@ -12,9 +12,8 @@ module ExcelXls =
     // Open at .Interop rather than .Excel then the Word API has to be qualified
     open Microsoft.Office.Interop
 
-    open DocBuild.Base
+    open DocBuild.Base.Common
     open DocBuild.Base.Document
-    // open DocBuild.Document.Pdf
     open DocBuild.Office.MsoExcel
 
 
@@ -44,7 +43,7 @@ module ExcelXls =
                             , quality:ExcelExportQuality
                             , outFile:string ) : unit = 
             // Don't make a temp file if we don't have to
-            let srcFile = x.ExcelDoc.TempFile
+            let srcFile = x.ExcelDoc.ActiveFile
             withExcelApp <| fun app -> 
                 try 
                     let workbook : Excel.Workbook = app.Workbooks.Open(srcFile)
@@ -68,7 +67,7 @@ module ExcelXls =
 
         member x.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : unit =
             // Don't make a temp file if we don't have to
-            let srcFile = x.ExcelDoc.TempFile
+            let srcFile = x.ExcelDoc.ActiveFile
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
             x.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
 
@@ -77,7 +76,7 @@ module ExcelXls =
 
         member x.FindReplace(searches:SearchList) : unit = 
             withExcelApp <| fun app -> 
-                let tempFile = x.ExcelDoc.TempFile
+                let tempFile = x.ExcelDoc.ActiveFile
                 excelFindReplace app tempFile None searches
 
 

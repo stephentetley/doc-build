@@ -14,7 +14,7 @@ module PowerPointPpt =
     open Microsoft.Office.Interop
 
     open DocBuild.Base.Document
-    open DocBuild.Document.Pdf
+
 
 
     let private withPowerPointApp (operation:PowerPoint.Application -> 'a) : 'a = 
@@ -45,7 +45,7 @@ module PowerPointPpt =
         member x.ExportAsPdf( quality:PowerPointExportQuality
                             , outFile:string) : unit = 
             withPowerPointApp <| fun app -> 
-                let srcFile = x.PowerPointDoc.TempFile
+                let srcFile = x.PowerPointDoc.ActiveFile
                 try                     
                     let prez = app.Presentations.Open(srcFile)
                     prez.ExportAsFixedFormat (Path = outFile,
@@ -58,7 +58,7 @@ module PowerPointPpt =
 
         member x.ExportAsPdf(quality:PowerPointExportQuality) : unit =
             // Don't make a temp file if we don't have to
-            let srcFile = x.PowerPointDoc.TempFile
+            let srcFile = x.PowerPointDoc.ActiveFile
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
             x.ExportAsPdf(quality= quality, outFile = outFile)
 

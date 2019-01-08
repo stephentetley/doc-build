@@ -11,7 +11,7 @@ module WordDoc =
 
     // Open at .Interop rather than .Word then the Word API has to be qualified
     open Microsoft.Office.Interop
-    open DocBuild.Base
+    open DocBuild.Base.Common
     open DocBuild.Base.Document
     open DocBuild.Office.MsoWord
 
@@ -44,7 +44,7 @@ module WordDoc =
         member x.ExportAsPdf( quality:WordExportQuality
                             , outFile:string ) : unit = 
             // Don't make a temp file if we don't have to
-            let srcFile = x.WordDoc.TempFile
+            let srcFile = x.WordDoc.ActiveFile
             withWordApp <| fun app -> 
                 try 
                     let doc:(Word.Document) = app.Documents.Open(FileName = rbox srcFile)
@@ -57,7 +57,7 @@ module WordDoc =
 
         member x.ExportAsPdf(quality:WordExportQuality) : unit =
             // Don't make a temp file if we don't have to
-            let srcFile = x.WordDoc.TempFile
+            let srcFile = x.WordDoc.ActiveFile
             let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
             x.ExportAsPdf(quality= quality, outFile = outFile)
 
@@ -68,7 +68,7 @@ module WordDoc =
 
         member x.FindReplace(searches:SearchList) : unit = 
             withWordApp <| fun app -> 
-                let tempFile = x.WordDoc.TempFile
+                let tempFile = x.WordDoc.ActiveFile
                 wordFindReplace app tempFile None searches
 
 

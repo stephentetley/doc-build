@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018, 2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Raw.MsoWord
+namespace DocBuild.Office.MsoWord
 
 
 
@@ -9,7 +9,7 @@ namespace DocBuild.Raw.MsoWord
 module MsoWord = 
 
     open Microsoft.Office.Interop
-    open DocBuild.Base
+    open DocBuild.Base.Common
 
 
     let internal rbox (x:'a) : ref<obj> = ref (x :> obj)

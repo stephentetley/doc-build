@@ -28,31 +28,32 @@ module Document =
 
 
     type Document = 
-        val private SourcePath : FilePath
-        val private TempPath : string
+        val private Original : FilePath
+        val private WorkingFile : FilePath
 
         new (filePath:string) = 
-            { SourcePath = filePath
-            ; TempPath = getTempFileName filePath }
+            { Original = filePath
+            ; WorkingFile = getTempFileName filePath }
 
-        /// Maybe `FileName` would be better?
-        member v.TempFile
-            with get() : string = 
-                if System.IO.File.Exists(v.TempPath) then
-                    v.TempPath
+        /// ActiveFile is a mutable working copy of the original file.
+        /// The original file is untouched.
+        member v.ActiveFile
+            with get() : FilePath = 
+                if System.IO.File.Exists(v.WorkingFile) then
+                    v.WorkingFile
                 else
-                    System.IO.File.Copy(v.SourcePath, v.TempPath)
-                    v.TempPath
+                    System.IO.File.Copy(v.Original, v.WorkingFile)
+                    v.WorkingFile
     
         member v.Updated 
-            with get() : bool = System.IO.File.Exists(v.TempPath)
+            with get() : bool = System.IO.File.Exists(v.WorkingFile)
 
 
         member v.SaveAs(outputPath: string) : unit = 
             if v.Updated then 
-                System.IO.File.Move(v.TempPath, outputPath)
+                System.IO.File.Move(v.WorkingFile, outputPath)
             else
-                System.IO.File.Copy(v.SourcePath, outputPath)
+                System.IO.File.Copy(v.WorkingFile, outputPath)
 
 
 
