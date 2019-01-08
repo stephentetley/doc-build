@@ -8,6 +8,7 @@ namespace DocBuild.Document
 module Jpeg = 
 
     open DocBuild.Base.Document
+    open DocBuild.Base.Collective
     open DocBuild.Raw.ImageMagick
 
 
@@ -29,8 +30,8 @@ module Jpeg =
         new (filePath:string) = 
             { JpegDoc = new Document(filePath = filePath) }
 
-
-        
+        member internal x.Document 
+            with get() : Document = x.JpegDoc
 
         member x.SaveAs(outputPath: string) : unit =  
             x.JpegDoc.SaveAs(outputPath)
@@ -56,4 +57,11 @@ module Jpeg =
     let saveJpegFile (outputName:string) (doc:JpegFile) : unit = 
         doc.SaveAs(outputPath = outputName)
 
+
+    type JpegColl = 
+        val private Jpegs : Collective
+
+        new (jpegs:JpegFile list) = 
+            let docs = jpegs |> List.map (fun x -> x.Document)
+            { Jpegs = new Collective(docs = docs) }
 

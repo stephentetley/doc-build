@@ -10,15 +10,19 @@ module Collective =
     open DocBuild.Base.Document
 
     type Collective = 
-        val private Documents : Document list
+        val private DocCollection : Document list
 
-        new () = { Documents = [] }
+        new () = { DocCollection = [] }
 
         new (docs:Document list) = 
-            { Documents = docs }
+            { DocCollection = docs }
 
         new (paths:FilePath list) = 
-            { Documents = 
+            { DocCollection = 
                 paths |> List.map (fun s -> new Document(filePath = s)) }
+
+        member x.Documents 
+            with get () : Document list = x.DocCollection
+            
 
 
