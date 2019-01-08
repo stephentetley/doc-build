@@ -24,23 +24,25 @@
 
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Document.fs"
-#load "..\src\DocBuild\Base\Temp.fs"
 #load "..\src\DocBuild\Raw\Ghostscript.fs"
+#load "..\src\DocBuild\Raw\Pandoc.fs"
 #load "..\src\DocBuild\Raw\Pdftk.fs"
 #load "..\src\DocBuild\Raw\ImageMagick.fs"
 #load "..\src\DocBuild\Raw\MsoExcel.fs"
 #load "..\src\DocBuild\Raw\MsoWord.fs"
 #load "..\src\DocBuild\Raw\PdftkRotate.fs"
+#load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
-#load "..\src\DocBuild\Objects\Document.fs"
-#load "..\src\DocBuild\Objects\PdfDoc.fs"
-#load "..\src\DocBuild\Objects\ExcelDoc.fs"
-#load "..\src\DocBuild\Objects\WordDoc.fs"
-#load "..\src\DocBuild\Objects\PowerPointDoc.fs"
-#load "..\src\DocBuild\Objects\MarkdownDoc.fs"
+#load "..\src\DocBuild\Document\Markdown.fs"
+#load "..\src\DocBuild\Document\WordDoc.fs"
+#load "..\src\DocBuild\Document\ExcelXls.fs"
+#load "..\src\DocBuild\Document\PowerPointPpt.fs"
+
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
 open DocBuild
-open DocBuild.Base
+open DocBuild.Document.Markdown
+
+open DocBuild.Raw.Ghostscript
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
@@ -53,25 +55,27 @@ let demo01 () =
         ; GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe" 
         ; PrintQuality = GsPdfQuality.GsPdfScreen
         }
-    let pandocOptions = 
+    let pandocOptions : PandocOptions  = 
         { WorkingDirectory = working
         ; PandocExe = "pandoc"
         ; DocxReferenceDoc = @"include/custom-reference1.docx"
         }
 
     let p1 = getWorkingFile "One.pdf"
-    let p2 = getWorkingFile "Two.pdf"
-    let p3 = getWorkingFile "Three.pdf"
-    let p4 = getWorkingFile "FR-output2.docx"
-    let ppt1 = powerPointDoc <| getWorkingFile "slides1.pptx"
-    let xl1 = excelDoc <| getWorkingFile "sheet1.xlsx"
-    let md1 = markdownDoc <| getWorkingFile "sample.md"
-    let d1 = (concat <| List.map (fun x -> (pdfDoc x).ToDocument()) [p1;p2;p3]) 
-                *^^ ppt1.ExportAsPdf(PowerPointForScreen)
-                *^^ (wordDoc p4).ExportAsPdf(WordForScreen)
-                *^^ xl1.ExportAsPdf(true, ExcelQualityMinimum)
-                *^^ md1.ExportAsPdf(pandocOptions)
-    d1.SaveAs(gsOptions, "concat.pdf")
+    //let p2 = getWorkingFile "Two.pdf"
+    //let p3 = getWorkingFile "Three.pdf"
+    //let p4 = getWorkingFile "FR-output2.docx"
+    //let ppt1 = powerPointDoc <| getWorkingFile "slides1.pptx"
+    //let xl1 = excelDoc <| getWorkingFile "sheet1.xlsx"
+    //let md1 = markdownDoc <| getWorkingFile "sample.md"
+    //let d1 = (concat <| List.map (fun x -> (pdfDoc x).ToDocument()) [p1;p2;p3]) 
+    //            *^^ ppt1.ExportAsPdf(PowerPointForScreen)
+    //            *^^ (wordDoc p4).ExportAsPdf(WordForScreen)
+    //            *^^ xl1.ExportAsPdf(true, ExcelQualityMinimum)
+    //            // *^^ md1.ExportAsPdf(pandocOptions)
+    //d1.SaveAs(gsOptions, "concat.pdf")
+    
+    ()
 
 
     // TODO Pdf rotate
