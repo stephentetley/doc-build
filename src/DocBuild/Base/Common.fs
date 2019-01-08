@@ -9,7 +9,8 @@ module Common =
 
     open System.IO
 
-
+    let doubleQuote (source:string) : string = 
+        sprintf "\"%s\"" source
 
     // ************************************************************************
     // Find and replace

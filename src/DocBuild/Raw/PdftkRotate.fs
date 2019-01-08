@@ -1,4 +1,4 @@
-﻿// Copyright (c) Stephen Tetley 2018, 2019
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 
@@ -134,7 +134,7 @@ module PdftkRotate =
         sprintf "\"%s\" cat %s output \"%s\"" inputFile rotateSpec outputFile 
 
 
-    let pdfRotateExtract (options:PdftkOptions) 
+    let pdfRotateExtract (options:ProcessOptions) 
                          (rotations: Rotation list) 
                          (inputFile:string) 
                          (outputFile:string) : ProcessResult =
@@ -142,7 +142,7 @@ module PdftkRotate =
 
 
 
-    let pdfRotateEmbed (options:PdftkOptions) 
+    let pdfRotateEmbed (options:ProcessOptions) 
                         (rotations: Rotation list) 
                         (inputFile:string) 
                         (outputFile:string) : ProcessResult =

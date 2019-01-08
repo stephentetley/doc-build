@@ -16,10 +16,6 @@ module Pdftk =
     open DocBuild.Base.Shell
 
     
-    type PdftkOptions = 
-        { WorkingDirectory: string 
-          PdftkExe: string 
-        }
 
-    let runPdftk (options:PdftkOptions) (command:string) : ProcessResult = 
-        executeProcess options.WorkingDirectory options.PdftkExe command
+    let runPdftk (options:ProcessOptions) (command:string) : ProcessResult = 
+        executeProcess options command

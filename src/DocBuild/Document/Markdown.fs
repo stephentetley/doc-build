@@ -13,8 +13,6 @@ module Markdown =
     open DocBuild.Base.Document
 
 
-    type PandocOptions = DocBuild.Raw.Pandoc.PandocOptions
-
     type MarkdownFile = 
         val private MarkdownDoc : Document
 

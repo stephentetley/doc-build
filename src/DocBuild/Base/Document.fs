@@ -55,13 +55,4 @@ module Document =
                 System.IO.File.Copy(v.SourcePath, outputPath)
 
 
-    type Aggregate = 
-        val private Documents : Document list
-
-        new () = { Documents = [] }
-
-        new (paths:FilePath list) = 
-            { Documents = 
-                paths |> List.map (fun s -> new Document(filePath = s)) }
-
 

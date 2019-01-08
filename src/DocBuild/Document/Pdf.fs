@@ -29,7 +29,7 @@ module Pdf =
 
 
             
-        member x.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : unit = 
+        member x.RotateEmbed(options:ProcessOptions, rotations: Rotation list)  : unit = 
             match pdfRotateEmbed options rotations x.PdfDoc.TempFile x.PdfDoc.TempFile with
             | ProcSuccess _ -> ()
             | ProcErrorCode i -> 
@@ -37,7 +37,7 @@ module Pdf =
             | ProcErrorMessage msg -> 
                 failwithf "PdfDoc.RotateEmbed - '%s'" msg
                 
-        member x.RotateExtract(options:PdftkOptions, rotations: Rotation list)  : unit = 
+        member x.RotateExtract(options:ProcessOptions, rotations: Rotation list)  : unit = 
             match pdfRotateExtract options rotations x.PdfDoc.TempFile x.PdfDoc.TempFile with
             | ProcSuccess _ -> ()
             | ProcErrorCode i -> 

@@ -10,11 +10,6 @@ module Pandoc =
 
     
 
-    type PandocOptions = 
-        { WorkingDirectory: string 
-          PandocExe: string 
-          DocxReferenceDoc: string
-        }
 
     // pandoc -f markdown -t docx+table_captions <INFILE> --reference-doc=<CUSTOM_REF> -s -o <OUTFILE>
 
