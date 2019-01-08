@@ -23,6 +23,7 @@
 
 
 #load "..\src\DocBuild\Base\Common.fs"
+#load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Raw\Ghostscript.fs"
 #load "..\src\DocBuild\Raw\Pandoc.fs"
@@ -32,6 +33,7 @@
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
+#load "..\src\DocBuild\Extra\PhotoBook.fs"
 
 #load "..\src-msoffice\DocBuild\Office\MsoExcel.fs"
 #load "..\src-msoffice\DocBuild\Office\MsoWord.fs"
@@ -39,7 +41,7 @@
 #load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
 #load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
 
-#load "..\src\DocBuild\Extra\PhotoBook.fs"
+
 open DocBuild
 open DocBuild.Document.Markdown
 

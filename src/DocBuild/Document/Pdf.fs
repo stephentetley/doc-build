@@ -10,6 +10,7 @@ namespace DocBuild.Document
 [<AutoOpen>]
 module Pdf = 
 
+    open DocBuild.Base.Shell
     open DocBuild.Base.Document
     open DocBuild.Raw.Pdftk
     open DocBuild.Raw.PdftkRotate
@@ -30,18 +31,18 @@ module Pdf =
             
         member x.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : unit = 
             match pdfRotateEmbed options rotations x.PdfDoc.TempFile x.PdfDoc.TempFile with
-            | Choice2Of2 i when i = 0 -> ()
-            | Choice2Of2 i -> 
+            | ProcSuccess -> ()
+            | ProcErrorCode i -> 
                 failwithf "PdfDoc.RotateEmbed - error code %i" i
-            | Choice1Of2 msg -> 
+            | ProcErrorMessage msg -> 
                 failwithf "PdfDoc.RotateEmbed - '%s'" msg
                 
         member x.RotateExtract(options:PdftkOptions, rotations: Rotation list)  : unit = 
             match pdfRotateExtract options rotations x.PdfDoc.TempFile x.PdfDoc.TempFile with
-            | Choice2Of2 i when i = 0 -> ()
-            | Choice2Of2 i -> 
+            | ProcSuccess -> ()
+            | ProcErrorCode i -> 
                 failwithf "PdfDoc.RotateEmbed - error code %i" i
-            | Choice1Of2 msg -> 
+            | ProcErrorMessage msg -> 
                 failwithf "PdfDoc.RotateEmbed - '%s'" msg
 
     let pdfFile (path:string) : PdfFile = new PdfFile (filePath = path)

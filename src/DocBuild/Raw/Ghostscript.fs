@@ -2,13 +2,13 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Raw
+namespace DocBuild.Raw.Ghostscript
 
 
 [<AutoOpen>]
 module Ghostscript = 
 
-    open DocBuild.Base.Common
+    open DocBuild.Base.Shell
 
     type GsPdfQuality = 
         | GsPdfScreen 
@@ -53,5 +53,5 @@ module Ghostscript =
         String.concat " " (line1 :: rest)
 
 
-    let runGhostscript (options:GhostscriptOptions) (command:string) : Choice<string,int> = 
+    let runGhostscript (options:GhostscriptOptions) (command:string) : ProcessResult = 
         executeProcess options.WorkingDirectory options.GhostscriptExe command

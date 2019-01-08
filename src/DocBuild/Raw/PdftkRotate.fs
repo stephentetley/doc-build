@@ -4,16 +4,13 @@
 
 namespace DocBuild.Raw.PdftkRotate
 
-// TODO - can use pdftk to get number of pages:
-// > pdftk mydoc.pdf dump_data 
-// Look for NumberOfPages in the output
-
 
 [<AutoOpen>]
 module PdftkRotate = 
 
     open DocBuild.Base
     open DocBuild.Raw.Pdftk
+    open DocBuild.Base.Shell.Shell
 
     // ************************************************************************
     // Rotation
@@ -140,7 +137,7 @@ module PdftkRotate =
     let pdfRotateExtract (options:PdftkOptions) 
                          (rotations: Rotation list) 
                          (inputFile:string) 
-                         (outputFile:string) : Choice<string,int> =
+                         (outputFile:string) : ProcessResult =
         runPdftk options <| makeExtractCmd inputFile outputFile rotations
 
 
@@ -148,7 +145,7 @@ module PdftkRotate =
     let pdfRotateEmbed (options:PdftkOptions) 
                         (rotations: Rotation list) 
                         (inputFile:string) 
-                        (outputFile:string) : Choice<string,int> =
+                        (outputFile:string) : ProcessResult =
         runPdftk options <|  makeEmbedCmd inputFile outputFile rotations
 
 

@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Raw
+namespace DocBuild.Raw.Pandoc
 
 
 [<AutoOpen>]
