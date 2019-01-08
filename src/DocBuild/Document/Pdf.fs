@@ -91,19 +91,14 @@ module Pdf =
             with get() : PdfFile list = 
                 x.Pdfs.Documents |> List.map (fun d -> new PdfFile(doc=d))
 
-        /// API problem - this is probably the wrong place for this 
-        /// operation as it implies PdfColl must know about GsConcat
-        member x.GsConcat( options:ProcessOptions
-                         , outputFile:string
-                         , quality:GsQuality) : ProcessResult = 
-            let inputs = x.Pdfs.Documents |> List.map (fun d -> d.ActiveFile)
-            let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
-            runGhostscript options cmd
+
+    let pdfColl (pdfs:PdfFile list) : PdfColl = 
+        new PdfColl(pdfs=pdfs)
 
 
     let ghostscriptConcat (options:ProcessOptions)
-                            (quality:GsQuality)
                             (inputfiles:PdfColl)
+                            (quality:GsQuality)
                             (outputFile:string) : ProcessResult = 
             let inputs = inputfiles.Documents |> List.map (fun d -> d.ActiveFile)
             let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs

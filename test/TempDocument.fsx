@@ -48,6 +48,7 @@ open DocBuild.Document.Markdown
 
 open DocBuild.Raw.Ghostscript
 open DocBuild.Base.Shell.Shell
+open DocBuild.Document.Pdf
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
@@ -59,27 +60,14 @@ let demo01 () =
         { WorkingDirectory = working
         ; ExecutableName = @"C:\programs\gs\gs9.15\bin\gswin64c.exe" 
         }
-    let pandocOptions : ProcessOptions  = 
-        { WorkingDirectory = working
-        ; ExecutableName = "pandoc"
-        }
 
-    let p1 = getWorkingFile "One.pdf"
-    //let p2 = getWorkingFile "Two.pdf"
-    //let p3 = getWorkingFile "Three.pdf"
-    //let p4 = getWorkingFile "FR-output2.docx"
-    //let ppt1 = powerPointDoc <| getWorkingFile "slides1.pptx"
-    //let xl1 = excelDoc <| getWorkingFile "sheet1.xlsx"
-    //let md1 = markdownDoc <| getWorkingFile "sample.md"
-    //let d1 = (concat <| List.map (fun x -> (pdfDoc x).ToDocument()) [p1;p2;p3]) 
-    //            *^^ ppt1.ExportAsPdf(PowerPointForScreen)
-    //            *^^ (wordDoc p4).ExportAsPdf(WordForScreen)
-    //            *^^ xl1.ExportAsPdf(true, ExcelQualityMinimum)
-    //            // *^^ md1.ExportAsPdf(pandocOptions)
-    //d1.SaveAs(gsOptions, "concat.pdf")
-    
-    ()
+    let p1 = pdfFile <| getWorkingFile "One.pdf"
+    let p2 = pdfFile <| getWorkingFile "Two.pdf"
+    let cs1 = pdfColl [p1;p2]
+    let outfile = getWorkingFile "Concat.pdf"
+
+    ignore <| ghostscriptConcat gsOptions cs1 GsScreen outfile
 
 
-    // TODO Pdf rotate
+
 
