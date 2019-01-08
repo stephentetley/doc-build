@@ -31,10 +31,7 @@ module Jpeg =
 
 
         
-        /// This is wrong as it does not allow multiple invocations 
-        /// of SaveAs.
-        /// If we intend getting rid of the TEMP file, it looks
-        /// like we will need a destructor.
+
         member x.SaveAs(outputPath: string) : unit =  
             x.JpegDoc.SaveAs(outputPath)
 

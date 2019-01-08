@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocBuild", "src\DocBuild.fsproj", "{C8FCB40D-D859-44C8-B2BB-472382B22DF0}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DocBuild", "src\DocBuild.fsproj", "{C8FCB40D-D859-44C8-B2BB-472382B22DF0}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocBuildTest", "test\DocBuildTest.fsproj", "{0B43D713-CB5F-4D89-8DCD-4DF1F80CEFCA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DocBuildTest", "test\DocBuildTest.fsproj", "{0B43D713-CB5F-4D89-8DCD-4DF1F80CEFCA}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocBuildOffice", "src-msoffice\DocBuildOffice.fsproj", "{DFFBC706-401A-4897-9570-CA47EC8B212D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{0B43D713-CB5F-4D89-8DCD-4DF1F80CEFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B43D713-CB5F-4D89-8DCD-4DF1F80CEFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B43D713-CB5F-4D89-8DCD-4DF1F80CEFCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFFBC706-401A-4897-9570-CA47EC8B212D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFFBC706-401A-4897-9570-CA47EC8B212D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFFBC706-401A-4897-9570-CA47EC8B212D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFFBC706-401A-4897-9570-CA47EC8B212D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

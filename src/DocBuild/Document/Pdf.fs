@@ -22,34 +22,27 @@ module Pdf =
         new (filePath:string) = 
             { PdfDoc = new Document(filePath = filePath) }
 
-        //member v.SaveAs(outputPath: string) : unit = 
-        //    if v.Updated then 
-        //        System.IO.File.Move(v.TempPath, outputPath)
-        //    else
-        //        System.IO.File.Copy(v.SourcePath, outputPath)
+        member x.SaveAs(outputPath: string) : unit =  
+            x.PdfDoc.SaveAs(outputPath)
 
-        //member v.ToDocument() : Document = 
-        //    if v.Updated then 
-        //        document v.TempPath
-        //    else
-        //        document v.SourcePath
+
 
             
-        //member v.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : PdfDoc = 
-        //    match pdfRotateEmbed options rotations v.TempFile v.TempFile with
-        //    | Choice2Of2 i when i = 0 -> v
-        //    | Choice2Of2 i -> 
-        //        failwithf "PdfDoc.RotateEmbed - error code %i" i
-        //    | Choice1Of2 msg -> 
-        //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
+        member x.RotateEmbed(options:PdftkOptions, rotations: Rotation list)  : unit = 
+            match pdfRotateEmbed options rotations x.PdfDoc.TempFile x.PdfDoc.TempFile with
+            | Choice2Of2 i when i = 0 -> ()
+            | Choice2Of2 i -> 
+                failwithf "PdfDoc.RotateEmbed - error code %i" i
+            | Choice1Of2 msg -> 
+                failwithf "PdfDoc.RotateEmbed - '%s'" msg
                 
-        //member v.RotateExtract(options:PdftkOptions, rotations: Rotation list)  : PdfDoc = 
-        //    match pdfRotateExtract options rotations v.TempFile v.TempFile with
-        //    | Choice2Of2 i when i = 0 -> v
-        //    | Choice2Of2 i -> 
-        //        failwithf "PdfDoc.RotateEmbed - error code %i" i
-        //    | Choice1Of2 msg -> 
-        //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
+        member x.RotateExtract(options:PdftkOptions, rotations: Rotation list)  : unit = 
+            match pdfRotateExtract options rotations x.PdfDoc.TempFile x.PdfDoc.TempFile with
+            | Choice2Of2 i when i = 0 -> ()
+            | Choice2Of2 i -> 
+                failwithf "PdfDoc.RotateEmbed - error code %i" i
+            | Choice1Of2 msg -> 
+                failwithf "PdfDoc.RotateEmbed - '%s'" msg
 
     let pdfFile (path:string) : PdfFile = new PdfFile (filePath = path)
 

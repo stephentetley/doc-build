@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Document
+namespace DocBuild.Office.WordDoc
 
 
 [<AutoOpen>]
@@ -11,9 +11,10 @@ module WordDoc =
 
     // Open at .Interop rather than .Word then the Word API has to be qualified
     open Microsoft.Office.Interop
-    open DocBuild.Raw.MsoWord
     open DocBuild.Base
     open DocBuild.Base.Document
+    open DocBuild.Office.MsoWord
+
 
 
 

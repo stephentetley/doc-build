@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\src-msoffice\DocBuildOffice.fsproj" />
     <ProjectReference Include="..\src\DocBuild.fsproj" />
   </ItemGroup>
 

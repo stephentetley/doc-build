@@ -28,15 +28,16 @@
 #load "..\src\DocBuild\Raw\Pandoc.fs"
 #load "..\src\DocBuild\Raw\Pdftk.fs"
 #load "..\src\DocBuild\Raw\ImageMagick.fs"
-#load "..\src\DocBuild\Raw\MsoExcel.fs"
-#load "..\src\DocBuild\Raw\MsoWord.fs"
 #load "..\src\DocBuild\Raw\PdftkRotate.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
-#load "..\src\DocBuild\Document\WordDoc.fs"
-#load "..\src\DocBuild\Document\ExcelXls.fs"
-#load "..\src\DocBuild\Document\PowerPointPpt.fs"
+
+#load "..\src-msoffice\DocBuild\Office\MsoExcel.fs"
+#load "..\src-msoffice\DocBuild\Office\MsoWord.fs"
+#load "..\src-msoffice\DocBuild\Office\WordDoc.fs"
+#load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
+#load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
 
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
 open DocBuild

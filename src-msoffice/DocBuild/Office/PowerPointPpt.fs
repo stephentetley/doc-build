@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Document
+namespace DocBuild.Document.PowerPointPpt
 
 
 [<AutoOpen>]

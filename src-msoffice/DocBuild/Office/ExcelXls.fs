@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Document
+namespace DocBuild.Document.ExcelXls
 
 
 [<AutoOpen>]
@@ -14,8 +14,9 @@ module ExcelXls =
 
     open DocBuild.Base
     open DocBuild.Base.Document
-    open DocBuild.Raw.MsoExcel
-    open DocBuild.Document.Pdf
+    // open DocBuild.Document.Pdf
+    open DocBuild.Office.MsoExcel
+
 
 
 

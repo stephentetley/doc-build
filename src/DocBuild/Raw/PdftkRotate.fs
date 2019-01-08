@@ -4,6 +4,10 @@
 
 namespace DocBuild.Raw.PdftkRotate
 
+// TODO - can use pdftk to get number of pages:
+// > pdftk mydoc.pdf dump_data 
+// Look for NumberOfPages in the output
+
 
 [<AutoOpen>]
 module PdftkRotate = 
