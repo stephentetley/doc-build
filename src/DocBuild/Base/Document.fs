@@ -23,7 +23,7 @@ module Document =
         else
             let root = System.IO.Path.GetDirectoryName filePath
             let ext  = System.IO.Path.GetExtension filePath
-            let newfile = sprintf "%s.TEMP.%s" justfile ext
+            let newfile = sprintf "%s.TEMP%s" justfile ext
             Path.Combine(root, newfile)
 
 

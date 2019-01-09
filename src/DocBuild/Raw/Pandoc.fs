@@ -8,14 +8,18 @@ namespace DocBuild.Raw.Pandoc
 [<AutoOpen>]
 module Pandoc = 
 
+    open DocBuild.Base.Common
+    open DocBuild.Base.Shell
     
+    /// pandoc --reference-doc="<customRef>" --from=markdown --to=docx+table_captions --standalone --output="<outputFile>" "<inputFile>"
+    let makePandocDocxCommand (customRef:string) (inputFile:string) (outputFile:string)  : CommandArgs = 
+        reqArg "--reference-doc" (doubleQuote customRef)
+            ^^ reqArg "--from" "markdown"
+            ^^ reqArg "--to" "docx+table_captions"
+            ^^ noArg "--standalone"
+            ^^ reqArg "--output" (doubleQuote outputFile)
+            ^^ noArg (doubleQuote inputFile)
 
 
-    // pandoc -f markdown -t docx+table_captions <INFILE> --reference-doc=<CUSTOM_REF> -s -o <OUTFILE>
-
-    let makePandocCommand (inFile:string) (customRef:string) 
-                                    (outFile:string) : string = 
-        sprintf "-f markdown -t docx+table_captions \"%s\" --reference-doc=\"%s\" -s -o \"%s\""
-                    inFile customRef outFile
 
 
