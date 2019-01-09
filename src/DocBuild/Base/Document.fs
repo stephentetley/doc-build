@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Base.Document
+namespace DocBuild.Base
 
 [<AutoOpen>]
 module Document = 

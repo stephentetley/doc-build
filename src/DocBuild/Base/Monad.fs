@@ -276,11 +276,11 @@ module Monad =
         liftM6 fn ma mb mc md me mf
 
     /// Left biased choice, if ``ma`` succeeds return its result, otherwise try ``mb``.
-    let alt (ma:DocBuild<'a>) (mb:DocBuild<'a>) : DocBuild<'a> = 
+    let altM (ma:DocBuild<'a>) (mb:DocBuild<'a>) : DocBuild<'a> = 
         combineM ma mb
 
     let (<||>) (ma:DocBuild<'a>) (mb:DocBuild<'a>) : DocBuild<'a> = 
-        alt ma mb <&?> "(<||>)"
+        altM ma mb <&?> "(<||>)"
 
     /// Haskell Applicative's (<*>)
     let apM (mf:DocBuild<'a ->'b>) (ma:DocBuild<'a>) : DocBuild<'b> = 

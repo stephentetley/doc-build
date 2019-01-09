@@ -10,15 +10,22 @@ module Markdown =
     // open MarkdownDoc
     // open MarkdownDoc.Pandoc
 
-    open DocBuild.Base.Document
+    open DocBuild.Base
+    open DocBuild.Base.Monad
 
-
+    [<Struct>]
     type MarkdownFile = 
-        val private MarkdownDoc : Document
+        | MarkdownFile of Document
 
-        new (filePath:string) = 
-            { MarkdownDoc = new Document(filePath = filePath) }
+        member x.Path 
+            with get () : FilePath =
+                match x with | MarkdownFile(p) -> p.Path
 
+        /// ActiveFile is a mutable working copy of the original file.
+        /// The original file is untouched.
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | MarkdownFile(p) -> p.NextTempName
 
         //member v.ExportAsWord(options:PandocOptions, outFile:string) : WordDoc = 
         //    let command = 
@@ -45,9 +52,8 @@ module Markdown =
         //    let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
         //    v.ExportAsPdf(options = options, outFile = outFile)
 
-    let markdownDoc (path:string) : MarkdownFile = 
-        new MarkdownFile (filePath = path)
+    let markdownDoc (path:string) : DocBuild<MarkdownFile> = 
+        getDocument ".md" path |>> MarkdownFile
 
-    //let markdownDoc2 (path:string) (markdown:Markdown) : MarkdownFile = 
-    //    new MarkdownFile (markdown = markdown, filePath = path)
+
 

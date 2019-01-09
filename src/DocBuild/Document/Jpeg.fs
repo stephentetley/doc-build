@@ -7,8 +7,8 @@ namespace DocBuild.Document
 
 module Jpeg = 
 
-    open DocBuild.Base.Document
-    open DocBuild.Base.Collective
+    open DocBuild.Base
+    open DocBuild.Base.Monad
     open DocBuild.Raw.ImageMagick
 
 
@@ -23,45 +23,35 @@ module Jpeg =
 
 
 
-
+    [<Struct>]
     type JpegFile = 
-        val private JpegDoc : Document
+        | JpegFile of Document
 
-        new (filePath:string) = 
-            { JpegDoc = new Document(filePath = filePath) }
+        member x.Path 
+            with get () : FilePath =
+                match x with | JpegFile(p) -> p.Path
 
-        member internal x.Document 
-            with get() : Document = x.JpegDoc
-
-        member x.SaveAs(outputPath: string) : unit =  
-            x.JpegDoc.SaveAs(outputPath)
-
-
-
-        member x.AutoOrient() : unit = 
-            autoOrient x.JpegDoc.ActiveFile
+        /// ActiveFile is a mutable working copy of the original file.
+        /// The original file is untouched.
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | JpegFile(p) -> p.NextTempName
 
 
-        member x.ResizeForWord() : unit = 
-            optimizeForMsWord x.JpegDoc.ActiveFile
+
+    let jpgFile (path:string) : DocBuild<JpegFile> = 
+        altM (getDocument ".jpg" path) (getDocument ".jpeg" path) |>> JpegFile
 
 
-    let jpegFile (path:string) : JpegFile = new JpegFile (filePath = path)
+    //let autoOrient (src:JpegFile) : JpegFile = 
+    //    ignore <| src.AutoOrient() ; src
 
-    let autoOrient (src:JpegFile) : JpegFile = 
-        ignore <| src.AutoOrient() ; src
+    //let resizeForWord (src:JpegFile) : JpegFile = 
+    //    ignore <| src.ResizeForWord() ; src
 
-    let resizeForWord (src:JpegFile) : JpegFile = 
-        ignore <| src.ResizeForWord() ; src
-
-    let saveJpegFile (outputName:string) (doc:JpegFile) : unit = 
-        doc.SaveAs(outputPath = outputName)
+    //let saveJpegFile (outputName:string) (doc:JpegFile) : unit = 
+    //    doc.SaveAs(outputPath = outputName)
 
 
-    type JpegColl = 
-        val private Jpegs : Collective
 
-        new (jpegs:JpegFile list) = 
-            let docs = jpegs |> List.map (fun x -> x.Document)
-            { Jpegs = new Collective(docs = docs) }
 

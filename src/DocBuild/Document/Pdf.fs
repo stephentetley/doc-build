@@ -16,8 +16,6 @@ module Pdf =
     open DocBuild.Base
     open DocBuild.Base.Shell
     open DocBuild.Base.Monad
-    open DocBuild.Base.Document
-    open DocBuild.Base.FakeLike
     open DocBuild.Raw.Ghostscript
     open DocBuild.Raw.Pdftk
     open DocBuild.Raw.PdftkRotate
