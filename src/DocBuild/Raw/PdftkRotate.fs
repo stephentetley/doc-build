@@ -8,7 +8,7 @@ namespace DocBuild.Raw.PdftkRotate
 [<AutoOpen>]
 module PdftkRotate = 
 
-    open DocBuild.Base
+    open DocBuild.Base.Common
     open DocBuild.Raw.Pdftk
     open DocBuild.Base.Shell.Shell
 
@@ -137,7 +137,7 @@ module PdftkRotate =
     let pdfRotateExtract (options:ProcessOptions) 
                          (rotations: Rotation list) 
                          (inputFile:string) 
-                         (outputFile:string) : ProcessResult =
+                         (outputFile:string) : BuildResult<string> =
         runPdftk options <| makeExtractCmd inputFile outputFile rotations
 
 
@@ -145,7 +145,7 @@ module PdftkRotate =
     let pdfRotateEmbed (options:ProcessOptions) 
                         (rotations: Rotation list) 
                         (inputFile:string) 
-                        (outputFile:string) : ProcessResult =
+                        (outputFile:string) : BuildResult<string> =
         runPdftk options <|  makeEmbedCmd inputFile outputFile rotations
 
 

@@ -13,9 +13,10 @@ namespace DocBuild.Raw.Pdftk
 [<AutoOpen>]
 module Pdftk = 
 
+    open DocBuild.Base.Common
     open DocBuild.Base.Shell
 
     
 
-    let runPdftk (options:ProcessOptions) (command:string) : ProcessResult = 
+    let runPdftk (options:ProcessOptions) (command:string) : BuildResult<string> = 
         executeProcess options command

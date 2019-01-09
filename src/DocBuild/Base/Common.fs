@@ -9,6 +9,11 @@ module Common =
 
     open System.IO
 
+    type ErrMsg = string
+
+    type BuildResult<'a> = Result<'a,ErrMsg>
+
+
     let doubleQuote (source:string) : string = 
         sprintf "\"%s\"" source
 

@@ -37,5 +37,5 @@ module Ghostscript =
         
 
 
-    let runGhostscript (options:ProcessOptions) (command:CommandArgs) : ProcessResult = 
+    let runGhostscript (options:ProcessOptions) (command:CommandArgs) : BuildResult<string> = 
         executeProcess options command.Command

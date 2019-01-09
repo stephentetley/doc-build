@@ -8,16 +8,20 @@ namespace DocBuild.Base.Shell
 module Shell = 
 
     open System.IO
+    open DocBuild.Base.Common
 
-    type ProcessResult = 
-        | ProcSuccess of string
-        | ProcErrorCode of int
-        | ProcErrorMessage of string
+    let private procErrorCodeMessage (code:int) : string = 
+        sprintf "process error: code %i" code
 
-    let exitcodeToResult (code:int) (stdout:string) : ProcessResult = 
+    let private procErrorMessage (msg:string) : string = 
+        sprintf "process error: '%s'" msg
+        
+
+
+    let exitcodeToResult (code:int) (stdout:string) : BuildResult<string> = 
         match code with
-        | 0 -> ProcSuccess stdout
-        | _ -> ProcErrorCode code
+        | 0 -> Ok stdout
+        | _ -> Error (procErrorCodeMessage code)
 
     type ProcessOptions = 
         { WorkingDirectory: string 
@@ -27,7 +31,9 @@ module Shell =
     // ************************************************************************
     // RunProcess getting text written to stdout 
 
-    let executeProcess (procOptions:ProcessOptions) (command:string) : ProcessResult = 
+    /// Result is contents of stdout
+    let executeProcess (procOptions:ProcessOptions) 
+                        (command:string) : BuildResult<string> = 
         try
             use proc = new System.Diagnostics.Process()
             proc.StartInfo.FileName <- procOptions.ExecutableName
@@ -43,7 +49,9 @@ module Shell =
             proc.WaitForExit () 
             exitcodeToResult proc.ExitCode stdout
         with
-        | ex -> ProcErrorMessage (sprintf "executeProcess: \n%s" ex.Message)
+        | ex -> Error (procErrorMessage (sprintf "executeProcess: \n%s" ex.Message))
+
+
 
     // ************************************************************************
     // Options

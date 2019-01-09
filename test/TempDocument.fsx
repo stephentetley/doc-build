@@ -24,6 +24,7 @@
 
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
+#load "..\src\DocBuild\Base\Monad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collective.fs"
 #load "..\src\DocBuild\Raw\Ghostscript.fs"
@@ -49,24 +50,29 @@ open DocBuild.Document.Markdown
 open DocBuild.Raw.Ghostscript
 open DocBuild.Base.Shell.Shell
 open DocBuild.Document.Pdf
+open DocBuild.Base.Monad.Monad
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
     System.IO.Path.Combine(working, name)
 
-let demo01 () = 
-    let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-    let gsOptions : ProcessOptions = 
-        { WorkingDirectory = working
-        ; ExecutableName = @"C:\programs\gs\gs9.15\bin\gswin64c.exe" 
-        }
+let WindowsEnv : BuilderEnv = 
+    { WorkingDirectory = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
+      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      PandocReferenceDoc  = Some <| getWorkingFile "custom-reference1.docx"
+    }
 
+
+let demo01 () = 
     let p1 = pdfFile <| getWorkingFile "One.pdf"
     let p2 = pdfFile <| getWorkingFile "Two.pdf"
-    let cs1 = pdfColl [p1;p2]
+    let p3 = pdfFile <| getWorkingFile "Three.pdf"
+    let pdfs = pdfColl [p1;p2;p3]
     let outfile = getWorkingFile "Concat.pdf"
 
-    ignore <| ghostscriptConcat gsOptions cs1 GsScreen outfile
+    runDocBuild WindowsEnv <| ghostscriptConcat pdfs GsScreen outfile
 
 
 

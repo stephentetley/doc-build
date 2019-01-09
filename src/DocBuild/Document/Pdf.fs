@@ -12,7 +12,9 @@ open DocBuild.Raw.Ghostscript.Ghostscript
 [<AutoOpen>]
 module Pdf = 
 
+    open DocBuild.Base.Common
     open DocBuild.Base.Shell
+    open DocBuild.Base.Monad
     open DocBuild.Base.Document
     open DocBuild.Base.Collective
     open DocBuild.Raw.Ghostscript
@@ -40,23 +42,23 @@ module Pdf =
         member x.SaveAs(outputPath: string) : unit =  
             x.PdfDoc.SaveAs(outputPath)
             
-        member x.RotateEmbed( options:ProcessOptions
-                            , rotations: Rotation list)  : unit = 
-            match pdfRotateEmbed options rotations x.PdfDoc.ActiveFile x.PdfDoc.ActiveFile with
-            | ProcSuccess _ -> ()
-            | ProcErrorCode i -> 
-                failwithf "PdfDoc.RotateEmbed - error code %i" i
-            | ProcErrorMessage msg -> 
-                failwithf "PdfDoc.RotateEmbed - '%s'" msg
+        //member x.RotateEmbed( options:ProcessOptions
+        //                    , rotations: Rotation list)  : unit = 
+        //    match pdfRotateEmbed options rotations x.PdfDoc.ActiveFile x.PdfDoc.ActiveFile with
+        //    | ProcSuccess _ -> ()
+        //    | ProcErrorCode i -> 
+        //        failwithf "PdfDoc.RotateEmbed - error code %i" i
+        //    | ProcErrorMessage msg -> 
+        //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
                 
-        member x.RotateExtract( options:ProcessOptions
-                              , rotations: Rotation list)  : unit = 
-            match pdfRotateExtract options rotations x.PdfDoc.ActiveFile x.PdfDoc.ActiveFile with
-            | ProcSuccess _ -> ()
-            | ProcErrorCode i -> 
-                failwithf "PdfDoc.RotateEmbed - error code %i" i
-            | ProcErrorMessage msg -> 
-                failwithf "PdfDoc.RotateEmbed - '%s'" msg
+        //member x.RotateExtract( options:ProcessOptions
+        //                      , rotations: Rotation list)  : unit = 
+        //    match pdfRotateExtract options rotations x.PdfDoc.ActiveFile x.PdfDoc.ActiveFile with
+        //    | ProcSuccess _ -> ()
+        //    | ProcErrorCode i -> 
+        //        failwithf "PdfDoc.RotateEmbed - error code %i" i
+        //    | ProcErrorMessage msg -> 
+        //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
 
     let pdfFile (path:string) : PdfFile = new PdfFile (filePath = path)
 
@@ -96,10 +98,10 @@ module Pdf =
         new PdfColl(pdfs=pdfs)
 
 
-    let ghostscriptConcat (options:ProcessOptions)
-                            (inputfiles:PdfColl)
+
+    let ghostscriptConcat (inputfiles:PdfColl)
                             (quality:GsQuality)
-                            (outputFile:string) : ProcessResult = 
+                            (outputFile:string) : DocBuild<string> = 
             let inputs = inputfiles.Documents |> List.map (fun d -> d.ActiveFile)
             let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
-            runGhostscript options cmd
+            execGhostscript cmd

@@ -7,17 +7,18 @@ namespace DocBuild.Base.Monad
 [<AutoOpen>]
 module Monad = 
 
+    open DocBuild.Base.Common
+    open DocBuild.Base.Shell
+
     type BuilderEnv = 
         { WorkingDirectory: string
           GhostscriptExe: string
           PdftkExe: string 
           PandocExe: string
-          PandocReferenceDoc: string
+          PandocReferenceDoc: string option
         }
 
-    type ErrMsg = string
 
-    type BuildResult<'a> = Result<'a,ErrMsg>
 
     type DocBuild<'a> = 
         DocBuild of (BuilderEnv -> BuildResult<'a>)
@@ -60,6 +61,18 @@ module Monad =
 
     let (docBuild:DocBuildBuilder) = new DocBuildBuilder()
 
+
+    // ****************************************************
+    // Run
+
+    let runDocBuild (config:BuilderEnv) (ma:DocBuild<'a>) : 'a = 
+        match apply1 ma config with
+        | Ok a -> a
+        | Error msg -> failwith msg
+
+
+
+
     // ****************************************************
     // Errors
 
@@ -77,6 +90,27 @@ module Monad =
 
     let (<?&>) (msg:string) (ma:DocBuild<'a>) : DocBuild<'a> = 
         swapError msg ma
+
+    // ****************************************************
+    // Reader
+
+    let ask : DocBuild<BuilderEnv> = 
+        DocBuild <| fun env -> Ok env
+
+    let asks (extract:BuilderEnv -> 'a) : DocBuild<'a> = 
+        DocBuild <| fun env -> Ok (extract env)
+
+    let local (update:BuilderEnv -> BuilderEnv) 
+                (ma:DocBuild<'a>) : DocBuild<'a> = 
+        DocBuild <| fun env -> apply1 ma (update env)
+
+    // ****************************************************
+    // Lift operations
+
+    let liftDocBuild (answer:BuildResult<'a>) : DocBuild<'a> = 
+        DocBuild <| fun _ -> answer
+
+ 
 
     // ****************************************************
     // Monadic operations
@@ -294,3 +328,30 @@ module Monad =
             match apply1 ma env with
             | Error _ -> Ok None
             | Ok a -> Ok (Some a)
+
+   // ****************************************************
+    // Execute 'builtin' processes 
+    // (Respective applications must be installed)
+
+    let private getOptions (findExe:BuilderEnv -> string) : DocBuild<ProcessOptions> = 
+        pipeM2 (asks findExe)
+                (asks (fun env -> env.WorkingDirectory))
+                (fun exe cwd -> { WorkingDirectory = cwd; ExecutableName = exe})
+    
+    let private shellExecute (findExe:BuilderEnv -> string)
+                                 (command:CommandArgs) : DocBuild<string> = 
+        docBuild { 
+            let! options = getOptions findExe
+            let! ans = liftDocBuild <| executeProcess options command.Command
+            return ans
+            }
+        
+    let execGhostscript (command:CommandArgs) : DocBuild<string> = 
+        shellExecute (fun env -> env.GhostscriptExe) command
+
+    let execPandoc (command:CommandArgs) : DocBuild<string> = 
+        shellExecute (fun env -> env.PandocExe) command
+
+    let execPdftk (command:CommandArgs) : DocBuild<string> = 
+        shellExecute (fun env -> env.PdftkExe) command
+
