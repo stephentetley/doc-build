@@ -10,9 +10,9 @@ module FakeLike =
     open System.IO
     open System
 
-    open DocBuild.Base.Monad
+    open DocBuild.Base.DocMonad
 
-    let validateFile (fileExtension:string) (path:string) : DocBuild<string> = 
+    let validateFile (fileExtension:string) (path:string) : DocMonad<string> = 
         if System.IO.File.Exists(path) then 
             let extension : string = System.IO.Path.GetExtension(path)
             if String.Equals(extension, fileExtension, StringComparison.CurrentCultureIgnoreCase) then 

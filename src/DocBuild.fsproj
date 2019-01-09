@@ -7,7 +7,7 @@
   <ItemGroup>
     <Compile Include="DocBuild\Base\Common.fs" />
     <Compile Include="DocBuild\Base\Shell.fs" />
-    <Compile Include="DocBuild\Base\Monad.fs" />
+    <Compile Include="DocBuild\Base\DocMonad.fs" />
     <Compile Include="DocBuild\Base\FakeLike.fs" />
     <Compile Include="DocBuild\Base\Document.fs" />
     <Compile Include="DocBuild\Raw\Ghostscript.fs" />

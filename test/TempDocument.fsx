@@ -24,7 +24,7 @@
 
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
-#load "..\src\DocBuild\Base\Monad.fs"
+#load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Raw\Ghostscript.fs"
@@ -40,15 +40,15 @@
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Common.fs"
 #load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
-#load "..\src-msoffice\DocBuild\Office\MsoExcel.fs"
-#load "..\src-msoffice\DocBuild\Office\MsoWord.fs"
-//#load "..\src-msoffice\DocBuild\Office\WordDoc.fs"
-//#load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
-//#load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
+// #load "..\src-msoffice\DocBuild\Office\MsoExcel.fs"
+// #load "..\src-msoffice\DocBuild\Office\MsoWord.fs"
+// #load "..\src-msoffice\DocBuild\Office\WordDoc.fs"
+// #load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
+// #load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
 
-
+open DocBuild.Base
 open DocBuild.Document.Pdf
-open DocBuild.Base.Monad
+open DocBuild.Base.DocMonad
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
@@ -64,8 +64,8 @@ let WindowsEnv : BuilderEnv =
 
 
 let demo01 () = 
-    runDocBuild WindowsEnv <| 
-        docBuild { 
+    runDocMonad WindowsEnv <| 
+        docMonad { 
             let! p1 = pdfFile <| getWorkingFile "One.pdf"
             let! p2 = pdfFile <| getWorkingFile "Two.pdf"
             let! p3 = pdfFile <| getWorkingFile "Three.pdf"

@@ -2,11 +2,11 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Office.Monad
+namespace DocBuild.Office.OfficeMonad
 
 
 [<AutoOpen>]
-module Monad = 
+module OfficeMonad = 
 
     open Microsoft.Office.Interop
     open DocBuild.Base
@@ -63,32 +63,32 @@ module Monad =
             | null -> ()
             | ppt -> finalizePowerPoint ppt
 
-    type DocOffice<'a> = 
-        DocOffice of (OfficeHandles -> Monad.DocBuild<'a>)
+    type OfficeMonad<'a> = 
+        OfficeMonad of (OfficeHandles -> DocMonad.DocMonad<'a>)
 
-    let inline private apply1 (ma: DocOffice<'a>) 
-                                (env: OfficeHandles) : Monad.DocBuild<'a> = 
-        let (DocOffice f) = ma in f env
+    let inline private apply1 (ma: OfficeMonad<'a>) 
+                                (env: OfficeHandles) : DocMonad.DocMonad<'a> = 
+        let (OfficeMonad f) = ma in f env
 
-    let inline oreturn (x:'a) : DocOffice<'a> = 
-        DocOffice <| fun _ -> Monad.breturn x
+    let inline oreturn (x:'a) : OfficeMonad<'a> = 
+        OfficeMonad <| fun _ -> DocMonad.breturn x
 
-    let inline bindM (ma:DocOffice<'a>) 
-                        (f :'a -> DocOffice<'b>) : DocOffice<'b> =
-        DocOffice <| fun env -> 
-            Monad.docBuild.Bind(apply1 ma env, fun a -> apply1 (f a) env)
+    let inline bindM (ma:OfficeMonad<'a>) 
+                        (f :'a -> OfficeMonad<'b>) : OfficeMonad<'b> =
+        OfficeMonad <| fun env -> 
+            DocMonad.docMonad.Bind(apply1 ma env, fun a -> apply1 (f a) env)
 
-    let inline ozero () : DocOffice<'a> = 
-        DocOffice <| fun _ -> Monad.bzero () 
+    let inline ozero () : OfficeMonad<'a> = 
+        OfficeMonad <| fun _ -> DocMonad.bzero () 
 
     /// "First success"
-    let inline private combineM (ma:DocOffice<'a>) 
-                                    (mb:DocOffice<'a>) : DocOffice<'a> = 
-        DocOffice <| fun env -> 
-            Monad.docBuild.Combine(apply1 ma env, apply1 mb env)
+    let inline private combineM (ma:OfficeMonad<'a>) 
+                                    (mb:OfficeMonad<'a>) : OfficeMonad<'a> = 
+        OfficeMonad <| fun env -> 
+            DocMonad.docMonad.Combine(apply1 ma env, apply1 mb env)
 
 
-    let inline private  delayM (fn:unit -> DocOffice<'a>) : DocOffice<'a> = 
+    let inline private  delayM (fn:unit -> OfficeMonad<'a>) : OfficeMonad<'a> = 
         bindM (oreturn ()) fn 
 
     type DocOfficeBuilder() = 
@@ -103,18 +103,18 @@ module Monad =
 
     // ****************************************************
     // Run
-    let runDocBuild (config:Monad.BuilderEnv) 
-                    (ma:DocOffice<'a>) : BuildResult<'a> = 
+    let runOfficeMonad (config:DocMonad.BuilderEnv) 
+                    (ma:OfficeMonad<'a>) : BuildResult<'a> = 
         let handles = new OfficeHandles()
-        let (DocOffice mf) = ma
+        let (OfficeMonad mf) = ma
 
-        let ans = Monad.runDocBuild config (mf handles)
+        let ans = DocMonad.runDocMonad config (mf handles)
         handles.RunFinalizer ()
         ans
 
 
-    let execDocBuild (config:Monad.BuilderEnv) 
-                        (ma:DocOffice<'a>) : 'a = 
-        match runDocBuild config ma with
+    let execOfficeMonad (config:DocMonad.BuilderEnv) 
+                        (ma:OfficeMonad<'a>) : 'a = 
+        match runOfficeMonad config ma with
         | Ok a -> a
         | Error msg -> failwith msg

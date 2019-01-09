@@ -11,19 +11,9 @@ module Markdown =
     // open MarkdownDoc.Pandoc
 
     open DocBuild.Base
-    open DocBuild.Base.Monad
+    open DocBuild.Base.DocMonad
 
-    [<Struct>]
-    type MarkdownFile = 
-        | MarkdownFile of Document
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | MarkdownFile(p) -> p.Path
-
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | MarkdownFile(p) -> p.NextTempName
 
         //member v.ExportAsWord(options:PandocOptions, outFile:string) : WordDoc = 
         //    let command = 
@@ -50,8 +40,6 @@ module Markdown =
         //    let outFile:string = System.IO.Path.ChangeExtension(v.Body, "pdf")
         //    v.ExportAsPdf(options = options, outFile = outFile)
 
-    let markdownDoc (path:string) : DocBuild<MarkdownFile> = 
-        getDocument ".md" path |>> MarkdownFile
 
 
 

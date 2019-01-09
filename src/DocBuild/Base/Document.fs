@@ -10,7 +10,7 @@ module Document =
     open System.Text.RegularExpressions
     open System.IO
 
-    open DocBuild.Base.Monad
+    open DocBuild.Base.DocMonad
     open DocBuild.Base
 
     type FilePath = string
@@ -31,6 +31,10 @@ module Document =
         let newfile = sprintf "%s.%s%s" justFile suffix extension
         Path.Combine(root, newfile)
 
+
+
+    // ************************************************************************
+    // Base Document type (to be wrapped)
     
     [<Struct>]
     type Document = 
@@ -48,8 +52,68 @@ module Document =
 
 
 
-    let getDocument (fileExtension:string) (filePath:string) : DocBuild<Document> = 
-        docBuild { 
+    let getDocument (fileExtension:string) (filePath:string) : DocMonad<Document> = 
+        docMonad { 
             let! path = validateFile fileExtension filePath
             return Document(path)
             }
+
+    // ************************************************************************
+    // Pdf file
+
+    [<Struct>]
+    type PdfFile = 
+        | PdfFile of Document
+
+        member x.Path 
+            with get () : FilePath =
+                match x with | PdfFile(p) -> p.Path
+
+        /// ActiveFile is a mutable working copy of the original file.
+        /// The original file is untouched.
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | PdfFile(p) -> p.NextTempName
+
+    let pdfFile (path:string) : DocMonad<PdfFile> = 
+        getDocument ".pdf" path |>> PdfFile
+
+
+    // ************************************************************************
+    // Jpeg file
+
+    [<Struct>]
+    type JpegFile = 
+        | JpegFile of Document
+
+        member x.Path 
+            with get () : FilePath =
+                match x with | JpegFile(p) -> p.Path
+
+        /// ActiveFile is a mutable working copy of the original file.
+        /// The original file is untouched.
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | JpegFile(p) -> p.NextTempName
+
+    let jpgFile (path:string) : DocMonad<JpegFile> = 
+        altM (getDocument ".jpg" path) (getDocument ".jpeg" path) |>> JpegFile
+
+    // ************************************************************************
+    // Markdown file
+
+    [<Struct>]
+    type MarkdownFile = 
+        | MarkdownFile of Document
+
+        member x.Path 
+            with get () : FilePath =
+                match x with | MarkdownFile(p) -> p.Path
+
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | MarkdownFile(p) -> p.NextTempName
+
+
+    let markdownDoc (path:string) : DocMonad<MarkdownFile> = 
+        getDocument ".md" path |>> MarkdownFile

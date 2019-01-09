@@ -8,7 +8,7 @@ namespace DocBuild.Document
 module Jpeg = 
 
     open DocBuild.Base
-    open DocBuild.Base.Monad
+    open DocBuild.Base.DocMonad
     open DocBuild.Raw.ImageMagick
 
 
@@ -23,41 +23,26 @@ module Jpeg =
 
 
 
-    [<Struct>]
-    type JpegFile = 
-        | JpegFile of Document
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | JpegFile(p) -> p.Path
-
-        /// ActiveFile is a mutable working copy of the original file.
-        /// The original file is untouched.
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | JpegFile(p) -> p.NextTempName
-
-
-
-    let jpgFile (path:string) : DocBuild<JpegFile> = 
+    let jpgFile (path:string) : DocMonad<JpegFile> = 
         altM (getDocument ".jpg" path) (getDocument ".jpeg" path) |>> JpegFile
 
 
-    let autoOrientAs (src:JpegFile) (outfile:string) : DocBuild<JpegFile> = 
+    let autoOrientAs (src:JpegFile) (outfile:string) : DocMonad<JpegFile> = 
         imAutoOrient src.Path outfile |> ignore
         jpgFile outfile
 
-    let autoOrient (src:JpegFile) : DocBuild<JpegFile> = 
+    let autoOrient (src:JpegFile) : DocMonad<JpegFile> = 
         autoOrientAs src src.NextTempName
 
 
 
-    let resizeForWordAs (src:JpegFile) (outfile:string) : DocBuild<JpegFile> = 
+    let resizeForWordAs (src:JpegFile) (outfile:string) : DocMonad<JpegFile> = 
         imAutoOrient src.Path outfile |> ignore
         jpgFile outfile
 
     /// Rezize for Word generating a new temp file
-    let resizeForWord (src:JpegFile)  : DocBuild<JpegFile> = 
+    let resizeForWord (src:JpegFile) : DocMonad<JpegFile> = 
         resizeForWordAs src src.NextTempName
 
 
