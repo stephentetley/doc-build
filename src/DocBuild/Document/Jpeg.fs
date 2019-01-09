@@ -43,14 +43,22 @@ module Jpeg =
         altM (getDocument ".jpg" path) (getDocument ".jpeg" path) |>> JpegFile
 
 
-    //let autoOrient (src:JpegFile) : JpegFile = 
-    //    ignore <| src.AutoOrient() ; src
+    let autoOrientAs (src:JpegFile) (outfile:string) : DocBuild<JpegFile> = 
+        imAutoOrient src.Path outfile |> ignore
+        jpgFile outfile
 
-    //let resizeForWord (src:JpegFile) : JpegFile = 
-    //    ignore <| src.ResizeForWord() ; src
+    let autoOrient (src:JpegFile) : DocBuild<JpegFile> = 
+        autoOrientAs src src.NextTempName
 
-    //let saveJpegFile (outputName:string) (doc:JpegFile) : unit = 
-    //    doc.SaveAs(outputPath = outputName)
+
+
+    let resizeForWordAs (src:JpegFile) (outfile:string) : DocBuild<JpegFile> = 
+        imAutoOrient src.Path outfile |> ignore
+        jpgFile outfile
+
+    /// Rezize for Word generating a new temp file
+    let resizeForWord (src:JpegFile)  : DocBuild<JpegFile> = 
+        resizeForWordAs src src.NextTempName
 
 
 

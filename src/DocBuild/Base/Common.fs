@@ -9,6 +9,11 @@ module Common =
 
     open System.IO
 
+    type PageOrientation = 
+        | OrientationPortrait 
+        | OrientationLandscape
+
+
     type ErrMsg = string
 
     type BuildResult<'a> = Result<'a,ErrMsg>

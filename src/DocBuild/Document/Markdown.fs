@@ -21,8 +21,6 @@ module Markdown =
             with get () : FilePath =
                 match x with | MarkdownFile(p) -> p.Path
 
-        /// ActiveFile is a mutable working copy of the original file.
-        /// The original file is untouched.
         member x.NextTempName
             with get() : FilePath = 
                 match x with | MarkdownFile(p) -> p.NextTempName
