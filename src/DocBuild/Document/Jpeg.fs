@@ -15,17 +15,7 @@ module Jpeg =
 
     // NOTE:
     // ImageMagick extracts image info from an image file, not the 
-    // image handle after an image file is opened. Therefore we need 
-    // to carry the image file around.
-    //
-    // We destructively operate on a single temp file, this avoids generating 
-    // a multitude of temp files, but still means we never touch the original.
-
-
-
-
-    let jpgFile (path:string) : DocMonad<JpegFile> = 
-        altM (getDocument ".jpg" path) (getDocument ".jpeg" path) |>> JpegFile
+    // image handle after an image file is opened. 
 
 
     let autoOrientAs (src:JpegFile) (outfile:string) : DocMonad<JpegFile> = 

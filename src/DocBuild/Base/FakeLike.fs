@@ -12,12 +12,13 @@ module FakeLike =
 
     open DocBuild.Base.DocMonad
 
-    let validateFile (fileExtension:string) (path:string) : DocMonad<string> = 
+    let validateFile (fileExtensions:string list) (path:string) : DocMonad<string> = 
         if System.IO.File.Exists(path) then 
             let extension : string = System.IO.Path.GetExtension(path)
-            if String.Equals(extension, fileExtension, StringComparison.CurrentCultureIgnoreCase) then 
+            let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
+            if List.exists testExtension fileExtensions then 
                 breturn path
-            else throwError <| sprintf "Not a %s file: '%s'" fileExtension path
+            else throwError <| sprintf "Not a %s file: '%s'" (String.concat "," fileExtensions) path
         else throwError <| sprintf "Could not find file: '%s'" path  
 
 

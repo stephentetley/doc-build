@@ -52,11 +52,13 @@ module Document =
 
 
 
-    let getDocument (fileExtension:string) (filePath:string) : DocMonad<Document> = 
+    let getDocument (fileExtensions:string list) (filePath:string) : DocMonad<Document> = 
         docMonad { 
-            let! path = validateFile fileExtension filePath
+            let! path = validateFile fileExtensions filePath
             return Document(path)
             }
+
+
 
     // ************************************************************************
     // Pdf file
@@ -76,7 +78,7 @@ module Document =
                 match x with | PdfFile(p) -> p.NextTempName
 
     let pdfFile (path:string) : DocMonad<PdfFile> = 
-        getDocument ".pdf" path |>> PdfFile
+        getDocument [".pdf"] path |>> PdfFile
 
 
     // ************************************************************************
@@ -97,7 +99,7 @@ module Document =
                 match x with | JpegFile(p) -> p.NextTempName
 
     let jpgFile (path:string) : DocMonad<JpegFile> = 
-        altM (getDocument ".jpg" path) (getDocument ".jpeg" path) |>> JpegFile
+        getDocument [".jpg"; ".jpeg"] path |>> JpegFile
 
     // ************************************************************************
     // Markdown file
@@ -115,5 +117,65 @@ module Document =
                 match x with | MarkdownFile(p) -> p.NextTempName
 
 
-    let markdownDoc (path:string) : DocMonad<MarkdownFile> = 
-        getDocument ".md" path |>> MarkdownFile
+    let markdownFile (path:string) : DocMonad<MarkdownFile> = 
+        getDocument [".md"] path |>> MarkdownFile
+
+    // ************************************************************************
+    // Word file (.doc, .docx)
+
+    [<Struct>]
+    type WordFile = 
+        | WordFile of Document
+
+        member x.Path 
+            with get () : FilePath =
+                match x with | WordFile(p) -> p.Path
+
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | WordFile(p) -> p.NextTempName
+
+
+    let wordFile (path:string) : DocMonad<WordFile> = 
+        getDocument [".doc"; ".docx"] path |>> WordFile
+
+
+
+    // ************************************************************************
+    // Excel file (.xls, .xlsx)
+
+    [<Struct>]
+    type ExcelFile = 
+        | ExcelFile of Document
+
+        member x.Path 
+            with get () : FilePath =
+                match x with | ExcelFile(p) -> p.Path
+
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | ExcelFile(p) -> p.NextTempName
+
+    /// Ignores .xlsm should it?
+    let excelFile (path:string) : DocMonad<ExcelFile> = 
+        getDocument [".xls"; ".xlsx"] path |>> ExcelFile
+
+
+    // ************************************************************************
+    // PowerPoint file (.ppt, .pptx)
+
+    [<Struct>]
+    type PowerPointFile = 
+        | PowerPointFile of Document
+
+        member x.Path 
+            with get () : FilePath =
+                match x with | PowerPointFile(p) -> p.Path
+
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | PowerPointFile(p) -> p.NextTempName
+
+
+    let powerPointFile (path:string) : DocMonad<PowerPointFile> = 
+        getDocument [".ppt"; ".pptx"] path |>> PowerPointFile
