@@ -21,13 +21,35 @@
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.0\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-#load "..\src\DocBuild\Base\Shell.fs"
-#load "..\src\DocBuild\Base\Document.fs"
-#load "..\src\DocBuild\Raw\ImageMagick.fs"
-#load "..\src\DocBuild\Document\Jpeg.fs"
-open DocBuild.Base.Shell
-open DocBuild.Base.Document
+open System.Text.RegularExpressions
+open System.IO
 
 let temp01 () = 
-    executeProcess @"D:\coding\fsharp\doc-build\notes" "pdftk" " notes.pdf dump_data"
+    let fileName = "MyFile.Z001.jpg"
+    printfn "%s" fileName
 
+    let justFile = Path.GetFileNameWithoutExtension fileName
+    printfn "%s" justFile
+    
+    let patt = @"Z(\d+)$"
+    let result = Regex.Match(justFile, patt)
+    if result.Success then 
+        int <| result.Groups.Item(1).Value
+    else
+        0
+
+/// The temp indicator is a suffix "Z0.." before the file extension
+let getNextTempName (filePath:string) : string =
+    let root = System.IO.Path.GetDirectoryName filePath
+    let justFile = Path.GetFileNameWithoutExtension filePath
+    let extension  = System.IO.Path.GetExtension filePath
+
+    let patt = @"Z(\d+)$"
+    let result = Regex.Match(justFile, patt)
+    let count = 
+        if result.Success then 
+            int <| result.Groups.Item(1).Value
+        else 0
+    let suffix = sprintf "Z%03d" (count+1)
+    let newfile = sprintf "%s.%s%s" justFile suffix extension
+    Path.Combine(root, newfile)

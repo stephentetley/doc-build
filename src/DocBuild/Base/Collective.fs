@@ -19,7 +19,7 @@ module Collective =
 
         new (paths:FilePath list) = 
             { DocCollection = 
-                paths |> List.map (fun s -> new Document(filePath = s)) }
+                paths |> List.map (fun s -> Document(s)) }
 
         member x.Documents 
             with get () : Document list = x.DocCollection

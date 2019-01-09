@@ -33,18 +33,18 @@
 #load "..\src\DocBuild\Raw\ImageMagick.fs"
 #load "..\src\DocBuild\Raw\PdftkRotate.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
-#load "..\src\DocBuild\Document\Jpeg.fs"
-#load "..\src\DocBuild\Document\Markdown.fs"
-#load "..\src\DocBuild\Extra\PhotoBook.fs"
+// #load "..\src\DocBuild\Document\Jpeg.fs"
+// #load "..\src\DocBuild\Document\Markdown.fs"
+// #load "..\src\DocBuild\Extra\PhotoBook.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Common.fs"
 #load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
 #load "..\src-msoffice\DocBuild\Office\MsoExcel.fs"
 #load "..\src-msoffice\DocBuild\Office\MsoWord.fs"
-#load "..\src-msoffice\DocBuild\Office\WordDoc.fs"
-#load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
-#load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
+//#load "..\src-msoffice\DocBuild\Office\WordDoc.fs"
+//#load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
+//#load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
 
 
 open DocBuild.Document.Pdf
@@ -64,13 +64,17 @@ let WindowsEnv : BuilderEnv =
 
 
 let demo01 () = 
-    let p1 = pdfFile <| getWorkingFile "One.pdf"
-    let p2 = pdfFile <| getWorkingFile "Two.pdf"
-    let p3 = pdfFile <| getWorkingFile "Three.pdf"
-    let pdfs = pdfColl [p1;p2;p3]
-    let outfile = getWorkingFile "Concat.pdf"
+    runDocBuild WindowsEnv <| 
+        docBuild { 
+            let! p1 = pdfFile <| getWorkingFile "One.pdf"
+            let! p2 = pdfFile <| getWorkingFile "Two.pdf"
+            let! p3 = pdfFile <| getWorkingFile "Three.pdf"
+            let pdfs = [p1;p2;p3]
+            let outfile = getWorkingFile "Concat.pdf"
+            let! _ = ghostscriptConcat pdfs GsScreen outfile
+            return ()
+        }
 
-    runDocBuild WindowsEnv <| ghostscriptConcat pdfs GsScreen outfile
 
 
 

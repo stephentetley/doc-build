@@ -4,13 +4,14 @@
 
 namespace DocBuild.Document
 
-open DocBuild.Raw.Ghostscript.Ghostscript
 
 
 // This should support extraction / rotation via Pdftk...
 
 [<AutoOpen>]
 module Pdf = 
+    
+    open System
 
     open DocBuild.Base
     open DocBuild.Base.Shell
@@ -22,25 +23,22 @@ module Pdf =
     open DocBuild.Raw.PdftkRotate
     
     
-
+    [<Struct>]
     type PdfFile = 
-        val private PdfDoc : Document
+        | PdfFile of Document
 
-        internal new (doc:Document) = 
-            { PdfDoc = doc }
+        member x.Path 
+            with get () : FilePath =
+                match x with | PdfFile(p) -> p.Path
 
-        new (filePath:string) = 
-            { PdfDoc = new Document(filePath = filePath) }
+        /// ActiveFile is a mutable working copy of the original file.
+        /// The original file is untouched.
+        member x.NextTempName
+            with get() : FilePath = 
+                match x with | PdfFile(p) -> p.NextTempName
 
 
-        member internal x.Document 
-            with get() : Document = x.PdfDoc
-
-        member x.ActiveFile
-            with get() : FilePath = x.PdfDoc.ActiveFile 
-
-        member x.SaveAs(outputPath: string) : unit =  
-            x.PdfDoc.SaveAs(outputPath)
+    
             
         //member x.RotateEmbed( options:ProcessOptions
         //                    , rotations: Rotation list)  : unit = 
@@ -60,7 +58,15 @@ module Pdf =
         //    | ProcErrorMessage msg -> 
         //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
 
-    let pdfFile (path:string) : PdfFile = new PdfFile (filePath = path)
+    let pdfFile (path:string) : DocBuild<PdfFile> = 
+        if System.IO.File.Exists(path) then 
+            let extension : string = System.IO.Path.GetExtension(path)
+            if String.Equals(extension, ".pdf", StringComparison.CurrentCultureIgnoreCase) then 
+                breturn <| PdfFile(Document(path))
+            else throwError <| sprintf "Not a pdf file: '%s'" path
+        else throwError <| sprintf "Could not find file: '%s'" path  
+
+    
 
     
     type GsQuality = 
@@ -82,26 +88,25 @@ module Pdf =
 
 
 
-    type PdfColl = 
-        val private Pdfs : Collective
+    //type PdfColl = 
+    //    val private Pdfs : Collective
 
-        new (pdfs:PdfFile list) = 
-            let docs = pdfs |> List.map (fun x -> x.Document)
-            { Pdfs = new Collective(docs = docs) }
+    //    new (pdfs:PdfFile list) = 
+    //        { Pdfs = new Collective(docs = pdfs) }
 
-        member x.Documents 
-            with get() : PdfFile list = 
-                x.Pdfs.Documents |> List.map (fun d -> new PdfFile(doc=d))
-
-
-    let pdfColl (pdfs:PdfFile list) : PdfColl = 
-        new PdfColl(pdfs=pdfs)
+    //    member x.Documents 
+    //        with get() : PdfFile list = 
+    //            x.Pdfs.Documents |> List.map (fun d -> PdfFile(doc=d))
 
 
+    //let pdfColl (pdfs:PdfFile list) : PdfColl = 
+    //    new PdfColl(pdfs=pdfs)
 
-    let ghostscriptConcat (inputfiles:PdfColl)
+
+
+    let ghostscriptConcat (inputfiles:PdfFile list)
                             (quality:GsQuality)
                             (outputFile:string) : DocBuild<string> = 
-            let inputs = inputfiles.Documents |> List.map (fun d -> d.ActiveFile)
+            let inputs = inputfiles |> List.map (fun d -> d.Path)
             let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
             execGhostscript cmd

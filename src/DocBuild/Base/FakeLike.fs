@@ -67,19 +67,7 @@ module FakeLike =
 
     let assertOptional  (warnMsg:string) : unit = printfn "WARN: Optional: %s" warnMsg
 
-    let executeProcess (toolPath:string) (command:string) : int = 
-        try
-            let procInfo = new System.Diagnostics.ProcessStartInfo ()
-            procInfo.FileName <- toolPath
-            procInfo.Arguments <- command
-            procInfo.CreateNoWindow <- true
-            let proc = new System.Diagnostics.Process()
-            proc.StartInfo <- procInfo
-            proc.Start() |> ignore
-            proc.WaitForExit () 
-            proc.ExitCode
-        with
-        | ex -> failwith (sprintf "executeProcess: \n%s" ex.Message)
+
 
 
     let copyFile (target:string) (sourceFile:string) : unit =
