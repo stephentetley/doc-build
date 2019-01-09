@@ -17,7 +17,7 @@ module Pdf =
     open DocBuild.Base.Shell
     open DocBuild.Base.Monad
     open DocBuild.Base.Document
-    open DocBuild.Base.Collective
+    open DocBuild.Base.FakeLike
     open DocBuild.Raw.Ghostscript
     open DocBuild.Raw.Pdftk
     open DocBuild.Raw.PdftkRotate
@@ -58,13 +58,11 @@ module Pdf =
         //    | ProcErrorMessage msg -> 
         //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
 
+
+
+
     let pdfFile (path:string) : DocBuild<PdfFile> = 
-        if System.IO.File.Exists(path) then 
-            let extension : string = System.IO.Path.GetExtension(path)
-            if String.Equals(extension, ".pdf", StringComparison.CurrentCultureIgnoreCase) then 
-                breturn <| PdfFile(Document(path))
-            else throwError <| sprintf "Not a pdf file: '%s'" path
-        else throwError <| sprintf "Could not find file: '%s'" path  
+        getDocument ".pdf" path |>> PdfFile
 
     
 
@@ -76,7 +74,7 @@ module Pdf =
         | GsPrepress
         | GsDefault
         | GsNone
-        member v.QualityArgs
+        member internal v.QualityArgs
             with get() : CommandArgs = 
                 match v with
                 | GsScreen ->  reqArg "-dPDFSETTINGS" @"/screen"
@@ -88,19 +86,6 @@ module Pdf =
 
 
 
-    //type PdfColl = 
-    //    val private Pdfs : Collective
-
-    //    new (pdfs:PdfFile list) = 
-    //        { Pdfs = new Collective(docs = pdfs) }
-
-    //    member x.Documents 
-    //        with get() : PdfFile list = 
-    //            x.Pdfs.Documents |> List.map (fun d -> PdfFile(doc=d))
-
-
-    //let pdfColl (pdfs:PdfFile list) : PdfColl = 
-    //    new PdfColl(pdfs=pdfs)
 
 
 

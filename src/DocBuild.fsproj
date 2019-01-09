@@ -10,7 +10,6 @@
     <Compile Include="DocBuild\Base\Monad.fs" />
     <Compile Include="DocBuild\Base\FakeLike.fs" />
     <Compile Include="DocBuild\Base\Document.fs" />
-    <Compile Include="DocBuild\Base\Collective.fs" />
     <Compile Include="DocBuild\Raw\Ghostscript.fs" />
     <Compile Include="DocBuild\Raw\Pandoc.fs" />
     <Compile Include="DocBuild\Raw\Pdftk.fs" />

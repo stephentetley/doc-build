@@ -10,6 +10,9 @@ module Document =
     open System.Text.RegularExpressions
     open System.IO
 
+    open DocBuild.Base.Monad
+    open DocBuild.Base
+
     type FilePath = string
 
     /// The temp indicator is a suffix "Z0.." before the file extension
@@ -45,4 +48,8 @@ module Document =
 
 
 
-
+    let getDocument (fileExtension:string) (filePath:string) : DocBuild<Document> = 
+        docBuild { 
+            let! path = validateFile fileExtension filePath
+            return Document(path)
+            }

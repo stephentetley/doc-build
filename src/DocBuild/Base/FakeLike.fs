@@ -2,12 +2,23 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Base.FakeLike
+namespace DocBuild.Base
 
 [<AutoOpen>]
 module FakeLike = 
 
     open System.IO
+    open System
+
+    open DocBuild.Base.Monad
+
+    let validateFile (fileExtension:string) (path:string) : DocBuild<string> = 
+        if System.IO.File.Exists(path) then 
+            let extension : string = System.IO.Path.GetExtension(path)
+            if String.Equals(extension, fileExtension, StringComparison.CurrentCultureIgnoreCase) then 
+                breturn path
+            else throwError <| sprintf "Not a %s file: '%s'" fileExtension path
+        else throwError <| sprintf "Could not find file: '%s'" path  
 
 
     /// Note if the second path is prefixed by '\\'
