@@ -5,6 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="DocBuild\Office\Internal\Utils.fs" />
+    <Compile Include="DocBuild\Office\Common.fs" />
+    <Compile Include="DocBuild\Office\OfficeMonad.fs" />
     <Compile Include="DocBuild\Office\MsoExcel.fs" />
     <Compile Include="DocBuild\Office\MsoWord.fs" />
     <Compile Include="DocBuild\Office\WordDoc.fs" />

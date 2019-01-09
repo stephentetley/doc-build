@@ -12,7 +12,7 @@ open DocBuild.Raw.Ghostscript.Ghostscript
 [<AutoOpen>]
 module Pdf = 
 
-    open DocBuild.Base.Common
+    open DocBuild.Base
     open DocBuild.Base.Shell
     open DocBuild.Base.Monad
     open DocBuild.Base.Document

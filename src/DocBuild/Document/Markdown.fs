@@ -7,8 +7,8 @@ namespace DocBuild.Document
 
 module Markdown = 
 
-    open MarkdownDoc
-    open MarkdownDoc.Pandoc
+    // open MarkdownDoc
+    // open MarkdownDoc.Pandoc
 
     open DocBuild.Base.Document
 

@@ -2,12 +2,12 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Base.Monad
+namespace DocBuild.Base
 
-[<AutoOpen>]
+
 module Monad = 
 
-    open DocBuild.Base.Common
+    open DocBuild.Base
     open DocBuild.Base.Shell
 
     type BuilderEnv = 
@@ -31,7 +31,7 @@ module Monad =
         DocBuild <| fun _ -> Ok x
 
     let inline private bindM (ma:DocBuild<'a>) 
-                                (f :'a -> DocBuild<'b>) : DocBuild<'b> =
+                        (f :'a -> DocBuild<'b>) : DocBuild<'b> =
         DocBuild <| fun env -> 
             match apply1 ma env with
             | Error msg -> Error msg
@@ -65,7 +65,11 @@ module Monad =
     // ****************************************************
     // Run
 
-    let runDocBuild (config:BuilderEnv) (ma:DocBuild<'a>) : 'a = 
+    let runDocBuild (config:BuilderEnv) 
+                    (ma:DocBuild<'a>) : BuildResult<'a> = 
+        apply1 ma config
+
+    let execDocBuild (config:BuilderEnv) (ma:DocBuild<'a>) : 'a = 
         match apply1 ma config with
         | Ok a -> a
         | Error msg -> failwith msg

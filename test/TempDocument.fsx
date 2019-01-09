@@ -37,6 +37,9 @@
 #load "..\src\DocBuild\Document\Markdown.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
 
+#load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
+#load "..\src-msoffice\DocBuild\Office\Common.fs"
+#load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
 #load "..\src-msoffice\DocBuild\Office\MsoExcel.fs"
 #load "..\src-msoffice\DocBuild\Office\MsoWord.fs"
 #load "..\src-msoffice\DocBuild\Office\WordDoc.fs"
@@ -44,13 +47,8 @@
 #load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
 
 
-open DocBuild
-open DocBuild.Document.Markdown
-
-open DocBuild.Raw.Ghostscript
-open DocBuild.Base.Shell.Shell
 open DocBuild.Document.Pdf
-open DocBuild.Base.Monad.Monad
+open DocBuild.Base.Monad
 
 let getWorkingFile (name:string) = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")

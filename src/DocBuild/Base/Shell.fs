@@ -2,13 +2,13 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Base.Shell
+namespace DocBuild.Base
 
-[<AutoOpen>]
+
 module Shell = 
 
     open System.IO
-    open DocBuild.Base.Common
+    open DocBuild.Base
 
     let private procErrorCodeMessage (code:int) : string = 
         sprintf "process error: code %i" code

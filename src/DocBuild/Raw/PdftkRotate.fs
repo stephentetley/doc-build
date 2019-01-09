@@ -8,9 +8,10 @@ namespace DocBuild.Raw.PdftkRotate
 [<AutoOpen>]
 module PdftkRotate = 
 
-    open DocBuild.Base.Common
+    open DocBuild.Base
+    open DocBuild.Base.Shell
     open DocBuild.Raw.Pdftk
-    open DocBuild.Base.Shell.Shell
+
 
     // ************************************************************************
     // Rotation

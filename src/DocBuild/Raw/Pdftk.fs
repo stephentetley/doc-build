@@ -13,7 +13,7 @@ namespace DocBuild.Raw.Pdftk
 [<AutoOpen>]
 module Pdftk = 
 
-    open DocBuild.Base.Common
+    open DocBuild.Base
     open DocBuild.Base.Shell
 
     

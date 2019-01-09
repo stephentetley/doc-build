@@ -8,7 +8,7 @@ namespace DocBuild.Raw.Pandoc
 [<AutoOpen>]
 module Pandoc = 
 
-    open DocBuild.Base.Common
+    open DocBuild.Base
     open DocBuild.Base.Shell
     
     /// pandoc --reference-doc="<customRef>" --from=markdown --to=docx+table_captions --standalone --output="<outputFile>" "<inputFile>"

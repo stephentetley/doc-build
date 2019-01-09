@@ -8,7 +8,7 @@ namespace DocBuild.Raw.Ghostscript
 [<AutoOpen>]
 module Ghostscript = 
     
-    open DocBuild.Base.Common
+    open DocBuild.Base
     open DocBuild.Base.Shell
 
 
@@ -36,6 +36,3 @@ module Ghostscript =
             ^^ gsInputFiles inputFiles
         
 
-
-    let runGhostscript (options:ProcessOptions) (command:CommandArgs) : BuildResult<string> = 
-        executeProcess options command.Command

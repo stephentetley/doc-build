@@ -1,4 +1,4 @@
-﻿// Copyright (c) Stephen Tetley 2018, 2019
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 namespace DocBuild.Office.MsoExcel
