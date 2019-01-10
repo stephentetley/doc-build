@@ -13,11 +13,14 @@ module ExcelFile =
     // Open at .Interop rather than .Excel then the Excel API has to be qualified
     open Microsoft.Office.Interop
 
-    open DocBuild.Base.Common
-    open DocBuild.Base.Document
+    open DocBuild.Base
     open DocBuild.Office
     open DocBuild.Office.Internal
     open DocBuild.Office.OfficeMonad
+
+
+    // ************************************************************************
+    // Export
 
 
     /// PqScreen maps to mininum
@@ -36,7 +39,7 @@ module ExcelFile =
             let pdfQuality = excelExportQuality quality
             let! _ = execExcel <| fun app -> 
                         excelExportAsPdf app src.Path fitWidth pdfQuality outputFile
-            let! pdf = liftDocMonad (pdfFile outputFile)
+            let! pdf = liftDocMonad (getPdfFile outputFile)
             return pdf
         }
 
@@ -46,49 +49,16 @@ module ExcelFile =
         let outputFile = Path.ChangeExtension(src.Path, "pdf")
         exportPdfAs src fitWidth quality outputFile
 
-        //member x.ExportAsPdf( fitWidth:bool
-        //                    , quality:ExcelExportQuality
-        //                    , outFile:string ) : unit = 
-        //    // Don't make a temp file if we don't have to
-        //    let srcFile = x.ExcelDoc.ActiveFile
-        //    withExcelApp <| fun app -> 
-        //        try 
-        //            let workbook : Excel.Workbook = app.Workbooks.Open(srcFile)
-        //            if fitWidth then 
-        //                workbook.Sheets 
-        //                    |> Seq.cast<Excel.Worksheet>
-        //                    |> Seq.iter (fun (sheet:Excel.Worksheet) -> 
-        //                        sheet.PageSetup.Zoom <- false
-        //                        sheet.PageSetup.FitToPagesWide <- 1)
-        //            else ()
 
-        //            workbook.ExportAsFixedFormat (Type=Excel.XlFixedFormatType.xlTypePDF,
-        //                                             Filename=outFile,
-        //                                             IncludeDocProperties=true,
-        //                                             Quality = excelExportQuality quality
-        //                                             )
-        //            workbook.Close (SaveChanges = false)
-        //        with
-        //        | ex -> failwith ex.Message
-
-
-        //member x.ExportAsPdf(fitWidth:bool, quality:ExcelExportQuality) : unit =
-        //    // Don't make a temp file if we don't have to
-        //    let srcFile = x.ExcelDoc.ActiveFile
-        //    let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
-        //    x.ExportAsPdf(fitWidth = fitWidth, quality = quality, outFile = outFile)
-
-
-
-
-
+    // ************************************************************************
+    // Find and replace
 
     let findReplaceAs (src:ExcelFile) (searches:SearchList) (outputFile:string) : OfficeMonad<ExcelFile> = 
         officeMonad { 
             let! ans = 
                 execExcel <| fun app -> 
                         excelFindReplace app src.Path outputFile searches
-            let! xlsx = liftDocMonad (excelFile outputFile)
+            let! xlsx = liftDocMonad (getExcelFile outputFile)
             return xlsx
         }
 

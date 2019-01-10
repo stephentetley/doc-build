@@ -21,7 +21,7 @@ module Markdown =
             let command = 
                 PandocPrim.outputDocxCommand styles  src.Path outputFile
             let! _ = execPandoc command
-            let! docx = wordFile outputFile
+            let! docx = getWordFile outputFile
             return docx
          }
 

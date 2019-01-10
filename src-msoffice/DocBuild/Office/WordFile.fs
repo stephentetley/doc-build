@@ -13,12 +13,14 @@ module WordFile =
     // Open at .Interop rather than .Word then the Word API has to be qualified
     open Microsoft.Office.Interop
 
-    open DocBuild.Base.Common
-    open DocBuild.Base.Document
+
+    open DocBuild.Base
     open DocBuild.Office
     open DocBuild.Office.Internal
     open DocBuild.Office.OfficeMonad
 
+    // ************************************************************************
+    // Export
 
     let private wordExportQuality (quality:PrintQuality) : Word.WdExportOptimizeFor = 
         match quality with
@@ -34,7 +36,7 @@ module WordFile =
             let! ans = 
                 execWord <| fun app -> 
                     wordExportAsPdf app src.Path pdfQuality outputFile
-            let! pdf = liftDocMonad (pdfFile outputFile)
+            let! pdf = liftDocMonad (getPdfFile outputFile)
             return pdf
         }
 
@@ -44,13 +46,15 @@ module WordFile =
 
 
 
+    // ************************************************************************
+    // Find and replace
 
     let findReplaceAs (src:WordFile) (searches:SearchList) (outputFile:string) : OfficeMonad<WordFile> = 
         officeMonad { 
             let! ans = 
                 execWord <| fun app -> 
                         wordFindReplace app src.Path outputFile searches
-            let! docx = liftDocMonad (wordFile outputFile)
+            let! docx = liftDocMonad (getWordFile outputFile)
             return docx
         }
 

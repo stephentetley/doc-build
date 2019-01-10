@@ -51,7 +51,7 @@ open DocBuild.Base
 open DocBuild.Document.Pdf
 open DocBuild.Base.DocMonad
 
-let getWorkingFile (name:string) = 
+let findDataFile (name:string) : string = 
     let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
     System.IO.Path.Combine(working, name)
 
@@ -60,18 +60,18 @@ let WindowsEnv : BuilderEnv =
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"
-      PandocReferenceDoc  = Some <| getWorkingFile "custom-reference1.docx"
+      PandocReferenceDoc  = Some <| findDataFile "custom-reference1.docx"
     }
 
 
 let demo01 () = 
     runDocMonad WindowsEnv <| 
         docMonad { 
-            let! p1 = pdfFile <| getWorkingFile "One.pdf"
-            let! p2 = pdfFile <| getWorkingFile "Two.pdf"
-            let! p3 = pdfFile <| getWorkingFile "Three.pdf"
+            let! p1 = getPdfFile <| findDataFile "One.pdf"
+            let! p2 = getPdfFile <| findDataFile "Two.pdf"
+            let! p3 = getPdfFile <| findDataFile "Three.pdf"
             let pdfs = [p1;p2;p3]
-            let outfile = getWorkingFile "Concat.pdf"
+            let outfile = findDataFile "Concat.pdf"
             let! _ = ghostscriptConcat pdfs GsScreen outfile
             return ()
         }
@@ -80,7 +80,7 @@ let demo01 () =
 let demo02 () = 
     runDocMonad WindowsEnv <| 
         docMonad { 
-            let! p1 = pdfFile <| getWorkingFile "Concat.pdf"
+            let! p1 = getPdfFile <| findDataFile "Concat.pdf"
             let! pageCount = pdfPageCount p1
             return pageCount
         }

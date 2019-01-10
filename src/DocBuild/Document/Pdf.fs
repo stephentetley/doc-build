@@ -56,7 +56,7 @@ module Pdf =
                   (outputFile:string) : DocMonad<PdfFile> = 
         docMonad { 
             let! _ = ghostscriptConcat inputFiles quality outputFile
-            let! pdf = pdfFile outputFile
+            let! pdf = getPdfFile outputFile
             return pdf
         }
 
@@ -101,7 +101,7 @@ module Pdf =
             let command = 
                 PdftkPrim.rotationCommand src.Path directives outputFile
             let! _ = execPdftk command
-            let! pdf = pdfFile outputFile
+            let! pdf = getPdfFile outputFile
             return pdf
         }
 

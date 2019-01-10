@@ -14,11 +14,13 @@ module PowerPointFile =
     // API has to be qualified
     open Microsoft.Office.Interop
 
-    open DocBuild.Base.Document
+    open DocBuild.Base
     open DocBuild.Office
     open DocBuild.Office.Internal
     open DocBuild.Office.OfficeMonad
 
+    // ************************************************************************
+    // Export
 
     let private powerpointExportQuality (quality:PrintQuality) : PowerPoint.PpFixedFormatIntent = 
         match quality with
@@ -35,7 +37,7 @@ module PowerPointFile =
             let! ans = 
                 execPowerPoint <| fun app -> 
                     powerPointExportAsPdf app src.Path pdfQuality outputFile
-            let! pdf = liftDocMonad (pdfFile outputFile)
+            let! pdf = liftDocMonad (getPdfFile outputFile)
             return pdf
         }
 

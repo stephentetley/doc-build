@@ -40,8 +40,8 @@ module Document =
     // duplicating as much code.
 
 
-    [<Struct>]
-    type Document = 
+    
+    type Document<'a> = 
         | Document of FilePath 
 
         member x.Path 
@@ -56,7 +56,7 @@ module Document =
 
 
 
-    let getDocument (fileExtensions:string list) (filePath:string) : DocMonad<Document> = 
+    let getDocument (fileExtensions:string list) (filePath:string) : DocMonad<Document<'a>> = 
         docMonad { 
             let! path = validateFile fileExtensions filePath
             return Document(path)
@@ -66,119 +66,71 @@ module Document =
     // ************************************************************************
     // Pdf file
 
-    [<Struct>]
-    type PdfFile = 
-        | PdfFile of Document
+    type PdfPhantom = class end
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | PdfFile(p) -> p.Path
+    type PdfFile = Document<PdfPhantom>
 
-        /// ActiveFile is a mutable working copy of the original file.
-        /// The original file is untouched.
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | PdfFile(p) -> p.NextTempName
 
-    let pdfFile (path:string) : DocMonad<PdfFile> = 
-        getDocument [".pdf"] path |>> PdfFile
+    let getPdfFile (path:string) : DocMonad<PdfFile> = 
+        getDocument [".pdf"] path 
 
 
     // ************************************************************************
     // Jpeg file
 
-    [<Struct>]
-    type JpegFile = 
-        | JpegFile of Document
+    type JpegPhantom = class end
+    
+    type JpegFile = Document<JpegPhantom>
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | JpegFile(p) -> p.Path
 
-        /// ActiveFile is a mutable working copy of the original file.
-        /// The original file is untouched.
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | JpegFile(p) -> p.NextTempName
-
-    let jpgFile (path:string) : DocMonad<JpegFile> = 
-        getDocument [".jpg"; ".jpeg"] path |>> JpegFile
+    let getJpegFile (path:string) : DocMonad<JpegFile> = 
+        getDocument [".jpg"; ".jpeg"] path
 
     // ************************************************************************
     // Markdown file
 
-    [<Struct>]
-    type MarkdownFile = 
-        | MarkdownFile of Document
+    type MarkdownPhantom = class end
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | MarkdownFile(p) -> p.Path
-
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | MarkdownFile(p) -> p.NextTempName
+    type MarkdownFile = Document<MarkdownPhantom>
 
 
-    let markdownFile (path:string) : DocMonad<MarkdownFile> = 
-        getDocument [".md"] path |>> MarkdownFile
+    let getMarkdownFile (path:string) : DocMonad<MarkdownFile> = 
+        getDocument [".md"] path 
 
     // ************************************************************************
     // Word file (.doc, .docx)
 
-    [<Struct>]
-    type WordFile = 
-        | WordFile of Document
+    type WordPhantom = class end
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | WordFile(p) -> p.Path
-
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | WordFile(p) -> p.NextTempName
+    type WordFile = Document<WordPhantom>
 
 
-    let wordFile (path:string) : DocMonad<WordFile> = 
-        getDocument [".doc"; ".docx"] path |>> WordFile
+    let getWordFile (path:string) : DocMonad<WordFile> = 
+        getDocument [".doc"; ".docx"] path
 
 
 
     // ************************************************************************
     // Excel file (.xls, .xlsx)
 
-    [<Struct>]
-    type ExcelFile = 
-        | ExcelFile of Document
+    type ExcelPhantom = class end
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | ExcelFile(p) -> p.Path
+    type ExcelFile = Document<ExcelPhantom>
 
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | ExcelFile(p) -> p.NextTempName
 
     /// Ignores .xlsm should it?
-    let excelFile (path:string) : DocMonad<ExcelFile> = 
-        getDocument [".xls"; ".xlsx"] path |>> ExcelFile
+    let getExcelFile (path:string) : DocMonad<ExcelFile> = 
+        getDocument [".xls"; ".xlsx"] path
 
 
     // ************************************************************************
     // PowerPoint file (.ppt, .pptx)
 
-    [<Struct>]
-    type PowerPointFile = 
-        | PowerPointFile of Document
+    type PowerPointPhantom = class end
 
-        member x.Path 
-            with get () : FilePath =
-                match x with | PowerPointFile(p) -> p.Path
-
-        member x.NextTempName
-            with get() : FilePath = 
-                match x with | PowerPointFile(p) -> p.NextTempName
+    type PowerPointFile = Document<PowerPointPhantom>
 
 
-    let powerPointFile (path:string) : DocMonad<PowerPointFile> = 
-        getDocument [".ppt"; ".pptx"] path |>> PowerPointFile
+    let getPowerPointFile (path:string) : DocMonad<PowerPointFile> = 
+        getDocument [".ppt"; ".pptx"] path 
+

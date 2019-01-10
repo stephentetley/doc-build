@@ -56,7 +56,7 @@ module PhotoBook =
         docMonad { 
             let xs = findAllMatchingFiles "*.jpg" imageFolder
             let ys = findAllMatchingFiles "*.jpeg" imageFolder
-            let! jpegs = mapM (jpgFile >=> optimizeJpeg) (xs @ ys)
+            let! jpegs = mapM (getJpegFile >=> optimizeJpeg) (xs @ ys)
             return jpegs
         }
 
@@ -68,7 +68,7 @@ module PhotoBook =
             let jpegPaths = jpegs |> List.map (fun jpg1 -> jpg1.Path)
             let mdDoc = photoBookMarkdown title jpegPaths
             do mdDoc.Save(outputFile)
-            let! mdOutput = markdownFile outputFile
+            let! mdOutput = getMarkdownFile outputFile
             return mdOutput
         }
 
