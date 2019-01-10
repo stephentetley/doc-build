@@ -23,6 +23,37 @@ module ExcelPrim =
         result
 
     // ****************************************************************************
+    // Export to Pdf
+
+    let excelExportAsPdf (app:Excel.Application) 
+                         (inputFile:string)
+                         (fitWidth:bool)
+                         (quality:Excel.XlFixedFormatQuality)
+                         (outputFile:string ) : Result<unit,string> = 
+        try
+            withExcelApp <| fun app -> 
+
+            let workbook : Excel.Workbook = app.Workbooks.Open(inputFile)
+            if fitWidth then 
+                workbook.Sheets 
+                    |> Seq.cast<Excel.Worksheet>
+                    |> Seq.iter (fun (sheet:Excel.Worksheet) -> 
+                        sheet.PageSetup.Zoom <- false
+                        sheet.PageSetup.FitToPagesWide <- 1)
+            else ()
+
+            workbook.ExportAsFixedFormat( Type=Excel.XlFixedFormatType.xlTypePDF
+                                        , Filename=outputFile
+                                        , IncludeDocProperties=true
+                                        , Quality = quality )
+            workbook.Close (SaveChanges = false)
+            Ok ()
+        with
+        | ex -> Error (sprintf "excelExportAsPdf failed '%s'" inputFile)
+
+
+
+    // ****************************************************************************
     // Find/Replace
 
     let private sheetFindReplace (worksheet:Excel.Worksheet) (search:string, replace:string) : unit = 
@@ -51,18 +82,19 @@ module ExcelPrim =
 
 
     let excelFindReplace (app:Excel.Application) 
-                         (inpath:string) 
-                         (outpath:option<string>) 
-                         (searches:SearchList) : unit = 
-        let workbook : Excel.Workbook = app.Workbooks.Open(inpath)
-        workbookFindReplace workbook searches
-        try 
-            match outpath with 
-            | None -> workbook.Save()
-            | Some filename -> 
-                printfn "Outpath: %s" filename
-                workbook.SaveAs (Filename = filename)
-        finally 
-            workbook.Close (SaveChanges = false)
-
+                         (inputFile:string) 
+                         (outputFile:string) 
+                         (searches:SearchList) : Result<unit,ErrMsg> = 
+        try
+            let workbook : Excel.Workbook = app.Workbooks.Open(inputFile)
+            try 
+                workbookFindReplace workbook searches
+                workbook.SaveAs (Filename = outputFile)
+                Ok ()
+            with 
+            | _ -> 
+                workbook.Close (SaveChanges = false)
+                Error (sprintf "excelFindReplace some error '%s'" inputFile) 
+        with
+        | _ -> Error (sprintf "excelFindReplace failed '%s'" inputFile)
 

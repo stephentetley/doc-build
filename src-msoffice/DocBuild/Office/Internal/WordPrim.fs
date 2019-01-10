@@ -35,7 +35,7 @@ module WordPrim =
             doc.Close (SaveChanges = refobj false)
             Ok ()
         with
-        | ex -> Error (sprintf "exportAsPdf failed '%s'" inputFile)
+        | _ -> Error (sprintf "exportAsPdf failed '%s'" inputFile)
 
 
     // ****************************************************************************
@@ -95,12 +95,18 @@ module WordPrim =
     let wordFindReplace (app:Word.Application) 
                         (inputFile:string) 
                         (outputFile:string) 
-                        (searches:SearchList) : unit = 
-        let doc = app.Documents.Open(FileName = refobj inputFile)
-        documentFindReplace doc searches
-        try 
-            let outpath1 = doubleQuote outputFile
-            doc.SaveAs (FileName = refobj outpath1)
-        finally 
-            doc.Close (SaveChanges = refobj false)
+                        (searches:SearchList) : Result<unit,ErrMsg> = 
+        try
+            let doc = app.Documents.Open(FileName = refobj inputFile)
+            documentFindReplace doc searches
+            try 
+                let outpath1 = doubleQuote outputFile
+                doc.SaveAs (FileName = refobj outpath1)
+                Ok ()
+            with 
+            | _ -> 
+                doc.Close (SaveChanges = refobj false) |> ignore
+                Error (sprintf "wordFindReplace some error '%s'" inputFile)
+        with
+        | _ -> Error (sprintf "wordFindReplace failed '%s'" inputFile)
 

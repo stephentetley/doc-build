@@ -39,10 +39,11 @@
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
+#load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Common.fs"
 #load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
 #load "..\src-msoffice\DocBuild\Office\WordFile.fs"
-// #load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
+#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
 // #load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
 
 open DocBuild.Base

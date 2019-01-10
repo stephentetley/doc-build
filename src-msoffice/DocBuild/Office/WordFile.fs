@@ -15,8 +15,8 @@ module WordFile =
 
     open DocBuild.Base.Common
     open DocBuild.Base.Document
-    open DocBuild.Office.Internal
     open DocBuild.Office
+    open DocBuild.Office.Internal
     open DocBuild.Office.OfficeMonad
 
 
@@ -37,7 +37,7 @@ module WordFile =
         }
 
     let exportPdf (src:WordFile) (quality:PrintQuality) : OfficeMonad<PdfFile> = 
-        let outputFile = Path.ChangeExtension(src.Path, "docx")
+        let outputFile = Path.ChangeExtension(src.Path, "pdf")
         exportPdfAs src quality outputFile
 
 
@@ -45,9 +45,9 @@ module WordFile =
 
     let findReplaceAs (src:WordFile) (searches:SearchList) (outputFile:string) : OfficeMonad<WordFile> = 
         officeMonad { 
-            let! _ = execWord <| fun app -> 
+            let! ans = 
+                execWord <| fun app -> 
                         wordFindReplace app src.Path outputFile searches
-                        Ok ()
             let! docx = liftDocMonad (wordFile outputFile)
             return docx
         }
