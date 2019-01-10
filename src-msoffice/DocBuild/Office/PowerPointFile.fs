@@ -8,53 +8,37 @@ namespace DocBuild.Office
 [<RequireQualifiedAccess>]
 module PowerPointFile = 
 
+    open System.IO
 
     // Open at .Interop rather than .PowerPoint then the PowerPoint 
     // API has to be qualified
     open Microsoft.Office.Interop
 
     open DocBuild.Base.Document
+    open DocBuild.Office
     open DocBuild.Office.Internal
+    open DocBuild.Office.OfficeMonad
 
 
-
-
-    type PowerPointExportQuality = 
-        | PowerPointForScreen
-        | PowerPointForPrint
-
-
-    let private powerpointExportQuality (quality:PowerPointExportQuality) : PowerPoint.PpFixedFormatIntent = 
+    let private powerpointExportQuality (quality:PrintQuality) : PowerPoint.PpFixedFormatIntent = 
         match quality with
-        | PowerPointForScreen -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentScreen
-        | PowerPointForPrint -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentPrint
+        | PqScreen -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentScreen
+        | PqPrint -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentPrint
 
 
-    type PowerPointDoc = 
-        val private PowerPointDoc : Document
 
-        new (filePath:string) = 
-            { PowerPointDoc = new Document(filePath = filePath) }
+    let exportPdfAs (src:PowerPointFile) 
+                    (quality:PrintQuality) 
+                    (outputFile:string) : OfficeMonad<PdfFile> = 
+        officeMonad { 
+            let pdfQuality = powerpointExportQuality quality
+            let! ans = 
+                execPowerPoint <| fun app -> 
+                    powerPointExportAsPdf app src.Path pdfQuality outputFile
+            let! pdf = liftDocMonad (pdfFile outputFile)
+            return pdf
+        }
 
-        member x.ExportAsPdf( quality:PowerPointExportQuality
-                            , outFile:string) : unit = 
-            withPowerPointApp <| fun app -> 
-                let srcFile = x.PowerPointDoc.ActiveFile
-                try                     
-                    let prez = app.Presentations.Open(srcFile)
-                    prez.ExportAsFixedFormat (Path = outFile,
-                                                FixedFormatType = PowerPoint.PpFixedFormatType.ppFixedFormatTypePDF,
-                                                Intent = powerpointExportQuality quality ) 
-                    prez.Close()
-                with
-                | ex -> failwithf "PptToPdf - Some error occured for %s - '%s'" srcFile ex.Message
-
-
-        member x.ExportAsPdf(quality:PowerPointExportQuality) : unit =
-            // Don't make a temp file if we don't have to
-            let srcFile = x.PowerPointDoc.ActiveFile
-            let outFile:string = System.IO.Path.ChangeExtension(srcFile, "pdf")
-            x.ExportAsPdf(quality= quality, outFile = outFile)
-
-    let powerPointDoc (path:string) : PowerPointDoc = new PowerPointDoc (filePath = path)
-
+    let exportPdf (src:PowerPointFile) (quality:PrintQuality) : OfficeMonad<PdfFile> = 
+        let outputFile = Path.ChangeExtension(src.Path, "pdf")
+        exportPdfAs src quality outputFile

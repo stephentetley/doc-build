@@ -25,3 +25,22 @@ module PowerPointPrim =
         result
 
 
+
+
+    // ****************************************************************************
+    // Export to Pdf
+
+    let powerPointExportAsPdf (app:PowerPoint.Application) 
+                              (inputFile:string)
+                              (quality:PowerPoint.PpFixedFormatIntent)
+                              (outputFile:string ) : Result<unit,string> = 
+        try
+            withPowerPointApp <| fun app ->                 
+                let prez = app.Presentations.Open(inputFile)
+                prez.ExportAsFixedFormat( Path = outputFile
+                                        , FixedFormatType = PowerPoint.PpFixedFormatType.ppFixedFormatTypePDF
+                                        , Intent = quality ) 
+                prez.Close()
+                Ok ()
+        with
+        | _ -> Error (sprintf "powerPointExportAsPdf failed '%s'" inputFile)

@@ -35,7 +35,7 @@ module WordPrim =
             doc.Close (SaveChanges = refobj false)
             Ok ()
         with
-        | _ -> Error (sprintf "exportAsPdf failed '%s'" inputFile)
+        | _ -> Error (sprintf "wordExportAsPdf failed '%s'" inputFile)
 
 
     // ****************************************************************************

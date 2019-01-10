@@ -30,8 +30,10 @@ module WordFile =
                     (quality:PrintQuality) 
                     (outputFile:string) : OfficeMonad<PdfFile> = 
         officeMonad { 
-            let! _ = execWord <| fun app -> 
-                        wordExportAsPdf app src.Path (wordExportQuality quality) outputFile
+            let pdfQuality = wordExportQuality quality
+            let! ans = 
+                execWord <| fun app -> 
+                    wordExportAsPdf app src.Path pdfQuality outputFile
             let! pdf = liftDocMonad (pdfFile outputFile)
             return pdf
         }
