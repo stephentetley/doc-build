@@ -2,11 +2,11 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Office.PowerPointPpt
+namespace DocBuild.Office
 
 
-[<AutoOpen>]
-module PowerPointPpt = 
+[<RequireQualifiedAccess>]
+module PowerPointFile = 
 
 
     // Open at .Interop rather than .PowerPoint then the PowerPoint 
@@ -14,15 +14,9 @@ module PowerPointPpt =
     open Microsoft.Office.Interop
 
     open DocBuild.Base.Document
+    open DocBuild.Office.Internal
 
 
-
-    let private withPowerPointApp (operation:PowerPoint.Application -> 'a) : 'a = 
-        let app = new PowerPoint.ApplicationClass() :> PowerPoint.Application
-        app.Visible <- Microsoft.Office.Core.MsoTriState.msoTrue
-        let result = operation app
-        app.Quit ()
-        result
 
 
     type PowerPointExportQuality = 

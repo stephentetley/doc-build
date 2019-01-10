@@ -16,10 +16,10 @@ module Common =
         | PqScreen
         | PqPrint
 
-    let internal wordPrintQuality (quality:PrintQuality) : Word.WdExportOptimizeFor = 
-        match quality with
-        | PqScreen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
-        | PqPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
+    //let internal wordPrintQuality (quality:PrintQuality) : Word.WdExportOptimizeFor = 
+    //    match quality with
+    //    | PqScreen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
+    //    | PqPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
   
 
     let internal excelPrintQuality (quality:PrintQuality) : Excel.XlFixedFormatQuality = 

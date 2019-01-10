@@ -25,7 +25,7 @@ module OfficeMonad =
               PowerPointHandle = null }
 
         /// Opens a handle as needed.
-        member x.WordApp() : Word.Application = 
+        member x.WordApp : Word.Application = 
             match x.WordHandle with
             | null -> 
                 let word1 = initWord ()
@@ -91,14 +91,14 @@ module OfficeMonad =
     let inline private  delayM (fn:unit -> OfficeMonad<'a>) : OfficeMonad<'a> = 
         bindM (oreturn ()) fn 
 
-    type DocOfficeBuilder() = 
+    type OfficeMonadBuilder() = 
         member self.Return x            = oreturn x
         member self.Bind (p,f)          = bindM p f
         member self.Zero ()             = ozero ()
         member self.Combine (ma,mb)     = combineM ma mb
         member self.Delay fn            = delayM fn
 
-    let (docOffice:DocOfficeBuilder) = new DocOfficeBuilder()
+    let (officeMonad:OfficeMonadBuilder) = new OfficeMonadBuilder()
 
 
     // ****************************************************
@@ -118,3 +118,41 @@ module OfficeMonad =
         match runOfficeMonad config ma with
         | Ok a -> a
         | Error msg -> failwith msg
+
+    // ****************************************************
+    // Lift
+
+    let liftDocMonad (ma:DocMonad.DocMonad<'a>) : OfficeMonad<'a> = 
+        OfficeMonad <| fun _ -> ma
+
+
+    // ****************************************************
+    // Use Office applications...
+
+    let execWord (operation:Word.Application -> BuildResult<'a>) : OfficeMonad<'a> =
+        OfficeMonad <| fun env -> 
+            try 
+                match operation env.WordApp with
+                | Ok a -> DocMonad.breturn a
+                | Error msg -> DocMonad.throwError msg
+            with
+            | _ -> DocMonad.throwError "Resource error - Word.Application"
+
+
+    let execExcel (operation:Excel.Application -> BuildResult<'a>) : OfficeMonad<'a> =
+        OfficeMonad <| fun env -> 
+            try 
+                match operation env.ExcelApp with
+                | Ok a -> DocMonad.breturn a
+                | Error msg -> DocMonad.throwError msg
+            with
+            | _ -> DocMonad.throwError "Resource error - Excel.Application"
+
+    let execPowerPoint (operation:PowerPoint.Application -> BuildResult<'a>) : OfficeMonad<'a> =
+        OfficeMonad <| fun env -> 
+            try 
+                match operation env.PowerPointApp with
+                | Ok a -> DocMonad.breturn a
+                | Error msg -> DocMonad.throwError msg
+            with
+            | _ -> DocMonad.throwError "Resource error - PowerPoint.Application"

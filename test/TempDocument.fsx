@@ -38,11 +38,10 @@
 // #load "..\src\DocBuild\Extra\PhotoBook.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
+#load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Common.fs"
 #load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
-// #load "..\src-msoffice\DocBuild\Office\MsoExcel.fs"
-// #load "..\src-msoffice\DocBuild\Office\MsoWord.fs"
-// #load "..\src-msoffice\DocBuild\Office\WordDoc.fs"
+#load "..\src-msoffice\DocBuild\Office\WordFile.fs"
 // #load "..\src-msoffice\DocBuild\Office\ExcelXls.fs"
 // #load "..\src-msoffice\DocBuild\Office\PowerPointPpt.fs"
 

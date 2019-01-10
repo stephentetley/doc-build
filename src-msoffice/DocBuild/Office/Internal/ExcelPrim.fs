@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Office.MsoExcel
+namespace DocBuild.Office.Internal
 
 
 
 [<AutoOpen>]
-module MsoExcel = 
+module ExcelPrim = 
 
     open Microsoft.Office.Interop
 
     open DocBuild.Base.Common
 
-    let internal withExcelApp (operation:Excel.Application -> 'a) : 'a = 
+    let withExcelApp (operation:Excel.Application -> 'a) : 'a = 
         let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application
         app.DisplayAlerts <- false
         app.EnableEvents <- false

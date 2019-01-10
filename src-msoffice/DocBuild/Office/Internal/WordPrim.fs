@@ -1,19 +1,15 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Office.MsoWord
-
+namespace DocBuild.Office.Internal
 
 
 [<AutoOpen>]
-module MsoWord = 
+module WordPrim = 
 
     open Microsoft.Office.Interop
-    open DocBuild.Base.Common
-
-
-    let internal rbox (x:'a) : ref<obj> = ref (x :> obj)
-
+    open DocBuild.Base
+    open DocBuild.Office.Internal
 
     let internal withWordApp (operation:Word.Application -> 'a) : 'a = 
         let app = new Word.ApplicationClass (Visible = true) :> Word.Application
@@ -22,15 +18,35 @@ module MsoWord =
         result
 
 
-    let updateTableOfContents (doc:Word.Document)  : unit = 
-        doc.TablesOfContents
-            |> Seq.cast<Word.TableOfContents>
-            |> Seq.iter (fun x -> x.Update ())
+
+
+    // ****************************************************************************
+    // Export to Pdf
+
+    let wordExportAsPdf (app:Word.Application) 
+                    (inputFile:string) 
+                    (quality:Word.WdExportOptimizeFor)
+                    (outputFile:string) : Result<unit,ErrMsg> =
+        try 
+            let doc:(Word.Document) = app.Documents.Open(FileName = refobj inputFile)
+            doc.ExportAsFixedFormat ( OutputFileName = outputFile
+                                    , ExportFormat = Word.WdExportFormat.wdExportFormatPDF
+                                    , OptimizeFor = quality)
+            doc.Close (SaveChanges = refobj false)
+            Ok ()
+        with
+        | ex -> Error (sprintf "exportAsPdf failed '%s'" inputFile)
 
 
     // ****************************************************************************
     // Find/Replace
 
+    
+
+    let private updateTableOfContents (doc:Word.Document)  : unit = 
+        doc.TablesOfContents
+            |> Seq.cast<Word.TableOfContents>
+            |> Seq.iter (fun x -> x.Update ())
 
     /// TODO - I can't remember why this was so convoluted, it ought to be 
     /// simplified at some point.
@@ -44,9 +60,9 @@ module MsoWord =
 
     let private rangeFindReplace (range:Word.Range) (search:string) (replace:string) : unit =
         range.Find.ClearFormatting ()
-        range.Find.Execute (FindText = rbox search, 
-                            ReplaceWith = rbox replace,
-                            Replace = rbox Word.WdReplace.wdReplaceAll) |> ignore
+        range.Find.Execute (FindText = refobj search, 
+                            ReplaceWith = refobj replace,
+                            Replace = refobj Word.WdReplace.wdReplaceAll) |> ignore
 
 
     let private replacer (doc:Word.Document) (search:string, replace:string) : unit =                      
@@ -74,20 +90,17 @@ module MsoWord =
 
 
     let private doubleQuote (s:string) : string = "\"" + s + "\""
+    
 
     let wordFindReplace (app:Word.Application) 
-                        (inpath:string) 
-                        (outpath:option<string>) 
+                        (inputFile:string) 
+                        (outputFile:string) 
                         (searches:SearchList) : unit = 
-        let doc = app.Documents.Open(FileName = rbox inpath)
+        let doc = app.Documents.Open(FileName = refobj inputFile)
         documentFindReplace doc searches
         try 
-            match outpath with 
-            | None -> doc.Save()
-            | Some filename -> 
-                let outpath1 = doubleQuote filename
-                printfn "Outpath: %s" outpath1
-                doc.SaveAs (FileName = rbox outpath1)
+            let outpath1 = doubleQuote outputFile
+            doc.SaveAs (FileName = refobj outpath1)
         finally 
-            doc.Close (SaveChanges = rbox false)
+            doc.Close (SaveChanges = refobj false)
 

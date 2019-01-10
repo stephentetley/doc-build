@@ -6,13 +6,14 @@
 
   <ItemGroup>
     <Compile Include="DocBuild\Office\Internal\Utils.fs" />
+    <Compile Include="DocBuild\Office\Internal\WordPrim.fs" />
+    <Compile Include="DocBuild\Office\Internal\ExcelPrim.fs" />
+    <Compile Include="DocBuild\Office\Internal\PowerPointPrim.fs" />
     <Compile Include="DocBuild\Office\Common.fs" />
     <Compile Include="DocBuild\Office\OfficeMonad.fs" />
-    <Compile Include="DocBuild\Office\MsoExcel.fs" />
-    <Compile Include="DocBuild\Office\MsoWord.fs" />
-    <Compile Include="DocBuild\Office\WordDoc.fs" />
-    <Compile Include="DocBuild\Office\ExcelXls.fs" />
-    <Compile Include="DocBuild\Office\PowerPointPpt.fs" />
+    <Compile Include="DocBuild\Office\WordFile.fs" />
+    <Compile Include="DocBuild\Office\ExcelFile.fs" />
+    <Compile Include="DocBuild\Office\PowerPointFile.fs" />
 </ItemGroup>
 
 <ItemGroup>

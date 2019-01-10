@@ -2,11 +2,11 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Office.ExcelXls
+namespace DocBuild.Office
 
 
-[<AutoOpen>]
-module ExcelXls = 
+[<RequireQualifiedAccess>]
+module ExcelFile = 
 
 
     // Open at .Interop rather than .Excel then the Word API has to be qualified
