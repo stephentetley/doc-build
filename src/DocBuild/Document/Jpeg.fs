@@ -18,18 +18,18 @@ module Jpeg =
     // image handle after an image file is opened. 
 
 
-    let autoOrientAs (src:JpegFile) (outfile:string) : DocMonad<JpegFile> = 
-        imAutoOrient src.Path outfile |> ignore
-        jpgFile outfile
+    let autoOrientAs (src:JpegFile) (outputFile:string) : DocMonad<JpegFile> = 
+        imAutoOrient src.Path outputFile |> ignore
+        jpgFile outputFile
 
     let autoOrient (src:JpegFile) : DocMonad<JpegFile> = 
         autoOrientAs src src.NextTempName
 
 
 
-    let resizeForWordAs (src:JpegFile) (outfile:string) : DocMonad<JpegFile> = 
-        imAutoOrient src.Path outfile |> ignore
-        jpgFile outfile
+    let resizeForWordAs (src:JpegFile) (outputFile:string) : DocMonad<JpegFile> = 
+        imAutoOrient src.Path outputFile |> ignore
+        jpgFile outputFile
 
     /// Rezize for Word generating a new temp file
     let resizeForWord (src:JpegFile) : DocMonad<JpegFile> = 

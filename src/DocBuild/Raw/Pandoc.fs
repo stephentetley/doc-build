@@ -12,13 +12,19 @@ module Pandoc =
     open DocBuild.Base.Shell
     
     /// pandoc --reference-doc="<customRef>" --from=markdown --to=docx+table_captions --standalone --output="<outputFile>" "<inputFile>"
-    let makePandocDocxCommand (customRef:string) (inputFile:string) (outputFile:string)  : CommandArgs = 
-        reqArg "--reference-doc" (doubleQuote customRef)
-            ^^ reqArg "--from" "markdown"
-            ^^ reqArg "--to" "docx+table_captions"
-            ^^ noArg "--standalone"
-            ^^ reqArg "--output" (doubleQuote outputFile)
-            ^^ noArg (doubleQuote inputFile)
+    let makePandocOutputDocxCommand (customRef:string option) 
+                                    (inputFile:string) 
+                                    (outputFile:string)  : CommandArgs = 
+        let restArgs = 
+            reqArg "--from" "markdown"
+                ^^ reqArg "--to" "docx+table_captions"
+                ^^ noArg "--standalone"
+                ^^ reqArg "--output" (doubleQuote outputFile)
+                ^^ noArg (doubleQuote inputFile)
+        match customRef with
+        | None -> restArgs 
+        | Some docx -> reqArg "--reference-doc" (doubleQuote docx) ^^ restArgs
+            
 
 
 
