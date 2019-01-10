@@ -18,7 +18,7 @@ module Pdf =
     open DocBuild.Base.DocMonad
     open DocBuild.Raw.Ghostscript
     open DocBuild.Raw.Pdftk
-    open DocBuild.Raw.PdftkRotate
+    // open DocBuild.Raw.PdftkRotate
     
 
 
@@ -76,6 +76,14 @@ module Pdf =
     let ghostscriptConcat (inputfiles:PdfFile list)
                             (quality:GsQuality)
                             (outputFile:string) : DocMonad<string> = 
-            let inputs = inputfiles |> List.map (fun d -> d.Path)
-            let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
-            execGhostscript cmd
+        let inputs = inputfiles |> List.map (fun d -> d.Path)
+        let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
+        execGhostscript cmd
+
+    let pdfPageCount (inputfile:PdfFile) : DocMonad<int> = 
+        docMonad { 
+            let command = makePdftkDumpDataCommand inputfile.Path
+            let! stdout = execPdftk command
+            let! ans = liftResult (regexSearchNumberOfPages stdout)
+            return ans
+        }

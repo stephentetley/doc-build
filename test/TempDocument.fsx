@@ -31,7 +31,7 @@
 #load "..\src\DocBuild\Raw\Pandoc.fs"
 #load "..\src\DocBuild\Raw\Pdftk.fs"
 #load "..\src\DocBuild\Raw\ImageMagick.fs"
-#load "..\src\DocBuild\Raw\PdftkRotate.fs"
+// #load "..\src\DocBuild\Raw\PdftkRotate.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
@@ -74,6 +74,15 @@ let demo01 () =
             let outfile = getWorkingFile "Concat.pdf"
             let! _ = ghostscriptConcat pdfs GsScreen outfile
             return ()
+        }
+
+
+let demo02 () = 
+    runDocMonad WindowsEnv <| 
+        docMonad { 
+            let! p1 = pdfFile <| getWorkingFile "Concat.pdf"
+            let! pageCount = pdfPageCount p1
+            return pageCount
         }
 
 

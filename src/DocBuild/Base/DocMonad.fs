@@ -111,7 +111,7 @@ module DocMonad =
     // ****************************************************
     // Lift operations
 
-    let liftDocMonad (answer:BuildResult<'a>) : DocMonad<'a> = 
+    let liftResult (answer:BuildResult<'a>) : DocMonad<'a> = 
         DocMonad <| fun _ -> answer
 
  
@@ -346,7 +346,7 @@ module DocMonad =
                                  (command:CommandArgs) : DocMonad<string> = 
         docMonad { 
             let! options = getOptions findExe
-            let! ans = liftDocMonad <| executeProcess options command.Command
+            let! ans = liftResult <| executeProcess options command.Command
             return ans
             }
         

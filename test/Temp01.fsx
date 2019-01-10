@@ -21,8 +21,9 @@
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.0\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-open System.Text.RegularExpressions
 open System.IO
+open System.Text.RegularExpressions
+
 
 let temp01 () = 
     let fileName = "MyFile.Z001.jpg"
@@ -53,3 +54,26 @@ let getNextTempName (filePath:string) : string =
     let suffix = sprintf "Z%03d" (count+1)
     let newfile = sprintf "%s.%s%s" justFile suffix extension
     Path.Combine(root, newfile)
+
+let dataDump = """
+InfoKey: CreationDate
+InfoValue: D:20190110110137Z00'00'
+PdfID0: 7b841f338439c24c13dbac0ec5f675b1
+PdfID1: 7b841f338439c24c13dbac0ec5f675b1
+NumberOfPages: 3
+PageMediaBegin
+PageMediaNumber: 1
+PageMediaRotation: 0
+PageMediaRect: 0 0 595.32 841.92
+PageMediaDimensions: 595.32 841.92
+PageMediaBegin
+"""
+ 
+let numPages() = 
+    let patt = @"NumberOfPages: (\d+)"
+    let result = Regex.Match(dataDump, patt)
+    if result.Success then 
+            result.Groups.Item(1).Value |> int |> Ok
+    else 
+        Error "numPages not found"
+    
