@@ -1,5 +1,6 @@
-﻿// Copyright (c) Stephen Tetley 2018,2019
+// Copyright (c) Stephen Tetley 2019
 // License: BSD 3 Clause
+
 
 #r "netstandard"
 
@@ -46,45 +47,8 @@
 #load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
 #load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
 
-open DocBuild.Base
-open DocBuild.Document.Pdf
-open DocBuild.Base.DocMonad
-
-let getWorkingFile (name:string) = 
-    let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-    System.IO.Path.Combine(working, name)
-
-let WindowsEnv : BuilderEnv = 
-    { WorkingDirectory = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
-      PandocExe = @"pandoc"
-      PandocReferenceDoc  = Some <| getWorkingFile "custom-reference1.docx"
-    }
-
-
-let demo01 () = 
-    runDocMonad WindowsEnv <| 
-        docMonad { 
-            let! p1 = pdfFile <| getWorkingFile "One.pdf"
-            let! p2 = pdfFile <| getWorkingFile "Two.pdf"
-            let! p3 = pdfFile <| getWorkingFile "Three.pdf"
-            let pdfs = [p1;p2;p3]
-            let outfile = getWorkingFile "Concat.pdf"
-            let! _ = ghostscriptConcat pdfs GsScreen outfile
-            return ()
-        }
-
-
-let demo02 () = 
-    runDocMonad WindowsEnv <| 
-        docMonad { 
-            let! p1 = pdfFile <| getWorkingFile "Concat.pdf"
-            let! pageCount = pdfPageCount p1
-            return pageCount
-        }
-
-
+let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
+let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
 
 
 
