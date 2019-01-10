@@ -27,6 +27,7 @@
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
+#load "..\src\DocBuild\Base\FileIO.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
@@ -50,5 +51,5 @@
 let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
 let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
 
-
+// let survey
 

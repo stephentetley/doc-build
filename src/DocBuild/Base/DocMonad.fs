@@ -108,6 +108,9 @@ module DocMonad =
                 (ma:DocMonad<'a>) : DocMonad<'a> = 
         DocMonad <| fun env -> apply1 ma (update env)
 
+    let askWorkingDirectory : DocMonad<string> = 
+        asks (fun env -> env.WorkingDirectory)
+
     // ****************************************************
     // Lift operations
 

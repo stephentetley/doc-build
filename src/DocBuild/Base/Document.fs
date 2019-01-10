@@ -36,6 +36,10 @@ module Document =
     // ************************************************************************
     // Base Document type (to be wrapped)
     
+    // TODO - maybe a Phantom type would be better then we aren't 
+    // duplicating as much code.
+
+
     [<Struct>]
     type Document = 
         | Document of FilePath 
@@ -58,8 +62,7 @@ module Document =
             return Document(path)
             }
 
-
-
+    
     // ************************************************************************
     // Pdf file
 
