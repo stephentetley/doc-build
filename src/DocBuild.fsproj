@@ -9,8 +9,8 @@
     <Compile Include="DocBuild\Base\Shell.fs" />
     <Compile Include="DocBuild\Base\DocMonad.fs" />
     <Compile Include="DocBuild\Base\FakeLike.fs" />
-    <Compile Include="DocBuild\Base\FileIO.fs" />
     <Compile Include="DocBuild\Base\Document.fs" />
+    <Compile Include="DocBuild\Base\FileIO.fs" />
     <Compile Include="DocBuild\Raw\GhostscriptPrim.fs" />
     <Compile Include="DocBuild\Raw\PandocPrim.fs" />
     <Compile Include="DocBuild\Raw\PdftkPrim.fs" />

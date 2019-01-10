@@ -7,6 +7,7 @@ namespace DocBuild.Base
 
 module DocMonad = 
 
+
     open DocBuild.Base
     open DocBuild.Base.Shell
 
@@ -108,8 +109,7 @@ module DocMonad =
                 (ma:DocMonad<'a>) : DocMonad<'a> = 
         DocMonad <| fun env -> apply1 ma (update env)
 
-    let askWorkingDirectory : DocMonad<string> = 
-        asks (fun env -> env.WorkingDirectory)
+
 
     // ****************************************************
     // Lift operations
@@ -123,8 +123,11 @@ module DocMonad =
     // Monadic operations
 
     /// Bind operator
-    let (>>=) (ma:DocMonad<'a>) 
-                (fn:'a -> DocMonad<'b>) : DocMonad<'b> = 
+    let (>>=) (ma:DocMonad<'a>) (fn:'a -> DocMonad<'b>) : DocMonad<'b> = 
+        bindM ma fn
+
+    /// Flipped Bind operator
+    let (=<<) (fn:'a -> DocMonad<'b>) (ma:DocMonad<'a>) : DocMonad<'b> = 
         bindM ma fn
 
     // Common monadic operations

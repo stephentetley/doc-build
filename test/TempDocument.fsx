@@ -26,8 +26,8 @@
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
-#load "..\src\DocBuild\Base\FileIO.fs"
 #load "..\src\DocBuild\Base\Document.fs"
+#load "..\src\DocBuild\Base\FileIO.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
@@ -51,27 +51,25 @@ open DocBuild.Base
 open DocBuild.Document.Pdf
 open DocBuild.Base.DocMonad
 
-let findDataFile (name:string) : string = 
-    let working = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-    System.IO.Path.Combine(working, name)
 
 let WindowsEnv : BuilderEnv = 
-    { WorkingDirectory = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
+    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
+    { WorkingDirectory = cwd
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"
-      PandocReferenceDoc  = Some <| findDataFile "custom-reference1.docx"
+      PandocReferenceDoc  = Some (cwd </> "custom-reference1.docx")
     }
 
 
 let demo01 () = 
     runDocMonad WindowsEnv <| 
         docMonad { 
-            let! p1 = getPdfFile <| findDataFile "One.pdf"
-            let! p2 = getPdfFile <| findDataFile "Two.pdf"
-            let! p3 = getPdfFile <| findDataFile "Three.pdf"
+            let! p1 = askWorkingFile "One.pdf" >>= getPdfFile
+            let! p2 = askWorkingFile "Two.pdf" >>= getPdfFile
+            let! p3 = askWorkingFile "Three.pdf" >>= getPdfFile
             let pdfs = [p1;p2;p3]
-            let outfile = findDataFile "Concat.pdf"
+            let! outfile = askWorkingFile "Concat.pdf"
             let! _ = ghostscriptConcat pdfs GsScreen outfile
             return ()
         }
@@ -80,7 +78,7 @@ let demo01 () =
 let demo02 () = 
     runDocMonad WindowsEnv <| 
         docMonad { 
-            let! p1 = getPdfFile <| findDataFile "Concat.pdf"
+            let! p1 = askWorkingFile "Concat.pdf" >>= getPdfFile 
             let! pageCount = pdfPageCount p1
             return pageCount
         }

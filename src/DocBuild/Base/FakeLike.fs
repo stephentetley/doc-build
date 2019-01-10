@@ -15,7 +15,7 @@ module FakeLike =
     let (</>) (path1:string) (path2:string) = 
         Path.Combine(path1, path2)
 
-    /// This replaces (!!) for simple cases - the only wild cards are '?' and '*'
+    /// Uses glob pattern - the only wild cards are '?' and '*'
     let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
         DirectoryInfo(sourceDirectory).GetFiles(searchPattern = pattern) 
             |> Array.map (fun (info:FileInfo)  -> info.FullName)
@@ -61,13 +61,6 @@ module FakeLike =
     let subdirectoriesWithMatches (pattern:string) (dir:string) : string list = 
         let dirs = System.IO.Directory.GetDirectories(dir) |> Array.toList
         List.filter (hasMatchingFiles pattern) dirs
-
-    
-    let assertMandatory (failMsg:string) : unit = failwithf "FAIL: Mandatory: %s" failMsg
-
-    let assertOptional  (warnMsg:string) : unit = printfn "WARN: Optional: %s" warnMsg
-
-
 
 
     let copyFile (target:string) (sourceFile:string) : unit =

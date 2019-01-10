@@ -7,6 +7,7 @@ namespace DocBuild.Base
 [<AutoOpen>]
 module Document = 
 
+    open System
     open System.Text.RegularExpressions
     open System.IO
 
@@ -31,6 +32,14 @@ module Document =
         let newfile = sprintf "%s.%s%s" justFile suffix extension
         Path.Combine(root, newfile)
 
+    let validateFile (fileExtensions:string list) (path:string) : DocMonad<string> = 
+        if System.IO.File.Exists(path) then 
+            let extension : string = System.IO.Path.GetExtension(path)
+            let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
+            if List.exists testExtension fileExtensions then 
+                breturn path
+            else throwError <| sprintf "Not a %s file: '%s'" (String.concat "," fileExtensions) path
+        else throwError <| sprintf "Could not find file: '%s'" path  
 
 
     // ************************************************************************

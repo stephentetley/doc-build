@@ -5,7 +5,7 @@
 namespace DocBuild.Base
 
 [<AutoOpen>]
-module FakeLike = 
+module FileIO = 
 
     open System.IO
     open System
@@ -13,28 +13,35 @@ module FakeLike =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.FakeLike
 
-    let validateFile (fileExtensions:string list) (path:string) : DocMonad<string> = 
-        if System.IO.File.Exists(path) then 
-            let extension : string = System.IO.Path.GetExtension(path)
-            let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
-            if List.exists testExtension fileExtensions then 
-                breturn path
-            else throwError <| sprintf "Not a %s file: '%s'" (String.concat "," fileExtensions) path
-        else throwError <| sprintf "Could not find file: '%s'" path  
+
+    let askWorkingDirectory : DocMonad<string> = 
+        asks (fun env -> env.WorkingDirectory)
+    
+
+    /// Return the full path of a filename local to the working directory.
+    /// Does not validate if the file exists
+    let askWorkingFile (fileName:string) : DocMonad<string> = 
+        docMonad { 
+            let! cwd = asks (fun env -> env.WorkingDirectory)
+            let path = cwd </> fileName
+            return path
+        }
+
 
 
     /// This is a bit too primitive, ideally it would work on Documents.
-    let copyToWorking (sourceFile:string) : DocMonad<string> = 
-        if File.Exists(sourceFile) then 
+    let copyToWorking (doc:Document<'a>) : DocMonad<Document<'a>> = 
+        if File.Exists(doc.Path) then 
             docMonad { 
-                let justFile = Path.GetFileName(sourceFile)
+                let justFile = Path.GetFileName(doc.Path)
                 let! cwd = askWorkingDirectory
                 let target = cwd </> justFile
-                do File.Copy( sourceFileName = sourceFile
+                do File.Copy( sourceFileName = doc.Path
                             , destFileName = target )
-                return target
+                return Document(target)
             }
         else
-            throwError <| sprintf "copyToWorking: sourceFile not found '%s'" sourceFile
+            throwError 
+                <| sprintf "copyToWorking: sourceFile not found '%s'" doc.Path
             
         

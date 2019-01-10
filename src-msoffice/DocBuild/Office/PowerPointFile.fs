@@ -15,6 +15,7 @@ module PowerPointFile =
     open Microsoft.Office.Interop
 
     open DocBuild.Base
+
     open DocBuild.Office
     open DocBuild.Office.Internal
     open DocBuild.Office.OfficeMonad
