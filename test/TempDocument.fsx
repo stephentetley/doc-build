@@ -31,7 +31,6 @@
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
 #load "..\src\DocBuild\Raw\ImageMagickPrim.fs"
-// #load "..\src\DocBuild\Raw\PdftkRotate.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"

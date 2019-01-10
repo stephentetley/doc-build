@@ -14,7 +14,6 @@
     <Compile Include="DocBuild\Raw\PandocPrim.fs" />
     <Compile Include="DocBuild\Raw\PdftkPrim.fs" />
     <Compile Include="DocBuild\Raw\ImageMagickPrim.fs" />
-    <Compile Include="DocBuild\Raw\PdftkRotate.fs" />
     <Compile Include="DocBuild\Document\Pdf.fs" />
     <Compile Include="DocBuild\Document\Jpeg.fs" />
     <Compile Include="DocBuild\Document\Markdown.fs" />

@@ -55,7 +55,7 @@ module PdftkPrim =
           Direction: RotationDirection }
 
 
-    let rotationRange (directive:RotationDirective): CommandArgs = 
+    let rotationSpec (directive:RotationDirective): CommandArgs = 
         let direction = directive.Direction.DirectionName
         match directive.StartPage, directive.EndPage with
         | s,t when s < t -> 
@@ -64,3 +64,19 @@ module PdftkPrim =
             noArg (sprintf "%i%s" s direction)
         | s,t ->
             noArg (sprintf "%i-end%s" s direction)
+
+    let rotationSpecs (directives:RotationDirective list): CommandArgs = 
+        directives |> List.map rotationSpec |> CommandArgs.Concat 
+
+    /// <inputFile> cat <directive1> ... output <outputFile>
+    let rotationCommand (inputFile: string) 
+                        (directives:RotationDirective list)
+                        (outputFile: string) : CommandArgs = 
+        noArg (doubleQuote inputFile)
+            ^^ noArg "cat"
+            ^^ rotationSpecs directives
+            ^^ noArg "output"
+            ^^ noArg (doubleQuote outputFile)
+
+    /// To do - look at old pdftk rotate and redo the code 
+    /// for rotating just islands in a document (keeping the water)

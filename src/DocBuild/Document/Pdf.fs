@@ -18,56 +18,8 @@ module Pdf =
     open DocBuild.Base.DocMonad
     open DocBuild.Raw
 
-    
-
-    type RotationDirection = PdftkPrim.RotationDirection
-
-    type RotationDirective = PdftkPrim.RotationDirective
-
-    let rotSinglePage (pageNumber:int) (direction:RotationDirection) : RotationDirective = 
-        { StartPage = pageNumber
-          EndPage = pageNumber
-          Direction = direction
-        }
-    
-    let rotToEnd (startPage:int) (direction:RotationDirection) : RotationDirective = 
-        { StartPage = startPage
-          EndPage = -1
-          Direction = direction
-        }
-    
-    let rotRange (startPage:int) (endPage:int) (direction:RotationDirection) : RotationDirective = 
-        { StartPage = startPage
-          EndPage = endPage
-          Direction = direction
-        }
-
-
-        //member x.RotateEmbed( options:ProcessOptions
-        //                    , rotations: Rotation list)  : unit = 
-        //    match pdfRotateEmbed options rotations x.PdfDoc.ActiveFile x.PdfDoc.ActiveFile with
-        //    | ProcSuccess _ -> ()
-        //    | ProcErrorCode i -> 
-        //        failwithf "PdfDoc.RotateEmbed - error code %i" i
-        //    | ProcErrorMessage msg -> 
-        //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
-                
-        //member x.RotateExtract( options:ProcessOptions
-        //                      , rotations: Rotation list)  : unit = 
-        //    match pdfRotateExtract options rotations x.PdfDoc.ActiveFile x.PdfDoc.ActiveFile with
-        //    | ProcSuccess _ -> ()
-        //    | ProcErrorCode i -> 
-        //        failwithf "PdfDoc.RotateEmbed - error code %i" i
-        //    | ProcErrorMessage msg -> 
-        //        failwithf "PdfDoc.RotateEmbed - '%s'" msg
-
-
-
-
-    // let pdfPageCount (pdf:PdfFile) : DocMonad<int> = 
-
-    
-
+    // ************************************************************************
+    // Concatenation
     
     type GsQuality = 
         | GsScreen 
@@ -91,12 +43,82 @@ module Pdf =
 
 
 
-    let ghostscriptConcat (inputfiles:PdfFile list)
+    let ghostscriptConcat (inputFiles:PdfFile list)
                             (quality:GsQuality)
                             (outputFile:string) : DocMonad<string> = 
-        let inputs = inputfiles |> List.map (fun d -> d.Path)
+        let inputs = inputFiles |> List.map (fun d -> d.Path)
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputFile inputs
         execGhostscript cmd
+
+
+    let pdfConcat (inputFiles:PdfFile list)
+                  (quality:GsQuality)
+                  (outputFile:string) : DocMonad<PdfFile> = 
+        docMonad { 
+            let! _ = ghostscriptConcat inputFiles quality outputFile
+            let! pdf = pdfFile outputFile
+            return pdf
+        }
+
+
+    // ************************************************************************
+    // Rotation
+
+    type RotationDirection = PdftkPrim.RotationDirection
+
+    type RotationDirective = PdftkPrim.RotationDirective
+
+    let rotSinglePage (pageNumber:int) (direction:RotationDirection) : RotationDirective = 
+        { StartPage = pageNumber
+          EndPage = pageNumber
+          Direction = direction
+        }
+    
+    let rotToEnd (startPage:int) (direction:RotationDirection) : RotationDirective = 
+        { StartPage = startPage
+          EndPage = -1
+          Direction = direction
+        }
+    
+    let rotRange (startPage:int) (endPage:int) (direction:RotationDirection) : RotationDirective = 
+        { StartPage = startPage
+          EndPage = endPage
+          Direction = direction
+        }
+
+    let private rotAll (direction:RotationDirection) : RotationDirective = 
+        { StartPage = 1
+          EndPage = -1
+          Direction = direction
+        }
+
+
+
+    let extractRotationsAs (src:PdfFile) 
+                           (directives:RotationDirective list)
+                           (outputFile:string) : DocMonad<PdfFile> = 
+        docMonad { 
+            let command = 
+                PdftkPrim.rotationCommand src.Path directives outputFile
+            let! _ = execPdftk command
+            let! pdf = pdfFile outputFile
+            return pdf
+        }
+
+    /// Rezize for Word generating a new temp file
+    let extractRotations (src:PdfFile) 
+                         (directives:RotationDirective list) : DocMonad<PdfFile> = 
+        extractRotationsAs src directives src.NextTempName
+
+
+
+
+    /// To do - look at old pdftk rotate and redo the code 
+    /// for rotating just islands in a document (keeping the water)
+
+
+    // ************************************************************************
+    // Page count
 
     let pdfPageCount (inputfile:PdfFile) : DocMonad<int> = 
         docMonad { 
