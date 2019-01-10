@@ -2,11 +2,11 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Raw.Ghostscript
+namespace DocBuild.Raw
 
 
-[<AutoOpen>]
-module Ghostscript = 
+[<RequireQualifiedAccess>]
+module GhostscriptPrim = 
     
     open DocBuild.Base
     open DocBuild.Base.Shell
@@ -30,7 +30,7 @@ module Ghostscript =
 
 
     /// Apparently we cannot send multiline commands to execProcess.
-    let makeGsConcatCommand (quality:CommandArgs) (outputFile:string) (inputFiles: string list) : CommandArgs = 
+    let concatCommand (quality:CommandArgs) (outputFile:string) (inputFiles: string list) : CommandArgs = 
         gsConcatOptions quality  
             ^^ gsOutputFile outputFile 
             ^^ gsInputFiles inputFiles

@@ -16,15 +16,33 @@ module Pdf =
     open DocBuild.Base
     open DocBuild.Base.Shell
     open DocBuild.Base.DocMonad
-    open DocBuild.Raw.Ghostscript
-    open DocBuild.Raw.Pdftk
-    // open DocBuild.Raw.PdftkRotate
-    
-
-
+    open DocBuild.Raw
 
     
-            
+
+    type RotationDirection = PdftkPrim.RotationDirection
+
+    type RotationDirective = PdftkPrim.RotationDirective
+
+    let rotSinglePage (pageNumber:int) (direction:RotationDirection) : RotationDirective = 
+        { StartPage = pageNumber
+          EndPage = pageNumber
+          Direction = direction
+        }
+    
+    let rotToEnd (startPage:int) (direction:RotationDirection) : RotationDirective = 
+        { StartPage = startPage
+          EndPage = -1
+          Direction = direction
+        }
+    
+    let rotRange (startPage:int) (endPage:int) (direction:RotationDirection) : RotationDirective = 
+        { StartPage = startPage
+          EndPage = endPage
+          Direction = direction
+        }
+
+
         //member x.RotateEmbed( options:ProcessOptions
         //                    , rotations: Rotation list)  : unit = 
         //    match pdfRotateEmbed options rotations x.PdfDoc.ActiveFile x.PdfDoc.ActiveFile with
@@ -77,13 +95,13 @@ module Pdf =
                             (quality:GsQuality)
                             (outputFile:string) : DocMonad<string> = 
         let inputs = inputfiles |> List.map (fun d -> d.Path)
-        let cmd = makeGsConcatCommand quality.QualityArgs outputFile inputs
+        let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputFile inputs
         execGhostscript cmd
 
     let pdfPageCount (inputfile:PdfFile) : DocMonad<int> = 
         docMonad { 
-            let command = makePdftkDumpDataCommand inputfile.Path
+            let command = PdftkPrim.dumpDataCommand inputfile.Path
             let! stdout = execPdftk command
-            let! ans = liftResult (regexSearchNumberOfPages stdout)
+            let! ans = liftResult (PdftkPrim.regexSearchNumberOfPages stdout)
             return ans
         }

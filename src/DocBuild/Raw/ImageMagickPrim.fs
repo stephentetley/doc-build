@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Raw.ImageMagick
+namespace DocBuild.Raw
 
-[<AutoOpen>]
-module ImageMagick = 
+
+[<RequireQualifiedAccess>]
+module ImageMagickPrim = 
 
     open System
 

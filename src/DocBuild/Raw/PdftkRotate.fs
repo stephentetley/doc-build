@@ -4,27 +4,19 @@
 
 namespace DocBuild.Raw.PdftkRotate
 
+// OBSOLETE
 
 [<AutoOpen>]
 module PdftkRotate = 
 
     open DocBuild.Base
     open DocBuild.Base.Shell
-    open DocBuild.Raw.Pdftk
+    open DocBuild.Raw
 
 
     // ************************************************************************
     // Rotation
 
-    type PageOrientation = 
-        PoNorth | PoSouth | PoEast | PoWest
-        member v.PdftkOrientation 
-            with get () = 
-                match v with
-                | PoNorth -> "north"
-                | PoSouth -> "south"
-                | PoEast -> "east"
-                | PoWest -> "west"
 
     type internal EndOfRange = 
         | EndOfDoc
@@ -34,19 +26,19 @@ module PdftkRotate =
         internal 
             { StartPage: int
               EndPage: EndOfRange
-              Orientation: PageOrientation }
+              Orientation: string }
 
     /// This is part of the API (should it need instantiating?)
-    let rotationRange (startPage:int) (endPage:int) (orientation:PageOrientation) : Rotation = 
+    let rotationRange (startPage:int) (endPage:int) (orientation:string) : Rotation = 
         { StartPage = startPage
           EndPage =  EndPageNumber endPage
           Orientation = orientation }
 
-    let rotationSinglePage (pageNum:int) (orientation:PageOrientation) : Rotation = 
+    let rotationSinglePage (pageNum:int) (orientation:string) : Rotation = 
         rotationRange pageNum pageNum orientation
 
     /// This is part of the API (should it need instantiating?)
-    let rotationToEnd (startPage:int) (orientation:PageOrientation) : Rotation = 
+    let rotationToEnd (startPage:int) (orientation:string) : Rotation = 
         { StartPage = startPage
           EndPage =  EndOfDoc
           Orientation = orientation }
@@ -64,6 +56,8 @@ module PdftkRotate =
     // pdftk slides.pdf cat 2-4east 6-8east output slides-rot3.pdf
 
 
+    // API is too complicated - delegate to user the responsibilty 
+    // for "water" pages
 
 
     let private rotationSpec1 (rot:Rotation) : string = 
@@ -71,7 +65,7 @@ module PdftkRotate =
             match rot.EndPage with
             | EndOfDoc -> "end"
             | EndPageNumber i -> i.ToString()
-        sprintf "%i-%s%s" rot.StartPage last rot.Orientation.PdftkOrientation
+        sprintf "%i-%s%s" rot.StartPage last rot.Orientation
 
     let private regionSpec1 (startPage:int) (endPage:int) : string = 
         if endPage > startPage then 
@@ -135,19 +129,19 @@ module PdftkRotate =
         sprintf "\"%s\" cat %s output \"%s\"" inputFile rotateSpec outputFile 
 
 
-    let pdfRotateExtract (options:ProcessOptions) 
-                         (rotations: Rotation list) 
-                         (inputFile:string) 
-                         (outputFile:string) : BuildResult<string> =
-        runPdftk options <| makeExtractCmd inputFile outputFile rotations
+    //let pdfRotateExtract (options:ProcessOptions) 
+    //                     (rotations: Rotation list) 
+    //                     (inputFile:string) 
+    //                     (outputFile:string) : BuildResult<string> =
+    //    runPdftk options <| makeExtractCmd inputFile outputFile rotations
 
 
 
-    let pdfRotateEmbed (options:ProcessOptions) 
-                        (rotations: Rotation list) 
-                        (inputFile:string) 
-                        (outputFile:string) : BuildResult<string> =
-        runPdftk options <|  makeEmbedCmd inputFile outputFile rotations
+    //let pdfRotateEmbed (options:ProcessOptions) 
+    //                    (rotations: Rotation list) 
+    //                    (inputFile:string) 
+    //                    (outputFile:string) : BuildResult<string> =
+    //    runPdftk options <|  makeEmbedCmd inputFile outputFile rotations
 
 
 

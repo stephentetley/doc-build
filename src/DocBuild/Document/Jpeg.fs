@@ -9,7 +9,7 @@ module Jpeg =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Raw.ImageMagick
+    open DocBuild.Raw
 
 
 
@@ -19,7 +19,7 @@ module Jpeg =
 
 
     let autoOrientAs (src:JpegFile) (outputFile:string) : DocMonad<JpegFile> = 
-        imAutoOrient src.Path outputFile |> ignore
+        ImageMagickPrim.imAutoOrient src.Path outputFile |> ignore
         jpgFile outputFile
 
     let autoOrient (src:JpegFile) : DocMonad<JpegFile> = 
@@ -28,7 +28,7 @@ module Jpeg =
 
 
     let resizeForWordAs (src:JpegFile) (outputFile:string) : DocMonad<JpegFile> = 
-        imAutoOrient src.Path outputFile |> ignore
+        ImageMagickPrim.imAutoOrient src.Path outputFile |> ignore
         jpgFile outputFile
 
     /// Rezize for Word generating a new temp file

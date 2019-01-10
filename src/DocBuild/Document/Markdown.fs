@@ -11,7 +11,7 @@ module Markdown =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Raw.Pandoc
+    open DocBuild.Raw
 
 
 
@@ -19,7 +19,7 @@ module Markdown =
         docMonad { 
             let! styles = asks (fun env -> env.PandocReferenceDoc)
             let command = 
-                makePandocOutputDocxCommand styles  src.Path outputFile
+                PandocPrim.outputDocxCommand styles  src.Path outputFile
             let! _ = execPandoc command
             let! docx = wordFile outputFile
             return docx

@@ -10,10 +10,10 @@
     <Compile Include="DocBuild\Base\DocMonad.fs" />
     <Compile Include="DocBuild\Base\FakeLike.fs" />
     <Compile Include="DocBuild\Base\Document.fs" />
-    <Compile Include="DocBuild\Raw\Ghostscript.fs" />
-    <Compile Include="DocBuild\Raw\Pandoc.fs" />
-    <Compile Include="DocBuild\Raw\Pdftk.fs" />
-    <Compile Include="DocBuild\Raw\ImageMagick.fs" />
+    <Compile Include="DocBuild\Raw\GhostscriptPrim.fs" />
+    <Compile Include="DocBuild\Raw\PandocPrim.fs" />
+    <Compile Include="DocBuild\Raw\PdftkPrim.fs" />
+    <Compile Include="DocBuild\Raw\ImageMagickPrim.fs" />
     <Compile Include="DocBuild\Raw\PdftkRotate.fs" />
     <Compile Include="DocBuild\Document\Pdf.fs" />
     <Compile Include="DocBuild\Document\Jpeg.fs" />

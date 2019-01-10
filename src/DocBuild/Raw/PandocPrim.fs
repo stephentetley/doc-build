@@ -2,19 +2,19 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Raw.Pandoc
+namespace DocBuild.Raw
 
 
-[<AutoOpen>]
-module Pandoc = 
+[<RequireQualifiedAccess>]
+module PandocPrim = 
 
     open DocBuild.Base
     open DocBuild.Base.Shell
     
     /// pandoc --reference-doc="<customRef>" --from=markdown --to=docx+table_captions --standalone --output="<outputFile>" "<inputFile>"
-    let makePandocOutputDocxCommand (customRef:string option) 
-                                    (inputFile:string) 
-                                    (outputFile:string)  : CommandArgs = 
+    let outputDocxCommand (customRef:string option) 
+                          (inputFile:string) 
+                          (outputFile:string)  : CommandArgs = 
         let restArgs = 
             reqArg "--from" "markdown"
                 ^^ reqArg "--to" "docx+table_captions"
