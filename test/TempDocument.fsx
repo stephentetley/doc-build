@@ -34,7 +34,7 @@
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
-// #load "..\src\DocBuild\Extra\PhotoBook.fs"
+#load "..\src\DocBuild\Extra\PhotoBook.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"

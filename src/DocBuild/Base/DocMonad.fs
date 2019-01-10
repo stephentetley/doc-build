@@ -333,7 +333,35 @@ module DocMonad =
             | Error _ -> Ok None
             | Ok a -> Ok (Some a)
 
-   // ****************************************************
+    let kleisliL (mf : 'a -> DocMonad<'b>)
+                 (mg : 'b -> DocMonad<'c>)
+                 (source:'a) : DocMonad<'c> = 
+        docMonad { 
+            let! b = mf source
+            let! c = mg b
+            return c
+        }
+
+    let (>=>) (mf : 'a -> DocMonad<'b>)
+              (mg : 'b -> DocMonad<'c>)
+              (source:'a) : DocMonad<'c> = 
+        kleisliL mf mg source
+
+    let kleisliR (mf : 'b -> DocMonad<'c>)
+                 (mg : 'a -> DocMonad<'b>)
+                 (source:'a) : DocMonad<'c> = 
+        docMonad { 
+            let! b = mg source
+            let! c = mf b
+            return c
+        }
+
+    let (<=<) (mf : 'b -> DocMonad<'c>)
+              (mg : 'a -> DocMonad<'b>)
+              (source:'a) : DocMonad<'c> = 
+        kleisliR mf mg source
+
+    // ****************************************************
     // Execute 'builtin' processes 
     // (Respective applications must be installed)
 
@@ -359,3 +387,18 @@ module DocMonad =
     let execPdftk (command:CommandArgs) : DocMonad<string> = 
         shellExecute (fun env -> env.PdftkExe) command
 
+    // ****************************************************
+    // Recursive functions
+
+
+    /// TODO - CPS?
+    let mapM (mf: 'a -> DocMonad<'b>) (source:'a list) : DocMonad<'b list> = 
+        DocMonad <| fun env -> 
+            let rec work ac ys = 
+                match ys with
+                | [] -> Ok (List.rev ac)
+                | z :: zs -> 
+                    match apply1 (mf z) env with
+                    | Error msg -> Error msg
+                    | Ok ans -> work (ans::ac) zs
+            work [] source

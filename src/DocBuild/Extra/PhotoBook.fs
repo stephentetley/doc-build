@@ -11,22 +11,19 @@ module PhotoBook =
     open MarkdownDoc
     open MarkdownDoc.Pandoc
 
-    open DocBuild.Base.Common
-    open DocBuild.Document.Markdown
+    open DocBuild.Base.DocMonad
+    open DocBuild.Base.FakeLike
+
+
     open DocBuild.Document.Jpeg
+    open DocBuild.Base.Document
 
-    // Note 
-    // For simplicity of the API, we should resize and AutoOrient the photos first.
 
-    // TODO - optimize images...
 
-    let optimizeImage (imagePath:string) : string = 
-        let outputname = suffixFileName "TEMP" imagePath
-        (jpegFile imagePath) 
-            |> autoOrient
-            |> resizeForWord
-            |> saveJpegFile outputname
-        outputname
+
+    let optimizeJpeg (image:JpegFile) : DocMonad<JpegFile> =
+        autoOrient image >>= resizeForWord
+
         
 
     let private makePage1 (title:string) (imagePath:string) : Markdown = 
@@ -54,14 +51,27 @@ module PhotoBook =
             concat (page1 :: rest)
         | [] -> h1 (text title)
 
+    
+    let internal getOptimizedJpegs (imageFolder:string) : DocMonad<JpegFile list> =
+        docMonad { 
+            let xs = findAllMatchingFiles "*.jpg" imageFolder
+            let ys = findAllMatchingFiles "*.jpeg" imageFolder
+            let! jpegs = mapM (jpgFile >=> optimizeJpeg) (xs @ ys)
+            return jpegs
+        }
 
+    let makePhotoBook (title:string) 
+                      (imageFolder: string) 
+                      (outputFile:string) : DocMonad<MarkdownFile> =
+        docMonad {
+            let! jpegs = getOptimizedJpegs imageFolder
+            let jpegPaths = jpegs |> List.map (fun jpg1 -> jpg1.Path)
+            let mdDoc = photoBookMarkdown title jpegPaths
+            do mdDoc.Save(outputFile)
+            let! mdOutput = markdownFile outputFile
+            return mdOutput
+        }
 
-    let makePhotoBook (title:string) (imagePaths: string list) 
-                        (outFile:string) : MarkdownFile =
-        let newImages = List.map optimizeImage imagePaths                        
-        let book = photoBookMarkdown title newImages
-        ignore <| book.Save(outFile)
-        new MarkdownFile (filePath = outFile)
 
 
 
