@@ -93,6 +93,16 @@ module DocMonad =
             | Ok a -> Ok a
 
 
+    /// Execute an action that may throw an exception.
+    /// Capture the exception with try ... with
+    /// and return the answer or the expection message in the monad.
+    let attempt (ma: DocMonad<'a>) : DocMonad<'a> = 
+        DocMonad <| fun env -> 
+            try
+                apply1 ma env
+            with
+            | ex -> Error (sprintf "attempt: %s" ex.Message)
+
 
     // ****************************************************
     // Reader
@@ -103,6 +113,9 @@ module DocMonad =
     let asks (extract:BuilderEnv -> 'a) : DocMonad<'a> = 
         DocMonad <| fun env -> Ok (extract env)
 
+    /// Use with caution.
+    /// Generally you might only want to update the 
+    /// working directory
     let local (update:BuilderEnv -> BuilderEnv) 
                 (ma:DocMonad<'a>) : DocMonad<'a> = 
         DocMonad <| fun env -> apply1 ma (update env)

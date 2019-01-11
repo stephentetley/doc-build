@@ -79,7 +79,7 @@ module Document =
 
     type PdfFile = Document<PdfPhantom>
 
-
+    /// Must have .pdf extension.
     let getPdfFile (path:string) : DocMonad<PdfFile> = 
         getDocument [".pdf"] path 
 
@@ -91,7 +91,7 @@ module Document =
     
     type JpegFile = Document<JpegPhantom>
 
-
+    /// Must have .jpg .jpeg extension.
     let getJpegFile (path:string) : DocMonad<JpegFile> = 
         getDocument [".jpg"; ".jpeg"] path
 
@@ -102,7 +102,7 @@ module Document =
 
     type MarkdownFile = Document<MarkdownPhantom>
 
-
+    /// Must have .md extension.
     let getMarkdownFile (path:string) : DocMonad<MarkdownFile> = 
         getDocument [".md"] path 
 
@@ -113,7 +113,7 @@ module Document =
 
     type WordFile = Document<WordPhantom>
 
-
+    /// Must have .doc .docx extension.
     let getWordFile (path:string) : DocMonad<WordFile> = 
         getDocument [".doc"; ".docx"] path
 
@@ -127,7 +127,7 @@ module Document =
     type ExcelFile = Document<ExcelPhantom>
 
 
-    /// Ignores .xlsm should it?
+    /// Must have .xls .xlsx extension. Ignores .xlsm should it?
     let getExcelFile (path:string) : DocMonad<ExcelFile> = 
         getDocument [".xls"; ".xlsx"] path
 
@@ -139,7 +139,18 @@ module Document =
 
     type PowerPointFile = Document<PowerPointPhantom>
 
-
+    /// Must have .ppt .pptx extension
     let getPowerPointFile (path:string) : DocMonad<PowerPointFile> = 
         getDocument [".ppt"; ".pptx"] path 
 
+
+    // ************************************************************************
+    // Text file (.txt)
+
+    type TextPhantom = class end
+
+    type TextFile = Document<TextPhantom>
+
+    /// Must have .txt extension
+    let getTextFile (path:string) : DocMonad<TextFile> = 
+        getDocument [".txt"] path 

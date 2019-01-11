@@ -22,12 +22,35 @@ module FileIO =
     /// Does not validate if the file exists
     let askWorkingFile (fileName:string) : DocMonad<string> = 
         docMonad { 
-            let! cwd = asks (fun env -> env.WorkingDirectory)
+            let! cwd = askWorkingDirectory
             let path = cwd </> fileName
             return path
         }
 
+    let createWorkingSubDirectory (subDirectory:string) : DocMonad<unit> = 
+        let create1 (path:string) : DocMonad<unit> = 
+            if Directory.Exists(path) then
+                breturn ()
+            else
+                Directory.CreateDirectory(path) |> ignore
+                breturn ()
+        docMonad {
+            let! cwd = askWorkingDirectory
+            let path = cwd </> subDirectory
+            do! attempt (create1 path)
+        }
 
+    /// Run an operation in a subdirectory of current working directory.
+    /// Create the directory if it doesn't exist.
+    let localSubDirectory (subDirectory:string) 
+                          (ma:DocMonad<'a>) : DocMonad<'a> = 
+        docMonad {
+            let! cwd = askWorkingDirectory
+            let path = cwd </> subDirectory
+            do! createWorkingSubDirectory path
+            let! ans = local (fun env -> {env with WorkingDirectory = path}) ma
+            return ans
+        }
 
     /// This is a bit too primitive, ideally it would work on Documents.
     let copyToWorking (doc:Document<'a>) : DocMonad<Document<'a>> = 
