@@ -10,7 +10,6 @@ namespace DocBuild.Base
 module DocMonadOperators = 
 
 
-    open DocBuild.Base
     open DocBuild.Base.DocMonad
 
     // ****************************************************

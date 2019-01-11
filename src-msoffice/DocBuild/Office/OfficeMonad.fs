@@ -156,3 +156,52 @@ module OfficeMonad =
                 | Error msg -> DocMonad.throwError msg
             with
             | _ -> DocMonad.throwError "Resource error - PowerPoint.Application"
+
+    // ****************************************************
+    // Recursive functions
+
+
+    /// Implementation wraps DocMonad.mapM which is in CPS
+    let mapM (mf: 'a -> OfficeMonad<'b>) 
+             (source:'a list) : OfficeMonad<'b list> = 
+        OfficeMonad <| fun env -> 
+            DocMonad.mapM (fun a -> apply1 (mf a) env) source
+
+    /// Flipped mapM
+    let forM (source:'a list) 
+             (mf: 'a -> OfficeMonad<'b>) : OfficeMonad<'b list> = 
+        mapM mf source
+
+    /// Forgetful mapM
+    let mapMz (mf: 'a -> OfficeMonad<'b>) 
+              (source:'a list) : OfficeMonad<unit> = 
+        OfficeMonad <| fun env -> 
+            DocMonad.mapMz (fun a -> apply1 (mf a) env) source
+
+    /// Flipped mapMz
+    let forMz (source:'a list) (mf: 'a -> OfficeMonad<'b>) : OfficeMonad<unit> = 
+        mapMz mf source
+
+    /// Implemented in CPS 
+    let mapiM (mf: int -> 'a -> OfficeMonad<'b>) 
+              (source:'a list) : OfficeMonad<'b list> = 
+        OfficeMonad <| fun env -> 
+            DocMonad.mapiM (fun ix a -> apply1 (mf ix a) env) source
+
+    /// Flipped mapMi
+    let foriM (source:'a list) 
+              (mf: int -> 'a -> OfficeMonad<'b>) : OfficeMonad<'b list> = 
+        mapiM mf source
+
+    /// Forgetful mapiM
+    let mapiMz (mf: int -> 'a -> OfficeMonad<'b>) 
+               (source:'a list) : OfficeMonad<unit> =
+        OfficeMonad <| fun env -> 
+            DocMonad.mapiMz (fun ix a -> apply1 (mf ix a) env) source
+
+    /// Flipped mapiMz
+    let foriMz (source:'a list) 
+               (mf: int -> 'a -> OfficeMonad<'b>) : OfficeMonad<unit> = 
+        mapiMz mf source
+
+

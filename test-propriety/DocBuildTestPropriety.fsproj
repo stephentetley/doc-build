@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Coversheet.fs" />
     <Compile Include="EventsFinal.fsx" />
   </ItemGroup>
 

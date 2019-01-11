@@ -402,3 +402,41 @@ module DocMonad =
     /// Flipped mapMz
     let forMz (source:'a list) (mf: 'a -> DocMonad<'b>) : DocMonad<unit> = 
         mapMz mf source
+
+
+    /// Implemented in CPS 
+    let mapiM (mf:int -> 'a -> DocMonad<'b>) 
+              (source:'a list) : DocMonad<'b list> = 
+        DocMonad <| fun env -> 
+            let rec work ac n ys fk sk = 
+                match ys with
+                | [] -> sk (List.rev ac)
+                | z :: zs -> 
+                    match apply1 (mf n z) env with
+                    | Error msg -> fk msg
+                    | Ok ans -> 
+                        work ac (n+1) zs fk (fun acs ->
+                        sk (ans::acs))
+            work [] 0 source (fun msg -> Error msg) (fun ans -> Ok ans)
+
+    /// Flipped mapMi
+    let foriM (source:'a list) (mf: int -> 'a -> DocMonad<'b>)  : DocMonad<'b list> = 
+        mapiM mf source
+
+    /// Forgetful mapiM
+    let mapiMz (mf: int -> 'a -> DocMonad<'b>) (source:'a list) : DocMonad<unit> = 
+        DocMonad <| fun env -> 
+            let rec work n ys cont = 
+                match ys with
+                | [] -> cont (Ok ())
+                | z :: zs -> 
+                    match apply1 (mf n z) env with
+                    | Error msg -> cont (Error msg)
+                    | Ok ans -> work (n+1) zs cont
+            work 0 source id
+
+    /// Flipped mapiMz
+    let foriMz (source:'a list) (mf: int -> 'a -> DocMonad<'b>) : DocMonad<unit> = 
+        mapiMz mf source
+
+  

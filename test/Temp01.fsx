@@ -166,3 +166,23 @@ let traverse02a () =
         else throwError "large"
     runDocMonad WindowsEnv <| 
         mapM operation [1;2;3;4]
+
+let traverse03 () =
+    let operation (i:int) (s:string) = 
+        docMonad { 
+            do printfn "ix=%i val='%s'" i s
+            return (i + int s)
+            }
+    runDocMonad WindowsEnv <| 
+        mapMi operation ["1";"2";"3";"4"]
+
+let traverse03a () =
+    let operation (i:int) (s:string) = 
+        if i < 3 then 
+            docMonad { 
+                do printfn "ix=%i val='%s'" i s
+                return (i + int s)
+                }
+        else throwError "large"
+    runDocMonad WindowsEnv <| 
+        mapMi operation ["1";"2";"3";"4"]

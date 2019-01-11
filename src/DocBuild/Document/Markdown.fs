@@ -12,8 +12,10 @@ module Markdown =
     open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Raw
+    open System
 
-
+    // ************************************************************************
+    // Export
 
     let markdownToWordAs (src:MarkdownFile) (outputFile:string) : DocMonad<WordFile> =
         docMonad { 
@@ -30,3 +32,19 @@ module Markdown =
         let outputFile = Path.ChangeExtension(src.Path, "docx")
         markdownToWordAs src outputFile
 
+
+
+    // ************************************************************************
+    // Find and replace
+
+    let findReplaceAs (src:MarkdownFile) (searches:SearchList) (outputFile:string) : DocMonad<MarkdownFile> = 
+        let original = File.ReadAllText(src.Path)
+        let action (source:string) (searchText:string, replaceText:string) = 
+           source.Replace(searchText, replaceText)
+        let final = List.fold action original searches
+        File.WriteAllText(outputFile, final)
+        getMarkdownFile outputFile
+
+
+    let findReplace (src:MarkdownFile) (searches:SearchList)  : DocMonad<MarkdownFile> = 
+        findReplaceAs src searches src.NextTempName 
