@@ -12,7 +12,7 @@ module Document =
     open System.IO
 
     open DocBuild.Base.DocMonad
-    open DocBuild.Base
+
 
     type FilePath = string
 

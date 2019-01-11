@@ -12,6 +12,7 @@ module PhotoBook =
     open MarkdownDoc.Pandoc
 
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Base.FakeLike
 
 

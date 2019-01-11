@@ -4,6 +4,8 @@
 
 namespace DocBuild.Base
 
+// Explicitly import this module:
+// open DocBuild.Base.DocMonad
 
 module DocMonad = 
 
@@ -90,11 +92,7 @@ module DocMonad =
             | Error _ -> Error msg
             | Ok a -> Ok a
 
-    let (<&?>) (ma:DocMonad<'a>) (msg:string) : DocMonad<'a> = 
-        swapError msg ma
 
-    let (<?&>) (msg:string) (ma:DocMonad<'a>) : DocMonad<'a> = 
-        swapError msg ma
 
     // ****************************************************
     // Reader
@@ -122,28 +120,14 @@ module DocMonad =
     // ****************************************************
     // Monadic operations
 
-    /// Bind operator
-    let (>>=) (ma:DocMonad<'a>) (fn:'a -> DocMonad<'b>) : DocMonad<'b> = 
-        bindM ma fn
 
-    /// Flipped Bind operator
-    let (=<<) (fn:'a -> DocMonad<'b>) (ma:DocMonad<'a>) : DocMonad<'b> = 
-        bindM ma fn
-
-    // Common monadic operations
+    /// fmap 
     let fmapM (fn:'a -> 'b) (ma:DocMonad<'a>) : DocMonad<'b> = 
         DocMonad <| fun env -> 
            match apply1 ma env with
            | Error msg -> Error msg
            | Ok a -> Ok (fn a)
 
-    /// Operator for fmap.
-    let (|>>) (ma:DocMonad<'a>) (fn:'a -> 'b) : DocMonad<'b> = 
-        fmapM fn ma
-
-    /// Flipped fmap.
-    let (<<|) (fn:'a -> 'b) (ma:DocMonad<'a>) : DocMonad<'b> = 
-        fmapM fn ma
 
     // liftM (which is fmap)
     let liftM (fn:'a -> 'x) (ma:DocMonad<'a>) : DocMonad<'x> = 
@@ -285,8 +269,6 @@ module DocMonad =
     let altM (ma:DocMonad<'a>) (mb:DocMonad<'a>) : DocMonad<'a> = 
         combineM ma mb
 
-    let (<||>) (ma:DocMonad<'a>) (mb:DocMonad<'a>) : DocMonad<'a> = 
-        altM ma mb <&?> "(<||>)"
 
     /// Haskell Applicative's (<*>)
     let apM (mf:DocMonad<'a ->'b>) (ma:DocMonad<'a>) : DocMonad<'b> = 
@@ -296,13 +278,6 @@ module DocMonad =
             return (fn a) 
         }
 
-    /// Operator for apM
-    let (<**>) (ma:DocMonad<'a -> 'b>) (mb:DocMonad<'a>) : DocMonad<'b> = 
-        apM ma mb
-
-    /// Operator for fmapM
-    let (<&&>) (fn:'a -> 'b) (ma:DocMonad<'a>) : DocMonad<'b> = 
-        fmapM fn ma
 
 
     /// Perform two actions in sequence. 
@@ -323,13 +298,6 @@ module DocMonad =
             return b
         }
 
-    /// Operator for seqL
-    let (.>>) (ma:DocMonad<'a>) (mb:DocMonad<'b>) : DocMonad<'a> = 
-        seqL ma mb
-
-    /// Operator for seqR
-    let (>>>.) (ma:DocMonad<'a>) (mb:DocMonad<'b>) : DocMonad<'b> = 
-        seqR ma mb
 
     /// Optionally run a computation. 
     /// If the build fails return None otherwise retun Some<'a>.
@@ -348,11 +316,6 @@ module DocMonad =
             return c
         }
 
-    let (>=>) (mf : 'a -> DocMonad<'b>)
-              (mg : 'b -> DocMonad<'c>)
-              (source:'a) : DocMonad<'c> = 
-        kleisliL mf mg source
-
     let kleisliR (mf : 'b -> DocMonad<'c>)
                  (mg : 'a -> DocMonad<'b>)
                  (source:'a) : DocMonad<'c> = 
@@ -362,10 +325,6 @@ module DocMonad =
             return c
         }
 
-    let (<=<) (mf : 'b -> DocMonad<'c>)
-              (mg : 'a -> DocMonad<'b>)
-              (source:'a) : DocMonad<'c> = 
-        kleisliR mf mg source
 
     // ****************************************************
     // Execute 'builtin' processes 
