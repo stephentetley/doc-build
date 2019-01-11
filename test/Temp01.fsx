@@ -174,7 +174,7 @@ let traverse03 () =
             return (i + int s)
             }
     runDocMonad WindowsEnv <| 
-        mapMi operation ["1";"2";"3";"4"]
+        mapiM operation ["1";"2";"3";"4"]
 
 let traverse03a () =
     let operation (i:int) (s:string) = 
@@ -185,4 +185,4 @@ let traverse03a () =
                 }
         else throwError "large"
     runDocMonad WindowsEnv <| 
-        mapMi operation ["1";"2";"3";"4"]
+        mapiM operation ["1";"2";"3";"4"]

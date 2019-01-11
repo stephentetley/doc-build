@@ -147,8 +147,8 @@ module DocMonad =
         fmapM fn ma
 
     let liftM2 (fn:'a -> 'b -> 'x) 
-                (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) : DocMonad<'x> = 
+               (ma:DocMonad<'a>) 
+               (mb:DocMonad<'b>) : DocMonad<'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -156,9 +156,9 @@ module DocMonad =
         }
 
     let liftM3 (fn:'a -> 'b -> 'c -> 'x) 
-                (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) : DocMonad<'x> = 
+               (ma:DocMonad<'a>) 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) : DocMonad<'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -167,10 +167,10 @@ module DocMonad =
         }
 
     let liftM4 (fn:'a -> 'b -> 'c -> 'd -> 'x) 
-                (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) 
-                (md:DocMonad<'d>) : DocMonad<'x> = 
+               (ma:DocMonad<'a>) 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) 
+               (md:DocMonad<'d>) : DocMonad<'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -181,11 +181,11 @@ module DocMonad =
 
 
     let liftM5 (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'x) 
-                (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) 
-                (md:DocMonad<'d>) 
-                (me:DocMonad<'e>) : DocMonad<'x> = 
+               (ma:DocMonad<'a>) 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) 
+               (md:DocMonad<'d>) 
+               (me:DocMonad<'e>) : DocMonad<'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -196,12 +196,12 @@ module DocMonad =
         }
 
     let liftM6 (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x) 
-                (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) 
-                (md:DocMonad<'d>) 
-                (me:DocMonad<'e>) 
-                (mf:DocMonad<'f>) : DocMonad<'x> = 
+               (ma:DocMonad<'a>) 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) 
+               (md:DocMonad<'d>) 
+               (me:DocMonad<'e>) 
+               (mf:DocMonad<'f>) : DocMonad<'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -244,38 +244,38 @@ module DocMonad =
         liftM6 (fun a b c d e f -> (a,b,c,d,e,f)) ma mb mc md me mf
 
     let pipeM2 (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (fn:'a -> 'b -> 'x) : DocMonad<'x> = 
+               (mb:DocMonad<'b>) 
+               (fn:'a -> 'b -> 'x) : DocMonad<'x> = 
         liftM2 fn ma mb
 
     let pipeM3 (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) 
-                (fn:'a -> 'b -> 'c -> 'x): DocMonad<'x> = 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) 
+               (fn:'a -> 'b -> 'c -> 'x) : DocMonad<'x> = 
         liftM3 fn ma mb mc
 
     let pipeM4 (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) 
-                (md:DocMonad<'d>) 
-                (fn:'a -> 'b -> 'c -> 'd -> 'x) : DocMonad<'x> = 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) 
+               (md:DocMonad<'d>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'x) : DocMonad<'x> = 
         liftM4 fn ma mb mc md
 
     let pipeM5 (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) 
-                (md:DocMonad<'d>) 
-                (me:DocMonad<'e>) 
-                (fn:'a -> 'b -> 'c -> 'd -> 'e ->'x): DocMonad<'x> = 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) 
+               (md:DocMonad<'d>) 
+               (me:DocMonad<'e>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'e ->'x) : DocMonad<'x> = 
         liftM5 fn ma mb mc md me
 
     let pipeM6 (ma:DocMonad<'a>) 
-                (mb:DocMonad<'b>) 
-                (mc:DocMonad<'c>) 
-                (md:DocMonad<'d>) 
-                (me:DocMonad<'e>) 
-                (mf:DocMonad<'f>) 
-                (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x): DocMonad<'x> = 
+               (mb:DocMonad<'b>) 
+               (mc:DocMonad<'c>) 
+               (md:DocMonad<'d>) 
+               (me:DocMonad<'e>) 
+               (mf:DocMonad<'f>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x) : DocMonad<'x> = 
         liftM6 fn ma mb mc md me mf
 
     /// Left biased choice, if ``ma`` succeeds return its result, otherwise try ``mb``.
@@ -320,8 +320,8 @@ module DocMonad =
             | Error _ -> Ok None
             | Ok a -> Ok (Some a)
 
-    let kleisliL (mf : 'a -> DocMonad<'b>)
-                 (mg : 'b -> DocMonad<'c>)
+    let kleisliL (mf:'a -> DocMonad<'b>)
+                 (mg:'b -> DocMonad<'c>)
                  (source:'a) : DocMonad<'c> = 
         docMonad { 
             let! b = mf source
@@ -329,8 +329,9 @@ module DocMonad =
             return c
         }
 
-    let kleisliR (mf : 'b -> DocMonad<'c>)
-                 (mg : 'a -> DocMonad<'b>)
+    /// Flipped kleisliL
+    let kleisliR (mf:'b -> DocMonad<'c>)
+                 (mg:'a -> DocMonad<'b>)
                  (source:'a) : DocMonad<'c> = 
         docMonad { 
             let! b = mg source

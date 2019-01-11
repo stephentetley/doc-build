@@ -49,11 +49,9 @@
 #load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
 #load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
 
-
-
 #load "Coversheet.fs"
 
-
+// Use local modules to prevent nameclashes with Monads...
 
 module Config = 
 
