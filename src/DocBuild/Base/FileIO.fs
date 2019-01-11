@@ -14,28 +14,28 @@ module FileIO =
     open DocBuild.Base.FakeLike
 
 
-    let askWorkingDirectory : DocMonad<string> = 
+    let askWorkingDirectory () : DocMonad<'res,string> = 
         asks (fun env -> env.WorkingDirectory)
     
 
     /// Return the full path of a filename local to the working directory.
     /// Does not validate if the file exists
-    let askWorkingFile (fileName:string) : DocMonad<string> = 
+    let askWorkingFile (fileName:string) : DocMonad<'res,string> = 
         docMonad { 
-            let! cwd = askWorkingDirectory
+            let! cwd = askWorkingDirectory ()
             let path = cwd </> fileName
             return path
         }
 
-    let createWorkingSubDirectory (subDirectory:string) : DocMonad<unit> = 
-        let create1 (path:string) : DocMonad<unit> = 
+    let createWorkingSubDirectory (subDirectory:string) : DocMonad<'res,unit> = 
+        let create1 (path:string) : DocMonad<'res,unit> = 
             if Directory.Exists(path) then
                 breturn ()
             else
                 Directory.CreateDirectory(path) |> ignore
                 breturn ()
         docMonad {
-            let! cwd = askWorkingDirectory
+            let! cwd = askWorkingDirectory ()
             let path = cwd </> subDirectory
             do! attempt (create1 path)
         }
@@ -43,9 +43,9 @@ module FileIO =
     /// Run an operation in a subdirectory of current working directory.
     /// Create the directory if it doesn't exist.
     let localSubDirectory (subDirectory:string) 
-                          (ma:DocMonad<'a>) : DocMonad<'a> = 
+                          (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
-            let! cwd = askWorkingDirectory
+            let! cwd = askWorkingDirectory ()
             let path = cwd </> subDirectory
             do! createWorkingSubDirectory path
             let! ans = local (fun env -> {env with WorkingDirectory = path}) ma
@@ -53,11 +53,11 @@ module FileIO =
         }
 
     /// This is a bit too primitive, ideally it would work on Documents.
-    let copyToWorking (doc:Document<'a>) : DocMonad<Document<'a>> = 
+    let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
         if File.Exists(doc.Path) then 
             docMonad { 
                 let justFile = Path.GetFileName(doc.Path)
-                let! cwd = askWorkingDirectory
+                let! cwd = askWorkingDirectory ()
                 let target = cwd </> justFile
                 do File.Copy( sourceFileName = doc.Path
                             , destFileName = target )

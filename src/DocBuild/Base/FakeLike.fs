@@ -34,26 +34,27 @@ module FakeLike =
 
 
 
-    // Has one or more matches. 
-    // Note - pattern is a simple glob (the only wild cards are '?' and '*'), not a regex.
+    /// Has one or more matches. 
+    /// Note - pattern is a simple glob 
+    /// (the only wild cards are '?' and '*'), not a regex.
     let hasMatchingFiles (pattern:string) (dir:string) : bool = 
         let test = not << List.isEmpty
         getFilesMatching dir pattern |> test
 
-    // Zero or more matches.
-    // No need for a try variant (empty list is no matches)
-    // Note - pattern is a glob, not a regex.
+    /// Zero or more matches.
+    /// No need for a try variant (empty list is no matches)
+    /// Note - pattern is a glob, not a regex.
     let findAllMatchingFiles (pattern:string) (dir:string) : string list = 
         getFilesMatching dir pattern
 
     
-    // One or more matches. 
-    // Note - pattern is a glob, not a regex.
+    /// One or more matches. 
+    /// Note - pattern is a glob, not a regex.
     let tryFindSomeMatchingFiles (pattern:string) (dir:string) : option<string list> = 
         getFilesMatching dir pattern |> tryOneOrMore
 
-    // Exactly one matches.
-    // Note - pattern is a glob, not a regex.
+    /// Exactly one matches.
+    /// Note - pattern is a glob, not a regex.
     let tryFindExactlyOneMatchingFile (pattern:string) (dir:string) : option<string> = 
         getFilesMatching dir pattern |> tryExactlyOne
 

@@ -32,7 +32,8 @@ module Document =
         let newfile = sprintf "%s.%s%s" justFile suffix extension
         Path.Combine(root, newfile)
 
-    let validateFile (fileExtensions:string list) (path:string) : DocMonad<string> = 
+    let validateFile (fileExtensions:string list) 
+                     (path:string) : DocMonad<'res,string> = 
         if System.IO.File.Exists(path) then 
             let extension : string = System.IO.Path.GetExtension(path)
             let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
@@ -65,7 +66,8 @@ module Document =
 
 
 
-    let getDocument (fileExtensions:string list) (filePath:string) : DocMonad<Document<'a>> = 
+    let getDocument (fileExtensions:string list) 
+                    (filePath:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
             let! path = validateFile fileExtensions filePath
             return Document(path)
@@ -80,7 +82,7 @@ module Document =
     type PdfFile = Document<PdfPhantom>
 
     /// Must have .pdf extension.
-    let getPdfFile (path:string) : DocMonad<PdfFile> = 
+    let getPdfFile (path:string) : DocMonad<'res,PdfFile> = 
         getDocument [".pdf"] path 
 
 
@@ -92,7 +94,7 @@ module Document =
     type JpegFile = Document<JpegPhantom>
 
     /// Must have .jpg .jpeg extension.
-    let getJpegFile (path:string) : DocMonad<JpegFile> = 
+    let getJpegFile (path:string) : DocMonad<'res,JpegFile> = 
         getDocument [".jpg"; ".jpeg"] path
 
     // ************************************************************************
@@ -103,7 +105,7 @@ module Document =
     type MarkdownFile = Document<MarkdownPhantom>
 
     /// Must have .md extension.
-    let getMarkdownFile (path:string) : DocMonad<MarkdownFile> = 
+    let getMarkdownFile (path:string) : DocMonad<'res,MarkdownFile> = 
         getDocument [".md"] path 
 
     // ************************************************************************
@@ -114,7 +116,7 @@ module Document =
     type WordFile = Document<WordPhantom>
 
     /// Must have .doc .docx extension.
-    let getWordFile (path:string) : DocMonad<WordFile> = 
+    let getWordFile (path:string) : DocMonad<'res,WordFile> = 
         getDocument [".doc"; ".docx"] path
 
 
@@ -128,7 +130,7 @@ module Document =
 
 
     /// Must have .xls .xlsx extension. Ignores .xlsm should it?
-    let getExcelFile (path:string) : DocMonad<ExcelFile> = 
+    let getExcelFile (path:string) : DocMonad<'res,ExcelFile> = 
         getDocument [".xls"; ".xlsx"] path
 
 
@@ -140,7 +142,7 @@ module Document =
     type PowerPointFile = Document<PowerPointPhantom>
 
     /// Must have .ppt .pptx extension
-    let getPowerPointFile (path:string) : DocMonad<PowerPointFile> = 
+    let getPowerPointFile (path:string) : DocMonad<'res,PowerPointFile> = 
         getDocument [".ppt"; ".pptx"] path 
 
 
@@ -152,5 +154,7 @@ module Document =
     type TextFile = Document<TextPhantom>
 
     /// Must have .txt extension
-    let getTextFile (path:string) : DocMonad<TextFile> = 
+    let getTextFile (path:string) : DocMonad<'res,TextFile> = 
         getDocument [".txt"] path 
+
+

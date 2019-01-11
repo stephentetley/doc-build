@@ -43,9 +43,9 @@ module Pdf =
 
 
 
-    let ghostscriptConcat (inputFiles:PdfFile list)
-                            (quality:GsQuality)
-                            (outputFile:string) : DocMonad<string> = 
+    let private ghostscriptConcat (inputFiles:PdfFile list)
+                                  (quality:GsQuality)
+                                  (outputFile:string) : DocMonad<'res,string> = 
         let inputs = inputFiles |> List.map (fun d -> d.Path)
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputFile inputs
         execGhostscript cmd
@@ -53,7 +53,7 @@ module Pdf =
 
     let pdfConcat (inputFiles:PdfFile list)
                   (quality:GsQuality)
-                  (outputFile:string) : DocMonad<PdfFile> = 
+                  (outputFile:string) : DocMonad<'res,PdfFile> = 
         docMonad { 
             let! _ = ghostscriptConcat inputFiles quality outputFile
             let! pdf = getPdfFile outputFile
@@ -68,19 +68,23 @@ module Pdf =
 
     type RotationDirective = PdftkPrim.RotationDirective
 
-    let rotSinglePage (pageNumber:int) (direction:RotationDirection) : RotationDirective = 
+    let rotSinglePage (pageNumber:int) 
+                      (direction:RotationDirection) : RotationDirective = 
         { StartPage = pageNumber
           EndPage = pageNumber
           Direction = direction
         }
     
-    let rotToEnd (startPage:int) (direction:RotationDirection) : RotationDirective = 
+    let rotToEnd (startPage:int) 
+                 (direction:RotationDirection) : RotationDirective = 
         { StartPage = startPage
           EndPage = -1
           Direction = direction
         }
     
-    let rotRange (startPage:int) (endPage:int) (direction:RotationDirection) : RotationDirective = 
+    let rotRange (startPage:int) 
+                 (endPage:int) 
+                 (direction:RotationDirection) : RotationDirective = 
         { StartPage = startPage
           EndPage = endPage
           Direction = direction
@@ -96,7 +100,7 @@ module Pdf =
 
     let extractRotationsAs (src:PdfFile) 
                            (directives:RotationDirective list)
-                           (outputFile:string) : DocMonad<PdfFile> = 
+                           (outputFile:string) : DocMonad<'res,PdfFile> = 
         docMonad { 
             let command = 
                 PdftkPrim.rotationCommand src.Path directives outputFile
@@ -107,7 +111,7 @@ module Pdf =
 
     /// Rezize for Word generating a new temp file
     let extractRotations (src:PdfFile) 
-                         (directives:RotationDirective list) : DocMonad<PdfFile> = 
+                         (directives:RotationDirective list) : DocMonad<'res,PdfFile> = 
         extractRotationsAs src directives src.NextTempName
 
 
@@ -120,7 +124,7 @@ module Pdf =
     // ************************************************************************
     // Page count
 
-    let pdfPageCount (inputfile:PdfFile) : DocMonad<int> = 
+    let pdfPageCount (inputfile:PdfFile) : DocMonad<'res,int> = 
         docMonad { 
             let command = PdftkPrim.dumpDataCommand inputfile.Path
             let! stdout = execPdftk command

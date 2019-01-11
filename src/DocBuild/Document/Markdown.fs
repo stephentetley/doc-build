@@ -17,7 +17,8 @@ module Markdown =
     // ************************************************************************
     // Export
 
-    let markdownToWordAs (src:MarkdownFile) (outputFile:string) : DocMonad<WordFile> =
+    let markdownToWordAs (src:MarkdownFile) 
+                         (outputFile:string) : DocMonad<'res,WordFile> =
         docMonad { 
             let! styles = asks (fun env -> env.PandocReferenceDoc)
             let command = 
@@ -28,7 +29,7 @@ module Markdown =
          }
 
 
-    let markdownToWord (src:MarkdownFile) : DocMonad<WordFile> =
+    let markdownToWord (src:MarkdownFile) : DocMonad<'res,WordFile> =
         let outputFile = Path.ChangeExtension(src.Path, "docx")
         markdownToWordAs src outputFile
 
@@ -37,7 +38,9 @@ module Markdown =
     // ************************************************************************
     // Find and replace
 
-    let findReplaceAs (src:MarkdownFile) (searches:SearchList) (outputFile:string) : DocMonad<MarkdownFile> = 
+    let findReplaceAs (src:MarkdownFile) 
+                      (searches:SearchList) 
+                      (outputFile:string) : DocMonad<'res,MarkdownFile> = 
         let original = File.ReadAllText(src.Path)
         let action (source:string) (searchText:string, replaceText:string) = 
            source.Replace(searchText, replaceText)
@@ -46,5 +49,6 @@ module Markdown =
         getMarkdownFile outputFile
 
 
-    let findReplace (src:MarkdownFile) (searches:SearchList)  : DocMonad<MarkdownFile> = 
+    let findReplace (src:MarkdownFile) 
+                    (searches:SearchList)  : DocMonad<'res,MarkdownFile> = 
         findReplaceAs src searches src.NextTempName 
