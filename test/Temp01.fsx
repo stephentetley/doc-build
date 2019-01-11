@@ -38,12 +38,12 @@
 #load "..\src\DocBuild\Document\Markdown.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
 
-//#load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
-//#load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
-//#load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
-//#load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
-//#load "..\src-msoffice\DocBuild\Office\Common.fs"
-//#load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
+#load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
+#load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
+#load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
+#load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
+#load "..\src-msoffice\DocBuild\Office\Common.fs"
+#load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
 //#load "..\src-msoffice\DocBuild\Office\WordFile.fs"
 //#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
 //#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
@@ -119,8 +119,10 @@ let WindowsEnv : BuilderEnv =
       PandocReferenceDoc  = Some (cwd </> "custom-reference1.docx")
     }
 
+let noRes = UserResources(Map.empty)
+
 let testCreateDir () =
-    runDocMonad () WindowsEnv <| 
+    runDocMonad noRes WindowsEnv <| 
         docMonad { 
             do! createWorkingSubDirectory @"TEMP_1\CHILD_A"
             return ()
@@ -132,7 +134,7 @@ let traverse01 () =
             do printfn "%i" i
             return "ans"
             }
-    runDocMonad () WindowsEnv <| 
+    runDocMonad noRes WindowsEnv <| 
         mapMz operation [1;2;3;4]
 
 let traverse01a () =
@@ -143,7 +145,7 @@ let traverse01a () =
                 return "ans"
                 }
         else throwError "large"
-    runDocMonad () WindowsEnv <| 
+    runDocMonad noRes WindowsEnv <| 
         mapMz operation [1;2;3;4]
 
 
@@ -153,7 +155,7 @@ let traverse02 () =
             do printfn "%i" i
             return i.ToString()
             }
-    runDocMonad () WindowsEnv <| 
+    runDocMonad noRes WindowsEnv <| 
         mapM operation [1;2;3;4]
 
 let traverse02a () =
@@ -164,7 +166,7 @@ let traverse02a () =
                 return i.ToString()
                 }
         else throwError "large"
-    runDocMonad () WindowsEnv <| 
+    runDocMonad noRes WindowsEnv <| 
         mapM operation [1;2;3;4]
 
 let traverse03 () =
@@ -173,7 +175,7 @@ let traverse03 () =
             do printfn "ix=%i val='%s'" i s
             return (i + int s)
             }
-    runDocMonad () WindowsEnv <| 
+    runDocMonad noRes WindowsEnv <| 
         mapiM operation ["1";"2";"3";"4"]
 
 let traverse03a () =
@@ -184,5 +186,22 @@ let traverse03a () =
                 return (i + int s)
                 }
         else throwError "large"
-    runDocMonad () WindowsEnv <| 
+    runDocMonad noRes WindowsEnv <| 
         mapiM operation ["1";"2";"3";"4"]
+
+
+type Env1 = 
+    { NameField: string }
+
+type UserResources = Map<string,obj>
+
+let dynexperiment () = 
+    let e:Env1 = { NameField = "Z001"}
+    let d1 : UserResources = Map.empty
+    let d2 = d1.Add("Env1", e :> obj)
+    d2
+
+let getEnv (resources:UserResources) : Env1 = 
+    match Map.tryFind "Env1" resources with
+    |Some o -> o :?> Env1
+    | None -> failwith "Lookup"

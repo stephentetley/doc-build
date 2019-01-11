@@ -21,15 +21,25 @@ module DocMonad =
           PandocReferenceDoc: string option
         }
 
+    /// UserResources is a map from key to an obj (i.e. something 
+    /// dynamically typed).
+    /// It is an extensible registry.
+    [<Struct>]
+    type UserResources<'reskey> when 'reskey : comparison = 
+        UserResources of Map<'reskey,obj>
+        with 
+            member x.Map
+                with get() = match x with | UserResources(m) -> m
 
-    /// DocMonad has a parametric 'res (user resource)
+    /// DocMonad has a phantom parameter 'res (user resource)
     /// This allows a level of extensibility on the applications
     /// that DocMonad can run (e.g. Office apps Word, Excel)
-    type DocMonad<'res,'a> = 
-        DocMonad of ('res -> BuilderEnv -> BuildResult<'a>)
+    /// TODO - potentially 'res should be the type of Key into the UserResources.
+    type DocMonad<'reskey,'a> when 'reskey : comparison = 
+        DocMonad of (UserResources<'reskey> -> BuilderEnv -> BuildResult<'a>)
 
     let inline private apply1 (ma: DocMonad<'res,'a>) 
-                              (res:'res) 
+                              (res:UserResources<'res>) 
                               (env: BuilderEnv) : BuildResult<'a>= 
         let (DocMonad f) = ma in f res env
 
@@ -71,12 +81,12 @@ module DocMonad =
     // ****************************************************
     // Run
 
-    let runDocMonad (userResource:'res) 
+    let runDocMonad (userResource:UserResources<'res>) 
                     (config:BuilderEnv) 
                     (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
         apply1 ma userResource config
 
-    let execDocMonad (userResource:'res) 
+    let execDocMonad (userResource:UserResources<'res>) 
                      (config:BuilderEnv) 
                      (ma:DocMonad<'res,'a>) : 'a = 
         match apply1 ma userResource config with
@@ -128,18 +138,30 @@ module DocMonad =
 
 
 
-    let askUserRes () : DocMonad<'res,'res> = 
-        DocMonad <| fun res _ -> Ok res
 
-    let asksUserRes (extract:'res -> 'a) : DocMonad<'res,'a> = 
-        DocMonad <| fun res _ -> Ok (extract res)
+
+    let asksUserResource (resourceName:'res) 
+                         (extract:obj -> 'a) : DocMonad<'res,'a> when 'res : comparison = 
+        DocMonad <| fun res _ -> 
+            match Map.tryFind resourceName res.Map with
+            | Some handle -> Ok (extract handle)
+            | None -> Error (sprintf "asksUserRes: missing resource '%O'" resourceName)
 
     /// Use with caution.
     /// Generally you might only want to update the 
     /// working directory
-    let localUserRes (update:'res -> 'res) 
-                     (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun res env -> apply1 ma (update res) env
+    let localUserResource (resourceName:'res) 
+                          (extract:obj -> 'handle) 
+                          (update:'handle -> 'handle) 
+                          (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        DocMonad <| fun res env -> 
+            match Map.tryFind resourceName res.Map with
+            | Some handle -> 
+                let o1 = (extract handle |> update) :> obj
+                let res1 = UserResources <| Map.add resourceName o1 res.Map
+                apply1 ma res1 env
+            | None -> Error (sprintf "localUserRes: missing resource '%O'" resourceName)
+
 
     // ****************************************************
     // Lift operations
