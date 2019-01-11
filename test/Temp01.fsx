@@ -126,5 +126,43 @@ let testCreateDir () =
             return ()
         }
 
-    
-    
+let traverse01 () =
+    let operation (i:int) = 
+        docMonad { 
+            do printfn "%i" i
+            return "ans"
+            }
+    runDocMonad WindowsEnv <| 
+        mapMz operation [1;2;3;4]
+
+let traverse01a () =
+    let operation (i:int) = 
+        if i < 3 then 
+            docMonad { 
+                do printfn "%i" i
+                return "ans"
+                }
+        else throwError "large"
+    runDocMonad WindowsEnv <| 
+        mapMz operation [1;2;3;4]
+
+
+let traverse02 () =
+    let operation (i:int) = 
+        docMonad { 
+            do printfn "%i" i
+            return i.ToString()
+            }
+    runDocMonad WindowsEnv <| 
+        mapM operation [1;2;3;4]
+
+let traverse02a () =
+    let operation (i:int) = 
+        if i < 3 then 
+            docMonad { 
+                do printfn "%i" i
+                return i.ToString()
+                }
+        else throwError "large"
+    runDocMonad WindowsEnv <| 
+        mapM operation [1;2;3;4]

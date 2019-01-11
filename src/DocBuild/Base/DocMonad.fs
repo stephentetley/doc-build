@@ -369,14 +369,36 @@ module DocMonad =
     // Recursive functions
 
 
-    /// TODO - CPS?
+    /// Implemented in CPS 
     let mapM (mf: 'a -> DocMonad<'b>) (source:'a list) : DocMonad<'b list> = 
         DocMonad <| fun env -> 
-            let rec work ac ys = 
+            let rec work ac ys fk sk = 
                 match ys with
-                | [] -> Ok (List.rev ac)
+                | [] -> sk (List.rev ac)
                 | z :: zs -> 
                     match apply1 (mf z) env with
-                    | Error msg -> Error msg
-                    | Ok ans -> work (ans::ac) zs
-            work [] source
+                    | Error msg -> fk msg
+                    | Ok ans -> 
+                        work ac zs fk (fun acs ->
+                        sk (ans::acs))
+            work [] source (fun msg -> Error msg) (fun ans -> Ok ans)
+
+    /// Flipped mapM
+    let forM (source:'a list) (mf: 'a -> DocMonad<'b>) : DocMonad<'b list> = 
+        mapM mf source
+
+    /// Forgetful mapM
+    let mapMz (mf: 'a -> DocMonad<'b>) (source:'a list) : DocMonad<unit> = 
+        DocMonad <| fun env -> 
+            let rec work ys cont = 
+                match ys with
+                | [] -> cont (Ok ())
+                | z :: zs -> 
+                    match apply1 (mf z) env with
+                    | Error msg -> cont (Error msg)
+                    | Ok ans -> work zs cont
+            work source id
+
+    /// Flipped mapMz
+    let forMz (source:'a list) (mf: 'a -> DocMonad<'b>) : DocMonad<unit> = 
+        mapMz mf source
