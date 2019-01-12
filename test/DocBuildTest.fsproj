@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Include="Temp01.fsx" />
+    <None Include="Temp02.fsx" />
     <None Include="TempDocument.fsx" />
   </ItemGroup>
 
