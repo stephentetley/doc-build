@@ -77,3 +77,28 @@ let extractWord<'T when 'T :> HasWordAppKey> (resources:UserResources<'T>) : Wor
 let testImportant () = 
     extractWord MyResources
 
+// Actually, HasWordAppKey works so well we don't need the registry...
+
+type WordApplication = 
+    | WordApp of unit
+
+type HasWordHandle =
+    abstract WordAppHandle : WordApplication
+
+type MyConfig2 = 
+    { WordHandle : WordApplication }
+    interface HasWordHandle with
+        member x.WordAppHandle = x.WordHandle
+
+
+let runWord<'T when 'T :> HasWordHandle> (resources:'T) : string = 
+    let x:WordApplication = resources.WordAppHandle
+    match x with | WordApp () -> "YES!"
+
+let test05 () = 
+    let myconfig = { WordHandle = WordApp () }
+    runWord myconfig
+
+
+
+

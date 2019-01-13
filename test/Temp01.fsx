@@ -119,7 +119,7 @@ let WindowsEnv : BuilderEnv =
       PandocReferenceDoc  = Some (cwd </> "custom-reference1.docx")
     }
 
-let noRes = UserResources(Map.empty)
+let noRes = ()
 
 let testCreateDir () =
     runDocMonad noRes WindowsEnv <| 
