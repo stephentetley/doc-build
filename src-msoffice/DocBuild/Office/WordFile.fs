@@ -36,7 +36,7 @@ module WordFile =
         member x.RunFinalizer () = 
             match x.WordApplication with
             | null -> () 
-            | word -> finalizeWord word
+            | app -> finalizeWord app
 
     type HasWordHandle =
         abstract WordAppHandle : WordHandle

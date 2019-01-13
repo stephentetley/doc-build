@@ -14,10 +14,39 @@ module ExcelFile =
     open Microsoft.Office.Interop
 
     open DocBuild.Base
-    open DocBuild.Office
+    open DocBuild.Base.DocMonad
     open DocBuild.Office.Internal
-    open DocBuild.Office.OfficeMonad
 
+    type ExcelHandle = 
+        val mutable private ExcelApplication : Excel.Application 
+
+        new () = 
+            { ExcelApplication = null }
+
+        /// Opens a handle as needed.
+        member x.ExcelExe : Excel.Application = 
+            match x.ExcelApplication with
+            | null -> 
+                let excel1 = initExcel ()
+                x.ExcelApplication <- excel1
+                excel1
+            | app -> app
+
+        member x.RunFinalizer () = 
+            match x.ExcelApplication with
+            | null -> () 
+            | app -> finalizeExcel app
+
+    type HasExcelHandle =
+        abstract ExcelAppHandle : ExcelHandle
+
+    let execExcel<'res when 'res :> HasExcelHandle> (mf: Excel.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        docMonad { 
+            let! userRes = askUserResources ()
+            let excelHandle = userRes.ExcelAppHandle
+            let! ans = mf excelHandle.ExcelExe
+            return ans
+        }
 
     // ************************************************************************
     // Export
@@ -34,18 +63,19 @@ module ExcelFile =
     let exportPdfAs (src:ExcelFile) 
                     (fitWidth:bool)
                     (quality:PrintQuality) 
-                    (outputFile:string) : OfficeMonad<PdfFile> = 
-        officeMonad { 
+                    (outputFile:string) : DocMonad<#HasExcelHandle,PdfFile> = 
+        docMonad { 
             let pdfQuality = excelExportQuality quality
-            let! _ = execExcel <| fun app -> 
-                        excelExportAsPdf app src.Path fitWidth pdfQuality outputFile
-            let! pdf = liftDocMonad (getPdfFile outputFile)
+            let! _ = 
+                execExcel <| fun app -> 
+                        liftResult (excelExportAsPdf app src.Path fitWidth pdfQuality outputFile)
+            let! pdf = getPdfFile outputFile
             return pdf
         }
 
     let exportPdf (src:ExcelFile) 
                   (fitWidth:bool) 
-                  (quality:PrintQuality) : OfficeMonad<PdfFile> = 
+                  (quality:PrintQuality) : DocMonad<#HasExcelHandle,PdfFile> = 
         let outputFile = Path.ChangeExtension(src.Path, "pdf")
         exportPdfAs src fitWidth quality outputFile
 
@@ -53,17 +83,17 @@ module ExcelFile =
     // ************************************************************************
     // Find and replace
 
-    let findReplaceAs (src:ExcelFile) (searches:SearchList) (outputFile:string) : OfficeMonad<ExcelFile> = 
-        officeMonad { 
+    let findReplaceAs (src:ExcelFile) (searches:SearchList) (outputFile:string) : DocMonad<#HasExcelHandle,ExcelFile> = 
+        docMonad { 
             let! ans = 
                 execExcel <| fun app -> 
-                        excelFindReplace app src.Path outputFile searches
-            let! xlsx = liftDocMonad (getExcelFile outputFile)
+                        liftResult (excelFindReplace app src.Path outputFile searches)
+            let! xlsx = getExcelFile outputFile
             return xlsx
         }
 
 
 
-    let findReplace (src:ExcelFile) (searches:SearchList)  : OfficeMonad<ExcelFile> = 
+    let findReplace (src:ExcelFile) (searches:SearchList)  : DocMonad<#HasExcelHandle,ExcelFile> = 
         findReplaceAs src searches src.NextTempName 
 

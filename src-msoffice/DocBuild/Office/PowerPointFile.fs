@@ -15,10 +15,40 @@ module PowerPointFile =
     open Microsoft.Office.Interop
 
     open DocBuild.Base
-
-    open DocBuild.Office
+    open DocBuild.Base.DocMonad
     open DocBuild.Office.Internal
-    open DocBuild.Office.OfficeMonad
+
+    type PowerPointHandle = 
+        val mutable private PowerPointApplication : PowerPoint.Application 
+
+        new () = 
+            { PowerPointApplication = null }
+
+        /// Opens a handle as needed.
+        member x.PowerPointExe : PowerPoint.Application = 
+            match x.PowerPointApplication with
+            | null -> 
+                let powerPoint1 = initPowerPoint ()
+                x.PowerPointApplication <- powerPoint1
+                powerPoint1
+            | app -> app
+
+        member x.RunFinalizer () = 
+            match x.PowerPointApplication with
+            | null -> () 
+            | app -> finalizePowerPoint app
+
+    type HasPowerPointHandle =
+        abstract PowerPointAppHandle : PowerPointHandle
+
+    let execPowerPoint<'res when 'res :> HasPowerPointHandle> 
+                      (mf: PowerPoint.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        docMonad { 
+            let! userRes = askUserResources ()
+            let powerPointHandle = userRes.PowerPointAppHandle
+            let! ans = mf powerPointHandle.PowerPointExe
+            return ans
+        }
 
     // ************************************************************************
     // Export
@@ -32,16 +62,16 @@ module PowerPointFile =
 
     let exportPdfAs (src:PowerPointFile) 
                     (quality:PrintQuality) 
-                    (outputFile:string) : OfficeMonad<PdfFile> = 
-        officeMonad { 
+                    (outputFile:string) : DocMonad<#HasPowerPointHandle,PdfFile> = 
+        docMonad { 
             let pdfQuality = powerpointExportQuality quality
             let! ans = 
                 execPowerPoint <| fun app -> 
-                    powerPointExportAsPdf app src.Path pdfQuality outputFile
-            let! pdf = liftDocMonad (getPdfFile outputFile)
+                    liftResult (powerPointExportAsPdf app src.Path pdfQuality outputFile)
+            let! pdf = getPdfFile outputFile
             return pdf
         }
 
-    let exportPdf (src:PowerPointFile) (quality:PrintQuality) : OfficeMonad<PdfFile> = 
+    let exportPdf (src:PowerPointFile) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfFile> = 
         let outputFile = Path.ChangeExtension(src.Path, "pdf")
         exportPdfAs src quality outputFile

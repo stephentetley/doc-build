@@ -43,8 +43,8 @@
 #load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\WordFile.fs"
-//#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
-//#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
+#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
+#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
 
 open DocBuild.Base
 open DocBuild.Document.Pdf

@@ -9,7 +9,6 @@
     <Compile Include="DocBuild\Office\Internal\WordPrim.fs" />
     <Compile Include="DocBuild\Office\Internal\ExcelPrim.fs" />
     <Compile Include="DocBuild\Office\Internal\PowerPointPrim.fs" />
-    <Compile Include="DocBuild\Office\OfficeMonad.fs" />
     <Compile Include="DocBuild\Office\WordFile.fs" />
     <Compile Include="DocBuild\Office\ExcelFile.fs" />
     <Compile Include="DocBuild\Office\PowerPointFile.fs" />
