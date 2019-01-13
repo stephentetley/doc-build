@@ -37,8 +37,11 @@ module WordFile =
             match x.WordApplication with
             | null -> () 
             | app -> finalizeWord app
+    
+        interface HasWordHandle with
+            member x.WordAppHandle = x
 
-    type HasWordHandle =
+    and HasWordHandle =
         abstract WordAppHandle : WordHandle
 
     let execWord<'res when 'res :> HasWordHandle> (mf: Word.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 

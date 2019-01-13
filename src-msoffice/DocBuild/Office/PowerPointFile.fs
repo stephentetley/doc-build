@@ -38,7 +38,10 @@ module PowerPointFile =
             | null -> () 
             | app -> finalizePowerPoint app
 
-    type HasPowerPointHandle =
+        interface HasPowerPointHandle with
+            member x.PowerPointAppHandle = x
+
+    and HasPowerPointHandle =
         abstract PowerPointAppHandle : PowerPointHandle
 
     let execPowerPoint<'res when 'res :> HasPowerPointHandle> 

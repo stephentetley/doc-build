@@ -51,6 +51,7 @@ open DocBuild.Document.Pdf
 open DocBuild.Base.DocMonad
 open DocBuild.Base.DocMonadOperators
 
+open DocBuild.Office
 
 let WindowsEnv : BuilderEnv = 
     let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
@@ -85,5 +86,13 @@ let demo02 () =
 
 
 
+let demo03 () = 
+    let userRes = new  WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv <| 
+        docMonad { 
+            let! w1 = askWorkingFile "sample.docx" >>= getWordFile 
+            let! p1 = WordFile.exportPdf w1 PqScreen
+            return p1
+        }
 
 

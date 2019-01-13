@@ -37,7 +37,10 @@ module ExcelFile =
             | null -> () 
             | app -> finalizeExcel app
 
-    type HasExcelHandle =
+        interface HasExcelHandle with
+            member x.ExcelAppHandle = x
+
+    and HasExcelHandle =
         abstract ExcelAppHandle : ExcelHandle
 
     let execExcel<'res when 'res :> HasExcelHandle> (mf: Excel.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
