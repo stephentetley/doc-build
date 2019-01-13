@@ -27,6 +27,9 @@ module DocMonad =
     /// This allows a level of extensibility on the applications
     /// that DocMonad can run (e.g. Office apps Word, Excel)
 
+    type ResourceFinalize =
+        abstract RunFinalizer : unit
+
     type DocMonad<'res,'a> = 
         DocMonad of ('res -> BuilderEnv -> BuildResult<'a>)
 
@@ -73,12 +76,27 @@ module DocMonad =
     // ****************************************************
     // Run
 
-    let runDocMonad (userResources:'res) 
+    /// This runs the finalizer on userResources
+    let runDocMonad (userResources:#ResourceFinalize) 
                     (config:BuilderEnv) 
-                    (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
-        apply1 ma userResources config
+                    (ma:DocMonad<#ResourceFinalize,'a>) : BuildResult<'a> = 
+        let ans = apply1 ma userResources config
+        userResources.RunFinalizer |> ignore
+        ans
 
-    let execDocMonad (userResources:'res) 
+    let runDocMonadNoCleanup (userResources:'res) 
+                             (config:BuilderEnv) 
+                             (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
+        apply1 ma userResources config
+        
+    let execDocMonad (userResources:#ResourceFinalize) 
+                     (config:BuilderEnv) 
+                     (ma:DocMonad<#ResourceFinalize,'a>) : 'a = 
+        match runDocMonad userResources config ma with
+        | Ok a -> a
+        | Error msg -> failwith msg
+
+    let execDocMonadNoCleanup (userResources:'res) 
                      (config:BuilderEnv) 
                      (ma:DocMonad<'res,'a>) : 'a = 
         match apply1 ma userResources config with

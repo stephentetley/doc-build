@@ -33,18 +33,21 @@ module WordFile =
                 word1
             | app -> app
 
-        member x.RunFinalizer () = 
-            match x.WordApplication with
-            | null -> () 
-            | app -> finalizeWord app
+        interface ResourceFinalize with
+            member x.RunFinalizer = 
+                match x.WordApplication with
+                | null -> () 
+                | app -> finalizeWord app
     
         interface HasWordHandle with
             member x.WordAppHandle = x
 
+    
+
     and HasWordHandle =
         abstract WordAppHandle : WordHandle
 
-    let execWord<'res when 'res :> HasWordHandle> (mf: Word.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let execWord (mf: Word.Application -> DocMonad<#HasWordHandle,'a>) : DocMonad<#HasWordHandle,'a> = 
         docMonad { 
             let! userRes = askUserResources ()
             let wordHandle = userRes.WordAppHandle

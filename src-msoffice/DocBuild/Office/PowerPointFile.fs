@@ -33,10 +33,11 @@ module PowerPointFile =
                 powerPoint1
             | app -> app
 
-        member x.RunFinalizer () = 
-            match x.PowerPointApplication with
-            | null -> () 
-            | app -> finalizePowerPoint app
+        interface ResourceFinalize with
+            member x.RunFinalizer = 
+                match x.PowerPointApplication with
+                | null -> () 
+                | app -> finalizePowerPoint app
 
         interface HasPowerPointHandle with
             member x.PowerPointAppHandle = x
@@ -44,8 +45,7 @@ module PowerPointFile =
     and HasPowerPointHandle =
         abstract PowerPointAppHandle : PowerPointHandle
 
-    let execPowerPoint<'res when 'res :> HasPowerPointHandle> 
-                      (mf: PowerPoint.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let execPowerPoint (mf: PowerPoint.Application -> DocMonad<#HasPowerPointHandle,'a>) : DocMonad<#HasPowerPointHandle,'a> = 
         docMonad { 
             let! userRes = askUserResources ()
             let powerPointHandle = userRes.PowerPointAppHandle

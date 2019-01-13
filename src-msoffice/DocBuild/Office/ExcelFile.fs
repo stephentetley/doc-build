@@ -32,10 +32,11 @@ module ExcelFile =
                 excel1
             | app -> app
 
-        member x.RunFinalizer () = 
-            match x.ExcelApplication with
-            | null -> () 
-            | app -> finalizeExcel app
+        interface ResourceFinalize with
+            member x.RunFinalizer = 
+                match x.ExcelApplication with
+                | null -> () 
+                | app -> finalizeExcel app
 
         interface HasExcelHandle with
             member x.ExcelAppHandle = x
@@ -43,7 +44,7 @@ module ExcelFile =
     and HasExcelHandle =
         abstract ExcelAppHandle : ExcelHandle
 
-    let execExcel<'res when 'res :> HasExcelHandle> (mf: Excel.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let execExcel (mf: Excel.Application -> DocMonad<#HasExcelHandle,'a>) : DocMonad<#HasExcelHandle,'a> = 
         docMonad { 
             let! userRes = askUserResources ()
             let excelHandle = userRes.ExcelAppHandle

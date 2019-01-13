@@ -64,7 +64,7 @@ let WindowsEnv : BuilderEnv =
 
 
 let demo01 () = 
-    runDocMonad () WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
             let! p1 = askWorkingFile "One.pdf" >>= getPdfFile
             let! p2 = askWorkingFile "Two.pdf" >>= getPdfFile
@@ -77,7 +77,7 @@ let demo01 () =
 
 
 let demo02 () = 
-    runDocMonad () WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
             let! p1 = askWorkingFile "Concat.pdf" >>= getPdfFile 
             let! pageCount = pdfPageCount p1
@@ -87,7 +87,7 @@ let demo02 () =
 
 
 let demo03 () = 
-    let userRes = new  WordFile.WordHandle()
+    let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
             let! w1 = askWorkingFile "sample.docx" >>= getWordFile 
