@@ -14,6 +14,12 @@ module Common =
         | OrientationLandscape
 
 
+
+    type PrintQuality = 
+        | PqScreen
+        | PqPrint
+
+
     type ErrMsg = string
 
     type BuildResult<'a> = Result<'a,ErrMsg>

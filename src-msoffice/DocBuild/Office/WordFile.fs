@@ -15,9 +15,39 @@ module WordFile =
 
 
     open DocBuild.Base
-    open DocBuild.Office
+    open DocBuild.Base.DocMonad
     open DocBuild.Office.Internal
-    open DocBuild.Office.OfficeMonad
+
+    type WordHandle = 
+        val mutable private WordApplication : Word.Application 
+
+        new () = 
+            { WordApplication = null }
+
+        /// Opens a handle as needed.
+        member x.WordExe : Word.Application = 
+            match x.WordApplication with
+            | null -> 
+                let word1 = initWord ()
+                x.WordApplication <- word1
+                word1
+            | app -> app
+
+        member x.RunFinalizer () = 
+            match x.WordApplication with
+            | null -> () 
+            | word -> finalizeWord word
+
+    type HasWordHandle =
+        abstract WordAppHandle : WordHandle
+
+    let execWord<'res when 'res :> HasWordHandle> (mf: Word.Application -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        docMonad { 
+            let! userRes = askUserResources ()
+            let wordHandle = userRes.WordAppHandle
+            let! ans = mf wordHandle.WordExe
+            return ans
+        }
 
     // ************************************************************************
     // Export
@@ -30,17 +60,17 @@ module WordFile =
 
     let exportPdfAs (src:WordFile) 
                     (quality:PrintQuality) 
-                    (outputFile:string) : OfficeMonad<PdfFile> = 
-        officeMonad { 
+                    (outputFile:string) : DocMonad<#HasWordHandle,PdfFile> = 
+        docMonad { 
             let pdfQuality = wordExportQuality quality
-            let! ans = 
+            let! (ans:unit) = 
                 execWord <| fun app -> 
-                    wordExportAsPdf app src.Path pdfQuality outputFile
-            let! pdf = liftDocMonad (getPdfFile outputFile)
+                    liftResult (wordExportAsPdf app src.Path pdfQuality outputFile)
+            let! pdf = getPdfFile outputFile
             return pdf
         }
 
-    let exportPdf (src:WordFile) (quality:PrintQuality) : OfficeMonad<PdfFile> = 
+    let exportPdf (src:WordFile) (quality:PrintQuality) : DocMonad<#HasWordHandle,PdfFile> = 
         let outputFile = Path.ChangeExtension(src.Path, "pdf")
         exportPdfAs src quality outputFile
 
@@ -49,16 +79,16 @@ module WordFile =
     // ************************************************************************
     // Find and replace
 
-    let findReplaceAs (src:WordFile) (searches:SearchList) (outputFile:string) : OfficeMonad<WordFile> = 
-        officeMonad { 
+    let findReplaceAs (src:WordFile) (searches:SearchList) (outputFile:string) : DocMonad<#HasWordHandle,WordFile> = 
+        docMonad { 
             let! ans = 
                 execWord <| fun app -> 
-                        wordFindReplace app src.Path outputFile searches
-            let! docx = liftDocMonad (getWordFile outputFile)
+                        liftResult (wordFindReplace app src.Path outputFile searches)
+            let! docx = getWordFile outputFile
             return docx
         }
 
 
 
-    let findReplace (src:WordFile) (searches:SearchList)  : OfficeMonad<WordFile> = 
+    let findReplace (src:WordFile) (searches:SearchList)  : DocMonad<#HasWordHandle,WordFile> = 
         findReplaceAs src searches src.NextTempName 

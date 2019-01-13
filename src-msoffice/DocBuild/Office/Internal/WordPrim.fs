@@ -24,9 +24,9 @@ module WordPrim =
     // Export to Pdf
 
     let wordExportAsPdf (app:Word.Application) 
-                    (inputFile:string) 
-                    (quality:Word.WdExportOptimizeFor)
-                    (outputFile:string) : Result<unit,ErrMsg> =
+                        (inputFile:string) 
+                        (quality:Word.WdExportOptimizeFor)
+                        (outputFile:string) : Result<unit,ErrMsg> =
         try 
             let doc:(Word.Document) = app.Documents.Open(FileName = refobj inputFile)
             doc.ExportAsFixedFormat ( OutputFileName = outputFile

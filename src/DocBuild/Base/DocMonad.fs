@@ -27,7 +27,7 @@ module DocMonad =
     /// This allows a level of extensibility on the applications
     /// that DocMonad can run (e.g. Office apps Word, Excel)
 
-    type DocMonad<'res,'a> when 'res : comparison = 
+    type DocMonad<'res,'a> = 
         DocMonad of ('res -> BuilderEnv -> BuildResult<'a>)
 
     let inline private apply1 (ma: DocMonad<'res,'a>) 

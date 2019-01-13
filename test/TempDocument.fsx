@@ -42,11 +42,9 @@
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
-#load "..\src-msoffice\DocBuild\Office\Common.fs"
-#load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
 #load "..\src-msoffice\DocBuild\Office\WordFile.fs"
-#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
-#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
+//#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
+//#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
 
 open DocBuild.Base
 open DocBuild.Document.Pdf
@@ -65,20 +63,20 @@ let WindowsEnv : BuilderEnv =
 
 
 let demo01 () = 
-    runDocMonad WindowsEnv <| 
+    runDocMonad () WindowsEnv <| 
         docMonad { 
             let! p1 = askWorkingFile "One.pdf" >>= getPdfFile
             let! p2 = askWorkingFile "Two.pdf" >>= getPdfFile
             let! p3 = askWorkingFile "Three.pdf" >>= getPdfFile
             let pdfs = [p1;p2;p3]
             let! outfile = askWorkingFile "Concat.pdf"
-            let! _ = ghostscriptConcat pdfs GsScreen outfile
+            let! _ = pdfConcat pdfs GsScreen outfile
             return ()
         }
 
 
 let demo02 () = 
-    runDocMonad WindowsEnv <| 
+    runDocMonad () WindowsEnv <| 
         docMonad { 
             let! p1 = askWorkingFile "Concat.pdf" >>= getPdfFile 
             let! pageCount = pdfPageCount p1
