@@ -42,11 +42,9 @@
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
-#load "..\src-msoffice\DocBuild\Office\Common.fs"
-#load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
-//#load "..\src-msoffice\DocBuild\Office\WordFile.fs"
-//#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
-//#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
+#load "..\src-msoffice\DocBuild\Office\WordFile.fs"
+#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
+#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
 
 open DocBuild.Base
 open DocBuild.Document.Pdf
@@ -119,10 +117,10 @@ let WindowsEnv : BuilderEnv =
       PandocReferenceDoc  = Some (cwd </> "custom-reference1.docx")
     }
 
-let noRes = ()
+
 
 let testCreateDir () =
-    runDocMonad noRes WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
             do! createWorkingSubDirectory @"TEMP_1\CHILD_A"
             return ()
@@ -134,7 +132,7 @@ let traverse01 () =
             do printfn "%i" i
             return "ans"
             }
-    runDocMonad noRes WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         mapMz operation [1;2;3;4]
 
 let traverse01a () =
@@ -145,7 +143,7 @@ let traverse01a () =
                 return "ans"
                 }
         else throwError "large"
-    runDocMonad noRes WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         mapMz operation [1;2;3;4]
 
 
@@ -155,7 +153,7 @@ let traverse02 () =
             do printfn "%i" i
             return i.ToString()
             }
-    runDocMonad noRes WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         mapM operation [1;2;3;4]
 
 let traverse02a () =
@@ -166,7 +164,7 @@ let traverse02a () =
                 return i.ToString()
                 }
         else throwError "large"
-    runDocMonad noRes WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         mapM operation [1;2;3;4]
 
 let traverse03 () =
@@ -175,7 +173,7 @@ let traverse03 () =
             do printfn "ix=%i val='%s'" i s
             return (i + int s)
             }
-    runDocMonad noRes WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         mapiM operation ["1";"2";"3";"4"]
 
 let traverse03a () =
@@ -186,7 +184,7 @@ let traverse03a () =
                 return (i + int s)
                 }
         else throwError "large"
-    runDocMonad noRes WindowsEnv <| 
+    runDocMonadNoCleanup () WindowsEnv <| 
         mapiM operation ["1";"2";"3";"4"]
 
 

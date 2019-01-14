@@ -43,63 +43,58 @@
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
-#load "..\src-msoffice\DocBuild\Office\Common.fs"
-#load "..\src-msoffice\DocBuild\Office\OfficeMonad.fs"
 #load "..\src-msoffice\DocBuild\Office\WordFile.fs"
 #load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
 #load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
 
+open DocBuild.Base
+open DocBuild.Base.DocMonad
+open DocBuild.Office
+
 #load "Coversheet.fs"
 
-// Use local modules to prevent nameclashes with Monads...
 
-module Config = 
 
-    open DocBuild.Base
-    open DocBuild.Base.DocMonad
+let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
+let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
 
-    let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
-    let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
-
-    let WindowsEnv : BuilderEnv = 
-        { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
-          GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-          PdftkExe = @"pdftk"
-          PandocExe = @"pandoc"
-          PandocReferenceDoc  = 
-            Some @"G:\work\Projects\events2\final-docs\input\include\custom-reference1.docx"
-        }
+let WindowsEnv : BuilderEnv = 
+    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
+      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      PandocReferenceDoc  = 
+        Some @"G:\work\Projects\events2\final-docs\input\include\custom-reference1.docx"
+    }
 
 
 //let coversheet (siteName:string) (saiNumber:string) : OfficeMonad<PdfFile> = 
 //    throwError "TODO"
 
 
-module Main = 
 
-    open DocBuild.Office.OfficeMonad
+let getWorkList () : string list = 
+    System.IO.DirectoryInfo(inputRoot).GetDirectories()
+        |> Array.map (fun di -> di.Name)
+        |> Array.toList
 
-    let getWorkList () : string list = 
-        System.IO.DirectoryInfo(Config.inputRoot).GetDirectories()
-            |> Array.map (fun di -> di.Name)
-            |> Array.toList
+let buildOne (sourceName:string) : DocMonad<'res,unit> = 
+    localSubDirectory sourceName <| 
+        docMonad {
+            return ()
+        }
 
-    let buildOne (sourceName:string) : OfficeMonad<unit> = 
-        // localSubDirectory sourceName <| 
-            officeMonad {
-                return ()
-            }
-
-    let buildAll () : OfficeMonad<unit> = 
-        let worklist = getWorkList ()
-        foriMz worklist 
-            <| fun ix name ->
-                    ignore <| printfn "Site %i: %s" (ix+1) name
-                    buildOne name
+let buildAll () : DocMonad<'res,unit> = 
+    let worklist = getWorkList ()
+    foriMz worklist 
+        <| fun ix name ->
+                ignore <| printfn "Site %i: %s" (ix+1) name
+                buildOne name
 
         
 
 
-    let demo01 () = 
-        runOfficeMonad Config.WindowsEnv 
-            <| buildAll ()
+let demo01 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| buildAll ()
