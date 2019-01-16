@@ -30,10 +30,10 @@ module FileIO =
     let createWorkingSubDirectory (subDirectory:string) : DocMonad<'res,unit> = 
         let create1 (path:string) : DocMonad<'res,unit> = 
             if Directory.Exists(path) then
-                breturn ()
+                dreturn ()
             else
                 Directory.CreateDirectory(path) |> ignore
-                breturn ()
+                dreturn ()
         docMonad {
             let! cwd = askWorkingDirectory ()
             let path = cwd </> subDirectory
@@ -67,6 +67,10 @@ module FileIO =
             throwError 
                 <| sprintf "copyToWorking: sourceFile not found '%s'" doc.Path
 
-
+    let localFile (fileName:string) : DocMonad<'res,string> = 
+        docMonad { 
+            let! cwd = askWorkingDirectory ()
+            return (cwd </> fileName)
+        }            
             
         

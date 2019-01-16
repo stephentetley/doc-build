@@ -49,14 +49,17 @@
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad
+open DocBuild.Document
 open DocBuild.Office
 
 #load "Coversheet.fs"
-
+open Coversheet
 
 
 let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
 let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
+
+type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
     { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
@@ -68,8 +71,22 @@ let WindowsEnv : BuilderEnv =
     }
 
 
-//let coversheet (siteName:string) (saiNumber:string) : OfficeMonad<PdfFile> = 
-//    throwError "TODO"
+let getSiteName (folderName:string) : string = 
+    folderName.Replace('_', '/')
+
+
+let getSaiNumber (siteName:string) : DocMonad<'res,string> = 
+    dreturn "SAI00001234"       // TEMP
+
+
+let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
+    docMonad { 
+        let logoPath = @"..\..\..\input" </> "include" </> "YW-logo.jpg"
+        let! markdownFile = coversheet saiNumber siteName logoPath "coversheet.md"
+        let! docx = Markdown.markdownToWord markdownFile
+        let! pdf = WordFile.exportPdf docx PqScreen
+        return pdf
+    }
 
 
 
@@ -78,13 +95,16 @@ let getWorkList () : string list =
         |> Array.map (fun di -> di.Name)
         |> Array.toList
 
-let buildOne (sourceName:string) : DocMonad<'res,unit> = 
+let buildOne (sourceName:string) : DocMonadWord<unit> = 
     localSubDirectory sourceName <| 
         docMonad {
+            let siteName = getSiteName sourceName
+            let! saiNumber = getSaiNumber siteName
+            let! cover =  coversheet siteName saiNumber
             return ()
         }
 
-let buildAll () : DocMonad<'res,unit> = 
+let buildAll () : DocMonadWord<unit> = 
     let worklist = getWorkList ()
     foriMz worklist 
         <| fun ix name ->

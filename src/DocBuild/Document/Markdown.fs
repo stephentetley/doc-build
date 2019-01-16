@@ -9,10 +9,22 @@ module Markdown =
 
     open System.IO
 
+    open MarkdownDoc
+
     open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Raw
-    open System
+    // open System
+
+
+    // ************************************************************************
+    // Save output from MarkdownDoc
+
+    /// Output a Markdown doc to file.
+    let saveMarkdown (markdown:Markdown) 
+                     (outputFile:string) : DocMonad<'res,MarkdownFile> = 
+        markdown.Save outputFile 
+        getMarkdownFile outputFile
 
     // ************************************************************************
     // Export

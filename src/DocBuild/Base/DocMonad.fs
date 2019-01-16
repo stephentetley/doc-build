@@ -38,7 +38,7 @@ module DocMonad =
                               (env: BuilderEnv) : BuildResult<'a>= 
         let (DocMonad f) = ma in f res env
 
-    let inline breturn (x:'a) : DocMonad<'res,'a> = 
+    let inline dreturn (x:'a) : DocMonad<'res,'a> = 
         DocMonad <| fun _ _ -> Ok x
 
     let inline private bindM (ma:DocMonad<'res,'a>) 
@@ -48,7 +48,7 @@ module DocMonad =
             | Error msg -> Error msg
             | Ok a -> apply1 (f a) res env
 
-    let inline bzero () : DocMonad<'res,'a> = 
+    let inline dzero () : DocMonad<'res,'a> = 
         DocMonad <| fun _ _ -> Error "bzero"
 
     /// "First success"
@@ -61,12 +61,12 @@ module DocMonad =
 
 
     let inline private  delayM (fn:unit -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        bindM (breturn ()) fn 
+        bindM (dreturn ()) fn 
 
     type DocMonadBuilder() = 
-        member self.Return x            = breturn x
+        member self.Return x            = dreturn x
         member self.Bind (p,f)          = bindM p f
-        member self.Zero ()             = bzero ()
+        member self.Zero ()             = dzero ()
         member self.Combine (ma,mb)     = combineM ma mb
         member self.Delay fn            = delayM fn
 
