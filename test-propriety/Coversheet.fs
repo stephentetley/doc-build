@@ -59,22 +59,51 @@ let contents (workItems:string list) : Markdown =
 let documentControl : Markdown = 
     h3 (text "Document Control")
 
+
+let columnSpecs : ColumnSpec list = 
+    [  { Width = 20; Alignment = Alignment.AlignLeft }
+    ;  { Width = 14; Alignment = Alignment.AlignLeft }
+    ;  { Width = 16; Alignment = Alignment.AlignLeft }
+    ;  { Width = 24; Alignment = Alignment.AlignLeft }
+    ]
+/// | 1.0 | S Tetley | 18/10/2018 | For EDMS |
+let controlTable (author:string) : Markdown = 
+
+    let nowstring = System.DateTime.Now.ToShortDateString()
+
+    let makeHeaderCell (s:string) : Markdown = 
+        text s |> doubleAsterisks |> tile
+
+    let makeCell (s:string) : Markdown = text s |> tile
+
+    let headers = 
+        List.map makeHeaderCell ["Revision"; "Prepared By"; "Date"; "Comments"]
+    let row1 = 
+        List.map makeCell ["1.0"; author; nowstring; "For EDMS"]
+    let row2 = [tile nbsp; tile empty; tile empty; tile empty]
+    gridTable columnSpecs [headers;row1;row2] true
+
+
 let makeDoc (saiNumber:string) 
             (siteName:string)
-            (logoPath:string) : Markdown = 
+            (logoPath:string)
+            (author:string) : Markdown = 
     concat [ logo logoPath
            ; nbsp2
            ; title1
            ; nbsp2
            ; title2 saiNumber siteName
+           ; documentControl 
+           ; controlTable author
            ]
 
 let coversheet (saiNumber:string) 
                (siteName:string) 
                (logoPath:string)
+               (author:string)  
                (outputFile:string) : DocMonad<'res,MarkdownFile> = 
     docMonad {         
-        let markdown = makeDoc saiNumber siteName logoPath
+        let markdown = makeDoc saiNumber siteName logoPath author
         let! fullPath = localFile outputFile
         let! markdownFile = Markdown.saveMarkdown markdown fullPath
         return markdownFile

@@ -82,7 +82,7 @@ let getSaiNumber (siteName:string) : DocMonad<'res,string> =
 let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
     docMonad { 
         let logoPath = @"..\..\..\input" </> "include" </> "YW-logo.jpg"
-        let! markdownFile = coversheet saiNumber siteName logoPath "coversheet.md"
+        let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
         let! docx = Markdown.markdownToWord markdownFile
         let! pdf = WordFile.exportPdf docx PqScreen
         return pdf
