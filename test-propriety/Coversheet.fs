@@ -93,6 +93,7 @@ let makeDoc (saiNumber:string)
            ; title1
            ; nbsp2
            ; title2 saiNumber siteName
+           ; nbsp2
            ; documentControl 
            ; controlTable author
            ]
