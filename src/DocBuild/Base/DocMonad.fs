@@ -15,10 +15,10 @@ module DocMonad =
 
     type BuilderEnv = 
         { WorkingDirectory: string
+          IncludeDirectory: string
           GhostscriptExe: string
           PdftkExe: string 
           PandocExe: string
-          PandocReferenceDoc: string option
         }
 
 

@@ -17,6 +17,8 @@ module FileIO =
     let askWorkingDirectory () : DocMonad<'res,string> = 
         asks (fun env -> env.WorkingDirectory)
     
+    let askIncludeDirectory () : DocMonad<'res,string> = 
+        asks (fun env -> env.IncludeDirectory)
 
     /// Return the full path of a filename local to the working directory.
     /// Does not validate if the file exists
@@ -26,6 +28,16 @@ module FileIO =
             let path = cwd </> fileName
             return path
         }
+
+    /// Return the full path of a filename local to the include directory.
+    /// Does not validate if the file exists
+    let askIncludeFile (fileName:string) : DocMonad<'res,string> = 
+        docMonad { 
+            let! cwd = askIncludeDirectory ()
+            let path = cwd </> fileName
+            return path
+        }
+    
 
     let createWorkingSubDirectory (subDirectory:string) : DocMonad<'res,unit> = 
         let create1 (path:string) : DocMonad<'res,unit> = 

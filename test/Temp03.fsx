@@ -18,13 +18,12 @@ open DocBuild.Base.DocMonadOperators
 
 
 let WindowsEnv : BuilderEnv = 
-    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-    { WorkingDirectory = cwd
+    let dataDir = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
+    { WorkingDirectory = dataDir
+      IncludeDirectory = dataDir </> "include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc"
-      PandocReferenceDoc  = Some (cwd </> "custom-reference1.docx")
-    }
+      PandocExe = @"pandoc" }
 
 
 let test01 () = 

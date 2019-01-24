@@ -29,21 +29,23 @@ module Markdown =
     // ************************************************************************
     // Export
 
-    let markdownToWordAs (src:MarkdownFile) 
+    let markdownToWordAs (src:MarkdownFile)
+                         (customStyles:WordFile option)
                          (outputFile:string) : DocMonad<'res,WordFile> =
         docMonad { 
-            let! styles = asks (fun env -> env.PandocReferenceDoc)
+            let styles = customStyles |> Option.map (fun doc -> doc.Path) 
             let command = 
-                PandocPrim.outputDocxCommand styles  src.Path outputFile
+                PandocPrim.outputDocxCommand styles src.Path outputFile
             let! _ = execPandoc command
             let! docx = getWordFile outputFile
             return docx
          }
 
 
-    let markdownToWord (src:MarkdownFile) : DocMonad<'res,WordFile> =
+    let markdownToWord (src:MarkdownFile) 
+                       (customStyles:WordFile option) : DocMonad<'res,WordFile> =
         let outputFile = Path.ChangeExtension(src.Path, "docx")
-        markdownToWordAs src outputFile
+        markdownToWordAs src customStyles outputFile
 
 
 

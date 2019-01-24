@@ -50,6 +50,7 @@
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad
+open DocBuild.Base.DocMonadOperators
 open DocBuild.Document
 open DocBuild.Office
 
@@ -64,12 +65,10 @@ type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
     { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
+      IncludeDirectory = @"G:\work\Projects\events2\final-docs\input\include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc"
-      PandocReferenceDoc  = 
-        Some @"G:\work\Projects\events2\final-docs\input\include\custom-reference1.docx"
-    }
+      PandocExe = @"pandoc" }
 
 
 let getSiteName (folderName:string) : string = 
@@ -82,9 +81,11 @@ let getSaiNumber (siteName:string) : DocMonad<'res,string> =
 
 let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
     docMonad { 
-        let logoPath = @"..\..\..\input" </> "include" </> "YW-logo.jpg"
+        let! logoPath = askIncludeFile "YW-logo.jpg"
+        let! stylesPath = askIncludeFile "custom-reference1.docx"
+        let! (styles:WordFile option) = getWordFile stylesPath |>> Some
         let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
-        let! docx = Markdown.markdownToWord markdownFile
+        let! docx = Markdown.markdownToWord markdownFile styles
         let! pdf = WordFile.exportPdf docx PqScreen
         return pdf
     }
