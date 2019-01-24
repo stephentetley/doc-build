@@ -27,6 +27,7 @@
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\DocMonadOperators.fs"
 #load "..\src\DocBuild\Base\Document.fs"
+#load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
 #load "..\src\DocBuild\Base\FileIO.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
@@ -69,7 +70,7 @@ let demo01 () =
             let! p1 = askWorkingFile "One.pdf" >>= getPdfFile
             let! p2 = askWorkingFile "Two.pdf" >>= getPdfFile
             let! p3 = askWorkingFile "Three.pdf" >>= getPdfFile
-            let pdfs = [p1;p2;p3]
+            let! pdfs = makePdfCollection [p1;p2;p3]
             let! outfile = askWorkingFile "Concat.pdf"
             let! _ = pdfConcat pdfs GsScreen outfile
             return ()

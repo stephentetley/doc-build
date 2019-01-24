@@ -2,13 +2,15 @@
 // License: BSD 3 Clause
 
 
+/// Generally use Collection.* prefix with this module
+
 namespace DocBuild.Base
 
-[<AutoOpen>]
+
 module Collection = 
 
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
+
 
     /// A Collection is a so called JoinList (unbalanced binary tree)
     /// of documents. It allows efficient addition to the right (snocing)
@@ -141,18 +143,21 @@ module Collection =
                     cont (ViewR(concat t spineR, a)))
         work source id
 
+[<AutoOpen>]
+module TypedCollection = 
 
+    open DocBuild.Base.DocMonad
 
-    type PdfCollection = Collection<PdfPhantom>
+    type PdfCollection = Collection.Collection<PdfPhantom>
 
 
     /// All files must have .pdf extension
-    let makePdfCollection (pdfs:PdfFile list) : DocMonad<'res,PdfCollection> = 
-        fromList pdfs |> dreturn
+    let fromPdfList (pdfs:PdfFile list) : DocMonad<'res,PdfCollection> = 
+        Collection.fromList pdfs |> dreturn
 
 
-    type JpegCollection = Collection<JpegPhantom>
+    type JpegCollection = Collection.Collection<JpegPhantom>
 
     /// All files must have .pdf extension
-    let makeJpegCollection (jpegs:JpegFile list) : DocMonad<'res,JpegCollection> = 
-        fromList jpegs |> dreturn
+    let fromJpegList (jpegs:JpegFile list) : DocMonad<'res,JpegCollection> = 
+        Collection.fromList jpegs |> dreturn

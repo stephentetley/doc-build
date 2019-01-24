@@ -43,15 +43,15 @@ module Pdf =
 
 
 
-    let private ghostscriptConcat (inputFiles:PdfFile list)
+    let private ghostscriptConcat (inputFiles:PdfCollection)
                                   (quality:GsQuality)
                                   (outputFile:string) : DocMonad<'res,string> = 
-        let inputs = inputFiles |> List.map (fun d -> d.Path)
+        let inputs = inputFiles |> Collection.toList |> List.map (fun d -> d.Path)
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputFile inputs
         execGhostscript cmd
 
 
-    let pdfConcat (inputFiles:PdfFile list)
+    let pdfConcat (inputFiles:PdfCollection)
                   (quality:GsQuality)
                   (outputFile:string) : DocMonad<'res,PdfFile> = 
         docMonad { 

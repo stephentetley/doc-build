@@ -32,7 +32,7 @@ let test01 () =
     let script = 
         docMonad { 
             let! docs = 
-                makePdfCollection =<< mapM (askWorkingFile >=> getPdfFile) sources
+                Collection.fromList <&&> mapM (askWorkingFile >=> getPdfFile) sources
             return docs
             }
     runDocMonadNoCleanup () WindowsEnv script
@@ -40,15 +40,15 @@ let test01 () =
     
 let test02 () = 
     test01 () 
-        |> Result.map toList
+        |> Result.map Collection.toList
 
 let test03l () = 
-    test01 () |> Result.map viewl
+    test01 () |> Result.map Collection.viewl
 
 let test03r () = 
     let final ans = 
         match ans with
-        | ViewR(col,one) -> printfn "col: %O" col; printfn "doc: %O" one
-        | EmptyR -> printfn "EmptyR"
-    test01 () |> Result.map (viewr >> final)
+        | Collection.ViewR(col,one) -> printfn "col: %O" col; printfn "doc: %O" one
+        | Collection.EmptyR -> printfn "EmptyR"
+    test01 () |> Result.map (Collection.viewr >> final)
 
