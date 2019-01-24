@@ -8,7 +8,7 @@ namespace DocBuild.Base
 module Collection = 
 
     open DocBuild.Base
-
+    open DocBuild.Base.DocMonad
 
     /// A Collection is a so called JoinList (unbalanced binary tree)
     /// of documents. It allows efficient addition to the right (snocing)
@@ -59,16 +59,7 @@ module Collection =
                 cont v2))
         work source initial (fun a -> a)      
 
-    // ************************************************************************
-    // Conversion
 
-    /// Convert a Collection to a regular list.
-    let toList (source:Collection<'a>) : Document<'a> list = 
-        joinfoldr (fun x xs -> x :: xs) [] source
-
-    /// Build a Collection from a regular list.
-    let fromList (source:Document<'a> list) : Collection<'a> = 
-        List.fold (fun ac e -> Join(ac, One(e))) Empty source
 
     
     // ************************************************************************
@@ -84,17 +75,33 @@ module Collection =
     /// Concat.
     let concat (col1:Collection<'a>) 
                (col2:Collection<'a>) : Collection<'a> =
-        Join (col1,col2)
+        match col1, col2 with
+        | Empty, y -> y
+        | x, Empty -> x
+        | x, y -> Join (x,y)
 
     /// Add a Document to the left.
     let cons (item:Document<'a>) (col:Collection<'a>) : Collection<'a> = 
-        Join(One(item), col)
+        match col with
+        | Empty -> One(item)
+        | _ -> Join(One(item), col)
 
     /// Add a Document to the right.
     let snoc (col:Collection<'a>) (item:Document<'a>) : Collection<'a> = 
-        Join(col, One(item))
+        match col with
+        | Empty -> One(item)
+        | _ -> Join(col, One(item))
         
+    // ************************************************************************
+    // Conversion
 
+    /// Convert a Collection to a regular list.
+    let toList (source:Collection<'a>) : Document<'a> list = 
+        joinfoldr (fun x xs -> x :: xs) [] source
+
+    /// Build a Collection from a regular list.
+    let fromList (source:Document<'a> list) : Collection<'a> = 
+        List.fold snoc Empty source
 
     // ************************************************************************
     // Views
@@ -105,7 +112,7 @@ module Collection =
     /// be traversed down the left spine to find the leftmost node.
     let viewl (source:Collection<'a>) : ViewL<'a> = 
         let rec work (src:Collection<'a>) (cont:ViewL<'a> -> ViewL<'a>) : ViewL<'a>= 
-            match source with
+            match src with
             | Empty -> cont EmptyL
             | One(a) -> cont (ViewL(a,Empty))
             | Join(t,u) -> 
@@ -113,7 +120,7 @@ module Collection =
                 match v1 with 
                 | EmptyL -> work u id
                 | ViewL(a,spineL) ->
-                    cont (ViewL(a, Join(spineL,u))))
+                    cont (ViewL(a, concat spineL u)))
         work source id
 
 
@@ -123,7 +130,7 @@ module Collection =
     /// be traversed down the right spine to find the rightmost node.
     let viewr (source:Collection<'a>) : ViewR<'a> = 
         let rec work (src:Collection<'a>) (cont:ViewR<'a> -> ViewR<'a>) : ViewR<'a>= 
-            match source with
+            match src with
             | Empty -> cont EmptyR
             | One(a) -> cont (ViewR(Empty,a))
             | Join(t,u) -> 
@@ -131,11 +138,21 @@ module Collection =
                 match v1 with 
                 | EmptyR -> work t id
                 | ViewR(spineR, a) ->
-                    cont (ViewR(Join(t,spineR), a)))
+                    cont (ViewR(concat t spineR, a)))
         work source id
 
 
 
     type PdfCollection = Collection<PdfPhantom>
 
+
+    /// All files must have .pdf extension
+    let makePdfCollection (pdfs:PdfFile list) : DocMonad<'res,PdfCollection> = 
+        fromList pdfs |> dreturn
+
+
     type JpegCollection = Collection<JpegPhantom>
+
+    /// All files must have .pdf extension
+    let makeJpegCollection (jpegs:JpegFile list) : DocMonad<'res,JpegCollection> = 
+        fromList jpegs |> dreturn

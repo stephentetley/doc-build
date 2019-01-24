@@ -44,13 +44,13 @@ module Document =
 
 
     // ************************************************************************
-    // Base Document type (to be wrapped)
+    // Base Document type 
     
-    // TODO - maybe a Phantom type would be better then we aren't 
-    // duplicating as much code.
+    // We use a Phantom type parameter so we aren't duplicating 
+    // API accessor wrappers for each Doc type.
 
 
-    
+    /// TODO should have name...
     type Document<'a> = 
         | Document of FilePath 
 

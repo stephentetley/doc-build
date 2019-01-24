@@ -27,6 +27,7 @@
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\DocMonadOperators.fs"
 #load "..\src\DocBuild\Base\Document.fs"
+#load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
 #load "..\src\DocBuild\Base\FileIO.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
