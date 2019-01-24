@@ -14,7 +14,8 @@ module FakeLike =
 
     /// Uses glob pattern - the only wild cards are '?' and '*'
     let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
-        DirectoryInfo(sourceDirectory).GetFiles(searchPattern = pattern) 
+        let opt : SearchOption = SearchOption.TopDirectoryOnly
+        DirectoryInfo(sourceDirectory).GetFiles(searchPattern = pattern, searchOption = opt) 
             |> Array.map (fun (info:FileInfo)  -> info.FullName)
             |> Array.toList
 

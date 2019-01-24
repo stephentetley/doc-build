@@ -91,10 +91,14 @@ let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> =
         return pdf
     }
 
-//let survey (sourceName:string) : DocMonadWord<PdfFile> = 
-//    docMonad {
-    
-//    }
+
+// May have multiple surveys...
+let surveys () : DocMonadWord<PdfFile list> = 
+    docMonad {
+        let! inputs = getSourceFilesMatching "*Survey.doc*"
+        let! pdfs = forM inputs (fun file -> getWordFile file >>= fun docx -> WordFile.exportPdf docx PqScreen)
+        return pdfs
+    }
 
 
 
@@ -129,3 +133,10 @@ let demo01 () =
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| buildAll ()
+
+
+let demo02 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| childSourceDirectory @"AISLABY_CSO\1.Survey" (surveys ())
+            

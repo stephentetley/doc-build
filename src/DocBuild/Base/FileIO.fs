@@ -10,8 +10,10 @@ module FileIO =
     open System.IO
     open System
 
-    open DocBuild.Base.DocMonad
     open DocBuild.Base
+    open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
+
 
     /// Note if the second path is prefixed by '\\'
     /// "directory" </> "/file.ext" == "/file.ext"
@@ -110,5 +112,12 @@ module FileIO =
             let! cwd = askWorkingDirectory ()
             return (cwd </> fileName)
         }            
+
+    // ************************************************************************
+    // Source files
             
-        
+    /// Search file matching files in the SourceDirectory.
+    /// Uses glob pattern - the only wild cards are '?' and '*'
+    let getSourceFilesMatching (pattern:string) : DocMonad<'res, string list> =
+        askSourceDirectory () |>> (fun src -> FakeLike.getFilesMatching src pattern)
+            
