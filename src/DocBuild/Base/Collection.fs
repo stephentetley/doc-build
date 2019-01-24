@@ -21,29 +21,29 @@ module Collection =
             | One of Document<'a>
             | Join of Collection<'a> * Collection<'a>
         
-        static member (<<&) (item:Document<'a>, col:Collection<'a>) = 
+        static member ( <<& ) (item:Document<'a>, col:Collection<'a>) = 
             match col with
             | Empty -> One item
             | _  -> Join (One(item), col)
 
-        static member (<<&) (item:Document<'a> option, col:Collection<'a>) = 
+        static member ( <<& ) (item:Document<'a> option, col:Collection<'a>) = 
             match item, col with
             | None, _ -> col
             | Some x, Empty -> One (x)
             | Some x, _ -> Join (One(x), col)
 
-        static member (&>>) (col:Collection<'a>, item:Document<'a>) = 
+        static member ( &>> ) (col:Collection<'a>, item:Document<'a>) = 
             match col with
             | Empty -> One item
             | _  -> Join (col, One(item))
         
-        static member (&>>) (col:Collection<'a>, item:Document<'a> option) = 
+        static member ( &>> ) (col:Collection<'a>, item:Document<'a> option) = 
             match item, col with
             | None, _ -> col
             | Some x, Empty -> One (x)
             | Some x, _ -> Join (col, One(x))
 
-        static member (@@) (col1:Collection<'a>, col2:Collection<'a>) = 
+        static member ( @@ ) (col1:Collection<'a>, col2:Collection<'a>) = 
             match col1, col2 with
             | Empty, y -> y
             | x, Empty -> x

@@ -52,18 +52,26 @@ module Document =
 
     /// TODO should have name...
     type Document<'a> = 
-        | Document of FilePath 
+        val DocPath : FilePath
+        val DocTitle : string
+
+        new (path:string) = 
+            { DocPath = path; DocTitle = "" }
+        
+        new (path:string, title:string) = 
+            { DocPath = path; DocTitle = title }
 
         member x.Path 
-            with get () : FilePath =
-                match x with | Document(p) -> p
+            with get () : FilePath = x.DocPath
+
+        member x.Title 
+            with get () : FilePath = x.DocTitle
 
         /// ActiveFile is a mutable working copy of the original file.
         /// The original file is untouched.
         member x.NextTempName
             with get() : FilePath = 
-                getNextTempName x.Path
-
+                getNextTempName x.DocPath
 
 
     let getDocument (fileExtensions:string list) 
@@ -73,7 +81,21 @@ module Document =
             return Document(path)
             }
 
-    
+    let getNamedDocument (fileExtensions:string list) 
+                         (filePath:string) 
+                         (title:string) : DocMonad<'res,Document<'a>> = 
+        docMonad { 
+            let! path = validateFile fileExtensions filePath
+            return Document(path,title)
+            }
+
+    /// Set the document Title - title is the name of the document
+    /// that might be used by some other process, e.g. to generate
+    /// a table of contents.
+    let setTitle (title:string) (doc:Document<'a>) : Document<'a> = 
+        new Document<'a>(path=doc.Path, title=title)
+
+
     // ************************************************************************
     // Pdf file
 

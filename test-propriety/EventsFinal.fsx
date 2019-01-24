@@ -86,7 +86,7 @@ let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> =
         let! (styles:WordFile option) = getWordFile stylesPath |>> Some
         let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
         let! docx = Markdown.markdownToWord markdownFile styles
-        let! pdf = WordFile.exportPdf docx PqScreen
+        let! pdf = WordFile.exportPdf docx PqScreen  |>> setTitle "Coversheet"
         return pdf
     }
 
