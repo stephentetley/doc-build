@@ -51,3 +51,14 @@ let test03r () =
         | Collection.EmptyR -> printfn "EmptyR"
     test01 () |> Result.map (Collection.viewr >> final)
 
+
+let test04 () = 
+    let sources = ["One.pdf"; "Two.pdf"]
+    let script = 
+        docMonad { 
+            let! docs = 
+                Collection.fromList <&&> mapM (askWorkingFile >=> getPdfFile) sources
+            let! last = askWorkingFile "Three.pdf" >>= getPdfFile
+            return (docs &>> last)
+            }
+    runDocMonadNoCleanup () WindowsEnv script |> Result.map Collection.toList
