@@ -65,6 +65,7 @@ type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
     { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
+      SourceDirectory =  @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
       IncludeDirectory = @"G:\work\Projects\events2\final-docs\input\include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"

@@ -57,10 +57,11 @@ open DocBuild.Office
 let WindowsEnv : BuilderEnv = 
     let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
     { WorkingDirectory = cwd
+      SourceDirectory = cwd
+      IncludeDirectory = cwd </> "include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"
-      PandocReferenceDoc  = Some (cwd </> "custom-reference1.docx")
     }
 
 
@@ -70,7 +71,7 @@ let demo01 () =
             let! p1 = askWorkingFile "One.pdf" >>= getPdfFile
             let! p2 = askWorkingFile "Two.pdf" >>= getPdfFile
             let! p3 = askWorkingFile "Three.pdf" >>= getPdfFile
-            let! pdfs = makePdfCollection [p1;p2;p3]
+            let pdfs = Collection.fromList [p1;p2;p3]
             let! outfile = askWorkingFile "Concat.pdf"
             let! _ = pdfConcat pdfs GsScreen outfile
             return ()

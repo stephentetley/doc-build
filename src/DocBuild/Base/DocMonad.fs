@@ -15,6 +15,7 @@ module DocMonad =
 
     type BuilderEnv = 
         { WorkingDirectory: string
+          SourceDirectory: string
           IncludeDirectory: string
           GhostscriptExe: string
           PdftkExe: string 

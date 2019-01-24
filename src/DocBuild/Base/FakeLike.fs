@@ -4,16 +4,13 @@
 
 namespace DocBuild.Base
 
-[<AutoOpen>]
+
 module FakeLike = 
 
     open System.IO
     open System
 
-    /// Note if the second path is prefixed by '\\'
-    /// "directory" </> "/file.ext" == "/file.ext"
-    let (</>) (path1:string) (path2:string) = 
-        Path.Combine(path1, path2)
+
 
     /// Uses glob pattern - the only wild cards are '?' and '*'
     let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
@@ -68,7 +65,7 @@ module FakeLike =
         if File.Exists(sourceFile) then 
             let src = FileInfo(sourceFile)
             if Directory.Exists(target) then 
-                let target1 = target </> src.Name
+                let target1 = Path.Combine(target,src.Name)
                 src.CopyTo(target1) |> ignore
             else
                 src.CopyTo(target) |> ignore

@@ -112,6 +112,7 @@ let numPages() =
 let WindowsEnv : BuilderEnv = 
     let dataDir = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
     { WorkingDirectory = dataDir
+      SourceDirectory = dataDir
       IncludeDirectory = dataDir </> "include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"

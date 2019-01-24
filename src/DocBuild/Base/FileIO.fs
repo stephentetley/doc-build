@@ -11,32 +11,47 @@ module FileIO =
     open System
 
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.FakeLike
+    open DocBuild.Base
+
+    /// Note if the second path is prefixed by '\\'
+    /// "directory" </> "/file.ext" == "/file.ext"
+    let (</>) (path1:string) (path2:string) = 
+        Path.Combine(path1, path2)
 
 
     let askWorkingDirectory () : DocMonad<'res,string> = 
         asks (fun env -> env.WorkingDirectory)
-    
+
+    let askSourceDirectory () : DocMonad<'res,string> = 
+        asks (fun env -> env.SourceDirectory)
+        
     let askIncludeDirectory () : DocMonad<'res,string> = 
         asks (fun env -> env.IncludeDirectory)
+
+    let private askFile (getTopLevel:unit -> DocMonad<'res,string>)
+                        (fileName:string) : DocMonad<'res,string> = 
+        docMonad { 
+            let! cwd = getTopLevel ()
+            let path = cwd </> fileName
+            return path
+        }
 
     /// Return the full path of a filename local to the working directory.
     /// Does not validate if the file exists
     let askWorkingFile (fileName:string) : DocMonad<'res,string> = 
-        docMonad { 
-            let! cwd = askWorkingDirectory ()
-            let path = cwd </> fileName
-            return path
-        }
+        askFile askWorkingDirectory fileName
 
-    /// Return the full path of a filename local to the include directory.
+
+    /// Return the full path of a filename local to the Source directory.
+    /// Does not validate if the file exists
+    let askSourceFile (fileName:string) : DocMonad<'res,string> = 
+        askFile askSourceDirectory fileName
+
+
+    /// Return the full path of a filename local to the Include directory.
     /// Does not validate if the file exists
     let askIncludeFile (fileName:string) : DocMonad<'res,string> = 
-        docMonad { 
-            let! cwd = askIncludeDirectory ()
-            let path = cwd </> fileName
-            return path
-        }
+        askFile askIncludeDirectory fileName
     
 
     let createWorkingSubDirectory (subDirectory:string) : DocMonad<'res,unit> = 
@@ -61,6 +76,17 @@ module FileIO =
             let path = cwd </> subDirectory
             do! createWorkingSubDirectory path
             let! ans = local (fun env -> {env with WorkingDirectory = path}) ma
+            return ans
+        }
+
+    /// Run an operation with the Source directory restricted to the
+    /// supplied sub-directory.
+    let childSourceDirectory (subDirectory:string) 
+                             (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        docMonad {
+            let! srcDir = askSourceDirectory ()
+            let path = srcDir </> subDirectory
+            let! ans = local (fun env -> {env with SourceDirectory = path}) ma
             return ans
         }
 
