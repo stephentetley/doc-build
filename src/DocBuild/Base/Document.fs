@@ -55,8 +55,9 @@ module Document =
         val DocPath : FilePath
         val DocTitle : string
 
+        /// Title will be the file name.
         new (path:string) = 
-            { DocPath = path; DocTitle = "" }
+            { DocPath = path; DocTitle = Path.GetFileName(path) }
         
         new (path:string, title:string) = 
             { DocPath = path; DocTitle = title }

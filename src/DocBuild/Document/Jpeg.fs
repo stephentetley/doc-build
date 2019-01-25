@@ -28,7 +28,7 @@ module Jpeg =
 
 
     let resizeForWordAs (outputFile:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        ImageMagickPrim.imAutoOrient src.Path outputFile |> ignore
+        ImageMagickPrim.imOptimizeForMsWord src.Path outputFile |> ignore
         getJpegFile outputFile
 
     /// Rezize for Word generating a new temp file

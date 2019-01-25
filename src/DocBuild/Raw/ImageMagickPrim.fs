@@ -48,7 +48,8 @@ module ImageMagickPrim =
         img.Write outfile
 
 
-
+    /// Note - this is for inclusion in a Word document.
+    /// It seems it is a good size for a Markdown doc too.
     let imOptimizeForMsWord (infile:string) (outfile:string) : unit = 
         let info = new MagickImageInfo(infile)
         use (img:MagickImage) = new MagickImage(infile)
