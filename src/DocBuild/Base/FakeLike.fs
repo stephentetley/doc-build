@@ -13,7 +13,7 @@ module FakeLike =
 
 
     /// Uses glob pattern - the only wild cards are '?' and '*'
-    let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
+    let private getFilesMatching (pattern:string)  (sourceDirectory:string) : string list =
         let opt : SearchOption = SearchOption.TopDirectoryOnly
         DirectoryInfo(sourceDirectory).GetFiles(searchPattern = pattern, searchOption = opt) 
             |> Array.map (fun (info:FileInfo)  -> info.FullName)
@@ -35,31 +35,31 @@ module FakeLike =
     /// Has one or more matches. 
     /// Note - pattern is a simple glob 
     /// (the only wild cards are '?' and '*'), not a regex.
-    let hasMatchingFiles (pattern:string) (dir:string) : bool = 
+    let hasFilesMatching (pattern:string) (dir:string) : bool = 
         let test = not << List.isEmpty
-        getFilesMatching dir pattern |> test
+        getFilesMatching pattern dir |> test
 
     /// Zero or more matches.
     /// No need for a try variant (empty list is no matches)
     /// Note - pattern is a glob, not a regex.
-    let findAllMatchingFiles (pattern:string) (dir:string) : string list = 
-        getFilesMatching dir pattern
+    let findAllFilesMatching (pattern:string) (dir:string) : string list = 
+        getFilesMatching pattern dir
 
     
     /// One or more matches. 
     /// Note - pattern is a glob, not a regex.
-    let tryFindSomeMatchingFiles (pattern:string) (dir:string) : option<string list> = 
-        getFilesMatching dir pattern |> tryOneOrMore
+    let tryFindSomeFilesMatching (pattern:string) (dir:string) : option<string list> = 
+        getFilesMatching pattern dir |> tryOneOrMore
 
     /// Exactly one matches.
     /// Note - pattern is a glob, not a regex.
-    let tryFindExactlyOneMatchingFile (pattern:string) (dir:string) : option<string> = 
-        getFilesMatching dir pattern |> tryExactlyOne
+    let tryFindExactlyOneFileMatching (pattern:string) (dir:string) : option<string> = 
+        getFilesMatching pattern dir |> tryExactlyOne
 
 
     let subdirectoriesWithMatches (pattern:string) (dir:string) : string list = 
         let dirs = System.IO.Directory.GetDirectories(dir) |> Array.toList
-        List.filter (hasMatchingFiles pattern) dirs
+        List.filter (hasFilesMatching pattern) dirs
 
 
     let copyFile (target:string) (sourceFile:string) : unit =

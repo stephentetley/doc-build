@@ -78,7 +78,7 @@ module PowerPointFile =
     /// Saves the file in the working directory.
     let exportPdf (src:PowerPointFile) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfFile> = 
         docMonad { 
-            let! local = Path.GetFileName(src.Path) |> changeToLocalFile
+            let! local = Path.GetFileName(src.Path) |> changeToWorkingFile
             let outputFile = Path.ChangeExtension(local, "pdf")
             let! pdf = exportPdfAs quality outputFile src
             return pdf

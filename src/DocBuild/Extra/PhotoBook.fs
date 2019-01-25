@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-namespace DocMake.Extra.PhotoBook
+namespace DocBuild.Extra
 
 module PhotoBook = 
 
@@ -11,9 +11,10 @@ module PhotoBook =
     open MarkdownDoc
     open MarkdownDoc.Pandoc
 
+    open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
-    open DocBuild.Base.FakeLike
+    // open DocBuild.Base.FakeLike
 
 
     open DocBuild.Document.Jpeg
@@ -54,21 +55,25 @@ module PhotoBook =
         | [] -> h1 (text title)
 
     
-    let internal getOptimizedJpegs 
-                    (imageFolder:string) : DocMonad<'res,JpegFile list> =
-        docMonad { 
-            let xs = findAllMatchingFiles "*.jpg" imageFolder
-            let ys = findAllMatchingFiles "*.jpeg" imageFolder
-            let! jpegs = mapM (getJpegFile >=> optimizeJpeg) (xs @ ys)
-            return jpegs
-        }
+    let internal getJpegs (sourceFolder:string)
+                          (tempFolder:string) : DocMonad<'res, JpegCollection> =
+        let proc1 () =  
+            docMonad { 
+                let! xs = findAllSourceFilesMatching "*.jpg"
+                let! ys = findAllSourceFilesMatching "*.jpeg"
+                let! col1 = mapM getJpegFile (xs @ ys) |>> Collection.fromList
+                let! jpegs = copyCollectionToWorking col1
+                return jpegs
+            }
+        localSubDirectory tempFolder (childSourceDirectory sourceFolder <| proc1 ()) 
 
     let makePhotoBook (title:string) 
-                      (imageFolder: string) 
+                      (sourceFolder:string) 
+                      (tempFolder:string)
                       (outputFile:string) : DocMonad<'res,MarkdownFile> =
         docMonad {
-            let! jpegs = getOptimizedJpegs imageFolder
-            let jpegPaths = jpegs |> List.map (fun jpg1 -> jpg1.Path)
+            let! jpegs = getJpegs sourceFolder tempFolder >>= Collection.mapM optimizeJpeg
+            let jpegPaths = Collection.toList jpegs |> List.map (fun jpg1 -> jpg1.Path)
             let mdDoc = photoBookMarkdown title jpegPaths
             do mdDoc.Save(outputFile)
             let! mdOutput = getMarkdownFile outputFile

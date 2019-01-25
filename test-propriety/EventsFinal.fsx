@@ -52,6 +52,7 @@ open DocBuild.Base
 open DocBuild.Base.DocMonad
 open DocBuild.Base.DocMonadOperators
 open DocBuild.Document
+open DocBuild.Extra.PhotoBook
 open DocBuild.Office
 
 #load "Coversheet.fs"
@@ -84,22 +85,33 @@ let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> =
     docMonad { 
         let! logoPath = askIncludeFile "YW-logo.jpg"
         let! stylesPath = askIncludeFile "custom-reference1.docx"
-        let! (styles:WordFile option) = getWordFile stylesPath |>> Some
+        let! (stylesheet:WordFile option) = getWordFile stylesPath |>> Some
         let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
-        let! docx = Markdown.markdownToWord styles markdownFile 
+        let! docx = Markdown.markdownToWord stylesheet markdownFile 
         let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle "Coversheet"
         return pdf
     }
 
 
+let photosDoc (title:string) = 
+    makePhotoBook title
+
 // May have multiple surveys...
 let surveys () : DocMonadWord<PdfFile list> = 
     docMonad {
-        let! inputs = getSourceFilesMatching "*Survey.doc*"
+        let! inputs = findAllSourceFilesMatching "*Survey.doc*"
         let! pdfs = forM inputs (fun file -> getWordFile file >>= WordFile.exportPdf PqScreen)
         return pdfs
     }
 
+/// May have multiple documents
+/// Get all doc files
+let siteWorks () : DocMonadWord<PdfFile list> = 
+    docMonad {
+        let! inputs = findAllSourceFilesMatching "*.doc*"
+        let! pdfs = forM inputs (fun file -> getWordFile file >>= WordFile.exportPdf PqScreen)
+        return pdfs
+    }
 
 
 
@@ -140,3 +152,8 @@ let demo02 () =
     runDocMonad userRes WindowsEnv 
         <| childSourceDirectory @"AISLABY_CSO\1.Survey" (surveys ())
             
+
+let demo03 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| childSourceDirectory @"ABERFORD ROAD_NO 1 CSO\2.Site_work" (siteWorks ())

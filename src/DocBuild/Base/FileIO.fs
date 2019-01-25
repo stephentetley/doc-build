@@ -107,7 +107,14 @@ module FileIO =
             throwError 
                 <| sprintf "copyToWorking: sourceFile not found '%s'" doc.Path
 
-    let changeToLocalFile (fileName:string) : DocMonad<'res,string> = 
+
+    let copyCollectionToWorking (col:Collection.Collection<'a>) : DocMonad<'res, Collection.Collection<'a>> = 
+        Collection.mapM copyToWorking col
+
+
+    /// Change to internal file path to point to the working directory.
+    /// This does not physically copy the file.
+    let changeToWorkingFile (fileName:string) : DocMonad<'res,string> = 
         docMonad { 
             let! cwd = askWorkingDirectory ()
             return (cwd </> fileName)
@@ -116,8 +123,15 @@ module FileIO =
     // ************************************************************************
     // Source files
             
+
+    /// Has one or more matches. 
+    /// Note - pattern is a simple glob 
+    /// (the only wild cards are '?' and '*'), not a regex.
+    let hasSourceFilesMatching (pattern:string) : DocMonad<'res, bool> = 
+        askSourceDirectory () |>>  FakeLike.hasFilesMatching pattern
+
     /// Search file matching files in the SourceDirectory.
     /// Uses glob pattern - the only wild cards are '?' and '*'
-    let getSourceFilesMatching (pattern:string) : DocMonad<'res, string list> =
-        askSourceDirectory () |>> (fun src -> FakeLike.getFilesMatching src pattern)
+    let findAllSourceFilesMatching (pattern:string) : DocMonad<'res, string list> =
+        askSourceDirectory () |>> FakeLike.findAllFilesMatching pattern
             

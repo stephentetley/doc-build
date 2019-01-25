@@ -10,6 +10,7 @@ namespace DocBuild.Base
 module Collection = 
 
     open DocBuild.Base
+    open DocBuild.Base.DocMonadOperators
 
 
     /// A Collection is a so called JoinList (unbalanced binary tree)
@@ -170,6 +171,16 @@ module Collection =
                 | ViewR(spineR, a) ->
                     cont (ViewR(concat t spineR, a)))
         work source id
+
+    let map (fn:Document<'a> -> Document<'b>) 
+             (collection:Collection<'a>) : Collection<'b> =
+        List.map fn (toList collection) |> fromList
+
+    let mapM (fn:Document<'a> -> DocMonad.DocMonad<'res, Document<'b>>) 
+             (collection:Collection<'a>) : DocMonad.DocMonad<'res, Collection<'b>> =
+        DocMonad.mapM fn (toList collection) |>> fromList
+        
+
 
 [<AutoOpen>]
 module TypedCollection = 

@@ -105,7 +105,7 @@ let coversheet (saiNumber:string)
                (outputFile:string) : DocMonad<'res,MarkdownFile> = 
     docMonad {         
         let markdown = makeDoc saiNumber siteName logoPath author
-        let! fullPath = changeToLocalFile outputFile
+        let! fullPath = changeToWorkingFile outputFile
         let! markdownFile = Markdown.saveMarkdown fullPath markdown
         return markdownFile
     } 
