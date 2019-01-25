@@ -62,6 +62,8 @@ open Coversheet
 let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
 let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
 
+let (docxCustomReference:string) = @"custom-reference1.docx"
+
 type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
@@ -80,6 +82,24 @@ let getSiteName (folderName:string) : string =
 let getSaiNumber (siteName:string) : DocMonad<'res,string> = 
     dreturn "SAI00001234"       // TEMP
 
+let commonSubFolder (subFolderName:string) 
+                    (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    localSubDirectory subFolderName <| childSourceDirectory subFolderName ma
+
+let renderMarkdownFile (stylesheetName:string option)
+                       (docTitle:string)
+                       (markdown:MarkdownFile) : DocMonadWord<PdfFile> =
+    docMonad {
+        let! (stylesheet:WordFile option) = 
+            match stylesheetName with
+            | None -> dreturn None
+            | Some name -> 
+                askIncludeFile name >>= getWordFile >>= (dreturn << Some)
+ 
+        let! docx = Markdown.markdownToWord stylesheet markdown
+        let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle docTitle
+        return pdf
+    }
 
 let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
     docMonad { 
@@ -92,9 +112,39 @@ let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> =
         return pdf
     }
 
+type PhotosDocType = 
+    | PhotosSurvey 
+    | PhotosSiteWork
 
-let photosDoc (title:string) = 
-    makePhotoBook title
+    member x.Name 
+        with get() : string = 
+            match x with
+            | PhotosSurvey -> "Survey"
+            | PhotosSiteWork -> "Site Work"
+
+    member x.SourceSubPath 
+        with get() : string = 
+            match x with
+            | PhotosSurvey -> "1.Survey" </> "PHOTOS"
+            | PhotosSiteWork -> "2.Site_Work" </> "PHOTOS"
+
+    member x.WorkingSubPath 
+        with get() : string = 
+            match x with
+            | PhotosSurvey -> "Survey_Photos"
+            | PhotosSiteWork -> "Site_Work_Photos"
+
+
+
+let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfFile> = 
+    docMonad { 
+        let title = sprintf "%s Photos" docType.Name
+        let outputFile = sprintf "%s Photos.md" docType.Name |> safeName
+        let! md = makePhotoBook title docType.SourceSubPath docType.WorkingSubPath outputFile
+        let! pdf = renderMarkdownFile (Some docxCustomReference) docType.WorkingSubPath md
+        return pdf
+    }
+
 
 // May have multiple surveys...
 let surveys () : DocMonadWord<PdfFile list> = 
@@ -103,6 +153,13 @@ let surveys () : DocMonadWord<PdfFile list> =
         let! pdfs = forM inputs (fun file -> getWordFile file >>= WordFile.exportPdf PqScreen)
         return pdfs
     }
+
+let surveyPhotos () : DocMonadWord<PdfFile> = 
+    photosDoc PhotosSurvey
+
+
+let siteWorksPhotos () : DocMonadWord<PdfFile> = 
+    photosDoc PhotosSiteWork
 
 /// May have multiple documents
 /// Get all doc files
@@ -157,3 +214,9 @@ let demo03 () =
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| childSourceDirectory @"ABERFORD ROAD_NO 1 CSO\2.Site_work" (siteWorks ())
+
+let demo04 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| commonSubFolder @"ABERFORD ROAD_NO 1 CSO" (surveyPhotos ())
+

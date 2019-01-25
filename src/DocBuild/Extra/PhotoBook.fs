@@ -55,8 +55,8 @@ module PhotoBook =
         | [] -> h1 (text title)
 
     
-    let internal getJpegs (sourceFolder:string)
-                          (tempFolder:string) : DocMonad<'res, JpegCollection> =
+    let internal copyJpegs (sourceSubFolder:string)
+                           (tempSubFolder:string) : DocMonad<'res, JpegCollection> =
         let proc1 () =  
             docMonad { 
                 let! xs = findAllSourceFilesMatching "*.jpg"
@@ -65,14 +65,15 @@ module PhotoBook =
                 let! jpegs = copyCollectionToWorking col1
                 return jpegs
             }
-        localSubDirectory tempFolder (childSourceDirectory sourceFolder <| proc1 ()) 
+        localSubDirectory tempSubFolder 
+            << childSourceDirectory sourceSubFolder <| proc1 ()
 
     let makePhotoBook (title:string) 
-                      (sourceFolder:string) 
-                      (tempFolder:string)
+                      (sourceSubFolder:string) 
+                      (tempSubFolder:string)
                       (outputFile:string) : DocMonad<'res,MarkdownFile> =
         docMonad {
-            let! jpegs = getJpegs sourceFolder tempFolder >>= Collection.mapM optimizeJpeg
+            let! jpegs = copyJpegs sourceSubFolder tempSubFolder >>= Collection.mapM optimizeJpeg
             let jpegPaths = Collection.toList jpegs |> List.map (fun jpg1 -> jpg1.Path)
             let mdDoc = photoBookMarkdown title jpegPaths
             do mdDoc.Save(outputFile)
