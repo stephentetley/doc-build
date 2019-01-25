@@ -15,12 +15,14 @@
 #r "office"
 
 // ImageMagick
-#I @"C:\Users\stephen\.nuget\packages\Magick.NET-Q8-AnyCPU\7.9.2\lib\netstandard20"
+#I @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\lib\netstandard20"
 #r @"Magick.NET-Q8-AnyCPU.dll"
+
 
 // MarkdownDoc (not on nuget.org)
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.0\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
+#I @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\runtimes\win-x64\native"
 
 
 #load "..\src\DocBuild\Base\Common.fs"
@@ -57,6 +59,18 @@ open DocBuild.Office
 
 #load "Coversheet.fs"
 open Coversheet
+open System
+
+// ImageMagick Dll loader.
+// A hack to get over Dll loading error due to the 
+// native dll `Magick.NET-Q8-x64.Native.dll`
+[<Literal>] 
+let NativeMagick = @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\runtimes\win-x64\native"
+Environment.SetEnvironmentVariable("PATH", 
+    Environment.GetEnvironmentVariable("PATH") + ";" + NativeMagick
+    )
+
+
 
 
 let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
@@ -214,6 +228,7 @@ let demo03 () =
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| childSourceDirectory @"ABERFORD ROAD_NO 1 CSO\2.Site_work" (siteWorks ())
+
 
 let demo04 () = 
     let userRes = new WordFile.WordHandle()

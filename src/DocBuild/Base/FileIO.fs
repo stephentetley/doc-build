@@ -92,20 +92,18 @@ module FileIO =
             return ans
         }
 
-    /// This is a bit too primitive, ideally it would work on Documents.
+    /// This will overwrite existing documents!
     let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
-        if File.Exists(doc.Path) then 
             docMonad { 
                 let justFile = Path.GetFileName(doc.Path)
                 let! cwd = askWorkingDirectory ()
                 let target = cwd </> justFile
+                do if File.Exists(target) then File.Delete(target) else ()
                 do File.Copy( sourceFileName = doc.Path
                             , destFileName = target )
                 return Document(target)
             }
-        else
-            throwError 
-                <| sprintf "copyToWorking: sourceFile not found '%s'" doc.Path
+  
 
 
     let copyCollectionToWorking (col:Collection.Collection<'a>) : DocMonad<'res, Collection.Collection<'a>> = 

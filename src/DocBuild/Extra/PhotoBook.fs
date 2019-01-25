@@ -18,7 +18,7 @@ module PhotoBook =
 
 
     open DocBuild.Document.Jpeg
-    open DocBuild.Base.Document
+    open DocBuild.Document
 
 
 
@@ -76,8 +76,9 @@ module PhotoBook =
             let! jpegs = copyJpegs sourceSubFolder tempSubFolder >>= Collection.mapM optimizeJpeg
             let jpegPaths = Collection.toList jpegs |> List.map (fun jpg1 -> jpg1.Path)
             let mdDoc = photoBookMarkdown title jpegPaths
-            do mdDoc.Save(outputFile)
-            let! mdOutput = getMarkdownFile outputFile
+            let! outputPath = askWorkingFile outputFile
+            let! _ = Markdown.saveMarkdown outputPath mdDoc
+            let! mdOutput = getMarkdownFile outputPath
             return mdOutput
         }
 
