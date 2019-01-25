@@ -64,9 +64,9 @@ module WordFile =
         | PqPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
 
 
-    let exportPdfAs (src:WordFile) 
-                    (quality:PrintQuality) 
-                    (outputFile:string) : DocMonad<#HasWordHandle,PdfFile> = 
+    let exportPdfAs (quality:PrintQuality) 
+                    (outputFile:string)
+                    (src:WordFile) : DocMonad<#HasWordHandle,PdfFile> = 
         docMonad { 
             let pdfQuality = wordExportQuality quality
             let! (ans:unit) = 
@@ -76,9 +76,15 @@ module WordFile =
             return pdf
         }
 
-    let exportPdf (src:WordFile) (quality:PrintQuality) : DocMonad<#HasWordHandle,PdfFile> = 
-        let outputFile = Path.ChangeExtension(src.Path, "pdf")
-        exportPdfAs src quality outputFile
+    /// Saves the file in the working directory.
+    let exportPdf (quality:PrintQuality)  
+                  (src:WordFile) : DocMonad<#HasWordHandle,PdfFile> = 
+        docMonad { 
+            let! local = Path.GetFileName(src.Path) |> changeToLocalFile
+            let outputFile = Path.ChangeExtension(local, "pdf")
+            let! pdf = exportPdfAs quality outputFile src
+            return pdf
+        }
 
 
 

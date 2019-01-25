@@ -86,8 +86,8 @@ let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> =
         let! stylesPath = askIncludeFile "custom-reference1.docx"
         let! (styles:WordFile option) = getWordFile stylesPath |>> Some
         let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
-        let! docx = Markdown.markdownToWord markdownFile styles
-        let! pdf = WordFile.exportPdf docx PqScreen  |>> setTitle "Coversheet"
+        let! docx = Markdown.markdownToWord styles markdownFile 
+        let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle "Coversheet"
         return pdf
     }
 
@@ -96,7 +96,7 @@ let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> =
 let surveys () : DocMonadWord<PdfFile list> = 
     docMonad {
         let! inputs = getSourceFilesMatching "*Survey.doc*"
-        let! pdfs = forM inputs (fun file -> getWordFile file >>= fun docx -> WordFile.exportPdf docx PqScreen)
+        let! pdfs = forM inputs (fun file -> getWordFile file >>= WordFile.exportPdf PqScreen)
         return pdfs
     }
 

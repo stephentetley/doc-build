@@ -64,10 +64,10 @@ module ExcelFile =
         | PqPrint -> Excel.XlFixedFormatQuality.xlQualityStandard
 
 
-    let exportPdfAs (src:ExcelFile) 
+    let exportPdfAs (quality:PrintQuality) 
                     (fitWidth:bool)
-                    (quality:PrintQuality) 
-                    (outputFile:string) : DocMonad<#HasExcelHandle,PdfFile> = 
+                    (outputFile:string)
+                    (src:ExcelFile) : DocMonad<#HasExcelHandle,PdfFile> = 
         docMonad { 
             let pdfQuality = excelExportQuality quality
             let! _ = 
@@ -77,11 +77,17 @@ module ExcelFile =
             return pdf
         }
 
-    let exportPdf (src:ExcelFile) 
+    /// Saves the file in the working directory.
+    let exportPdf (quality:PrintQuality)
                   (fitWidth:bool) 
-                  (quality:PrintQuality) : DocMonad<#HasExcelHandle,PdfFile> = 
-        let outputFile = Path.ChangeExtension(src.Path, "pdf")
-        exportPdfAs src fitWidth quality outputFile
+                  (src:ExcelFile) : DocMonad<#HasExcelHandle,PdfFile> = 
+        docMonad { 
+            let! local = Path.GetFileName(src.Path) |> changeToLocalFile
+            let outputFile = Path.ChangeExtension(local, "pdf")
+            let! pdf = exportPdfAs quality fitWidth outputFile src
+            return pdf
+        }
+        /// exportPdfAs src fitWidth quality outputFile
 
 
     // ************************************************************************

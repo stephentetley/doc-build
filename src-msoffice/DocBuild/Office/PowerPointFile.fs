@@ -63,9 +63,9 @@ module PowerPointFile =
 
 
 
-    let exportPdfAs (src:PowerPointFile) 
-                    (quality:PrintQuality) 
-                    (outputFile:string) : DocMonad<#HasPowerPointHandle,PdfFile> = 
+    let exportPdfAs (quality:PrintQuality) 
+                    (outputFile:string) 
+                    (src:PowerPointFile) : DocMonad<#HasPowerPointHandle,PdfFile> = 
         docMonad { 
             let pdfQuality = powerpointExportQuality quality
             let! ans = 
@@ -75,6 +75,11 @@ module PowerPointFile =
             return pdf
         }
 
+    /// Saves the file in the working directory.
     let exportPdf (src:PowerPointFile) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfFile> = 
-        let outputFile = Path.ChangeExtension(src.Path, "pdf")
-        exportPdfAs src quality outputFile
+        docMonad { 
+            let! local = Path.GetFileName(src.Path) |> changeToLocalFile
+            let outputFile = Path.ChangeExtension(local, "pdf")
+            let! pdf = exportPdfAs quality outputFile src
+            return pdf
+        }

@@ -73,7 +73,7 @@ let demo01 () =
             let! p3 = askWorkingFile "Three.pdf" >>= getPdfFile
             let pdfs = Collection.fromList [p1;p2;p3]
             let! outfile = askWorkingFile "Concat.pdf"
-            let! _ = pdfConcat pdfs GsScreen outfile
+            let! _ = pdfConcat GsScreen outfile pdfs
             return ()
         }
 
@@ -93,7 +93,7 @@ let demo03 () =
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
             let! w1 = askWorkingFile "sample.docx" >>= getWordFile 
-            let! p1 = WordFile.exportPdf w1 PqScreen
+            let! p1 = WordFile.exportPdf PqScreen w1 
             return p1
         }
 

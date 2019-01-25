@@ -43,19 +43,19 @@ module Pdf =
 
 
 
-    let private ghostscriptConcat (inputFiles:PdfCollection)
-                                  (quality:GsQuality)
-                                  (outputFile:string) : DocMonad<'res,string> = 
+    let private ghostscriptConcat (quality:GsQuality)
+                                  (outputFile:string) 
+                                  (inputFiles:PdfCollection) : DocMonad<'res,string> = 
         let inputs = inputFiles |> Collection.toList |> List.map (fun d -> d.Path)
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputFile inputs
         execGhostscript cmd
 
 
-    let pdfConcat (inputFiles:PdfCollection)
-                  (quality:GsQuality)
-                  (outputFile:string) : DocMonad<'res,PdfFile> = 
+    let pdfConcat (quality:GsQuality)
+                  (outputFile:string) 
+                  (inputFiles:PdfCollection): DocMonad<'res,PdfFile> = 
         docMonad { 
-            let! _ = ghostscriptConcat inputFiles quality outputFile
+            let! _ = ghostscriptConcat quality outputFile inputFiles
             let! pdf = getPdfFile outputFile
             return pdf
         }
@@ -98,9 +98,9 @@ module Pdf =
 
 
 
-    let extractRotationsAs (src:PdfFile) 
-                           (directives:RotationDirective list)
-                           (outputFile:string) : DocMonad<'res,PdfFile> = 
+    let extractRotationsAs (directives:RotationDirective list)
+                           (outputFile:string) 
+                           (src:PdfFile) : DocMonad<'res,PdfFile> = 
         docMonad { 
             let command = 
                 PdftkPrim.rotationCommand src.Path directives outputFile
@@ -110,9 +110,9 @@ module Pdf =
         }
 
     /// Rezize for Word generating a new temp file
-    let extractRotations (src:PdfFile) 
-                         (directives:RotationDirective list) : DocMonad<'res,PdfFile> = 
-        extractRotationsAs src directives src.NextTempName
+    let extractRotations (directives:RotationDirective list) 
+                         (src:PdfFile) : DocMonad<'res,PdfFile> = 
+        extractRotationsAs directives src.NextTempName src
 
 
 

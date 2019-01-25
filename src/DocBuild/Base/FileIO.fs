@@ -107,7 +107,7 @@ module FileIO =
             throwError 
                 <| sprintf "copyToWorking: sourceFile not found '%s'" doc.Path
 
-    let localFile (fileName:string) : DocMonad<'res,string> = 
+    let changeToLocalFile (fileName:string) : DocMonad<'res,string> = 
         docMonad { 
             let! cwd = askWorkingDirectory ()
             return (cwd </> fileName)

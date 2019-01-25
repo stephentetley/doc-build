@@ -14,24 +14,23 @@ module Markdown =
     open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Raw
-    // open System
 
 
     // ************************************************************************
     // Save output from MarkdownDoc
 
     /// Output a Markdown doc to file.
-    let saveMarkdown (markdown:Markdown) 
-                     (outputFile:string) : DocMonad<'res,MarkdownFile> = 
+    let saveMarkdown (outputFile:string) 
+                     (markdown:Markdown) : DocMonad<'res,MarkdownFile> = 
         markdown.Save outputFile 
         getMarkdownFile outputFile
 
     // ************************************************************************
     // Export
 
-    let markdownToWordAs (src:MarkdownFile)
-                         (customStyles:WordFile option)
-                         (outputFile:string) : DocMonad<'res,WordFile> =
+    let markdownToWordAs (customStyles:WordFile option)
+                         (outputFile:string) 
+                         (src:MarkdownFile) : DocMonad<'res,WordFile> =
         docMonad { 
             let styles = customStyles |> Option.map (fun doc -> doc.Path) 
             let command = 
@@ -42,19 +41,19 @@ module Markdown =
          }
 
 
-    let markdownToWord (src:MarkdownFile) 
-                       (customStyles:WordFile option) : DocMonad<'res,WordFile> =
+    let markdownToWord (customStyles:WordFile option) 
+                       (src:MarkdownFile) : DocMonad<'res,WordFile> =
         let outputFile = Path.ChangeExtension(src.Path, "docx")
-        markdownToWordAs src customStyles outputFile
+        markdownToWordAs customStyles outputFile src
 
 
 
     // ************************************************************************
     // Find and replace
 
-    let findReplaceAs (src:MarkdownFile) 
-                      (searches:SearchList) 
-                      (outputFile:string) : DocMonad<'res,MarkdownFile> = 
+    let findReplaceAs (searches:SearchList) 
+                      (outputFile:string) 
+                      (src:MarkdownFile) : DocMonad<'res,MarkdownFile> = 
         let original = File.ReadAllText(src.Path)
         let action (source:string) (searchText:string, replaceText:string) = 
            source.Replace(searchText, replaceText)
@@ -63,6 +62,6 @@ module Markdown =
         getMarkdownFile outputFile
 
 
-    let findReplace (src:MarkdownFile) 
-                    (searches:SearchList)  : DocMonad<'res,MarkdownFile> = 
-        findReplaceAs src searches src.NextTempName 
+    let findReplace (searches:SearchList)
+                    (src:MarkdownFile) : DocMonad<'res,MarkdownFile> = 
+        findReplaceAs searches src.NextTempName src
