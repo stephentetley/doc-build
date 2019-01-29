@@ -9,14 +9,15 @@ namespace DocBuild.Base
 
 module DocMonad = 
 
+    open System
 
     open DocBuild.Base
     open DocBuild.Base.Shell
 
     type BuilderEnv = 
-        { WorkingDirectory: string
-          SourceDirectory: string
-          IncludeDirectory: string
+        { WorkingDirectory: Uri
+          SourceDirectory: Uri
+          IncludeDirectory: Uri
           GhostscriptExe: string
           PdftkExe: string 
           PandocExe: string
@@ -389,7 +390,8 @@ module DocMonad =
     let private getOptions (findExe:BuilderEnv -> string) : DocMonad<'res,ProcessOptions> = 
         pipeM2 (asks findExe)
                 (asks (fun env -> env.WorkingDirectory))
-                (fun exe cwd -> { WorkingDirectory = cwd; ExecutableName = exe})
+                (fun exe cwd -> { WorkingDirectory = cwd.AbsolutePath
+                                ; ExecutableName = exe})
     
     let private shellExecute (findExe:BuilderEnv -> string)
                                  (command:CommandArgs) : DocMonad<'res,string> = 

@@ -21,38 +21,38 @@ module FileIO =
         Path.Combine(path1, path2)
 
 
-    let askWorkingDirectory () : DocMonad<'res,string> = 
+    let askWorkingDirectory () : DocMonad<'res,Uri> = 
         asks (fun env -> env.WorkingDirectory)
 
-    let askSourceDirectory () : DocMonad<'res,string> = 
+    let askSourceDirectory () : DocMonad<'res,Uri> = 
         asks (fun env -> env.SourceDirectory)
         
-    let askIncludeDirectory () : DocMonad<'res,string> = 
+    let askIncludeDirectory () : DocMonad<'res,Uri> = 
         asks (fun env -> env.IncludeDirectory)
 
-    let private askFile (getTopLevel:unit -> DocMonad<'res,string>)
-                        (fileName:string) : DocMonad<'res,string> = 
+    let private askFile (getTopLevel:unit -> DocMonad<'res,Uri>)
+                        (fileName:string) : DocMonad<'res,Uri> = 
         docMonad { 
             let! cwd = getTopLevel ()
-            let path = cwd </> fileName
-            return path
+            let path = cwd.AbsolutePath </> fileName
+            return new Uri(path)
         }
 
     /// Return the full path of a filename local to the working directory.
     /// Does not validate if the file exists
-    let askWorkingFile (fileName:string) : DocMonad<'res,string> = 
+    let askWorkingFile (fileName:string) : DocMonad<'res,Uri> = 
         askFile askWorkingDirectory fileName
 
 
     /// Return the full path of a filename local to the Source directory.
     /// Does not validate if the file exists
-    let askSourceFile (fileName:string) : DocMonad<'res,string> = 
+    let askSourceFile (fileName:string) : DocMonad<'res,Uri> = 
         askFile askSourceDirectory fileName
 
 
     /// Return the full path of a filename local to the Include directory.
     /// Does not validate if the file exists
-    let askIncludeFile (fileName:string) : DocMonad<'res,string> = 
+    let askIncludeFile (fileName:string) : DocMonad<'res,Uri> = 
         askFile askIncludeDirectory fileName
     
 
@@ -65,7 +65,7 @@ module FileIO =
                 dreturn ()
         docMonad {
             let! cwd = askWorkingDirectory ()
-            let path = cwd </> subDirectory
+            let path = cwd.AbsolutePath </> subDirectory
             do! attempt (create1 path)
         }
 
@@ -75,9 +75,9 @@ module FileIO =
                           (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
             let! cwd = askWorkingDirectory ()
-            let path = cwd </> subDirectory
+            let path = cwd.AbsolutePath </> subDirectory
             do! createWorkingSubDirectory path
-            let! ans = local (fun env -> {env with WorkingDirectory = path}) ma
+            let! ans = local (fun env -> {env with WorkingDirectory = new Uri(path)}) ma
             return ans
         }
 
@@ -87,8 +87,8 @@ module FileIO =
                              (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
             let! srcDir = askSourceDirectory ()
-            let path = srcDir </> subDirectory
-            let! ans = local (fun env -> {env with SourceDirectory = path}) ma
+            let path = srcDir.AbsolutePath </> subDirectory
+            let! ans = local (fun env -> {env with SourceDirectory = new Uri(path)}) ma
             return ans
         }
 
@@ -97,7 +97,7 @@ module FileIO =
             docMonad { 
                 let justFile = Path.GetFileName(doc.Path)
                 let! cwd = askWorkingDirectory ()
-                let target = cwd </> justFile
+                let target = cwd.AbsolutePath </> justFile
                 do if File.Exists(target) then File.Delete(target) else ()
                 do File.Copy( sourceFileName = doc.Path
                             , destFileName = target )
@@ -112,10 +112,11 @@ module FileIO =
 
     /// Change to internal file path to point to the working directory.
     /// This does not physically copy the file.
-    let changeToWorkingFile (fileName:string) : DocMonad<'res,string> = 
+    let changeToWorkingFile (fileName:string) : DocMonad<'res,Uri> = 
         docMonad { 
             let! cwd = askWorkingDirectory ()
-            return (cwd </> fileName)
+            let path = cwd.AbsolutePath </> fileName
+            return new Uri(path)
         }            
 
     // ************************************************************************
@@ -126,10 +127,12 @@ module FileIO =
     /// Note - pattern is a simple glob 
     /// (the only wild cards are '?' and '*'), not a regex.
     let hasSourceFilesMatching (pattern:string) : DocMonad<'res, bool> = 
-        askSourceDirectory () |>>  FakeLike.hasFilesMatching pattern
+        askSourceDirectory () |>>  fun uri -> 
+            FakeLike.hasFilesMatching pattern uri.AbsolutePath
 
     /// Search file matching files in the SourceDirectory.
     /// Uses glob pattern - the only wild cards are '?' and '*'
     let findAllSourceFilesMatching (pattern:string) : DocMonad<'res, string list> =
-        askSourceDirectory () |>> FakeLike.findAllFilesMatching pattern
+        askSourceDirectory () |>> fun uri -> 
+            FakeLike.findAllFilesMatching pattern uri.AbsolutePath
             

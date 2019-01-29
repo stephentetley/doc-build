@@ -79,8 +79,8 @@ module PhotoBook =
             let! jpegs = copyJpegs sourceSubFolder tempSubFolder >>= Collection.mapM optimizeJpeg
             let mdDoc = photoBookMarkdown title (Collection.toList jpegs)
             let! outputPath = askWorkingFile outputFile
-            let! _ = Markdown.saveMarkdown outputPath mdDoc
-            let! mdOutput = getMarkdownFile outputPath
+            let! _ = Markdown.saveMarkdown outputPath.AbsolutePath mdDoc
+            let! mdOutput = getMarkdownFile outputPath.AbsolutePath
             return mdOutput
         }
 

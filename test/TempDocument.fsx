@@ -22,6 +22,8 @@
 #r @"MarkdownDoc.dll"
 
 
+open System
+
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
@@ -56,9 +58,9 @@ open DocBuild.Office
 
 let WindowsEnv : BuilderEnv = 
     let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-    { WorkingDirectory = cwd
-      SourceDirectory = cwd
-      IncludeDirectory = cwd </> "include"
+    { WorkingDirectory = new Uri(cwd)
+      SourceDirectory = new Uri(cwd)
+      IncludeDirectory = new Uri(cwd </> "include")
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"
@@ -68,12 +70,12 @@ let WindowsEnv : BuilderEnv =
 let demo01 () = 
     runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
-            let! p1 = askWorkingFile "One.pdf" >>= getPdfFile
-            let! p2 = askWorkingFile "Two.pdf" >>= getPdfFile
-            let! p3 = askWorkingFile "Three.pdf" >>= getPdfFile
+            let! p1 = askWorkingFile "One.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
+            let! p2 = askWorkingFile "Two.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
+            let! p3 = askWorkingFile "Three.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
             let pdfs = Collection.fromList [p1;p2;p3]
             let! outfile = askWorkingFile "Concat.pdf"
-            let! _ = pdfConcat GsScreen outfile pdfs
+            let! _ = pdfConcat GsScreen outfile.AbsolutePath pdfs
             return ()
         }
 
@@ -81,7 +83,7 @@ let demo01 () =
 let demo02 () = 
     runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
-            let! p1 = askWorkingFile "Concat.pdf" >>= getPdfFile 
+            let! p1 = askWorkingFile "Concat.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
             let! pageCount = pdfPageCount p1
             return pageCount
         }
@@ -92,7 +94,7 @@ let demo03 () =
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
-            let! w1 = askWorkingFile "sample.docx" >>= getWordFile 
+            let! w1 = askWorkingFile "sample.docx" >>= fun uri -> getWordFile uri.AbsolutePath
             let! p1 = WordFile.exportPdf PqScreen w1 
             return p1
         }

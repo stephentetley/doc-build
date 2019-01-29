@@ -17,7 +17,7 @@ module Document =
     type FilePath = string
 
     /// The temp indicator is a suffix "Z0.." before the file extension
-    let internal getNextTempName (filePath:FilePath) : FilePath =
+    let getNextTempName (filePath:FilePath) : FilePath =
         let root = System.IO.Path.GetDirectoryName filePath
         let justFile = Path.GetFileNameWithoutExtension filePath
         let extension  = System.IO.Path.GetExtension filePath
@@ -29,8 +29,24 @@ module Document =
                 int <| result.Groups.Item(1).Value
             else 0
         let suffix = sprintf "Z%03d" (count+1)
-        let newfile = sprintf "%s.%s%s" justFile suffix extension
+        /// Pretend the suffix is an extension
+        let prefix = Path.GetFileNameWithoutExtension justFile
+        let newfile = sprintf "%s.%s%s" prefix suffix extension
         Path.Combine(root, newfile)
+
+    let removeTempSuffix (filePath:FilePath) : FilePath =
+        let root = System.IO.Path.GetDirectoryName filePath
+        let justFile = Path.GetFileNameWithoutExtension filePath
+        let extension  = System.IO.Path.GetExtension filePath
+
+        let patt = @"Z(\d+)$"
+        let result = Regex.Match(justFile, patt)
+        if result.Success then 
+            let prefix = Path.GetFileNameWithoutExtension justFile
+            let newfile = Path.ChangeExtension(prefix, extension)
+            Path.Combine(root, newfile)
+        else filePath
+        
 
     let validateFile (fileExtensions:string list) 
                      (path:string) : DocMonad<'res,string> = 
@@ -50,14 +66,14 @@ module Document =
     // API accessor wrappers for each Doc type.
 
 
-    /// TODO should have name...
+    /// TODO work with System.Uri
     type Document<'a> = 
         val DocPath : FilePath
         val DocTitle : string
 
-        /// Title will be the file name.
+        /// Title will be the file name, with any temp information removed.
         new (path:string) = 
-            { DocPath = path; DocTitle = Path.GetFileName(path) }
+            { DocPath = path; DocTitle = removeTempSuffix(path) }
         
         new (path:string, title:string) = 
             { DocPath = path; DocTitle = title }

@@ -81,9 +81,9 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
-    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
-      SourceDirectory =  @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
-      IncludeDirectory = @"G:\work\Projects\events2\final-docs\input\include"
+    { WorkingDirectory = new Uri(@"G:\work\Projects\events2\final-docs\output\CSO_SPS")
+      SourceDirectory =  new Uri(@"G:\work\Projects\events2\final-docs\input\CSO_SPS")
+      IncludeDirectory = new Uri(@"G:\work\Projects\events2\final-docs\input\include")
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" }
@@ -108,7 +108,7 @@ let renderMarkdownFile (stylesheetName:string option)
             match stylesheetName with
             | None -> dreturn None
             | Some name -> 
-                askIncludeFile name >>= getWordFile >>= (dreturn << Some)
+                askIncludeFile name >>= fun uri -> getWordFile uri.AbsolutePath >>= (dreturn << Some)
  
         let! docx = Markdown.markdownToWord stylesheet markdown
         let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle docTitle
@@ -119,8 +119,8 @@ let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> =
     docMonad { 
         let! logoPath = askIncludeFile "YW-logo.jpg"
         let! stylesPath = askIncludeFile "custom-reference1.docx"
-        let! (stylesheet:WordFile option) = getWordFile stylesPath |>> Some
-        let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
+        let! (stylesheet:WordFile option) = getWordFile stylesPath.AbsolutePath |>> Some
+        let! markdownFile = coversheet saiNumber siteName logoPath.AbsolutePath "S Tetley" "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
         let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle "Coversheet"
         return pdf
