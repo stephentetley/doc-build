@@ -72,7 +72,7 @@ module ExcelFile =
             let pdfQuality = excelExportQuality quality
             let! _ = 
                 execExcel <| fun app -> 
-                        liftResult (excelExportAsPdf app src.Path fitWidth pdfQuality outputFile)
+                        liftResult (excelExportAsPdf app src.Path.AbsolutePath fitWidth pdfQuality outputFile)
             let! pdf = getPdfFile outputFile
             return pdf
         }
@@ -82,7 +82,7 @@ module ExcelFile =
                   (fitWidth:bool) 
                   (src:ExcelFile) : DocMonad<#HasExcelHandle,PdfFile> = 
         docMonad { 
-            let! local = Path.GetFileName(src.Path) |> changeToWorkingFile
+            let! local = Path.GetFileName(src.Path.AbsolutePath) |> changeToWorkingFile
             let outputFile = Path.ChangeExtension(local.AbsolutePath, "pdf")
             let! pdf = exportPdfAs quality fitWidth outputFile src
             return pdf
@@ -97,7 +97,7 @@ module ExcelFile =
         docMonad { 
             let! ans = 
                 execExcel <| fun app -> 
-                        liftResult (excelFindReplace app src.Path outputFile searches)
+                        liftResult (excelFindReplace app src.Path.AbsolutePath outputFile searches)
             let! xlsx = getExcelFile outputFile
             return xlsx
         }
@@ -105,5 +105,5 @@ module ExcelFile =
 
 
     let findReplace (src:ExcelFile) (searches:SearchList)  : DocMonad<#HasExcelHandle,ExcelFile> = 
-        findReplaceAs src searches src.NextTempName 
+        findReplaceAs src searches src.NextTempName.AbsolutePath
 

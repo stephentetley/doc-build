@@ -19,21 +19,21 @@ module Jpeg =
 
 
     let autoOrientAs (outputFile:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        ImageMagickPrim.imAutoOrient src.Path outputFile |> ignore
+        ImageMagickPrim.imAutoOrient src.Path.AbsolutePath outputFile |> ignore
         getJpegFile outputFile
 
     let autoOrient (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        autoOrientAs src.NextTempName src
+        autoOrientAs src.NextTempName.AbsolutePath src
 
 
 
     let resizeForWordAs (outputFile:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        ImageMagickPrim.imOptimizeForMsWord src.Path outputFile |> ignore
+        ImageMagickPrim.imOptimizeForMsWord src.Path.AbsolutePath outputFile |> ignore
         getJpegFile outputFile
 
     /// Rezize for Word generating a new temp file
     let resizeForWord (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        resizeForWordAs src.NextTempName src
+        resizeForWordAs src.NextTempName.AbsolutePath src
 
 
 

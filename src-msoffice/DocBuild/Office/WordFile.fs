@@ -71,7 +71,7 @@ module WordFile =
             let pdfQuality = wordExportQuality quality
             let! (ans:unit) = 
                 execWord <| fun app -> 
-                    liftResult (wordExportAsPdf app src.Path pdfQuality outputFile)
+                    liftResult (wordExportAsPdf app src.Path.AbsolutePath pdfQuality outputFile)
             let! pdf = getPdfFile outputFile
             return pdf
         }
@@ -80,7 +80,7 @@ module WordFile =
     let exportPdf (quality:PrintQuality)  
                   (src:WordFile) : DocMonad<#HasWordHandle,PdfFile> = 
         docMonad { 
-            let! local = Path.GetFileName(src.Path) |> changeToWorkingFile
+            let! local = Path.GetFileName(src.Path.AbsolutePath) |> changeToWorkingFile
             let outputFile = Path.ChangeExtension(local.AbsolutePath, "pdf")
             let! pdf = exportPdfAs quality outputFile src
             return pdf
@@ -95,7 +95,7 @@ module WordFile =
         docMonad { 
             let! ans = 
                 execWord <| fun app -> 
-                        liftResult (wordFindReplace app src.Path outputFile searches)
+                        liftResult (wordFindReplace app src.Path.AbsolutePath outputFile searches)
             let! docx = getWordFile outputFile
             return docx
         }
@@ -103,4 +103,4 @@ module WordFile =
 
 
     let findReplace (src:WordFile) (searches:SearchList)  : DocMonad<#HasWordHandle,WordFile> = 
-        findReplaceAs src searches src.NextTempName 
+        findReplaceAs src searches src.NextTempName.AbsolutePath 

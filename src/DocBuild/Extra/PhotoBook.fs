@@ -52,8 +52,8 @@ module PhotoBook =
                                   (imagePaths: JpegFile list) : Markdown = 
         match imagePaths with
         | x :: xs -> 
-            let page1 = makePage1 title x.DocPath x.Title
-            let rest = xs |> List.map (fun x -> makePageRest title x.DocPath x.Title) 
+            let page1 = makePage1 title x.DocPath.AbsolutePath x.Title
+            let rest = xs |> List.map (fun x -> makePageRest title x.DocPath.AbsolutePath x.Title) 
             concat (page1 :: rest)
         | [] -> h1 (text title)
 

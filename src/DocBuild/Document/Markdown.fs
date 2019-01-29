@@ -32,9 +32,9 @@ module Markdown =
                          (outputFile:string) 
                          (src:MarkdownFile) : DocMonad<'res,WordFile> =
         docMonad { 
-            let styles = customStyles |> Option.map (fun doc -> doc.Path) 
+            let styles = customStyles |> Option.map (fun doc -> doc.Path.AbsolutePath) 
             let command = 
-                PandocPrim.outputDocxCommand styles src.Path outputFile
+                PandocPrim.outputDocxCommand styles src.Path.AbsolutePath outputFile
             let! _ = execPandoc command
             let! docx = getWordFile outputFile
             return docx
@@ -43,7 +43,7 @@ module Markdown =
 
     let markdownToWord (customStyles:WordFile option) 
                        (src:MarkdownFile) : DocMonad<'res,WordFile> =
-        let outputFile = Path.ChangeExtension(src.Path, "docx")
+        let outputFile = Path.ChangeExtension(src.Path.AbsolutePath, "docx")
         markdownToWordAs customStyles outputFile src
 
 
@@ -54,7 +54,7 @@ module Markdown =
     let findReplaceAs (searches:SearchList) 
                       (outputFile:string) 
                       (src:MarkdownFile) : DocMonad<'res,MarkdownFile> = 
-        let original = File.ReadAllText(src.Path)
+        let original = File.ReadAllText(src.Path.AbsolutePath)
         let action (source:string) (searchText:string, replaceText:string) = 
            source.Replace(searchText, replaceText)
         let final = List.fold action original searches
@@ -64,4 +64,4 @@ module Markdown =
 
     let findReplace (searches:SearchList)
                     (src:MarkdownFile) : DocMonad<'res,MarkdownFile> = 
-        findReplaceAs searches src.NextTempName src
+        findReplaceAs searches src.NextTempName.AbsolutePath src

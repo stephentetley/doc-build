@@ -14,10 +14,8 @@ module Document =
     open DocBuild.Base.DocMonad
 
 
-    type FilePath = string
-
     /// The temp indicator is a suffix "Z0.." before the file extension
-    let getNextTempName (filePath:FilePath) : FilePath =
+    let getNextTempName (filePath:string) : string =
         let root = System.IO.Path.GetDirectoryName filePath
         let justFile = Path.GetFileNameWithoutExtension filePath
         let extension  = System.IO.Path.GetExtension filePath
@@ -34,7 +32,7 @@ module Document =
         let newfile = sprintf "%s.%s%s" prefix suffix extension
         Path.Combine(root, newfile)
 
-    let removeTempSuffix (filePath:FilePath) : FilePath =
+    let removeTempSuffix (filePath:string) : string =
         let root = System.IO.Path.GetDirectoryName filePath
         let justFile = Path.GetFileNameWithoutExtension filePath
         let extension  = System.IO.Path.GetExtension filePath
@@ -66,29 +64,35 @@ module Document =
     // API accessor wrappers for each Doc type.
 
 
-    /// TODO work with System.Uri
+    /// Work with System.Uri for file paths.
     type Document<'a> = 
-        val DocPath : FilePath
+        val DocPath : Uri
         val DocTitle : string
 
         /// Title will be the file name, with any temp information removed.
         new (path:string) = 
-            { DocPath = path; DocTitle = removeTempSuffix(path) }
+            { DocPath = new Uri(path); DocTitle = removeTempSuffix(path) }
         
+        new (path:Uri) = 
+            { DocPath = path; DocTitle = removeTempSuffix(path.AbsolutePath) }
+            
         new (path:string, title:string) = 
+            { DocPath = new Uri(path); DocTitle = title }
+
+        new (path:Uri, title:string) = 
             { DocPath = path; DocTitle = title }
 
         member x.Path 
-            with get () : FilePath = x.DocPath
+            with get () : Uri = x.DocPath
 
         member x.Title 
-            with get () : FilePath = x.DocTitle
+            with get () : string = x.DocTitle
 
         /// ActiveFile is a mutable working copy of the original file.
         /// The original file is untouched.
         member x.NextTempName
-            with get() : FilePath = 
-                getNextTempName x.DocPath
+            with get() : Uri = 
+                new Uri(getNextTempName <| x.DocPath.AbsolutePath)
 
 
     let getDocument (fileExtensions:string list) 

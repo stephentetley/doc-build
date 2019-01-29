@@ -95,11 +95,11 @@ module FileIO =
     /// This will overwrite existing documents!
     let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
             docMonad { 
-                let justFile = Path.GetFileName(doc.Path)
+                let justFile = Path.GetFileName(doc.Path.AbsolutePath)
                 let! cwd = askWorkingDirectory ()
                 let target = cwd.AbsolutePath </> justFile
                 do if File.Exists(target) then File.Delete(target) else ()
-                do File.Copy( sourceFileName = doc.Path
+                do File.Copy( sourceFileName = doc.Path.AbsolutePath
                             , destFileName = target )
                 return Document(target)
             }
