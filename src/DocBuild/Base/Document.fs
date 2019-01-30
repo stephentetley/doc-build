@@ -21,8 +21,8 @@ module Document =
         }
 
 
-    let validateFile (validFileExtensions:string list) 
-                     (path:Uri) : DocMonad<'res,Uri> = 
+    let validateExistingFile (validFileExtensions:string list) 
+                             (path:Uri) : DocMonad<'res,Uri> = 
         if System.IO.File.Exists(path.LocalPath) then 
             let extension : string = System.IO.Path.GetExtension(path.LocalPath)
             let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
@@ -78,7 +78,7 @@ module Document =
     let getDocument (validFileExtensions:string list) 
                     (filePath:Uri) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! path = validateFile validFileExtensions filePath
+            let! path = validateExistingFile validFileExtensions filePath
             return Document(path)
             }
 
@@ -90,7 +90,7 @@ module Document =
             let! src1 = askWorkingDirectory ()
             let! srcUri = 
                 new Uri(baseUri=src1, relativeUri=fileName) 
-                    |> validateFile validFileExtensions 
+                    |> validateExistingFile validFileExtensions 
             return Document(srcUri)
             }
 
@@ -100,11 +100,15 @@ module Document =
                           (fileName:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
             let! src1 = askSourceDirectory ()
+            printfn "getSourceDocument - here 1 - %s (%s)" fileName src1.LocalPath
+            printfn "getSourceDocument - here 1.1 - %s" (new Uri(baseUri=src1, relativeUri=fileName) ).LocalPath
             let! srcUri = 
-                new Uri(baseUri=src1, relativeUri=fileName) 
-                    |> validateFile validFileExtensions 
+                new Uri(Path.Combine(src1.LocalPath, fileName))
+                    |> validateExistingFile validFileExtensions 
+            printfn "getSourceDocument - here 2 - %s" srcUri.LocalPath
             let! dest1 = askWorkingDirectory ()
-            let destUri = new Uri(baseUri=dest1, relativeUri=fileName) 
+            let destUri = new Uri(Path.Combine(dest1.LocalPath,fileName))
+            printfn "getSourceDocument - here 3 - %s" destUri.LocalPath
             File.Copy(sourceFileName = srcUri.LocalPath, 
                       destFileName = destUri.LocalPath,
                       overwrite = true)
@@ -119,7 +123,7 @@ module Document =
             let! src1 = askSourceDirectory ()
             let! srcUri = 
                 new Uri(baseUri=src1, relativeUri=fileName) 
-                    |> validateFile validFileExtensions 
+                    |> validateExistingFile validFileExtensions 
             return Document(srcUri)
             }
 
