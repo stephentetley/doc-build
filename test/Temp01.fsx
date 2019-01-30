@@ -3,6 +3,8 @@
 
 #r "netstandard"
 
+open System
+
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
 #r "Microsoft.Office.Interop.Word"
@@ -110,10 +112,10 @@ let numPages() =
 
 
 let WindowsEnv : BuilderEnv = 
-    let dataDir = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
+    let dataDir = new Uri(System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data"))
     { WorkingDirectory = dataDir
       SourceDirectory = dataDir
-      IncludeDirectory = dataDir </> "include"
+      IncludeDirectory = new Uri(dataDir, "include")
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" }

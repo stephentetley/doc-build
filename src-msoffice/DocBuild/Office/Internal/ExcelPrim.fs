@@ -26,9 +26,9 @@ module ExcelPrim =
     // Export to Pdf
 
     let excelExportAsPdf (app:Excel.Application) 
-                         (inputFile:string)
                          (fitWidth:bool)
                          (quality:Excel.XlFixedFormatQuality)
+                         (inputFile:string)
                          (outputFile:string ) : Result<unit,string> = 
         try
             withExcelApp <| fun app -> 
@@ -56,7 +56,8 @@ module ExcelPrim =
     // ****************************************************************************
     // Find/Replace
 
-    let private sheetFindReplace (worksheet:Excel.Worksheet) (search:string, replace:string) : unit = 
+    let private sheetFindReplace (search:string, replace:string) 
+                                 (worksheet:Excel.Worksheet) : unit = 
         // TODO - I expect the fist line to work but it doesn't
         // let allCells : Excel.Range = worksheet.Cells
         let allCells : Excel.Range = worksheet.Range("A1")
@@ -71,24 +72,25 @@ module ExcelPrim =
                           ReplaceFormat = false ) |> ignore
 
     
-    let private sheetFindReplaceList (worksheet:Excel.Worksheet) (searches:SearchList) : unit =                      
-        List.iter (sheetFindReplace worksheet) searches
+    let private sheetFindReplaceList (searches:SearchList) (worksheet:Excel.Worksheet) : unit =                      
+        List.iter (fun search1 -> sheetFindReplace search1 worksheet) searches
 
 
-    let workbookFindReplace (workbook:Excel.Workbook) (searches:SearchList) : unit = 
+    let workbookFindReplace (searches:SearchList) 
+                            (workbook:Excel.Workbook)  : unit = 
         workbook.Worksheets 
             |> Seq.cast<Excel.Worksheet> 
-            |> Seq.iter (fun (sheet:Excel.Worksheet) -> sheetFindReplaceList sheet searches)
+            |> Seq.iter (fun (sheet:Excel.Worksheet) -> sheetFindReplaceList searches sheet )
 
 
     let excelFindReplace (app:Excel.Application) 
+                         (searches:SearchList)
                          (inputFile:string) 
-                         (outputFile:string) 
-                         (searches:SearchList) : Result<unit,ErrMsg> = 
+                         (outputFile:string) : Result<unit,ErrMsg> = 
         try
             let workbook : Excel.Workbook = app.Workbooks.Open(inputFile)
             try 
-                workbookFindReplace workbook searches
+                workbookFindReplace searches workbook 
                 workbook.SaveAs (Filename = outputFile)
                 Ok ()
             with 

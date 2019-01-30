@@ -24,8 +24,8 @@ module WordPrim =
     // Export to Pdf
 
     let wordExportAsPdf (app:Word.Application) 
-                        (inputFile:string) 
                         (quality:Word.WdExportOptimizeFor)
+                        (inputFile:string) 
                         (outputFile:string) : Result<unit,ErrMsg> =
         try 
             let doc:(Word.Document) = app.Documents.Open(FileName = refobj inputFile)
@@ -50,27 +50,27 @@ module WordPrim =
 
     /// TODO - I can't remember why this was so convoluted, it ought to be 
     /// simplified at some point.
-    let private getHeadersOrFooters (doc:Word.Document) 
-                                    (proj:Word.Section -> Word.HeadersFooters) : Word.HeaderFooter list = 
+    let private getHeadersOrFooters (proj:Word.Section -> Word.HeadersFooters) 
+                                    (doc:Word.Document) : Word.HeaderFooter list = 
         Seq.foldBack (fun (section:Word.Section) (ac:Word.HeaderFooter list) ->
                let headers1 = proj section |> Seq.cast<Word.HeaderFooter>
                Seq.foldBack (fun x xs -> x::xs) headers1 ac)
                (doc.Sections |> Seq.cast<Word.Section>)
                []
 
-    let private rangeFindReplace (range:Word.Range) (search:string) (replace:string) : unit =
+    let private rangeFindReplace (search:string, replace:string) (range:Word.Range) : unit =
         range.Find.ClearFormatting ()
         range.Find.Execute (FindText = refobj search, 
                             ReplaceWith = refobj replace,
                             Replace = refobj Word.WdReplace.wdReplaceAll) |> ignore
 
 
-    let private replacer (doc:Word.Document) (search:string, replace:string) : unit =                      
+    let private replacer (args :string * string) (doc:Word.Document) : unit = 
         let rngAll = doc.Range()
-        rangeFindReplace rngAll search replace
-        let headers = getHeadersOrFooters doc (fun section -> section.Headers)
-        let footers = getHeadersOrFooters doc (fun section -> section.Footers)
-        List.iter (fun (header:Word.HeaderFooter) -> rangeFindReplace header.Range search replace)
+        rangeFindReplace args rngAll 
+        let headers = getHeadersOrFooters (fun section -> section.Headers) doc
+        let footers = getHeadersOrFooters (fun section -> section.Footers) doc
+        List.iter (fun (header:Word.HeaderFooter) -> rangeFindReplace args header.Range)
                   (headers @ footers)
     
 
@@ -83,22 +83,22 @@ module WordPrim =
     //
     // It can make debug output confusing though. 
 
-    let documentFindReplace (doc:Word.Document) 
-                            (searches:SearchList) : unit = 
-        List.iter (replacer doc) searches 
+    let documentFindReplace (searches:SearchList) 
+                            (doc:Word.Document) : unit = 
+        List.iter (fun search1 -> replacer search1 doc) searches 
         updateTableOfContents doc
 
 
     let private doubleQuote (s:string) : string = "\"" + s + "\""
     
 
-    let wordFindReplace (app:Word.Application) 
+    let wordFindReplace (app:Word.Application)
+                        (searches:SearchList)
                         (inputFile:string) 
-                        (outputFile:string) 
-                        (searches:SearchList) : Result<unit,ErrMsg> = 
+                        (outputFile:string) : Result<unit,ErrMsg> = 
         try
             let doc = app.Documents.Open(FileName = refobj inputFile)
-            documentFindReplace doc searches
+            documentFindReplace searches doc 
             try 
                 let outpath1 = doubleQuote outputFile
                 doc.SaveAs (FileName = refobj outpath1)

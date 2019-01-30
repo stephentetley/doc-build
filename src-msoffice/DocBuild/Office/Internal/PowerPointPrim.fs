@@ -30,9 +30,9 @@ module PowerPointPrim =
     // ****************************************************************************
     // Export to Pdf
 
-    let powerPointExportAsPdf (app:PowerPoint.Application) 
+    let powerPointExportAsPdf (app:PowerPoint.Application)
+                              (quality:PowerPoint.PpFixedFormatIntent) 
                               (inputFile:string)
-                              (quality:PowerPoint.PpFixedFormatIntent)
                               (outputFile:string ) : Result<unit,string> = 
         try
             withPowerPointApp <| fun app ->                 

@@ -17,23 +17,31 @@ module Jpeg =
     // ImageMagick extracts image info from an image file, not the 
     // image handle after an image file is opened. 
 
-
-    let autoOrientAs (outputFile:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        ImageMagickPrim.imAutoOrient src.Path.AbsolutePath outputFile |> ignore
-        getJpegFile outputFile
+    /// Save in working directory...
+    let autoOrientAs (outputName:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
+        docMonad { 
+            let! outputPath = getOutputPath outputName
+            let _ = ImageMagickPrim.imAutoOrient src.AbsolutePath outputPath
+            let! jpeg = workingJpegFile outputName
+            return jpeg
+        }
 
     let autoOrient (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        autoOrientAs src.NextTempName.AbsolutePath src
+        autoOrientAs src.FileName src
 
 
-
-    let resizeForWordAs (outputFile:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        ImageMagickPrim.imOptimizeForMsWord src.Path.AbsolutePath outputFile |> ignore
-        getJpegFile outputFile
+    /// Save in working directory...
+    let resizeForWordAs (outputName:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
+        docMonad { 
+            let! outputPath = getOutputPath outputName
+            let _ = ImageMagickPrim.imOptimizeForMsWord src.AbsolutePath outputPath
+            let! jpeg = workingJpegFile outputName
+            return jpeg
+        }
 
     /// Rezize for Word generating a new temp file
     let resizeForWord (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        resizeForWordAs src.NextTempName.AbsolutePath src
+        resizeForWordAs src.FileName src
 
 
 

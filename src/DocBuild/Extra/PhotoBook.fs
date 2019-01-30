@@ -52,8 +52,8 @@ module PhotoBook =
                                   (imagePaths: JpegFile list) : Markdown = 
         match imagePaths with
         | x :: xs -> 
-            let page1 = makePage1 title x.DocPath.AbsolutePath x.Title
-            let rest = xs |> List.map (fun x -> makePageRest title x.DocPath.AbsolutePath x.Title) 
+            let page1 = makePage1 title x.AbsolutePath x.Title
+            let rest = xs |> List.map (fun x -> makePageRest title x.AbsolutePath x.Title) 
             concat (page1 :: rest)
         | [] -> h1 (text title)
 
@@ -64,8 +64,7 @@ module PhotoBook =
             docMonad { 
                 let! xs = findAllSourceFilesMatching "*.jpg"
                 let! ys = findAllSourceFilesMatching "*.jpeg"
-                let! col1 = mapM getJpegFile (xs @ ys) |>> Collection.fromList
-                let! jpegs = copyCollectionToWorking col1
+                let! jpegs = mapM sourceJpegFile (xs @ ys) |>> Collection.fromList
                 return jpegs
             }
         localSubDirectory tempSubFolder 
@@ -80,7 +79,7 @@ module PhotoBook =
             let mdDoc = photoBookMarkdown title (Collection.toList jpegs)
             let! outputPath = askWorkingFile outputFile
             let! _ = Markdown.saveMarkdown outputPath.AbsolutePath mdDoc
-            let! mdOutput = getMarkdownFile outputPath.AbsolutePath
+            let! mdOutput = workingMarkdownFile outputPath.AbsolutePath
             return mdOutput
         }
 

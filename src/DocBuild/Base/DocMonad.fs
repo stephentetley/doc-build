@@ -141,6 +141,15 @@ module DocMonad =
     let asks (extract:BuilderEnv -> 'a) : DocMonad<'res,'a> = 
         DocMonad <| fun _ env -> Ok (extract env)
 
+    let askWorkingDirectory () : DocMonad<'res,Uri> = 
+        asks (fun env -> env.WorkingDirectory)
+
+    let askSourceDirectory () : DocMonad<'res,Uri> = 
+        asks (fun env -> env.SourceDirectory)
+        
+    let askIncludeDirectory () : DocMonad<'res,Uri> = 
+        asks (fun env -> env.IncludeDirectory)
+
     /// Use with caution.
     /// Generally you might only want to update the 
     /// working directory

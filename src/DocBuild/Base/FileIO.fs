@@ -14,21 +14,21 @@ module FileIO =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
 
+    // This module is becoming obsolete as we are approaching a strong
+    // notion of "source", "working" and "include" directories and 
+    // reneging on the idea of random access to the file system.
+
 
     /// Note if the second path is prefixed by '\\'
     /// "directory" </> "/file.ext" == "/file.ext"
     let (</>) (path1:string) (path2:string) = 
         Path.Combine(path1, path2)
 
+    let getOutputPath (fileName:string) : DocMonad<'res,string> = 
+        askWorkingDirectory () |>> fun cwd -> (cwd.AbsolutePath </> fileName)
 
-    let askWorkingDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.WorkingDirectory)
 
-    let askSourceDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.SourceDirectory)
-        
-    let askIncludeDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.IncludeDirectory)
+    //// Old API...
 
     let private askFile (getTopLevel:unit -> DocMonad<'res,Uri>)
                         (fileName:string) : DocMonad<'res,Uri> = 
@@ -95,11 +95,11 @@ module FileIO =
     /// This will overwrite existing documents!
     let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
             docMonad { 
-                let justFile = Path.GetFileName(doc.Path.AbsolutePath)
+                let justFile = Path.GetFileName(doc.AbsolutePath)
                 let! cwd = askWorkingDirectory ()
                 let target = cwd.AbsolutePath </> justFile
                 do if File.Exists(target) then File.Delete(target) else ()
-                do File.Copy( sourceFileName = doc.Path.AbsolutePath
+                do File.Copy( sourceFileName = doc.AbsolutePath
                             , destFileName = target )
                 return Document(target)
             }

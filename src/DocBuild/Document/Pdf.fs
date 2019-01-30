@@ -16,6 +16,7 @@ module Pdf =
     open DocBuild.Base
     open DocBuild.Base.Shell
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Raw
 
     // ************************************************************************
@@ -46,17 +47,21 @@ module Pdf =
     let private ghostscriptConcat (quality:GsQuality)
                                   (outputFile:string) 
                                   (inputFiles:PdfCollection) : DocMonad<'res,string> = 
-        let inputs = inputFiles |> Collection.toList |> List.map (fun d -> d.Path.AbsolutePath)
+        let inputs = 
+            inputFiles |> Collection.toList |> List.map (fun d -> d.AbsolutePath)
+
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputFile inputs
         execGhostscript cmd
 
-
+    /// Concatenate a collection of Pdfs into a single Pdf.
+    /// The result is output in the working directory.
     let pdfConcat (quality:GsQuality)
-                  (outputFile:string) 
+                  (outputName:string) 
                   (inputFiles:PdfCollection): DocMonad<'res,PdfFile> = 
         docMonad { 
-            let! _ = ghostscriptConcat quality outputFile inputFiles
-            let! pdf = getPdfFile outputFile
+            let! outputPath = getOutputPath outputName
+            let! _ = ghostscriptConcat quality outputPath inputFiles
+            let! pdf = workingPdfFile outputName
             return pdf
         }
 
@@ -97,22 +102,23 @@ module Pdf =
         }
 
 
-
+    /// outputName is relatuive to Working directory.
     let extractRotationsAs (directives:RotationDirective list)
-                           (outputFile:string) 
+                           (outputName:string) 
                            (src:PdfFile) : DocMonad<'res,PdfFile> = 
         docMonad { 
+            let! outputPath = getOutputPath outputName
             let command = 
-                PdftkPrim.rotationCommand src.Path.AbsolutePath directives outputFile
+                PdftkPrim.rotationCommand src.AbsolutePath directives outputPath
             let! _ = execPdftk command
-            let! pdf = getPdfFile outputFile
+            let! pdf = workingPdfFile outputName
             return pdf
         }
 
     /// Rezize for Word generating a new temp file
     let extractRotations (directives:RotationDirective list) 
                          (src:PdfFile) : DocMonad<'res,PdfFile> = 
-        extractRotationsAs directives src.NextTempName.AbsolutePath src
+        extractRotationsAs directives src.FileName src
 
 
 
@@ -126,7 +132,7 @@ module Pdf =
 
     let pdfPageCount (inputfile:PdfFile) : DocMonad<'res,int> = 
         docMonad { 
-            let command = PdftkPrim.dumpDataCommand inputfile.Path.AbsolutePath
+            let command = PdftkPrim.dumpDataCommand inputfile.AbsolutePath
             let! stdout = execPdftk command
             let! ans = liftResult (PdftkPrim.regexSearchNumberOfPages stdout)
             return ans

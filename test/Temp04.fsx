@@ -21,6 +21,13 @@ let test02 () =
     printfn "%O" <| uCwd.IsBaseOf(uPath1)
 
 
+// Don't bother with Uris for relative file paths.
+let test03 () = 
+    let u1 = new System.Uri(uriString= @"local\file.txt", uriKind=UriKind.Relative)
+    u1
+
+
+
 
 
 
