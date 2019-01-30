@@ -71,7 +71,7 @@ module PowerPointFile =
             let pdfQuality = powerpointExportQuality quality
             let! ans = 
                 execPowerPoint <| fun app -> 
-                    liftResult (powerPointExportAsPdf app pdfQuality src.AbsolutePath outputPath)
+                    liftResult (powerPointExportAsPdf app pdfQuality src.LocalPath outputPath)
             let! pdf = workingPdfFile outputName
             return pdf
         }
@@ -79,8 +79,8 @@ module PowerPointFile =
     /// Saves the file in the working directory.
     let exportPdf (src:PowerPointFile) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfFile> = 
         docMonad { 
-            let! local = Path.GetFileName(src.AbsolutePath) |> changeToWorkingFile
-            let outputFile = Path.ChangeExtension(local.AbsolutePath, "pdf")
+            let! local = Path.GetFileName(src.LocalPath) |> changeToWorkingFile
+            let outputFile = Path.ChangeExtension(local.LocalPath, "pdf")
             let! pdf = exportPdfAs quality outputFile src
             return pdf
         }

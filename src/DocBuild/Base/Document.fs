@@ -23,13 +23,13 @@ module Document =
 
     let validateFile (validFileExtensions:string list) 
                      (path:Uri) : DocMonad<'res,Uri> = 
-        if System.IO.File.Exists(path.AbsolutePath) then 
-            let extension : string = System.IO.Path.GetExtension(path.AbsolutePath)
+        if System.IO.File.Exists(path.LocalPath) then 
+            let extension : string = System.IO.Path.GetExtension(path.LocalPath)
             let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
             if List.exists testExtension validFileExtensions then 
                 dreturn path
-            else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions path.AbsolutePath
-        else throwError <| sprintf "Could not find file: '%s'" path.AbsolutePath  
+            else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions path.LocalPath
+        else throwError <| sprintf "Could not find file: '%s'" path.LocalPath  
 
  
 
@@ -53,7 +53,7 @@ module Document =
         
         /// uri should be an absolute path.
         new (uri:Uri) = 
-            { DocUri = uri; DocTitle = FileInfo(uri.AbsolutePath).Name }
+            { DocUri = uri; DocTitle = FileInfo(uri.LocalPath).Name }
             
         new (path:string, title:string) = 
             { DocUri = new Uri(path); DocTitle = title }
@@ -68,12 +68,12 @@ module Document =
         member x.Title 
             with get () : string = x.DocTitle
 
-        member x.AbsolutePath
-            with get () : string = x.DocUri.AbsolutePath
+        member x.LocalPath
+            with get () : string = x.DocUri.LocalPath
 
         member x.FileName
             with get () : string = 
-                FileInfo(x.DocUri.AbsolutePath).Name
+                FileInfo(x.DocUri.LocalPath).Name
 
     let getDocument (validFileExtensions:string list) 
                     (filePath:Uri) : DocMonad<'res,Document<'a>> = 
@@ -105,8 +105,9 @@ module Document =
                     |> validateFile validFileExtensions 
             let! dest1 = askWorkingDirectory ()
             let destUri = new Uri(baseUri=dest1, relativeUri=fileName) 
-            File.Copy(sourceFileName = srcUri.AbsolutePath, 
-                      destFileName = destUri.AbsolutePath )
+            File.Copy(sourceFileName = srcUri.LocalPath, 
+                      destFileName = destUri.LocalPath,
+                      overwrite = true)
             return Document(destUri)
             }
 

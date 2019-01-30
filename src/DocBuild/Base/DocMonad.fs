@@ -399,7 +399,7 @@ module DocMonad =
     let private getOptions (findExe:BuilderEnv -> string) : DocMonad<'res,ProcessOptions> = 
         pipeM2 (asks findExe)
                 (asks (fun env -> env.WorkingDirectory))
-                (fun exe cwd -> { WorkingDirectory = cwd.AbsolutePath
+                (fun exe cwd -> { WorkingDirectory = cwd.LocalPath
                                 ; ExecutableName = exe})
     
     let private shellExecute (findExe:BuilderEnv -> string)

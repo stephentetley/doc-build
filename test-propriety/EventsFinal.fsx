@@ -107,8 +107,7 @@ let renderMarkdownFile (stylesheetName:string option)
         let! (stylesheet:WordFile option) = 
             match stylesheetName with
             | None -> dreturn None
-            | Some name -> 
-                askIncludeFile name >>= fun uri -> getWordFile uri.AbsolutePath >>= (dreturn << Some)
+            | Some name -> includeWordFile name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
         let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle docTitle
@@ -118,9 +117,8 @@ let renderMarkdownFile (stylesheetName:string option)
 let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
     docMonad { 
         let! logoPath = askIncludeFile "YW-logo.jpg"
-        let! stylesPath = askIncludeFile "custom-reference1.docx"
-        let! (stylesheet:WordFile option) = getWordFile stylesPath.AbsolutePath |>> Some
-        let! markdownFile = coversheet saiNumber siteName logoPath.AbsolutePath "S Tetley" "coversheet.md" 
+        let! (stylesheet:WordFile option) = includeWordFile "custom-reference1.docx" |>> Some
+        let! markdownFile = coversheet saiNumber siteName logoPath.LocalPath "S Tetley" "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
         let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle "Coversheet"
         return pdf
@@ -164,7 +162,7 @@ let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfFile> =
 let surveys () : DocMonadWord<PdfFile list> = 
     docMonad {
         let! inputs = findAllSourceFilesMatching "*Survey.doc*"
-        let! pdfs = forM inputs (fun file -> getWordFile file >>= WordFile.exportPdf PqScreen)
+        let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
         return pdfs
     }
 
@@ -180,7 +178,7 @@ let siteWorksPhotos () : DocMonadWord<PdfFile> =
 let siteWorks () : DocMonadWord<PdfFile list> = 
     docMonad {
         let! inputs = findAllSourceFilesMatching "*.doc*"
-        let! pdfs = forM inputs (fun file -> getWordFile file >>= WordFile.exportPdf PqScreen)
+        let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
         return pdfs
     }
 

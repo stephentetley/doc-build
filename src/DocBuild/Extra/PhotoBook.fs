@@ -52,8 +52,8 @@ module PhotoBook =
                                   (imagePaths: JpegFile list) : Markdown = 
         match imagePaths with
         | x :: xs -> 
-            let page1 = makePage1 title x.AbsolutePath x.Title
-            let rest = xs |> List.map (fun x -> makePageRest title x.AbsolutePath x.Title) 
+            let page1 = makePage1 title x.LocalPath x.Title
+            let rest = xs |> List.map (fun x -> makePageRest title x.LocalPath x.Title) 
             concat (page1 :: rest)
         | [] -> h1 (text title)
 
@@ -78,8 +78,8 @@ module PhotoBook =
             let! jpegs = copyJpegs sourceSubFolder tempSubFolder >>= Collection.mapM optimizeJpeg
             let mdDoc = photoBookMarkdown title (Collection.toList jpegs)
             let! outputPath = askWorkingFile outputFile
-            let! _ = Markdown.saveMarkdown outputPath.AbsolutePath mdDoc
-            let! mdOutput = workingMarkdownFile outputPath.AbsolutePath
+            let! _ = Markdown.saveMarkdown outputPath.LocalPath mdDoc
+            let! mdOutput = workingMarkdownFile outputPath.LocalPath
             return mdOutput
         }
 

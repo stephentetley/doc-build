@@ -21,7 +21,7 @@ module Jpeg =
     let autoOrientAs (outputName:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
         docMonad { 
             let! outputPath = getOutputPath outputName
-            let _ = ImageMagickPrim.imAutoOrient src.AbsolutePath outputPath
+            let _ = ImageMagickPrim.imAutoOrient src.LocalPath outputPath
             let! jpeg = workingJpegFile outputName
             return jpeg
         }
@@ -34,7 +34,7 @@ module Jpeg =
     let resizeForWordAs (outputName:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
         docMonad { 
             let! outputPath = getOutputPath outputName
-            let _ = ImageMagickPrim.imOptimizeForMsWord src.AbsolutePath outputPath
+            let _ = ImageMagickPrim.imOptimizeForMsWord src.LocalPath outputPath
             let! jpeg = workingJpegFile outputName
             return jpeg
         }

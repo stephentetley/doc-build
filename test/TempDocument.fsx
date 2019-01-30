@@ -70,12 +70,12 @@ let WindowsEnv : BuilderEnv =
 let demo01 () = 
     runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
-            let! p1 = askWorkingFile "One.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
-            let! p2 = askWorkingFile "Two.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
-            let! p3 = askWorkingFile "Three.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
+            let! p1 = workingPdfFile "One.pdf"
+            let! p2 = workingPdfFile "Two.pdf" 
+            let! p3 = workingPdfFile "Three.pdf"
             let pdfs = Collection.fromList [p1;p2;p3]
-            let! outfile = askWorkingFile "Concat.pdf"
-            let! _ = pdfConcat GsScreen outfile.AbsolutePath pdfs
+            let! outfile = workingPdfFile "Concat.pdf"
+            let! _ = pdfConcat GsScreen outfile.LocalPath pdfs
             return ()
         }
 
@@ -83,7 +83,7 @@ let demo01 () =
 let demo02 () = 
     runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
-            let! p1 = askWorkingFile "Concat.pdf" >>= fun uri -> getPdfFile uri.AbsolutePath
+            let! p1 = workingPdfFile "Concat.pdf"
             let! pageCount = pdfPageCount p1
             return pageCount
         }
@@ -94,7 +94,7 @@ let demo03 () =
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
-            let! w1 = askWorkingFile "sample.docx" >>= fun uri -> getWordFile uri.AbsolutePath
+            let! w1 = workingWordFile "sample.docx" 
             let! p1 = WordFile.exportPdf PqScreen w1 
             return p1
         }

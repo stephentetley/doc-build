@@ -3,6 +3,9 @@
 
 #r "netstandard"
 
+open System
+
+
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
@@ -18,10 +21,10 @@ open DocBuild.Base.DocMonadOperators
 
 
 let WindowsEnv : BuilderEnv = 
-    let dataDir = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
+    let dataDir = new Uri(System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data"))
     { WorkingDirectory = dataDir
       SourceDirectory = dataDir
-      IncludeDirectory = dataDir </> "include"
+      IncludeDirectory = new Uri(dataDir, "include")
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" }
@@ -32,7 +35,7 @@ let test01 () =
     let script = 
         docMonad { 
             let! docs = 
-                Collection.fromList <&&> mapM (askWorkingFile >=> getPdfFile) sources
+                Collection.fromList <&&> mapM (workingPdfFile) sources
             return docs
             }
     runDocMonadNoCleanup () WindowsEnv script
@@ -58,8 +61,8 @@ let test04 () =
     let script = 
         docMonad { 
             let! docs = 
-                Collection.fromList <&&> mapM (askWorkingFile >=> getPdfFile) sources
-            let! last = askWorkingFile "Three.pdf" >>= getPdfFile
+                Collection.fromList <&&> mapM (workingPdfFile) sources
+            let! last = workingPdfFile "Three.pdf"
             return (docs &>> last)
             }
     runDocMonadNoCleanup () WindowsEnv script |> Result.map Collection.toList

@@ -25,7 +25,7 @@ module FileIO =
         Path.Combine(path1, path2)
 
     let getOutputPath (fileName:string) : DocMonad<'res,string> = 
-        askWorkingDirectory () |>> fun cwd -> (cwd.AbsolutePath </> fileName)
+        askWorkingDirectory () |>> fun cwd -> (cwd.LocalPath </> fileName)
 
 
     //// Old API...
@@ -34,7 +34,7 @@ module FileIO =
                         (fileName:string) : DocMonad<'res,Uri> = 
         docMonad { 
             let! cwd = getTopLevel ()
-            let path = cwd.AbsolutePath </> fileName
+            let path = cwd.LocalPath </> fileName
             return new Uri(path)
         }
 
@@ -65,7 +65,7 @@ module FileIO =
                 dreturn ()
         docMonad {
             let! cwd = askWorkingDirectory ()
-            let path = cwd.AbsolutePath </> subDirectory
+            let path = cwd.LocalPath </> subDirectory
             do! attempt (create1 path)
         }
 
@@ -75,7 +75,7 @@ module FileIO =
                           (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
             let! cwd = askWorkingDirectory ()
-            let path = cwd.AbsolutePath </> subDirectory
+            let path = cwd.LocalPath </> subDirectory
             do! createWorkingSubDirectory path
             let! ans = local (fun env -> {env with WorkingDirectory = new Uri(path)}) ma
             return ans
@@ -87,7 +87,7 @@ module FileIO =
                              (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
             let! srcDir = askSourceDirectory ()
-            let path = srcDir.AbsolutePath </> subDirectory
+            let path = srcDir.LocalPath </> subDirectory
             let! ans = local (fun env -> {env with SourceDirectory = new Uri(path)}) ma
             return ans
         }
@@ -95,11 +95,11 @@ module FileIO =
     /// This will overwrite existing documents!
     let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
             docMonad { 
-                let justFile = Path.GetFileName(doc.AbsolutePath)
+                let justFile = Path.GetFileName(doc.LocalPath)
                 let! cwd = askWorkingDirectory ()
-                let target = cwd.AbsolutePath </> justFile
+                let target = cwd.LocalPath </> justFile
                 do if File.Exists(target) then File.Delete(target) else ()
-                do File.Copy( sourceFileName = doc.AbsolutePath
+                do File.Copy( sourceFileName = doc.LocalPath
                             , destFileName = target )
                 return Document(target)
             }
@@ -115,7 +115,7 @@ module FileIO =
     let changeToWorkingFile (fileName:string) : DocMonad<'res,Uri> = 
         docMonad { 
             let! cwd = askWorkingDirectory ()
-            let path = cwd.AbsolutePath </> fileName
+            let path = cwd.LocalPath </> fileName
             return new Uri(path)
         }            
 
@@ -128,11 +128,11 @@ module FileIO =
     /// (the only wild cards are '?' and '*'), not a regex.
     let hasSourceFilesMatching (pattern:string) : DocMonad<'res, bool> = 
         askSourceDirectory () |>>  fun uri -> 
-            FakeLike.hasFilesMatching pattern uri.AbsolutePath
+            FakeLike.hasFilesMatching pattern uri.LocalPath
 
     /// Search file matching files in the SourceDirectory.
     /// Uses glob pattern - the only wild cards are '?' and '*'
     let findAllSourceFilesMatching (pattern:string) : DocMonad<'res, string list> =
         askSourceDirectory () |>> fun uri -> 
-            FakeLike.findAllFilesMatching pattern uri.AbsolutePath
+            FakeLike.findAllFilesMatching pattern uri.LocalPath
             

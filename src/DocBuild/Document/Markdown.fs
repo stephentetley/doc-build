@@ -37,9 +37,9 @@ module Markdown =
                          (src:MarkdownFile) : DocMonad<'res,WordFile> =
         docMonad { 
             let! outputPath = getOutputPath outputName
-            let styles = customStyles |> Option.map (fun doc -> doc.AbsolutePath) 
+            let styles = customStyles |> Option.map (fun doc -> doc.LocalPath) 
             let command = 
-                PandocPrim.outputDocxCommand styles src.AbsolutePath outputPath
+                PandocPrim.outputDocxCommand styles src.LocalPath outputPath
             let! _ = execPandoc command
             let! docx = workingWordFile outputName
             return docx
@@ -48,7 +48,7 @@ module Markdown =
 
     let markdownToWord (customStyles:WordFile option) 
                        (src:MarkdownFile) : DocMonad<'res,WordFile> =
-        let outputFile = Path.ChangeExtension(src.AbsolutePath, "docx")
+        let outputFile = Path.ChangeExtension(src.LocalPath, "docx")
         markdownToWordAs customStyles outputFile src
 
 
@@ -61,7 +61,7 @@ module Markdown =
                       (src:MarkdownFile) : DocMonad<'res,MarkdownFile> = 
         docMonad { 
             let! outputPath = getOutputPath outputName
-            let original = File.ReadAllText(src.AbsolutePath)
+            let original = File.ReadAllText(src.LocalPath)
             let action (source:string) (searchText:string, replaceText:string) = 
                source.Replace(searchText, replaceText)
             let final = List.fold action original searches

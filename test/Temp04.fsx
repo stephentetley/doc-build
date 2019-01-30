@@ -26,6 +26,14 @@ let test03 () =
     let u1 = new System.Uri(uriString= @"local\file.txt", uriKind=UriKind.Relative)
     u1
 
+/// Cannot read .AbsolutePath of an Uri is not right for 
+/// the File IO API, we should be using .LocaPath.
+let test04 () = 
+    let pathWithSpaces = @"G:\work\working\FOLDER WITH SPACES\FILE WITH SPACES.txt"
+    let uri = new Uri(pathWithSpaces)
+    printfn "%s" uri.LocalPath
+    System.IO.File.ReadAllText(uri.LocalPath)
+
 
 
 

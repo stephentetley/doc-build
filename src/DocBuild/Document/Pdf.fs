@@ -48,7 +48,7 @@ module Pdf =
                                   (outputFile:string) 
                                   (inputFiles:PdfCollection) : DocMonad<'res,string> = 
         let inputs = 
-            inputFiles |> Collection.toList |> List.map (fun d -> d.AbsolutePath)
+            inputFiles |> Collection.toList |> List.map (fun d -> d.LocalPath)
 
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputFile inputs
         execGhostscript cmd
@@ -109,7 +109,7 @@ module Pdf =
         docMonad { 
             let! outputPath = getOutputPath outputName
             let command = 
-                PdftkPrim.rotationCommand src.AbsolutePath directives outputPath
+                PdftkPrim.rotationCommand src.LocalPath directives outputPath
             let! _ = execPdftk command
             let! pdf = workingPdfFile outputName
             return pdf
@@ -132,7 +132,7 @@ module Pdf =
 
     let pdfPageCount (inputfile:PdfFile) : DocMonad<'res,int> = 
         docMonad { 
-            let command = PdftkPrim.dumpDataCommand inputfile.AbsolutePath
+            let command = PdftkPrim.dumpDataCommand inputfile.LocalPath
             let! stdout = execPdftk command
             let! ans = liftResult (PdftkPrim.regexSearchNumberOfPages stdout)
             return ans
