@@ -104,8 +104,42 @@ let demo04 () =
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
             let! w1 = sourceWordFile "sample.docx" 
-            let! relpath = getPathSuffix w1
+            let! relpath = getDocPathSuffix w1
             return relpath
         }
 
 
+let demo05 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv <| 
+        docMonad { 
+            let! relpaths = findAllSourceFilesMatching "*.pdf" true
+            return relpaths
+        }
+
+let demo06 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv <| 
+        assertIsSourcePath @"D:\coding\fsharp\doc-build\data\Concat.pdf"
+
+let demo06a () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv <| 
+        (askSourceDirectory () |>> fun (uri:Uri) -> uri.Segments)
+
+
+let demo07 () = 
+    let root = new Uri (@"file:///D:/coding/fsharp/doc-build/data/")
+    let toFile = new Uri (@"D:\coding\fsharp\doc-build\data\Concat.pdf")
+    root.MakeRelativeUri(toFile).ToString ()
+
+let demo08 () = 
+    let root = new Uri (@"D:\coding\fsharp\doc-build\data\")
+    let toFile = new Uri (@"D:\coding\fsharp\doc-build\data\Concat.pdf")
+    root.MakeRelativeUri(toFile).ToString ()
+
+let assertFolderUri (uri:Uri) : Uri = 
+    let rx = new System.Text.RegularExpressions.Regex(pattern = "[/]+$", options = System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+    if rx.IsMatch(uri.AbsoluteUri) then 
+        uri
+    else new Uri (uri.AbsoluteUri + "/")

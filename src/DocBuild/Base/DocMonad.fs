@@ -10,6 +10,7 @@ namespace DocBuild.Base
 module DocMonad = 
 
     open System
+    open System.Text.RegularExpressions
 
     open DocBuild.Base
     open DocBuild.Base.Shell
@@ -145,12 +146,16 @@ module DocMonad =
     /// Rewrite the Uri to append "/" to the last segment insuring
     /// the Uri represents a folder.
     let private assertFolderUri (uri:Uri) : Uri = 
-        new Uri (sprintf "%s/" uri.AbsoluteUri)
+        let rx = new Regex(pattern = "[/]+$", options = RegexOptions.IgnoreCase)
+        if rx.IsMatch(uri.AbsoluteUri) then 
+            uri
+        else new Uri (sprintf "%s/" uri.AbsoluteUri)
 
     /// Note - this asserts that the Working directory path represents a 
     /// folder not a file.
     let askWorkingDirectory () : DocMonad<'res,Uri> = 
         asks (fun env -> env.WorkingDirectory |> assertFolderUri)
+
 
     /// Note - this asserts that the Source directory path represents a 
     /// folder not a file.
@@ -198,6 +203,17 @@ module DocMonad =
     // ****************************************************
     // Monadic operations
 
+
+    let whenM (cond:DocMonad<'res,bool>) 
+              (failMsg:string) 
+              (successOp:unit -> DocMonad<'res,'a>) = 
+        docMonad { 
+            let! ans = cond
+            if ans then 
+                let! res = successOp ()
+                return res
+            else throwError failMsg |> ignore
+            } 
 
     /// fmap 
     let fmapM (fn:'a -> 'b) (ma:DocMonad<'res,'a>) : DocMonad<'res,'b> = 

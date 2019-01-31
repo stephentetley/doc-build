@@ -9,6 +9,8 @@ module Common =
 
     open System
     open System.IO
+    open System.Text.RegularExpressions
+
 
     type PageOrientation = 
         | OrientationPortrait 
@@ -41,9 +43,15 @@ module Common =
     let ( <//> ) (uri:Uri) (path2:string) : Uri = 
         new Uri (Path.Combine(uri.LocalPath, path2))
 
-    let folderUri (path:string) = 
-        let path1 = DirectoryInfo(sprintf "%s%c" path Path.DirectorySeparatorChar).FullName
-        new Uri (path1)
+    /// TODO - this looks flaky, think of a better way to do it.
+    let folderUri (path:string) : Uri= 
+        let uri = new Uri(path)
+        let rx = new Regex(pattern = "/+$", options = RegexOptions.IgnoreCase)
+        if rx.IsMatch(uri.AbsoluteUri) then 
+            uri
+        else new Uri (uri.AbsoluteUri + "/")
+
+
 
     // ************************************************************************
     // Find and replace

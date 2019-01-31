@@ -63,8 +63,8 @@ module PhotoBook =
         let proc1 () =  
             let action (fullPath:string) = sourceJpegFile (FileInfo(fullPath).Name)
             docMonad { 
-                let! xs = findAllSourceFilesMatching "*.jpg"
-                let! ys = findAllSourceFilesMatching "*.jpeg"
+                let! xs = findAllSourceFilesMatching "*.jpg" false
+                let! ys = findAllSourceFilesMatching "*.jpeg" false
                 printfn "copyJpegs - here 1"
                 List.iter (printfn "%s") xs 
                 let! jpegs = mapM action (xs @ ys) |>> Collection.fromList

@@ -162,7 +162,7 @@ let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfFile> =
 // May have multiple surveys...
 let surveys () : DocMonadWord<PdfFile list> = 
     docMonad {
-        let! inputs = findAllSourceFilesMatching "*Survey*.doc*"
+        let! inputs = findAllSourceFilesMatching "*Survey*.doc*" false
         let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
         return pdfs
     }
@@ -178,7 +178,7 @@ let siteWorksPhotos () : DocMonadWord<PdfFile> =
 /// Get all doc files
 let siteWorks () : DocMonadWord<PdfFile list> = 
     docMonad {
-        let! inputs = findAllSourceFilesMatching "*.doc*"
+        let! inputs = findAllSourceFilesMatching "*.doc*" false
         let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
         return pdfs
     }
