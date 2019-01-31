@@ -68,7 +68,7 @@ module WordFile =
                     (outputName:string)
                     (src:WordFile) : DocMonad<#HasWordHandle,PdfFile> = 
         docMonad { 
-            let! outputPath = getOutputPath outputName
+            let! outputPath = extendWorkingPath outputName
             let pdfQuality = wordExportQuality quality
             let! (ans:unit) = 
                 execWord <| fun app -> 
@@ -81,8 +81,8 @@ module WordFile =
     let exportPdf (quality:PrintQuality)  
                   (src:WordFile) : DocMonad<#HasWordHandle,PdfFile> = 
         docMonad { 
-            let! local = Path.GetFileName(src.LocalPath) |> changeToWorkingFile
-            let outputFile = Path.ChangeExtension(local.LocalPath, "pdf")
+            let! path1 = generateWorkingFileName(src.LocalPath)
+            let outputFile = Path.ChangeExtension(path1, "pdf")
             let! pdf = exportPdfAs quality outputFile src
             return pdf
         }

@@ -97,7 +97,7 @@ let getSaiNumber (siteName:string) : DocMonad<'res,string> =
 
 let commonSubFolder (subFolderName:string) 
                     (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-    localSubDirectory subFolderName <| childSourceDirectory subFolderName ma
+    localWorkingSubdirectory subFolderName <| localSourceSubdirectory subFolderName ma
 
 
 
@@ -117,9 +117,9 @@ let renderMarkdownFile (stylesheetName:string option)
 
 let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
     docMonad { 
-        let! logoPath = askIncludeFile "YW-logo.jpg"
+        let! logoPath = extendIncludePath "YW-logo.jpg"
         let! (stylesheet:WordFile option) = includeWordFile "custom-reference1.docx" |>> Some
-        let! markdownFile = coversheet saiNumber siteName logoPath.LocalPath "S Tetley" "coversheet.md" 
+        let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
         let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle "Coversheet"
         return pdf
@@ -193,7 +193,7 @@ let getWorkList () : string list =
         |> Array.toList
 
 let buildOne (sourceName:string) : DocMonadWord<unit> = 
-    localSubDirectory sourceName <| 
+    localWorkingSubdirectory sourceName <| 
         docMonad {
             let siteName = getSiteName sourceName
             let! saiNumber = getSaiNumber siteName
@@ -220,13 +220,13 @@ let demo01 () =
 let demo02 () = 
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| childSourceDirectory @"AISLABY_CSO\1.Survey" (surveys ())
+        <| localSourceSubdirectory @"AISLABY_CSO\1.Survey" (surveys ())
             
 
 let demo03 () = 
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| childSourceDirectory @"ABERFORD ROAD_NO 1 CSO\2.Site_work" (siteWorks ())
+        <| localSourceSubdirectory @"ABERFORD ROAD_NO 1 CSO\2.Site_work" (siteWorks ())
 
 
 let demo04 () = 

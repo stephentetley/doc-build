@@ -14,11 +14,6 @@ module FileOperations =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
 
-    // This module is becoming obsolete as we are approaching a strong
-    // notion of "source", "working" and "include" directories and 
-    // reneging on the idea of random access to the file system.
-
-
 
     let getOutputPath (relativeFileName:string) : DocMonad<'res,string> = 
         askWorkingDirectory () |>> fun cwd -> (cwd.LocalPath </> relativeFileName)
@@ -32,6 +27,15 @@ module FileOperations =
 
     let askIncludeDirectoryPath () : DocMonad<'res,string> = 
         askIncludeDirectory () |>> fun uri -> uri.LocalPath
+
+    let extendWorkingPath (relPath:string) : DocMonad<'res,string> = 
+        askWorkingDirectoryPath () |>> fun root -> root </> relPath
+
+    let extendSourcePath (relPath:string) : DocMonad<'res,string> = 
+        askSourceDirectoryPath () |>> fun root -> root </> relPath
+    
+    let extendIncludePath (relPath:string) : DocMonad<'res,string> = 
+        askIncludeDirectoryPath () |>> fun root -> root </> relPath
 
     let isWorkingPath (absPath:string) : DocMonad<'res,bool> = 
         docMonad { 
@@ -158,18 +162,28 @@ module FileOperations =
             Directory.CreateDirectory(absFolderName) |> ignore
             dreturn ()
 
+    /// Rewrite the the file name to site it in the working folder.
+    /// If the file is from Source or Include directories generate the name with 
+    /// the respective subfolder path from root.
+    /// Otherwise, generate the file name at the top level of Workgin.
+    let generateWorkingFileName (absPath:string) : DocMonad<'res,string> = 
+        docMonad { 
+            let! suffix = getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
+            let! fullPath = extendWorkingPath suffix
+            return fullPath
+        }
+
     /// Copy a file to working, returning the copy as a Document.
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
     let copyFileToWorking (absPath:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! suffix = getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
-            let! target = askWorkingDirectory () |>> fun uri -> uri <//> suffix
-            do if File.Exists(target.LocalPath) then 
-                    File.Delete(target.LocalPath) 
+            let! target = generateWorkingFileName absPath
+            do if File.Exists(target) then 
+                    File.Delete(target) 
                else ()
             do File.Copy( sourceFileName = absPath
-                        , destFileName = target.LocalPath )
+                        , destFileName = target )
             return Document(target)
         }
 
@@ -258,73 +272,4 @@ module FileOperations =
             return ans
         }
 
-    //// Old API...
-
-   /// Throws error if the doc to be modified is not in the working 
-    /// directory.
-    let withWorkingDoc (modify:Document<'a> -> DocMonad<'res,'answer>) 
-                       (doc:Document<'a>) : DocMonad<'res,'answer> = 
-        isWorkingDocument doc >>= fun ans -> 
-        match ans with
-        | true -> modify doc
-        | false -> 
-            throwError (sprintf "Document '%s' is not in the Working directory" doc.Title)
-
-
-
-    let private askFile (getTopLevel:unit -> DocMonad<'res,Uri>)
-                        (fileName:string) : DocMonad<'res,Uri> = 
-        docMonad { 
-            let! cwd = getTopLevel ()
-            let path = cwd.LocalPath </> fileName
-            return new Uri(path)
-        }
-
-    /// Return the full path of a filename local to the working directory.
-    /// Does not validate if the file exists
-    let askWorkingFile (fileName:string) : DocMonad<'res,Uri> = 
-        askFile askWorkingDirectory fileName
-
-
-    /// Return the full path of a filename local to the Source directory.
-    /// Does not validate if the file exists
-    let askSourceFile (fileName:string) : DocMonad<'res,Uri> = 
-        askFile askSourceDirectory fileName
-
-
-    /// Return the full path of a filename local to the Include directory.
-    /// Does not validate if the file exists
-    let askIncludeFile (fileName:string) : DocMonad<'res,Uri> = 
-        askFile askIncludeDirectory fileName
-    
-
-
-
-
-
-
-    let copyCollectionToWorking (col:Collection.Collection<'a>) : DocMonad<'res, Collection.Collection<'a>> = 
-        Collection.mapM copyToWorking col
-
-
-    /// Change to internal file path to point to the working directory.
-    /// This does not physically copy the file.
-    let changeToWorkingFile (fileName:string) : DocMonad<'res,Uri> = 
-        docMonad { 
-            let! cwd = askWorkingDirectory ()
-            let path = cwd.LocalPath </> fileName
-            return new Uri(path)
-        }            
-
-    // ************************************************************************
-    // Source files
-            
-
-
-    ///// Search file matching files in the SourceDirectory.
-    ///// Uses glob pattern - the only wild cards are '?' and '*'
-    //let findAllSourceFilesMatching (pattern:string) 
-    //                               (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
-    //    askSourceDirectory () |>> fun uri -> 
-    //        FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories uri.LocalPath
-            
+  
