@@ -14,6 +14,7 @@ module DocMonad =
 
     open DocBuild.Base
     open DocBuild.Base.Shell
+    open System.Linq.Expressions
 
     type BuilderEnv = 
         { WorkingDirectory: Uri
@@ -205,6 +206,13 @@ module DocMonad =
     // ****************************************************
     // Monadic operations
 
+
+    let assertM (cond:DocMonad<'res,bool>) (failMsg:string) : DocMonad<'res,unit> = 
+        docMonad { 
+            match! cond with
+            | true -> return ()
+            | false -> throwError failMsg |> ignore
+        }
 
     let whenM (cond:DocMonad<'res,bool>) 
               (failMsg:string) 

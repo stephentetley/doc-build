@@ -115,8 +115,7 @@ module Document =
     let getIncludeDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'res,Document<'a>> = 
        docMonad { 
-            let! (path:Uri) = 
-                askIncludeDirectory () |>> fun uri -> uri <//> relativeName
+            let! path = askIncludeDirectory () |>> fun uri -> uri <//> relativeName
             return! getDocument validFileExtensions path 
             }
 

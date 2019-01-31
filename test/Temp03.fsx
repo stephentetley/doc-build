@@ -66,3 +66,12 @@ let test04 () =
             return (docs &>> last)
             }
     runDocMonadNoCleanup () WindowsEnv script |> Result.map Collection.toList
+
+
+let test05a () = 
+    let script = assertM (dreturn false) "my error"
+    runDocMonadNoCleanup () WindowsEnv script 
+
+let test05b () = 
+    let script = assertM (dreturn true) "my error"
+    runDocMonadNoCleanup () WindowsEnv script 
