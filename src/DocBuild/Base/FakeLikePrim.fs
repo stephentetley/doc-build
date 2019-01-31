@@ -5,7 +5,7 @@
 namespace DocBuild.Base
 
 
-module FakeLike = 
+module FakeLikePrim = 
 
     open System.IO
     open System

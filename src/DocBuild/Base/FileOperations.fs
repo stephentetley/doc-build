@@ -20,41 +20,123 @@ module FileOperations =
 
 
 
-
     let getOutputPath (relativeFileName:string) : DocMonad<'res,string> = 
         askWorkingDirectory () |>> fun cwd -> (cwd.LocalPath </> relativeFileName)
 
 
     let isWorking (doc:Document<'a>) : DocMonad<'res,bool> = 
         docMonad { 
-            let! cwd = askWorkingDirectory ()
-            return cwd.IsBaseOf(doc.Uri)
+            let! dir = askWorkingDirectory ()
+            return dir.IsBaseOf(doc.Uri)
         }
 
     let isSource (doc:Document<'a>) : DocMonad<'res,bool> = 
         docMonad { 
-            let! cwd = askSourceDirectory ()
-            return cwd.IsBaseOf(doc.Uri)
+            let! dir = askSourceDirectory ()
+            return dir.IsBaseOf(doc.Uri)
         }
 
     let isInclude (doc:Document<'a>) : DocMonad<'res,bool> = 
         docMonad { 
-            let! cwd = askIncludeDirectory ()
-            return cwd.IsBaseOf(doc.Uri)
+            let! dir = askIncludeDirectory ()
+            return dir.IsBaseOf(doc.Uri)
         }
 
-    //let getWorkingPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
-        
-
-    //let getPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
-    //    docMonad { 
-    //        let path = doc.LocalPath
-    //        let! cwd = ask
-    //    }
+    let assertIsWorking (doc:Document<'a>) : DocMonad<'res, unit> = 
+        isWorking doc >>= fun ans ->
+        if ans then 
+            dreturn ()
+        else
+            throwError (sprintf "Not a working Document - '%s'" doc.Title)
 
 
-    //let copyToWoking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
-    //    dreturn doc
+    let assertIsSource (doc:Document<'a>) : DocMonad<'res, unit> = 
+        isSource doc >>= fun ans ->
+        if ans then 
+            dreturn ()
+        else
+            throwError (sprintf "Not a source Document - '%s'" doc.Title)
+
+    let assertIsInclude (doc:Document<'a>) : DocMonad<'res, unit> = 
+        isInclude doc >>= fun ans ->
+        if ans then 
+            dreturn ()
+        else
+            throwError (sprintf "Not an include Document - '%s'" doc.Title)
+
+    let getWorkingPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+        let proc () = 
+            docMonad { 
+                let! dir = askWorkingDirectory ()
+                let uri = dir.MakeRelativeUri(doc.Uri)
+                return (dir.MakeRelativeUri(doc.Uri).ToString())
+            }
+        assertIsWorking doc >>= fun _ -> proc ()
+
+    let getSourcePathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+        let proc () = 
+            docMonad { 
+                let! dir = askSourceDirectory ()
+                let uri = dir.MakeRelativeUri(doc.Uri)
+                return (dir.MakeRelativeUri(doc.Uri).ToString())
+            }
+        assertIsSource doc >>= fun _ -> proc ()
+
+    let getIncludePathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+        let proc () = 
+            docMonad { 
+                let! dir = askIncludeDirectory ()
+                let uri = dir.MakeRelativeUri(doc.Uri)
+                return (dir.MakeRelativeUri(doc.Uri).ToString())
+            }
+        assertIsInclude doc >>= fun _ -> proc ()
+
+    let getPathSuffix (doc:Document<'a>) : DocMonad<'res,string> =
+        getWorkingPathSuffix doc 
+            <||> getSourcePathSuffix doc 
+            <||> getIncludePathSuffix doc 
+
+
+    /// Create a subdirectory in the Working directory.
+    let createWorkingFolder (subfolderName:string) : DocMonad<'res,unit> = 
+        askWorkingDirectory () >>= fun cwd ->
+        let absFolderName = (cwd <//> subfolderName).LocalPath
+        if Directory.Exists(absFolderName) then
+            dreturn ()
+        else
+            Directory.CreateDirectory(absFolderName) |> ignore
+            dreturn ()
+
+
+
+
+    /// Copy a doc to working.
+    /// If the file is from Source or Include copy with the respective
+    /// subfolder path from root.
+    let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
+        docMonad { 
+            let! suffix = getPathSuffix doc <||> dreturn doc.FileName
+            let! target = askWorkingDirectory () |>> fun uri -> uri <//> suffix
+            do if File.Exists(target.LocalPath) then 
+                    File.Delete(target.LocalPath) 
+               else ()
+            do File.Copy( sourceFileName = doc.LocalPath
+                        , destFileName = target.LocalPath )
+            return Document(target)
+        }
+
+
+    /// Rename a folder in the working drectory
+    let renameWorkingFolder (oldName:string) (newName:string) : DocMonad<'res,unit> = 
+        askWorkingDirectory () >>= fun cwd ->
+        let oldPath = (cwd <//> oldName).LocalPath
+        if Directory.Exists(oldPath) then
+            let newPath = (cwd <//> newName).LocalPath
+            Directory.Move(oldPath, newPath)
+            dreturn ()
+        else
+            throwError (sprintf "renameWorkingFolder - folder does not exist '%s'" oldPath)
+
 
 
     /// Throws error if the doc to be modified is not in the working 
@@ -132,17 +214,7 @@ module FileOperations =
             return ans
         }
 
-    /// This will overwrite existing documents!
-    let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
-            docMonad { 
-                let justFile = Path.GetFileName(doc.LocalPath)
-                let! cwd = askWorkingDirectory ()
-                let target = cwd.LocalPath </> justFile
-                do if File.Exists(target) then File.Delete(target) else ()
-                do File.Copy( sourceFileName = doc.LocalPath
-                            , destFileName = target )
-                return Document(target)
-            }
+
   
 
 
@@ -168,11 +240,11 @@ module FileOperations =
     /// (the only wild cards are '?' and '*'), not a regex.
     let hasSourceFilesMatching (pattern:string) : DocMonad<'res, bool> = 
         askSourceDirectory () |>>  fun uri -> 
-            FakeLike.hasFilesMatching pattern uri.LocalPath
+            FakeLikePrim.hasFilesMatching pattern uri.LocalPath
 
     /// Search file matching files in the SourceDirectory.
     /// Uses glob pattern - the only wild cards are '?' and '*'
     let findAllSourceFilesMatching (pattern:string) : DocMonad<'res, string list> =
         askSourceDirectory () |>> fun uri -> 
-            FakeLike.findAllFilesMatching pattern uri.LocalPath
+            FakeLikePrim.findAllFilesMatching pattern uri.LocalPath
             

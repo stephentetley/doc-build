@@ -24,13 +24,13 @@
 
 open System
 
+#load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\DocMonadOperators.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
-#load "..\src\DocBuild\Base\FakeLike.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
@@ -97,6 +97,15 @@ let demo03 () =
             let! w1 = workingWordFile "sample.docx" 
             let! p1 = WordFile.exportPdf PqScreen w1 
             return p1
+        }
+
+let demo04 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv <| 
+        docMonad { 
+            let! w1 = sourceWordFile "sample.docx" 
+            let! relpath = getPathSuffix w1
+            return relpath
         }
 
 

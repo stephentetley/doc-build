@@ -5,13 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="DocBuild\Base\FakeLikePrim.fs" />
     <Compile Include="DocBuild\Base\Common.fs" />
     <Compile Include="DocBuild\Base\Shell.fs" />
     <Compile Include="DocBuild\Base\DocMonad.fs" />
     <Compile Include="DocBuild\Base\DocMonadOperators.fs" />
     <Compile Include="DocBuild\Base\Document.fs" />
     <Compile Include="DocBuild\Base\Collection.fs" />
-    <Compile Include="DocBuild\Base\FakeLike.fs" />
     <Compile Include="DocBuild\Base\FileOperations.fs" />
     <Compile Include="DocBuild\Raw\GhostscriptPrim.fs" />
     <Compile Include="DocBuild\Raw\PandocPrim.fs" />

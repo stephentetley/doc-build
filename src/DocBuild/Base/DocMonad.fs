@@ -141,14 +141,27 @@ module DocMonad =
     let asks (extract:BuilderEnv -> 'a) : DocMonad<'res,'a> = 
         DocMonad <| fun _ env -> Ok (extract env)
 
-    let askWorkingDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.WorkingDirectory)
 
+    /// Rewrite the Uri to append "/" to the last segment insuring
+    /// the Uri represents a folder.
+    let private assertFolderUri (uri:Uri) : Uri = 
+        new Uri (sprintf "%s/" uri.AbsoluteUri)
+
+    /// Note - this asserts that the Working directory path represents a 
+    /// folder not a file.
+    let askWorkingDirectory () : DocMonad<'res,Uri> = 
+        asks (fun env -> env.WorkingDirectory |> assertFolderUri)
+
+    /// Note - this asserts that the Source directory path represents a 
+    /// folder not a file.
     let askSourceDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.SourceDirectory)
-        
+        asks (fun env -> env.SourceDirectory |> assertFolderUri)
+
+
+    /// Note - this asserts that the Include directory path represents a 
+    /// folder not a file.
     let askIncludeDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.IncludeDirectory)
+        asks (fun env -> env.IncludeDirectory |> assertFolderUri)
 
     /// Use with caution.
     /// Generally you might only want to update the 

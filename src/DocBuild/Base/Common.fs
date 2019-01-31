@@ -33,8 +33,7 @@ module Common =
     // File path concat
 
 
-    /// This is just an alias for System.IO.Path.Combine.
-    /// Note if the second path is prefixed by '\\'
+    /// This is System.IO.Path.Combine.
     /// "directory" </> "/file.ext" == "/file.ext"
     let ( </> ) (path1:string) (path2:string) : string = 
         Path.Combine(path1, path2)

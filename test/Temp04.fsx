@@ -36,7 +36,28 @@ let test04 () =
 
 
 
-let test05 () = 
+let test05Proc (basePath:Uri) = 
+    let pathToFile = new Uri (@"G:\work\working\folder1\temp.txt")
+    if basePath.IsBaseOf(pathToFile) then 
+        basePath.MakeRelativeUri(pathToFile)
+    else
+        failwith "WRONG"
+
+let test05a () = 
+    new Uri (@"G:\work\working") |> test05Proc
+
+let test05b () = 
+    new Uri (@"G:\work\working\") |> test05Proc
+
+/// Must end in "*\\"
+let assertFolderUri (uri:Uri) : Uri = 
+    new Uri (sprintf "%s/" uri.AbsoluteUri)
+
+let test06 () = 
+    assertFolderUri (new Uri (@"G:\work\working")) |> fun uri -> uri.LocalPath
+
+
+let test07 () =
     let basePath = new Uri (@"G:\work\working\")
     let pathToFile = new Uri (@"G:\work\working\folder1\temp.txt")
     if basePath.IsBaseOf(pathToFile) then 
@@ -44,10 +65,14 @@ let test05 () =
     else
         failwith "WRONG"
 
-/// Must end in "*\\"
-let folderUri (path:string) = 
-    let path1 = DirectoryInfo(sprintf "%s%c" path Path.DirectorySeparatorChar).FullName
-    new Uri (path1)
+let test07b () = 
+    test07 () |> fun uri -> uri.ToString()
 
+let test08 () = 
+    System.IO.Path.GetDirectoryName(@"folder1/temp.txt") |> printfn "%s"
+    System.IO.Path.GetDirectoryName(@"folder1\temp.txt") |> printfn "%s"
+    // GetFullPath fixes the name to "user-temp" horrible...
+    System.IO.Path.GetFullPath(@"folder1\temp.txt") |> printfn "%s"
+    System.IO.Path.Combine([| @"folder1/temp.txt" |]) |> printfn "%s"
 
 
