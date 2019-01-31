@@ -32,7 +32,7 @@
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
-#load "..\src\DocBuild\Base\FileIO.fs"
+#load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
@@ -100,6 +100,8 @@ let commonSubFolder (subFolderName:string)
                     (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
     localSubDirectory subFolderName <| childSourceDirectory subFolderName ma
 
+
+
 let renderMarkdownFile (stylesheetName:string option)
                        (docTitle:string)
                        (markdown:MarkdownFile) : DocMonadWord<PdfFile> =
@@ -161,7 +163,7 @@ let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfFile> =
 // May have multiple surveys...
 let surveys () : DocMonadWord<PdfFile list> = 
     docMonad {
-        let! inputs = findAllSourceFilesMatching "*Survey.doc*"
+        let! inputs = findAllSourceFilesMatching "*Survey*.doc*"
         let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
         return pdfs
     }

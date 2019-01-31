@@ -12,7 +12,7 @@
     <Compile Include="DocBuild\Base\Document.fs" />
     <Compile Include="DocBuild\Base\Collection.fs" />
     <Compile Include="DocBuild\Base\FakeLike.fs" />
-    <Compile Include="DocBuild\Base\FileIO.fs" />
+    <Compile Include="DocBuild\Base\FileOperations.fs" />
     <Compile Include="DocBuild\Raw\GhostscriptPrim.fs" />
     <Compile Include="DocBuild\Raw\PandocPrim.fs" />
     <Compile Include="DocBuild\Raw\PdftkPrim.fs" />

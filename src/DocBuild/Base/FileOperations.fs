@@ -5,7 +5,7 @@
 namespace DocBuild.Base
 
 [<AutoOpen>]
-module FileIO = 
+module FileOperations = 
 
     open System.IO
     open System
@@ -19,13 +19,41 @@ module FileIO =
     // reneging on the idea of random access to the file system.
 
 
-    /// Note if the second path is prefixed by '\\'
-    /// "directory" </> "/file.ext" == "/file.ext"
-    let (</>) (path1:string) (path2:string) = 
-        Path.Combine(path1, path2)
 
-    let getOutputPath (fileName:string) : DocMonad<'res,string> = 
-        askWorkingDirectory () |>> fun cwd -> (cwd.LocalPath </> fileName)
+
+    let getOutputPath (relativeFileName:string) : DocMonad<'res,string> = 
+        askWorkingDirectory () |>> fun cwd -> (cwd <//> relativeFileName)
+
+
+    let isWorking (doc:Document<'a>) : DocMonad<'res,bool> = 
+        docMonad { 
+            let! cwd = askWorkingDirectory ()
+            return cwd.IsBaseOf(doc.Uri)
+        }
+
+    let isInclude (doc:Document<'a>) : DocMonad<'res,bool> = 
+        docMonad { 
+            let! cwd = askIncludeDirectory ()
+            return cwd.IsBaseOf(doc.Uri)
+        }
+
+    let isSource (doc:Document<'a>) : DocMonad<'res,bool> = 
+        docMonad { 
+            let! cwd = askIncludeDirectory ()
+            return cwd.IsBaseOf(doc.Uri)
+        }
+
+
+
+    /// Throws error if the doc to be modified is not in the working 
+    /// directory.
+    let withWorkingDoc (modify:Document<'a> -> DocMonad<'res,'answer>) 
+                       (doc:Document<'a>) : DocMonad<'res,'answer> = 
+        isWorking doc >>= fun ans -> 
+        match ans with
+        | true -> modify doc
+        | false -> 
+            throwError (sprintf "Document '%s' is not in the Working directory" doc.Title)
 
 
     //// Old API...

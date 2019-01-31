@@ -7,6 +7,7 @@ namespace DocBuild.Base
 [<AutoOpen>]
 module Common = 
 
+    open System
     open System.IO
 
     type PageOrientation = 
@@ -27,6 +28,20 @@ module Common =
 
     let doubleQuote (source:string) : string = 
         sprintf "\"%s\"" source
+
+    // ************************************************************************
+    // File path concat
+
+
+    /// This is just an alias for System.IO.Path.Combine.
+    /// Note if the second path is prefixed by '\\'
+    /// "directory" </> "/file.ext" == "/file.ext"
+    let ( </> ) (path1:string) (path2:string) = 
+        Path.Combine(path1, path2)
+
+    let ( <//> ) (uri:Uri) (path2:string) = 
+        Path.Combine(uri.LocalPath, path2)
+
 
     // ************************************************************************
     // Find and replace

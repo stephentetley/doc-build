@@ -11,14 +11,15 @@ module Document =
     open System.Text.RegularExpressions
     open System.IO
 
+    open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
 
-    let isWorkingUri (uri:Uri) : DocMonad<'res,bool> = 
-        docMonad { 
-            let! cwd = askWorkingDirectory ()
-            return cwd.IsBaseOf(uri)
-        }
+    //let private isWorkingUri (uri:Uri) : DocMonad<'res,bool> = 
+    //    docMonad { 
+    //        let! cwd = askWorkingDirectory ()
+    //        return cwd.IsBaseOf(uri)
+    //    }
 
 
     let validateExistingFile (validFileExtensions:string list) 
@@ -31,7 +32,8 @@ module Document =
             else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions path.LocalPath
         else throwError <| sprintf "Could not find file: '%s'" path.LocalPath  
 
- 
+
+
 
 
 
@@ -75,6 +77,9 @@ module Document =
             with get () : string = 
                 FileInfo(x.DocUri.LocalPath).Name
 
+
+    /// Warning - this allows random access to the file system, not
+    /// just the "Working"; "Include" and "Source" folders
     let getDocument (validFileExtensions:string list) 
                     (filePath:Uri) : DocMonad<'res,Document<'a>> = 
         docMonad { 
@@ -83,16 +88,7 @@ module Document =
             }
 
 
-    /// Gets a Document from the working directory.
-    let getWorkingDocument (validFileExtensions:string list) 
-                           (fileName:string) : DocMonad<'res,Document<'a>> = 
-        docMonad { 
-            let! src1 = askWorkingDirectory ()
-            let! srcUri = 
-                new Uri(baseUri=src1, relativeUri=fileName) 
-                    |> validateExistingFile validFileExtensions 
-            return Document(srcUri)
-            }
+
 
 
     /// Copies the source Document to working
@@ -128,18 +124,6 @@ module Document =
             }
 
 
-    let isWorking (doc:Document<'a>) : DocMonad<'res,bool> = 
-        isWorkingUri doc.Uri
-
-    /// Throws error if the doc to be modified is not in the working 
-    /// directory.
-    let withWorkingDoc (modify:Document<'a> -> DocMonad<'res,'answer>) 
-                       (doc:Document<'a>) : DocMonad<'res,'answer> = 
-        isWorking doc >>= fun ans -> 
-        match ans with
-        | true -> modify doc
-        | false -> 
-            throwError (sprintf "Document '%s' is not in the Working directory" doc.Title)
 
 
     /// Set the document Title - title is the name of the document
@@ -148,6 +132,16 @@ module Document =
     let setTitle (title:string) (doc:Document<'a>) : Document<'a> = 
         new Document<'a>(uri=doc.Uri, title=title)
 
+    /// Gets a Document from the working directory.
+    let getWorkingDocument (validFileExtensions:string list) 
+                           (relativeName:string) : DocMonad<'res,Document<'a>> = 
+        docMonad { 
+            let! path = 
+                askWorkingDirectory () |>> fun uri -> uri <//> relativeName
+            let! uri = 
+                new Uri(path) |> validateExistingFile validFileExtensions 
+            return Document(uri)
+            }
 
     // ************************************************************************
     // Pdf file

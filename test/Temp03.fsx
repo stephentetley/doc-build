@@ -13,7 +13,7 @@ open System
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
-#load "..\src\DocBuild\Base\FileIO.fs"
+#load "..\src\DocBuild\Base\FileOperations.fs"
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad

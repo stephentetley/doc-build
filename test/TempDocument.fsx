@@ -31,7 +31,7 @@ open System
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FakeLike.fs"
-#load "..\src\DocBuild\Base\FileIO.fs"
+#load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
