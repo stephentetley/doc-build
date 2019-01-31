@@ -58,23 +58,22 @@ module PhotoBook =
         | [] -> h1 (text title)
 
     
-    let internal copyJpegs (sourceSubFolder:string)
-                           (tempSubFolder:string) : DocMonad<'res, JpegCollection> =
-        let proc1 () =  
-            let action (fullPath:string) = sourceJpegFile (FileInfo(fullPath).Name)
-            docMonad { 
-                let! xs = findAllSourceFilesMatching "*.jpg" false
-                let! ys = findAllSourceFilesMatching "*.jpeg" false
-                printfn "copyJpegs - here 1"
-                List.iter (printfn "%s") xs 
-                let! jpegs = mapM action (xs @ ys) |>> Collection.fromList
-                printfn "copyJpegs - here 2"
-                return jpegs
-            }
-        printfn "Source: '%s'" sourceSubFolder
-        printfn "Working: '%s'" sourceSubFolder
-        localSubDirectory tempSubFolder 
-            << childSourceDirectory sourceSubFolder <| proc1 ()
+    let internal copyJpegs (sourceSubdirectory:string)
+                           (workingSubdirectory:string) : DocMonad<'res, JpegCollection> =
+        docMonad { 
+            let! xs = 
+                localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
+            let! ys = 
+                localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
+            printfn "copyJpegs - here 1"
+            List.iter (printfn "%s") xs 
+            // let! jpegs = mapM action (xs @ ys) |>> Collection.fromList
+            printfn "copyJpegs - here 2"
+            // return jpegs
+            return (Collection.fromList [])
+
+        }
+
 
     let makePhotoBook (title:string) 
                       (sourceSubFolder:string) 

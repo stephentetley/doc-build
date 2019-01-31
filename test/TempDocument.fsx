@@ -138,8 +138,3 @@ let demo08 () =
     let toFile = new Uri (@"D:\coding\fsharp\doc-build\data\Concat.pdf")
     root.MakeRelativeUri(toFile).ToString ()
 
-let assertFolderUri (uri:Uri) : Uri = 
-    let rx = new System.Text.RegularExpressions.Regex(pattern = "[/]+$", options = System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-    if rx.IsMatch(uri.AbsoluteUri) then 
-        uri
-    else new Uri (uri.AbsoluteUri + "/")

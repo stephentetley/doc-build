@@ -138,10 +138,10 @@ module FileOperations =
     let getIncludeDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
         getIncludePathSuffix doc.LocalPath
 
-    let getPathSuffix (path:string) : DocMonad<'res,string> =
-        getWorkingPathSuffix path 
-            <||> getSourcePathSuffix path 
-            <||> getIncludePathSuffix path 
+    let getPathSuffix (absPath:string) : DocMonad<'res,string> =
+        getWorkingPathSuffix absPath 
+            <||> getSourcePathSuffix absPath 
+            <||> getIncludePathSuffix absPath 
 
     let getDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> =
         getWorkingDocPathSuffix doc 
@@ -158,17 +158,17 @@ module FileOperations =
             Directory.CreateDirectory(absFolderName) |> ignore
             dreturn ()
 
-    /// Copy a file to working, returnin the copy as a Document.
+    /// Copy a file to working, returning the copy as a Document.
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
-    let copyFileToWorking (path:string) : DocMonad<'res,Document<'a>> = 
+    let copyFileToWorking (absPath:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! suffix = getPathSuffix path <||> dreturn (FileInfo(path).Name)
+            let! suffix = getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
             let! target = askWorkingDirectory () |>> fun uri -> uri <//> suffix
             do if File.Exists(target.LocalPath) then 
                     File.Delete(target.LocalPath) 
                else ()
-            do File.Copy( sourceFileName = path
+            do File.Copy( sourceFileName = absPath
                         , destFileName = target.LocalPath )
             return Document(target)
         }
@@ -202,7 +202,65 @@ module FileOperations =
 
 
 
-    /// Throws error if the doc to be modified is not in the working 
+ 
+    /// Search file matching files in the SourceDirectory.
+    /// Uses glob pattern - the only wild cards are '?' and '*'
+    /// Returns a list of absolute paths.
+    let findAllSourceFilesMatching (pattern:string) 
+                                   (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
+        docMonad { 
+            let! srcPath = askSourceDirectoryPath () 
+            let fullPaths = FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories srcPath
+            return fullPaths
+        }
+
+    let createWorkingSubdirectory (relPath:string) : DocMonad<'res,unit> = 
+        askWorkingDirectoryPath () >>= fun cwd ->
+        let path = cwd </> relPath 
+        if Directory.Exists(path) then
+            dreturn ()
+        else
+            Directory.CreateDirectory(path) |> ignore
+            dreturn ()
+
+
+    /// Run an operation in a subdirectory of current working directory.
+    /// Create the directory if it doesn't exist.
+    let localWorkingSubdirectory (subdirectory:string) 
+                                 (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        docMonad {
+            let! path = askWorkingDirectoryPath () |>> fun ans -> ans </> subdirectory
+            let! _ = createWorkingSubdirectory subdirectory
+            let! ans = 
+                local (fun env -> {env with WorkingDirectory = new Uri(path)}) ma
+            return ans
+        }
+            
+    /// Run an operation with the Source directory restricted to the
+    /// supplied sub-directory.
+    let localSourceSubdirectory (subdirectory:string) 
+                                (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        docMonad {
+            let! src = askSourceDirectoryPath ()
+            let path = src </> subdirectory
+            let! ans = local (fun env -> {env with SourceDirectory = new Uri(path)}) ma
+            return ans
+        }
+
+    /// Run an operation with the Include directory restricted to the
+    /// supplied sub-directory.
+    let localIncludeSubdirectory (subdirectory:string) 
+                                 (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        docMonad {
+            let! inc = askIncludeDirectoryPath ()
+            let path = inc </> subdirectory
+            let! ans = local (fun env -> {env with IncludeDirectory = new Uri(path)}) ma
+            return ans
+        }
+
+    //// Old API...
+
+   /// Throws error if the doc to be modified is not in the working 
     /// directory.
     let withWorkingDoc (modify:Document<'a> -> DocMonad<'res,'answer>) 
                        (doc:Document<'a>) : DocMonad<'res,'answer> = 
@@ -213,21 +271,6 @@ module FileOperations =
             throwError (sprintf "Document '%s' is not in the Working directory" doc.Title)
 
 
-    /// Search file matching files in the SourceDirectory.
-    /// Uses glob pattern - the only wild cards are '?' and '*'
-    let findAllSourceFilesMatching (pattern:string) 
-                                   (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
-        docMonad { 
-            let! srcPath = askSourceDirectoryPath () 
-            let fullPaths = FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories srcPath
-            let! relPaths = mapM getSourcePathSuffix fullPaths
-            return relPaths
-        }
-
-            
-
-
-    //// Old API...
 
     let private askFile (getTopLevel:unit -> DocMonad<'res,Uri>)
                         (fileName:string) : DocMonad<'res,Uri> = 
@@ -255,44 +298,9 @@ module FileOperations =
         askFile askIncludeDirectory fileName
     
 
-    let createWorkingSubDirectory (subDirectory:string) : DocMonad<'res,unit> = 
-        let create1 (path:string) : DocMonad<'res,unit> = 
-            if Directory.Exists(path) then
-                dreturn ()
-            else
-                Directory.CreateDirectory(path) |> ignore
-                dreturn ()
-        docMonad {
-            let! cwd = askWorkingDirectory ()
-            let path = cwd.LocalPath </> subDirectory
-            do! attempt (create1 path)
-        }
-
-    /// Run an operation in a subdirectory of current working directory.
-    /// Create the directory if it doesn't exist.
-    let localSubDirectory (subDirectory:string) 
-                          (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        docMonad {
-            let! cwd = askWorkingDirectory ()
-            let path = cwd.LocalPath </> subDirectory
-            do! createWorkingSubDirectory path
-            let! ans = local (fun env -> {env with WorkingDirectory = new Uri(path)}) ma
-            return ans
-        }
-
-    /// Run an operation with the Source directory restricted to the
-    /// supplied sub-directory.
-    let childSourceDirectory (subDirectory:string) 
-                             (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        docMonad {
-            let! srcDir = askSourceDirectory ()
-            let path = srcDir.LocalPath </> subDirectory
-            let! ans = local (fun env -> {env with SourceDirectory = new Uri(path)}) ma
-            return ans
-        }
 
 
-  
+
 
 
     let copyCollectionToWorking (col:Collection.Collection<'a>) : DocMonad<'res, Collection.Collection<'a>> = 

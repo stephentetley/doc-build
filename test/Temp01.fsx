@@ -125,7 +125,7 @@ let WindowsEnv : BuilderEnv =
 let testCreateDir () =
     runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
-            do! createWorkingSubDirectory @"TEMP_1\CHILD_A"
+            do! createWorkingSubdirectory @"TEMP_1\CHILD_A"
             return ()
         }
 
@@ -204,5 +204,5 @@ let dynexperiment () =
 
 let getEnv (resources:UserResources) : Env1 = 
     match Map.tryFind "Env1" resources with
-    |Some o -> o :?> Env1
+    | Some o -> o :?> Env1
     | None -> failwith "Lookup"
