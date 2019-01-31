@@ -81,9 +81,9 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
-    { WorkingDirectory = new Uri(@"G:\work\Projects\events2\final-docs\output\CSO_SPS")
-      SourceDirectory =  new Uri(@"G:\work\Projects\events2\final-docs\input\CSO_SPS")
-      IncludeDirectory = new Uri(@"G:\work\Projects\events2\final-docs\input\include")
+    { WorkingDirectory = folderUri @"G:\work\Projects\events2\final-docs\output\CSO_SPS\"
+      SourceDirectory =  folderUri @"G:\work\Projects\events2\final-docs\input\CSO_SPS\"
+      IncludeDirectory = folderUri @"G:\work\Projects\events2\final-docs\input\include\"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" }

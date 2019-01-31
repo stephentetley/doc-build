@@ -36,6 +36,18 @@ let test04 () =
 
 
 
+let test05 () = 
+    let basePath = new Uri (@"G:\work\working\")
+    let pathToFile = new Uri (@"G:\work\working\folder1\temp.txt")
+    if basePath.IsBaseOf(pathToFile) then 
+        basePath.MakeRelativeUri(pathToFile)
+    else
+        failwith "WRONG"
+
+/// Must end in "*\\"
+let folderUri (path:string) = 
+    let path1 = DirectoryInfo(sprintf "%s%c" path Path.DirectorySeparatorChar).FullName
+    new Uri (path1)
 
 
 

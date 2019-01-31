@@ -57,10 +57,10 @@ open DocBuild.Base.DocMonadOperators
 open DocBuild.Office
 
 let WindowsEnv : BuilderEnv = 
-    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
-    { WorkingDirectory = new Uri(cwd)
-      SourceDirectory = new Uri(cwd)
-      IncludeDirectory = new Uri(cwd </> "include")
+    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") |> folderUri
+    { WorkingDirectory = cwd
+      SourceDirectory = cwd
+      IncludeDirectory = cwd <//> "include\\"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"

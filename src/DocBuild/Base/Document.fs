@@ -15,11 +15,6 @@ module Document =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
 
-    //let private isWorkingUri (uri:Uri) : DocMonad<'res,bool> = 
-    //    docMonad { 
-    //        let! cwd = askWorkingDirectory ()
-    //        return cwd.IsBaseOf(uri)
-    //    }
 
 
     let validateExistingFile (validFileExtensions:string list) 
@@ -77,6 +72,13 @@ module Document =
             with get () : string = 
                 FileInfo(x.DocUri.LocalPath).Name
 
+                
+    /// Set the document Title - title is the name of the document
+    /// that might be used by some other process, e.g. to generate
+    /// a table of contents.
+    let setTitle (title:string) (doc:Document<'a>) : Document<'a> = 
+        new Document<'a>(uri=doc.Uri, title=title)
+
 
     /// Warning - this allows random access to the file system, not
     /// just the "Working"; "Include" and "Source" folders
@@ -89,59 +91,42 @@ module Document =
 
 
 
-
-
-    /// Copies the source Document to working
-    let getSourceDocument (validFileExtensions:string list) 
-                          (fileName:string) : DocMonad<'res,Document<'a>> = 
-        docMonad { 
-            let! src1 = askSourceDirectory ()
-            printfn "getSourceDocument - here 1 - %s (%s)" fileName src1.LocalPath
-            printfn "getSourceDocument - here 1.1 - %s" (new Uri(baseUri=src1, relativeUri=fileName) ).LocalPath
-            let! srcUri = 
-                new Uri(Path.Combine(src1.LocalPath, fileName))
-                    |> validateExistingFile validFileExtensions 
-            printfn "getSourceDocument - here 2 - %s" srcUri.LocalPath
-            let! dest1 = askWorkingDirectory ()
-            let destUri = new Uri(Path.Combine(dest1.LocalPath,fileName))
-            printfn "getSourceDocument - here 3 - %s" destUri.LocalPath
-            File.Copy(sourceFileName = srcUri.LocalPath, 
-                      destFileName = destUri.LocalPath,
-                      overwrite = true)
-            return Document(destUri)
-            }
-
-
-    /// Does not copies the source Document to working
-    let getIncludeDocument (validFileExtensions:string list) 
-                           (fileName:string) : DocMonad<'res,Document<'a>> = 
-        docMonad { 
-            let! src1 = askSourceDirectory ()
-            let! srcUri = 
-                new Uri(baseUri=src1, relativeUri=fileName) 
-                    |> validateExistingFile validFileExtensions 
-            return Document(srcUri)
-            }
-
-
-
-
-    /// Set the document Title - title is the name of the document
-    /// that might be used by some other process, e.g. to generate
-    /// a table of contents.
-    let setTitle (title:string) (doc:Document<'a>) : Document<'a> = 
-        new Document<'a>(uri=doc.Uri, title=title)
-
     /// Gets a Document from the working directory.
     let getWorkingDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
             let! path = 
                 askWorkingDirectory () |>> fun uri -> uri <//> relativeName
-            let! uri = 
-                new Uri(path) |> validateExistingFile validFileExtensions 
+            let! uri = validateExistingFile validFileExtensions path
             return Document(uri)
             }
+
+
+    /// Gets a Document from the source directory.
+    let getSourceDocument (validFileExtensions:string list) 
+                          (relativeName:string) : DocMonad<'res,Document<'a>> = 
+        docMonad { 
+            let! (path:Uri) = 
+                askSourceDirectory () |>> fun uri -> uri <//> relativeName
+            let! uri = validateExistingFile validFileExtensions path
+            return Document(uri)
+            }
+
+
+    /// Does not copies the source Document to working
+    let getIncludeDocument (validFileExtensions:string list) 
+                           (relativeName:string) : DocMonad<'res,Document<'a>> = 
+       docMonad { 
+            let! (path:Uri) = 
+                askIncludeDirectory () |>> fun uri -> uri <//> relativeName
+            let! uri = validateExistingFile validFileExtensions path
+            return Document(uri)
+            }
+
+
+
+
+
 
     // ************************************************************************
     // Pdf file

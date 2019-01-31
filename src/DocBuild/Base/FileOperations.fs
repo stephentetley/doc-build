@@ -22,12 +22,18 @@ module FileOperations =
 
 
     let getOutputPath (relativeFileName:string) : DocMonad<'res,string> = 
-        askWorkingDirectory () |>> fun cwd -> (cwd <//> relativeFileName)
+        askWorkingDirectory () |>> fun cwd -> (cwd.LocalPath </> relativeFileName)
 
 
     let isWorking (doc:Document<'a>) : DocMonad<'res,bool> = 
         docMonad { 
             let! cwd = askWorkingDirectory ()
+            return cwd.IsBaseOf(doc.Uri)
+        }
+
+    let isSource (doc:Document<'a>) : DocMonad<'res,bool> = 
+        docMonad { 
+            let! cwd = askSourceDirectory ()
             return cwd.IsBaseOf(doc.Uri)
         }
 
@@ -37,12 +43,18 @@ module FileOperations =
             return cwd.IsBaseOf(doc.Uri)
         }
 
-    let isSource (doc:Document<'a>) : DocMonad<'res,bool> = 
-        docMonad { 
-            let! cwd = askIncludeDirectory ()
-            return cwd.IsBaseOf(doc.Uri)
-        }
+    //let getWorkingPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+        
 
+    //let getPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+    //    docMonad { 
+    //        let path = doc.LocalPath
+    //        let! cwd = ask
+    //    }
+
+
+    //let copyToWoking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
+    //    dreturn doc
 
 
     /// Throws error if the doc to be modified is not in the working 

@@ -36,12 +36,15 @@ module Common =
     /// This is just an alias for System.IO.Path.Combine.
     /// Note if the second path is prefixed by '\\'
     /// "directory" </> "/file.ext" == "/file.ext"
-    let ( </> ) (path1:string) (path2:string) = 
+    let ( </> ) (path1:string) (path2:string) : string = 
         Path.Combine(path1, path2)
 
-    let ( <//> ) (uri:Uri) (path2:string) = 
-        Path.Combine(uri.LocalPath, path2)
+    let ( <//> ) (uri:Uri) (path2:string) : Uri = 
+        new Uri (Path.Combine(uri.LocalPath, path2))
 
+    let folderUri (path:string) = 
+        let path1 = DirectoryInfo(sprintf "%s%c" path Path.DirectorySeparatorChar).FullName
+        new Uri (path1)
 
     // ************************************************************************
     // Find and replace
