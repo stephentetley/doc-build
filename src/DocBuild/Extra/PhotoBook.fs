@@ -65,13 +65,8 @@ module PhotoBook =
                 localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
             let! ys = 
                 localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
-            printfn "copyJpegs - here 1"
-            List.iter (printfn "%s") xs 
-            // let! jpegs = mapM action (xs @ ys) |>> Collection.fromList
-            printfn "copyJpegs - here 2"
-            // return jpegs
-            return (Collection.fromList [])
-
+            let! jpegs = mapM copyFileToWorking (xs @ ys)
+            return (Collection.fromList jpegs)
         }
 
 

@@ -179,11 +179,10 @@ module FileOperations =
     let copyFileToWorking (absPath:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
             let! target = generateWorkingFileName absPath
-            do if File.Exists(target) then 
-                    File.Delete(target) 
-               else ()
-            do File.Copy( sourceFileName = absPath
-                        , destFileName = target )
+            if File.Exists(target) then 
+                File.Delete(target) 
+            else ()
+            File.Copy( sourceFileName = absPath, destFileName = target )
             return Document(target)
         }
 
@@ -196,10 +195,10 @@ module FileOperations =
 
     /// Rename a folder in the working drectory
     let renameWorkingFolder (oldName:string) (newName:string) : DocMonad<'res,unit> = 
-        askWorkingDirectory () >>= fun cwd ->
-        let oldPath = (cwd <//> oldName).LocalPath
+        askWorkingDirectoryPath () >>= fun cwd ->
+        let oldPath = cwd </> oldName
         if Directory.Exists(oldPath) then
-            let newPath = (cwd <//> newName).LocalPath
+            let newPath = cwd </> newName
             Directory.Move(oldPath, newPath)
             dreturn ()
         else
@@ -224,8 +223,7 @@ module FileOperations =
                                    (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
         docMonad { 
             let! srcPath = askSourceDirectoryPath () 
-            let fullPaths = FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories srcPath
-            return fullPaths
+            return FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories srcPath
         }
 
     let createWorkingSubdirectory (relPath:string) : DocMonad<'res,unit> = 
@@ -243,11 +241,9 @@ module FileOperations =
     let localWorkingSubdirectory (subdirectory:string) 
                                  (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
-            let! path = askWorkingDirectoryPath () |>> fun ans -> ans </> subdirectory
+            let! path = extendWorkingPath subdirectory
             let! _ = createWorkingSubdirectory subdirectory
-            let! ans = 
-                local (fun env -> {env with WorkingDirectory = new Uri(path)}) ma
-            return ans
+            return! local (fun env -> {env with WorkingDirectory = new Uri(path)}) ma
         }
             
     /// Run an operation with the Source directory restricted to the
@@ -255,10 +251,8 @@ module FileOperations =
     let localSourceSubdirectory (subdirectory:string) 
                                 (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
-            let! src = askSourceDirectoryPath ()
-            let path = src </> subdirectory
-            let! ans = local (fun env -> {env with SourceDirectory = new Uri(path)}) ma
-            return ans
+            let! path = extendSourcePath subdirectory
+            return! local (fun env -> {env with SourceDirectory = new Uri(path)}) ma
         }
 
     /// Run an operation with the Include directory restricted to the
@@ -266,10 +260,8 @@ module FileOperations =
     let localIncludeSubdirectory (subdirectory:string) 
                                  (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
-            let! inc = askIncludeDirectoryPath ()
-            let path = inc </> subdirectory
-            let! ans = local (fun env -> {env with IncludeDirectory = new Uri(path)}) ma
-            return ans
+            let! path = extendIncludePath subdirectory
+            return! local (fun env -> {env with IncludeDirectory = new Uri(path)}) ma
         }
 
   

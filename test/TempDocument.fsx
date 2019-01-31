@@ -95,8 +95,7 @@ let demo03 () =
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
             let! w1 = workingWordFile "sample.docx" 
-            let! p1 = WordFile.exportPdf PqScreen w1 
-            return p1
+            return! WordFile.exportPdf PqScreen w1 
         }
 
 let demo04 () = 
@@ -104,8 +103,7 @@ let demo04 () =
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
             let! w1 = sourceWordFile "sample.docx" 
-            let! relpath = getDocPathSuffix w1
-            return relpath
+            return! getDocPathSuffix w1
         }
 
 
@@ -113,8 +111,7 @@ let demo05 () =
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
-            let! relpaths = findAllSourceFilesMatching "*.pdf" true
-            return relpaths
+            return! findAllSourceFilesMatching "*.pdf" true
         }
 
 let demo06 () = 

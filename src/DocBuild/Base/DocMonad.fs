@@ -72,6 +72,8 @@ module DocMonad =
         member self.Zero ()             = dzero ()
         member self.Combine (ma,mb)     = combineM ma mb
         member self.Delay fn            = delayM fn
+        member self.ReturnFrom(ma)      = ma
+
 
     let (docMonad:DocMonadBuilder) = new DocMonadBuilder()
 

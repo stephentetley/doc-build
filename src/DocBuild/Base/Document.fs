@@ -16,16 +16,18 @@ module Document =
     open DocBuild.Base.DocMonadOperators
 
 
-
-    let validateExistingFile (validFileExtensions:string list) 
-                             (path:Uri) : DocMonad<'res,Uri> = 
-        if System.IO.File.Exists(path.LocalPath) then 
-            let extension : string = System.IO.Path.GetExtension(path.LocalPath)
+    /// Check the file exists and it's extension matches one of the supplied list.
+    /// The path should be an absolute path.
+    /// Throws an error within DocMonad on failure.
+    let assertExistingFile (validFileExtensions:string list) 
+                             (absPath:string) : DocMonad<'res,unit> = 
+        if System.IO.File.Exists(absPath) then 
+            let extension : string = System.IO.Path.GetExtension(absPath)
             let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
             if List.exists testExtension validFileExtensions then 
-                dreturn path
-            else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions path.LocalPath
-        else throwError <| sprintf "Could not find file: '%s'" path.LocalPath  
+                dreturn ()
+            else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions absPath
+        else throwError <| sprintf "Could not find file: '%s'" absPath 
 
 
 
@@ -83,10 +85,10 @@ module Document =
     /// Warning - this allows random access to the file system, not
     /// just the "Working"; "Include" and "Source" folders
     let getDocument (validFileExtensions:string list) 
-                    (filePath:Uri) : DocMonad<'res,Document<'a>> = 
+                    (absPath:Uri) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! path = validateExistingFile validFileExtensions filePath
-            return Document(path)
+            do! assertExistingFile validFileExtensions absPath.LocalPath
+            return Document(absPath)
             }
 
 
@@ -95,10 +97,8 @@ module Document =
     let getWorkingDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! path = 
-                askWorkingDirectory () |>> fun uri -> uri <//> relativeName
-            let! uri = validateExistingFile validFileExtensions path
-            return Document(uri)
+            let! path = askWorkingDirectory () |>> fun uri -> uri <//> relativeName
+            return! getDocument validFileExtensions path 
             }
 
 
@@ -106,10 +106,8 @@ module Document =
     let getSourceDocument (validFileExtensions:string list) 
                           (relativeName:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! (path:Uri) = 
-                askSourceDirectory () |>> fun uri -> uri <//> relativeName
-            let! uri = validateExistingFile validFileExtensions path
-            return Document(uri)
+            let! path = askSourceDirectory () |>> fun uri -> uri <//> relativeName
+            return! getDocument validFileExtensions path 
             }
 
 
@@ -119,8 +117,7 @@ module Document =
        docMonad { 
             let! (path:Uri) = 
                 askIncludeDirectory () |>> fun uri -> uri <//> relativeName
-            let! uri = validateExistingFile validFileExtensions path
-            return Document(uri)
+            return! getDocument validFileExtensions path 
             }
 
 
@@ -136,17 +133,21 @@ module Document =
     type PdfFile = Document<PdfPhantom>
 
     /// Must have .pdf extension.
-    let workingPdfFile (fileName:string) : DocMonad<'res,PdfFile> = 
-        getWorkingDocument [".pdf"] fileName
+    let getPdfFile (absolutePath:string) : DocMonad<'res,PdfFile> = 
+        new Uri(absolutePath) |> getDocument [".pdf"]
+
+    /// Must have .pdf extension.
+    let workingPdfFile (relativeName:string) : DocMonad<'res,PdfFile> = 
+        getWorkingDocument [".pdf"] relativeName
 
     /// Must have .pdf extension.
     /// Writes a mutable copy to Working.
-    let sourcePdfFile (fileName:string) : DocMonad<'res,PdfFile> = 
-        getSourceDocument [".pdf"] fileName
+    let sourcePdfFile (relativeName:string) : DocMonad<'res,PdfFile> = 
+        getSourceDocument [".pdf"] relativeName
 
     /// Must have .pdf extension.
-    let includePdfFile (fileName:string) : DocMonad<'res,PdfFile> = 
-        getIncludeDocument [".pdf"] fileName
+    let includePdfFile (relativeName:string) : DocMonad<'res,PdfFile> = 
+        getIncludeDocument [".pdf"] relativeName
 
 
     // ************************************************************************
@@ -156,20 +157,23 @@ module Document =
     
     type JpegFile = Document<JpegPhantom>
     
+    /// Must have .jpg or .jpeg extension.
+    let getJpegFile (absolutePath:string) : DocMonad<'res,JpegFile> = 
+        new Uri(absolutePath) |> getDocument [".jpg"; ".jpeg"]
 
     /// Must have .jpg or .jpeg extension.
-    let workingJpegFile (fileName:string) : DocMonad<'res,JpegFile> = 
-        getWorkingDocument [".jpg"; ".jpeg"] fileName
+    let workingJpegFile (relativeName:string) : DocMonad<'res,JpegFile> = 
+        getWorkingDocument [".jpg"; ".jpeg"] relativeName
 
 
     /// Must have .jpg or .jpeg extension.
     /// Writes a mutable copy to Working.
-    let sourceJpegFile (fileName:string) : DocMonad<'res,JpegFile> = 
-        getSourceDocument [".jpg"; ".jpeg"] fileName
+    let sourceJpegFile (relativeName:string) : DocMonad<'res,JpegFile> = 
+        getSourceDocument [".jpg"; ".jpeg"] relativeName
     
     /// Must have .jpg or .jpeg extension.
-    let includeJpegFile (fileName:string) : DocMonad<'res,JpegFile> = 
-        getIncludeDocument [".jpg"; ".jpeg"] fileName
+    let includeJpegFile (relativeName:string) : DocMonad<'res,JpegFile> = 
+        getIncludeDocument [".jpg"; ".jpeg"] relativeName
 
 
     // ************************************************************************
@@ -180,17 +184,21 @@ module Document =
     type MarkdownFile = Document<MarkdownPhantom>
 
     /// Must have .md extension.
-    let workingMarkdownFile (fileName:string) : DocMonad<'res,MarkdownFile> = 
-        getWorkingDocument [".md"] fileName 
+    let getMarkdownFile (absolutePath:string) : DocMonad<'res,MarkdownFile> = 
+        new Uri(absolutePath) |> getDocument [".md"]
+
+    /// Must have .md extension.
+    let workingMarkdownFile (relativeName:string) : DocMonad<'res,MarkdownFile> = 
+        getWorkingDocument [".md"] relativeName 
 
     /// Must have .md extension.
     /// Writes a mutable copy to Working.
-    let sourceMarkdownFile (fileName:string) : DocMonad<'res,MarkdownFile> = 
-        getSourceDocument [".md"] fileName 
+    let sourceMarkdownFile (relativeName:string) : DocMonad<'res,MarkdownFile> = 
+        getSourceDocument [".md"] relativeName 
 
     /// Must have .md extension.
-    let includeMarkdownFile (fileName:string) : DocMonad<'res,MarkdownFile> = 
-        getIncludeDocument [".md"] fileName 
+    let includeMarkdownFile (relativeName:string) : DocMonad<'res,MarkdownFile> = 
+        getIncludeDocument [".md"] relativeName 
 
 
     // ************************************************************************
@@ -200,18 +208,22 @@ module Document =
 
     type WordFile = Document<WordPhantom>
 
+    /// Must have .doc or .docx extension.  
+    let getWordFile (absolutePath:string) : DocMonad<'res,WordFile> = 
+        new Uri(absolutePath) |> getDocument [".doc"; ".docx"]
+
     /// Must have .doc or .docx extension.    
-    let workingWordFile (fileName:string) : DocMonad<'res,WordFile> = 
-        getWorkingDocument [".doc"; ".docx"] fileName
+    let workingWordFile (relativeName:string) : DocMonad<'res,WordFile> = 
+        getWorkingDocument [".doc"; ".docx"] relativeName
 
     /// Must have .doc or .docx extension.
     /// Writes a mutable copy to Working.    
-    let sourceWordFile (fileName:string) : DocMonad<'res,WordFile> = 
-        getSourceDocument [".doc"; ".docx"] fileName
+    let sourceWordFile (relativeName:string) : DocMonad<'res,WordFile> = 
+        getSourceDocument [".doc"; ".docx"] relativeName
 
     /// Must have .doc or .docx extension.    
-    let includeWordFile (fileName:string) : DocMonad<'res,WordFile> = 
-        getIncludeDocument [".doc"; ".docx"] fileName
+    let includeWordFile (relativeName:string) : DocMonad<'res,WordFile> = 
+        getIncludeDocument [".doc"; ".docx"] relativeName
 
 
     // ************************************************************************
@@ -221,20 +233,23 @@ module Document =
 
     type ExcelFile = Document<ExcelPhantom>
 
+    /// Must have .xls or .xlsx or .xlsm extension.   
+    let getExcelFile (absolutePath:string) : DocMonad<'res,ExcelFile> = 
+        new Uri(absolutePath) |> getDocument [".xls"; ".xlsx"; ".xlsm"]
 
     /// Must have .xls or .xlsx or .xlsm extension. 
-    let workingExcelFile (fileName:string) : DocMonad<'res,ExcelFile> = 
-        getWorkingDocument [".xls"; ".xlsx"; ".xlsm"] fileName
+    let workingExcelFile (relativeName:string) : DocMonad<'res,ExcelFile> = 
+        getWorkingDocument [".xls"; ".xlsx"; ".xlsm"] relativeName
 
 
     /// Must have .xls or .xlsx or .xlsm extension.
     /// Writes a mutable copy to Working.  
-    let sourceExcelFile (fileName:string) : DocMonad<'res,ExcelFile> = 
-        getSourceDocument [".xls"; ".xlsx"; ".xlsm"] fileName
+    let sourceExcelFile (relativeName:string) : DocMonad<'res,ExcelFile> = 
+        getSourceDocument [".xls"; ".xlsx"; ".xlsm"] relativeName
 
     /// Must have .xls or .xlsx or .xlsm extension. 
-    let includeExcelFile (fileName:string) : DocMonad<'res,ExcelFile> = 
-        getIncludeDocument [".xls"; ".xlsx"; ".xlsm"] fileName
+    let includeExcelFile (relativeName:string) : DocMonad<'res,ExcelFile> = 
+        getIncludeDocument [".xls"; ".xlsx"; ".xlsm"] relativeName
 
 
     // ************************************************************************
@@ -244,18 +259,22 @@ module Document =
 
     type PowerPointFile = Document<PowerPointPhantom>
 
+    /// Must have .ppt or .pptx extension. 
+    let getPowerPointFile (absolutePath:string) : DocMonad<'res,PowerPointFile> = 
+        new Uri(absolutePath) |> getDocument [".ppt"; ".pptx"]
+
     /// Must have .ppt or .pptx extension.
-    let workingPowerPointFile (fileName:string) : DocMonad<'res,PowerPointFile> = 
-        getWorkingDocument [".ppt"; ".pptx"] fileName 
+    let workingPowerPointFile (relativeName:string) : DocMonad<'res,PowerPointFile> = 
+        getWorkingDocument [".ppt"; ".pptx"] relativeName 
 
     /// Must have .ppt or .pptx extension.
     /// Writes a mutable copy to Working.  
-    let sourcePowerPointFile (fileName:string) : DocMonad<'res,PowerPointFile> = 
-        getSourceDocument [".ppt"; ".pptx"] fileName 
+    let sourcePowerPointFile (relativeName:string) : DocMonad<'res,PowerPointFile> = 
+        getSourceDocument [".ppt"; ".pptx"] relativeName 
 
     /// Must have .ppt or .pptx extension.
-    let includePowerPointFile (fileName:string) : DocMonad<'res,PowerPointFile> = 
-        getIncludeDocument [".ppt"; ".pptx"] fileName 
+    let includePowerPointFile (relativeName:string) : DocMonad<'res,PowerPointFile> = 
+        getIncludeDocument [".ppt"; ".pptx"] relativeName 
 
 
     // ************************************************************************
@@ -265,15 +284,20 @@ module Document =
 
     type TextFile = Document<TextPhantom>
 
+    /// Must have .txt extension.  
+    let getTextFile (absolutePath:string) : DocMonad<'res,TextFile> = 
+        new Uri(absolutePath) |> getDocument[".txt"]
+
+
     /// Must have .txt extension.
-    let workingTextFile (fileName:string) : DocMonad<'res,TextFile> = 
-        getWorkingDocument [".txt"] fileName 
+    let workingTextFile (relativeName:string) : DocMonad<'res,TextFile> = 
+        getWorkingDocument [".txt"] relativeName 
 
     /// Must have .txt extension.
     /// Writes a mutable copy to Working.  
-    let sourceTextFile (fileName:string) : DocMonad<'res,TextFile> = 
-        getSourceDocument [".txt"] fileName 
+    let sourceTextFile (relativeName:string) : DocMonad<'res,TextFile> = 
+        getSourceDocument [".txt"] relativeName 
 
     /// Must have .txt extension.
-    let includeTextFile (fileName:string) : DocMonad<'res,TextFile> = 
-        getIncludeDocument [".txt"] fileName 
+    let includeTextFile (relativeName:string) : DocMonad<'res,TextFile> = 
+        getIncludeDocument [".txt"] relativeName 
