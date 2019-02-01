@@ -57,16 +57,14 @@ module PhotoBook =
     
     let internal copyJpegs (sourceSubdirectory:string)
                            (workingSubdirectory:string) : DocMonad<'res, JpegCollection> =
-        localWorkingSubdirectory workingSubdirectory <| 
-            docMonad { 
-                let! xs = 
-                    localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
-                let! ys = 
-                    localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
-                List.iter (printfn "%s") (xs @ ys)
-                let! jpegs = mapM (copyFileToWorking false) (xs @ ys)
-                return (Collection.fromList jpegs)
-            }
+        docMonad { 
+            let! xs = 
+                localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
+            let! ys = 
+                localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
+            let! jpegs = mapM (copyFileToWorkingSubdirectory workingSubdirectory) (xs @ ys)
+            return (Collection.fromList jpegs)
+        }
 
 
     let makePhotoBook (title:string) 

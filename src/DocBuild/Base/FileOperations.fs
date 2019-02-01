@@ -138,7 +138,6 @@ module FileOperations =
                 if includeDirectoriesSuffix then 
                     getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
                 else dreturn (FileInfo(absPath).Name)
-            printfn "generateWorkingFileName - suffix='%s'" suffix
             return! extendWorkingPath suffix
         }
 
@@ -146,7 +145,6 @@ module FileOperations =
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
     let copyFileToWorking (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'res,Document<'a>> = 
-        printfn "copyFileToWorking - doc.LocalPath='%s'" absPath
         docMonad { 
             let! target = generateWorkingFileName includeDirectoriesSuffix absPath
             if File.Exists(target) then 
@@ -161,6 +159,8 @@ module FileOperations =
     /// subfolder path from root.
     let copyToWorking (includeDirectoriesSuffix:bool) (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
         copyFileToWorking includeDirectoriesSuffix doc.LocalPath
+
+
 
 
     /// Rename a folder in the working drectory
@@ -230,4 +230,6 @@ module FileOperations =
             return! local (fun env -> {env with IncludeDirectory = DirectoryPath(path)}) ma
         }
 
-  
+    let copyFileToWorkingSubdirectory (subdirectory:string) (srcAbsPath:string) : DocMonad<'res,Document<'a>> = 
+        localWorkingSubdirectory subdirectory 
+            <| copyFileToWorking false srcAbsPath

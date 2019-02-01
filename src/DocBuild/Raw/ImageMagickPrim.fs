@@ -42,7 +42,6 @@ module ImageMagickPrim =
 
 
     let imAutoOrient (infile:string) (outfile:string) : unit = 
-        printfn "imAutoOrient: infile='%s' outfile='%s'"  infile outfile
         use (img:MagickImage) = new MagickImage(infile)
         img.AutoOrient () // May have Exif rotation problems...
         img.Write outfile
