@@ -95,6 +95,7 @@ module FileOperations =
             do! assertIsSourcePath absPath
             let! dir = askSourceDirectory ()
             let rel = dir.MakeRelativeUri(new Uri(absPath))
+            printfn "getSourcePathSuffix - rel =%O" rel
             return rel.ToString()
         }
 
@@ -138,6 +139,7 @@ module FileOperations =
     let generateWorkingFileName (absPath:string) : DocMonad<'res,string> = 
         docMonad { 
             let! suffix = getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
+            printfn "generateWorkingFileName - suffix='%s'" suffix
             return! extendWorkingPath suffix
         }
 
@@ -145,6 +147,7 @@ module FileOperations =
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
     let copyFileToWorking (absPath:string) : DocMonad<'res,Document<'a>> = 
+        printfn "copyFileToWorking - doc.LocalPath='%s'" absPath
         docMonad { 
             let! target = generateWorkingFileName absPath
             if File.Exists(target) then 

@@ -6,6 +6,8 @@
 open System.IO
 open System
 
+#load "..\src\DocBuild\Base\FilePathPrim.fs"
+open DocBuild.Base.FilePathPrim
 
 let cwd = @"D:\coding\fsharp\doc-build\data"
 let path1 = @"D:\coding\fsharp\doc-build\..\doc-build\data\temp1.pdf"
@@ -75,4 +77,54 @@ let test08 () =
     System.IO.Path.GetFullPath(@"folder1\temp.txt") |> printfn "%s"
     System.IO.Path.Combine([| @"folder1/temp.txt" |]) |> printfn "%s"
 
+/// Using uri is worse than path! 
+/// It provides a 'right complement' operation but adds complexity
+/// (escaped spaces etc.) that are making the code error prone
+/// Solution: write commonPrefix and rightComplement for file paths.
 
+let directoryStep (directory:DirectoryInfo) (initialAcc:string list) : string list =
+    let rootName = directory.Root.Name
+    let rec work (currentDir:DirectoryInfo) (acc:string list) = 
+        let folderName = currentDir.Name
+        if folderName = rootName then
+            rootName :: acc
+        else
+            work currentDir.Parent (folderName :: acc)
+    work directory initialAcc
+            
+
+let filePathSegments (path:string) = 
+    let fileInfo = new FileInfo(path)
+    directoryStep fileInfo.Directory [fileInfo.Name]
+
+let directoryPathSegments (path:string) = 
+    directoryStep (new DirectoryInfo(path)) []
+
+let zz01 () = 
+    (FilePath @"Z:\oresenna\fsharp\doc-build\..\doc-build\data").LocalPath
+
+let zz02 () = 
+    (FilePath @"..\doc-build\data")
+
+let zz03 () = 
+    Path.IsPathRooted @"coding\fsharp\file1.fs"
+
+let zz03b () = 
+    let relPath = @"coding\fsharp\file1.fs"
+    let fileInfo = FileInfo(relPath)
+    fileInfo.Directory.Root
+
+let zz04 () = 
+    let path = @"d:\coding\fsharp\file1.fs"
+    FilePath(path).LocalPath
+
+
+let zz04b () = 
+    let path = @"d:\coding\fsharp"
+    DirectoryPath(path).LocalPath
+
+let zz05 () = 
+    commonPathPrefix (DirectoryPath @"d:\coding\fsharp") (FilePath @"d:\coding\fsharp\file1.fs")
+
+let zz06 () = 
+    rightPathComplement (DirectoryPath @"d:\coding\") (FilePath @"d:\coding\fsharp\file1.fs")
