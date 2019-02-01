@@ -132,9 +132,12 @@ module FileOperations =
     /// If the file is from Source or Include directories generate the name with 
     /// the respective subfolder path from root.
     /// Otherwise, generate the file name at the top level of Workgin.
-    let generateWorkingFileName (absPath:string) : DocMonad<'res,string> = 
+    let generateWorkingFileName (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'res,string> = 
         docMonad { 
-            let! suffix = getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
+            let! suffix = 
+                if includeDirectoriesSuffix then 
+                    getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
+                else dreturn (FileInfo(absPath).Name)
             printfn "generateWorkingFileName - suffix='%s'" suffix
             return! extendWorkingPath suffix
         }
@@ -142,10 +145,10 @@ module FileOperations =
     /// Copy a file to working, returning the copy as a Document.
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
-    let copyFileToWorking (absPath:string) : DocMonad<'res,Document<'a>> = 
+    let copyFileToWorking (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'res,Document<'a>> = 
         printfn "copyFileToWorking - doc.LocalPath='%s'" absPath
         docMonad { 
-            let! target = generateWorkingFileName absPath
+            let! target = generateWorkingFileName includeDirectoriesSuffix absPath
             if File.Exists(target) then 
                 File.Delete(target) 
             else ()
@@ -156,8 +159,8 @@ module FileOperations =
     /// Copy a doc to working.
     /// If the file is from Source or Include copy with the respective
     /// subfolder path from root.
-    let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
-        copyFileToWorking doc.LocalPath
+    let copyToWorking (includeDirectoriesSuffix:bool) (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
+        copyFileToWorking includeDirectoriesSuffix doc.LocalPath
 
 
     /// Rename a folder in the working drectory

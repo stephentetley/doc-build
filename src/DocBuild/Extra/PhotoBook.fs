@@ -5,8 +5,6 @@ namespace DocBuild.Extra
 
 module PhotoBook = 
 
-    open System.IO
-
 
     open MarkdownDoc
     open MarkdownDoc.Pandoc
@@ -14,7 +12,6 @@ module PhotoBook =
     open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
-    // open DocBuild.Base.FakeLike
 
 
     open DocBuild.Document.Jpeg
@@ -60,15 +57,16 @@ module PhotoBook =
     
     let internal copyJpegs (sourceSubdirectory:string)
                            (workingSubdirectory:string) : DocMonad<'res, JpegCollection> =
-        docMonad { 
-            let! xs = 
-                localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
-            let! ys = 
-                localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
-            List.iter (printfn "%s") (xs @ ys)
-            let! jpegs = mapM copyFileToWorking (xs @ ys)
-            return (Collection.fromList jpegs)
-        }
+        localWorkingSubdirectory workingSubdirectory <| 
+            docMonad { 
+                let! xs = 
+                    localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
+                let! ys = 
+                    localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
+                List.iter (printfn "%s") (xs @ ys)
+                let! jpegs = mapM (copyFileToWorking false) (xs @ ys)
+                return (Collection.fromList jpegs)
+            }
 
 
     let makePhotoBook (title:string) 
