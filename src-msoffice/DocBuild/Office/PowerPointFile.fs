@@ -49,8 +49,7 @@ module PowerPointFile =
         docMonad { 
             let! userRes = askUserResources ()
             let powerPointHandle = userRes.PowerPointAppHandle
-            let! ans = mf powerPointHandle.PowerPointExe
-            return ans
+            return! mf powerPointHandle.PowerPointExe
         }
 
     // ************************************************************************
@@ -64,23 +63,21 @@ module PowerPointFile =
 
 
     let exportPdfAs (quality:PrintQuality) 
-                    (outputName:string) 
+                    (outputAbsPath:string) 
                     (src:PowerPointFile) : DocMonad<#HasPowerPointHandle,PdfFile> = 
         docMonad { 
-            let! outputPath = getOutputPath outputName
+            do! assertIsWorkingPath outputAbsPath
             let pdfQuality = powerpointExportQuality quality
             let! ans = 
                 execPowerPoint <| fun app -> 
-                    liftResult (powerPointExportAsPdf app pdfQuality src.LocalPath outputPath)
-            let! pdf = workingPdfFile outputName
-            return pdf
+                    liftResult (powerPointExportAsPdf app pdfQuality src.LocalPath outputAbsPath)
+            return! workingPdfFile outputAbsPath
         }
 
     /// Saves the file in the working directory.
     let exportPdf (src:PowerPointFile) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfFile> = 
         docMonad { 
             let! path1 = generateWorkingFileName false src.LocalPath
-            let outputFile = Path.ChangeExtension(path1, "pdf")
-            let! pdf = exportPdfAs quality outputFile src
-            return pdf
+            let outputAbsPath = Path.ChangeExtension(path1, "pdf")
+            return! exportPdfAs quality outputAbsPath src
         }

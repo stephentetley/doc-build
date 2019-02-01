@@ -17,31 +17,30 @@ module Jpeg =
     // ImageMagick extracts image info from an image file, not the 
     // image handle after an image file is opened. 
 
-    /// Save in working directory...
-    let autoOrientAs (outputName:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
+    /// Save in working directory (or a child of).
+    let autoOrientAs (outputAbsPath:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
         docMonad { 
-            let! outputPath = getOutputPath outputName
-            let _ = ImageMagickPrim.imAutoOrient src.LocalPath outputPath
-            let! jpeg = workingJpegFile outputName
-            return jpeg
+            do! assertIsWorkingPath outputAbsPath
+            let _ = ImageMagickPrim.imAutoOrient src.LocalPath outputAbsPath
+            return! workingJpegFile outputAbsPath
         }
 
+    /// Auto-orient overwriting the input file
     let autoOrient (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        autoOrientAs src.FileName src
+        autoOrientAs src.LocalPath src
 
 
-    /// Save in working directory...
-    let resizeForWordAs (outputName:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
+    /// Save in working directory (or a child of).
+    let resizeForWordAs (outputAbsPath:string) (src:JpegFile) : DocMonad<'res,JpegFile> = 
         docMonad { 
-            let! outputPath = getOutputPath outputName
-            let _ = ImageMagickPrim.imOptimizeForMsWord src.LocalPath outputPath
-            let! jpeg = workingJpegFile outputName
-            return jpeg
+            do! assertIsWorkingPath outputAbsPath
+            let _ = ImageMagickPrim.imOptimizeForMsWord src.LocalPath outputAbsPath
+            return! workingJpegFile outputAbsPath
         }
 
-    /// Rezize for Word generating a new temp file
+    /// Resize for Word overwriting the input file
     let resizeForWord (src:JpegFile) : DocMonad<'res,JpegFile> = 
-        resizeForWordAs src.FileName src
+        resizeForWordAs src.LocalPath src
 
 
 

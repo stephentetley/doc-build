@@ -70,13 +70,13 @@ module PhotoBook =
     let makePhotoBook (title:string) 
                       (sourceSubFolder:string) 
                       (tempSubFolder:string)
-                      (outputName:string) : DocMonad<'res,MarkdownFile> =
+                      (outputRelName:string) : DocMonad<'res,MarkdownFile> =
         docMonad {
             let! jpegs = copyJpegs sourceSubFolder tempSubFolder >>= Collection.mapM optimizeJpeg
             let mdDoc = photoBookMarkdown title (Collection.toList jpegs)
-            let! outputPath = extendWorkingPath outputName
-            let! _ = Markdown.saveMarkdown outputPath mdDoc
-            let! mdOutput = workingMarkdownFile outputPath
+            let! outputAbsPath = extendWorkingPath outputRelName
+            let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
+            let! mdOutput = workingMarkdownFile outputAbsPath
             return mdOutput
         }
 
