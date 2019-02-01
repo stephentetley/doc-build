@@ -179,8 +179,9 @@ module FileOperations =
     /// (the only wild cards are '?' and '*'), not a regex.
     let hasSourceFilesMatching (pattern:string) 
                                (recurseIntoSubDirectories:bool) : DocMonad<'res, bool> = 
-        askSourceDirectoryPath () |>>  FakeLikePrim.hasFilesMatching pattern recurseIntoSubDirectories
-
+        let proc () = 
+            askSourceDirectoryPath () |>>  FakeLikePrim.hasFilesMatching pattern recurseIntoSubDirectories
+        attemptM <| proc ()
 
 
 
@@ -190,7 +191,10 @@ module FileOperations =
     /// Returns a list of absolute paths.
     let findAllSourceFilesMatching (pattern:string) 
                                    (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
-        askSourceDirectoryPath () |>> FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories
+        let proc () = 
+            askSourceDirectoryPath () |>> FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories
+        attemptM <| proc ()
+
 
 
     /// Create a subdirectory under the working folder.
@@ -229,6 +233,12 @@ module FileOperations =
             let! path = extendIncludePath subdirectory
             return! local (fun env -> {env with IncludeDirectory = DirectoryPath(path)}) ma
         }
+
+
+    let commonSubdirectory (subdirectory:string) 
+                           (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+        localWorkingSubdirectory subdirectory <| localSourceSubdirectory subdirectory ma
+
 
     let copyFileToWorkingSubdirectory (subdirectory:string) (srcAbsPath:string) : DocMonad<'res,Document<'a>> = 
         localWorkingSubdirectory subdirectory 

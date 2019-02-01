@@ -128,12 +128,12 @@ module DocMonad =
     /// Execute an action that may throw an exception.
     /// Capture the exception with try ... with
     /// and return the answer or the expection message in the monad.
-    let attempt (ma: DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let attemptM (ma: DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         DocMonad <| fun res env -> 
             try
                 apply1 ma res env
             with
-            | ex -> Error (sprintf "attempt: %s" ex.Message)
+            | ex -> Error (sprintf "attemptM: %s" ex.Message)
 
 
     // ****************************************************
@@ -399,7 +399,7 @@ module DocMonad =
 
     /// Optionally run a computation. 
     /// If the build fails return None otherwise retun Some<'a>.
-    let optional (ma:DocMonad<'res,'a>) : DocMonad<'res,'a option> = 
+    let optionalM (ma:DocMonad<'res,'a>) : DocMonad<'res,'a option> = 
         DocMonad <| fun res env ->
             match apply1 ma res env with
             | Error _ -> Ok None

@@ -81,7 +81,7 @@ module ExcelFile =
                   (fitWidth:bool) 
                   (src:ExcelFile) : DocMonad<#HasExcelHandle,PdfFile> = 
         docMonad { 
-            let! path1 = generateWorkingFileName false src.LocalPath
+            let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
             return! exportPdfAs quality fitWidth outputAbsPath src
         }

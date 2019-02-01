@@ -96,10 +96,6 @@ let getSiteName (folderName:string) : string =
 let getSaiNumber (siteName:string) : DocMonad<'res,string> = 
     dreturn "SAI00001234"       // TEMP
 
-let commonSubFolder (subFolderName:string) 
-                    (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-    localWorkingSubdirectory subFolderName <| localSourceSubdirectory subFolderName ma
-
 
 
 let renderMarkdownFile (stylesheetName:string option)
@@ -116,7 +112,7 @@ let renderMarkdownFile (stylesheetName:string option)
         return pdf
     }
 
-let coversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
+let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
     docMonad { 
         let! logoPath = extendIncludePath "YW-logo.jpg"
         let! (stylesheet:WordFile option) = includeWordFile "custom-reference1.docx" |>> Some
@@ -161,25 +157,29 @@ let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfFile> =
 
 
 // May have multiple surveys...
-let surveys () : DocMonadWord<PdfFile list> = 
+let processSurveys () : DocMonadWord<PdfFile list> = 
     docMonad {
-        let! inputs = findAllSourceFilesMatching "*Survey*.doc*" false
+        let! inputs = 
+            localSourceSubdirectory "1.Survey" 
+                <| findAllSourceFilesMatching "*Survey*.doc*" false
         let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
         return pdfs
     }
 
-let surveyPhotos () : DocMonadWord<PdfFile> = 
+let genSurveyPhotos () : DocMonadWord<PdfFile> = 
     photosDoc PhotosSurvey
 
 
-let siteWorksPhotos () : DocMonadWord<PdfFile> = 
+let genSiteWorkPhotos () : DocMonadWord<PdfFile> = 
     photosDoc PhotosSiteWork
 
 /// May have multiple documents
 /// Get all doc files
-let siteWorks () : DocMonadWord<PdfFile list> = 
+let processSiteWork () : DocMonadWord<PdfFile list> = 
     docMonad {
-        let! inputs = findAllSourceFilesMatching "*.doc*" false
+        let! inputs = 
+            localSourceSubdirectory "2.Site_work" 
+                <| findAllSourceFilesMatching "*.doc*" false
         let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
         return pdfs
     }
@@ -193,12 +193,16 @@ let getWorkList () : string list =
         |> Array.map (fun di -> di.Name)
         |> Array.toList
 
-let buildOne (sourceName:string) : DocMonadWord<unit> = 
-    localWorkingSubdirectory sourceName <| 
+let buildOne (sourceName:string) 
+             (siteName:string) 
+             (saiNumber:string) : DocMonadWord<unit> = 
+    commonSubdirectory sourceName <| 
         docMonad {
-            let siteName = getSiteName sourceName
-            let! saiNumber = getSaiNumber siteName
-            let! cover =  coversheet siteName saiNumber
+            let! cover = genCoversheet siteName saiNumber
+            let! surveys = processSurveys ()
+            let! surveyPhotos = optionalM <| genSurveyPhotos ()
+            let! worksheets = processSiteWork ()
+            let! worksPhotos = optionalM <| genSiteWorkPhotos ()
             return ()
         }
 
@@ -207,7 +211,7 @@ let buildAll () : DocMonadWord<unit> =
     foriMz worklist 
         <| fun ix name ->
                 ignore <| printfn "Site %i: %s" (ix+1) name
-                buildOne name
+                buildOne name "TEMP" "SAI01"
 
         
 
@@ -215,22 +219,28 @@ let buildAll () : DocMonadWord<unit> =
 let demo01 () = 
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| buildAll ()
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (genCoversheet @"ABERFORD ROAD/NO 1 CSO" "SAI00036945")
 
 
 let demo02 () = 
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| localSourceSubdirectory @"AISLABY_CSO\1.Survey" (surveys ())
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSurveys ())
             
 
 let demo03 () = 
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| localSourceSubdirectory @"ABERFORD ROAD_NO 1 CSO\2.Site_work" (siteWorks ())
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSiteWork ())
 
 
 let demo04 () = 
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| commonSubFolder @"ABERFORD ROAD_NO 1 CSO" (surveyPhotos ())
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (genSurveyPhotos ())
+
+let demo05 () = 
+    let userRes = new WordFile.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| buildOne @"AGBRIGG GARAGE_CSO" @"AGBRIGG GARAGE/CSO" "SAI00017527"
+
