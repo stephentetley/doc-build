@@ -38,14 +38,14 @@ module FileOperations =
         askIncludeDirectoryPath () |>> fun root -> root </> relPath
 
     let isWorkingPath (absPath:string) : DocMonad<'res,bool> = 
-        askWorkingDirectory () |>> fun dir -> dir.IsBaseOf(new Uri(absPath))
+        askWorkingDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
 
 
     let isWorkingDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
         isWorkingPath doc.LocalPath
 
     let isSourcePath (absPath:string) : DocMonad<'res,bool> = 
-        askSourceDirectory () |>> fun dir -> dir.IsBaseOf(new Uri(absPath))
+        askSourceDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
         
 
     let isSourceDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
@@ -53,7 +53,7 @@ module FileOperations =
 
 
     let isIncludePath (absPath:string) : DocMonad<'res,bool> = 
-        askIncludeDirectory () |>> fun dir -> dir.IsBaseOf(new Uri(absPath))
+        askIncludeDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
         
     
     let isIncludeDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
@@ -81,9 +81,8 @@ module FileOperations =
     let getWorkingPathSuffix (absPath:string) : DocMonad<'res,string> = 
         docMonad { 
             do! assertIsWorkingPath absPath
-            let! dir = askWorkingDirectory ()
-            let rel = dir.MakeRelativeUri(new Uri(absPath))
-            return rel.ToString()
+            let! root = askWorkingDirectory ()
+            return rightPathComplement root (FilePath(absPath))
         }
             
     let getWorkingDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
@@ -93,10 +92,8 @@ module FileOperations =
     let getSourcePathSuffix (absPath:string) : DocMonad<'res,string> = 
         docMonad { 
             do! assertIsSourcePath absPath
-            let! dir = askSourceDirectory ()
-            let rel = dir.MakeRelativeUri(new Uri(absPath))
-            printfn "getSourcePathSuffix - rel =%O" rel
-            return rel.ToString()
+            let! root = askSourceDirectory ()
+            return rightPathComplement root (FilePath(absPath))
         }
 
     let getSourceDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
@@ -105,9 +102,8 @@ module FileOperations =
     let getIncludePathSuffix (absPath:string) : DocMonad<'res,string> = 
         docMonad { 
             do! assertIsIncludePath absPath
-            let! dir = askIncludeDirectory ()
-            let rel = dir.MakeRelativeUri(new Uri(absPath))
-            return rel.ToString()
+            let! root = askIncludeDirectory ()
+            return rightPathComplement root (FilePath(absPath))
         }
 
     let getIncludeDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
@@ -210,7 +206,7 @@ module FileOperations =
         docMonad {
             let! path = extendWorkingPath subdirectory
             let! _ = createWorkingSubdirectory subdirectory
-            return! local (fun env -> {env with WorkingDirectory = new Uri(path)}) ma
+            return! local (fun env -> {env with WorkingDirectory = DirectoryPath(path)}) ma
         }
             
     /// Run an operation with the Source directory restricted to the
@@ -219,7 +215,7 @@ module FileOperations =
                                 (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
             let! path = extendSourcePath subdirectory
-            return! local (fun env -> {env with SourceDirectory = new Uri(path)}) ma
+            return! local (fun env -> {env with SourceDirectory = DirectoryPath(path)}) ma
         }
 
     /// Run an operation with the Include directory restricted to the
@@ -228,7 +224,7 @@ module FileOperations =
                                  (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
             let! path = extendIncludePath subdirectory
-            return! local (fun env -> {env with IncludeDirectory = new Uri(path)}) ma
+            return! local (fun env -> {env with IncludeDirectory = DirectoryPath(path)}) ma
         }
 
   

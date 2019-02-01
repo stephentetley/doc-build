@@ -14,12 +14,12 @@ module DocMonad =
 
     open DocBuild.Base
     open DocBuild.Base.Shell
-    open System.Linq.Expressions
+
 
     type BuilderEnv = 
-        { WorkingDirectory: Uri
-          SourceDirectory: Uri
-          IncludeDirectory: Uri
+        { WorkingDirectory: DirectoryPath
+          SourceDirectory: DirectoryPath
+          IncludeDirectory: DirectoryPath
           GhostscriptExe: string
           PdftkExe: string 
           PandocExe: string
@@ -146,30 +146,24 @@ module DocMonad =
         DocMonad <| fun _ env -> Ok (extract env)
 
 
-    /// Rewrite the Uri to append "/" to the last segment insuring
-    /// the Uri represents a folder.
-    let private assertFolderUri (uri:Uri) : Uri = 
-        let rx = new Regex(pattern = "[/]+$", options = RegexOptions.IgnoreCase)
-        if rx.IsMatch(uri.AbsoluteUri) then 
-            uri
-        else new Uri (sprintf "%s/" uri.AbsoluteUri)
+
 
     /// Note - this asserts that the Working directory path represents a 
     /// folder not a file.
-    let askWorkingDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.WorkingDirectory |> assertFolderUri)
+    let askWorkingDirectory () : DocMonad<'res,DirectoryPath> = 
+        asks (fun env -> env.WorkingDirectory)
 
 
     /// Note - this asserts that the Source directory path represents a 
     /// folder not a file.
-    let askSourceDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.SourceDirectory |> assertFolderUri)
+    let askSourceDirectory () : DocMonad<'res,DirectoryPath> = 
+        asks (fun env -> env.SourceDirectory)
 
 
     /// Note - this asserts that the Include directory path represents a 
     /// folder not a file.
-    let askIncludeDirectory () : DocMonad<'res,Uri> = 
-        asks (fun env -> env.IncludeDirectory |> assertFolderUri)
+    let askIncludeDirectory () : DocMonad<'res,DirectoryPath> = 
+        asks (fun env -> env.IncludeDirectory)
 
     /// Use with caution.
     /// Generally you might only want to update the 

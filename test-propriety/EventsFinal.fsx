@@ -25,6 +25,7 @@
 #I @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\runtimes\win-x64\native"
 
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
+#load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
@@ -80,9 +81,9 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
-    { WorkingDirectory = folderUri @"G:\work\Projects\events2\final-docs\output\CSO_SPS\"
-      SourceDirectory =  folderUri @"G:\work\Projects\events2\final-docs\input\CSO_SPS\"
-      IncludeDirectory = folderUri @"G:\work\Projects\events2\final-docs\input\include\"
+    { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
+      SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
+      IncludeDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\input\include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" }
@@ -233,4 +234,3 @@ let demo04 () =
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| commonSubFolder @"ABERFORD ROAD_NO 1 CSO" (surveyPhotos ())
-

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Stephen Tetley 2019
 // License: BSD 3 Clause
 
-
 namespace DocBuild.Base
 
-
-module FilePathPrim = 
+[<AutoOpen>]
+module FilePaths = 
 
     open System.IO
 
@@ -102,3 +101,15 @@ module FilePathPrim =
                 else ys
             | _, _ -> ys
         work root.Segments y.GetPathSegments  |> localPath
+
+
+    let rootIsPrefix (root:DirectoryPath) (y:#HasPathSegments) : bool = 
+        let rec work xs ys  = 
+            match xs, ys with
+            | (s :: ss), (t :: ts) -> 
+                if s = t then 
+                    work ss ts
+                else false
+            | [], _ -> true
+            | _, _ -> false
+        work root.Segments y.GetPathSegments 

@@ -7,6 +7,7 @@ open System
 
 
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
+#load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
@@ -21,10 +22,10 @@ open DocBuild.Base.DocMonadOperators
 
 
 let WindowsEnv : BuilderEnv = 
-    let dataDir = new Uri(System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data"))
+    let dataDir = DirectoryPath(System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data"))
     { WorkingDirectory = dataDir
       SourceDirectory = dataDir
-      IncludeDirectory = new Uri(dataDir, "include")
+      IncludeDirectory = DirectoryPath(dataDir <//> "include")
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" }

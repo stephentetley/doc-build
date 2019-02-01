@@ -25,6 +25,7 @@
 open System
 
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
+#load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
@@ -57,10 +58,10 @@ open DocBuild.Base.DocMonadOperators
 open DocBuild.Office
 
 let WindowsEnv : BuilderEnv = 
-    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") |> folderUri
+    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") |> DirectoryPath
     { WorkingDirectory = cwd
       SourceDirectory = cwd
-      IncludeDirectory = cwd <//> "include\\"
+      IncludeDirectory = DirectoryPath (cwd <//> "include")
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"
@@ -122,16 +123,7 @@ let demo06 () =
 let demo06a () = 
     let userRes = new WordFile.WordHandle()
     runDocMonad userRes WindowsEnv <| 
-        (askSourceDirectory () |>> fun (uri:Uri) -> uri.Segments)
+        (askSourceDirectory () |>> fun (src:DirectoryPath) -> src.Segments)
 
 
-let demo07 () = 
-    let root = new Uri (@"file:///D:/coding/fsharp/doc-build/data/")
-    let toFile = new Uri (@"D:\coding\fsharp\doc-build\data\Concat.pdf")
-    root.MakeRelativeUri(toFile).ToString ()
-
-let demo08 () = 
-    let root = new Uri (@"D:\coding\fsharp\doc-build\data\")
-    let toFile = new Uri (@"D:\coding\fsharp\doc-build\data\Concat.pdf")
-    root.MakeRelativeUri(toFile).ToString ()
 

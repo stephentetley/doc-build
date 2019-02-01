@@ -6,21 +6,22 @@
 open System.IO
 open System
 
-#load "..\src\DocBuild\Base\FilePathPrim.fs"
-open DocBuild.Base.FilePathPrim
+#load "..\src\DocBuild\Base\FilePaths.fs"
+open DocBuild.Base
 
 let cwd = @"D:\coding\fsharp\doc-build\data"
 let path1 = @"D:\coding\fsharp\doc-build\..\doc-build\data\temp1.pdf"
 
 // GetFullPath does sufficient normalization.
-// But we should use Uri instead.
+// But we should use DirectoryPath / FilePath for calculation
 let test01 () =
     Path.GetFullPath path1
 
+
 let test02 () =
-    let uPath1 = new Uri(path1)
-    let uCwd = new Uri(cwd)
-    printfn "%O" <| uCwd.IsBaseOf(uPath1)
+    let pPath1 = FilePath(path1)
+    let pCwd = DirectoryPath(cwd)
+    printfn "%O" <| rootIsPrefix pCwd pPath1
 
 
 // Don't bother with Uris for relative file paths.
@@ -81,24 +82,6 @@ let test08 () =
 /// It provides a 'right complement' operation but adds complexity
 /// (escaped spaces etc.) that are making the code error prone
 /// Solution: write commonPrefix and rightComplement for file paths.
-
-let directoryStep (directory:DirectoryInfo) (initialAcc:string list) : string list =
-    let rootName = directory.Root.Name
-    let rec work (currentDir:DirectoryInfo) (acc:string list) = 
-        let folderName = currentDir.Name
-        if folderName = rootName then
-            rootName :: acc
-        else
-            work currentDir.Parent (folderName :: acc)
-    work directory initialAcc
-            
-
-let filePathSegments (path:string) = 
-    let fileInfo = new FileInfo(path)
-    directoryStep fileInfo.Directory [fileInfo.Name]
-
-let directoryPathSegments (path:string) = 
-    directoryStep (new DirectoryInfo(path)) []
 
 let zz01 () = 
     (FilePath @"Z:\oresenna\fsharp\doc-build\..\doc-build\data").LocalPath

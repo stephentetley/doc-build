@@ -8,7 +8,6 @@ namespace DocBuild.Base
 module Document = 
 
     open System
-    open System.Text.RegularExpressions
     open System.IO
 
     open DocBuild.Base
@@ -43,51 +42,42 @@ module Document =
 
     /// Work with System.Uri for file paths.
     type Document<'a> = 
-        val private DocUri: Uri
+        val private DocAbsPath: string
         val private DocTitle : string
 
         /// Title will be the file name, with directory information removed.
-        new (path:string) = 
-            { DocUri = new Uri(path); DocTitle = FileInfo(path).Name }
+        new (absPath:string) = 
+            { DocAbsPath = absPath; DocTitle = FileInfo(absPath).Name }
         
-        /// uri should be an absolute path.
-        new (uri:Uri) = 
-            { DocUri = uri; DocTitle = FileInfo(uri.LocalPath).Name }
             
-        new (path:string, title:string) = 
-            { DocUri = new Uri(path); DocTitle = title }
+        new (absPath:string, title:string) = 
+            { DocAbsPath = absPath; DocTitle = title }
 
-        /// uri should be an absolute path.            
-        new (uri:Uri, title:string) = 
-            { DocUri = uri; DocTitle = title }
-
-        member x.Uri 
-            with get () : Uri = x.DocUri
 
         member x.Title 
             with get () : string = x.DocTitle
 
         member x.LocalPath
-            with get () : string = x.DocUri.LocalPath
+            with get () : string = FilePath(x.DocAbsPath).LocalPath
 
         member x.FileName
             with get () : string = 
-                FileInfo(x.DocUri.LocalPath).Name
+                FileInfo(x.LocalPath).Name
 
                 
     /// Set the document Title - title is the name of the document
     /// that might be used by some other process, e.g. to generate
     /// a table of contents.
     let setTitle (title:string) (doc:Document<'a>) : Document<'a> = 
-        new Document<'a>(uri=doc.Uri, title=title)
+        new Document<'a>(absPath=doc.LocalPath, title=title)
 
 
     /// Warning - this allows random access to the file system, not
     /// just the "Working"; "Include" and "Source" folders
     let getDocument (validFileExtensions:string list) 
-                    (absPath:Uri) : DocMonad<'res,Document<'a>> = 
+                    (absPath:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            do! assertExistingFile validFileExtensions absPath.LocalPath
+            do! assertExistingFile validFileExtensions absPath
             return Document(absPath)
             }
 
@@ -115,7 +105,7 @@ module Document =
     let getIncludeDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'res,Document<'a>> = 
        docMonad { 
-            let! path = askIncludeDirectory () |>> fun uri -> uri <//> relativeName
+            let! path = askIncludeDirectory () |>> fun dir -> dir <//> relativeName
             return! getDocument validFileExtensions path 
             }
 
@@ -133,7 +123,7 @@ module Document =
 
     /// Must have .pdf extension.
     let getPdfFile (absolutePath:string) : DocMonad<'res,PdfFile> = 
-        new Uri(absolutePath) |> getDocument [".pdf"]
+        getDocument [".pdf"] absolutePath
 
     /// Must have .pdf extension.
     let workingPdfFile (relativeName:string) : DocMonad<'res,PdfFile> = 
@@ -158,7 +148,7 @@ module Document =
     
     /// Must have .jpg or .jpeg extension.
     let getJpegFile (absolutePath:string) : DocMonad<'res,JpegFile> = 
-        new Uri(absolutePath) |> getDocument [".jpg"; ".jpeg"]
+        getDocument [".jpg"; ".jpeg"] absolutePath
 
     /// Must have .jpg or .jpeg extension.
     let workingJpegFile (relativeName:string) : DocMonad<'res,JpegFile> = 
@@ -184,7 +174,7 @@ module Document =
 
     /// Must have .md extension.
     let getMarkdownFile (absolutePath:string) : DocMonad<'res,MarkdownFile> = 
-        new Uri(absolutePath) |> getDocument [".md"]
+        getDocument [".md"] absolutePath
 
     /// Must have .md extension.
     let workingMarkdownFile (relativeName:string) : DocMonad<'res,MarkdownFile> = 
@@ -209,7 +199,7 @@ module Document =
 
     /// Must have .doc or .docx extension.  
     let getWordFile (absolutePath:string) : DocMonad<'res,WordFile> = 
-        new Uri(absolutePath) |> getDocument [".doc"; ".docx"]
+        getDocument [".doc"; ".docx"] absolutePath
 
     /// Must have .doc or .docx extension.    
     let workingWordFile (relativeName:string) : DocMonad<'res,WordFile> = 
@@ -234,7 +224,7 @@ module Document =
 
     /// Must have .xls or .xlsx or .xlsm extension.   
     let getExcelFile (absolutePath:string) : DocMonad<'res,ExcelFile> = 
-        new Uri(absolutePath) |> getDocument [".xls"; ".xlsx"; ".xlsm"]
+        getDocument [".xls"; ".xlsx"; ".xlsm"] absolutePath
 
     /// Must have .xls or .xlsx or .xlsm extension. 
     let workingExcelFile (relativeName:string) : DocMonad<'res,ExcelFile> = 
@@ -260,7 +250,7 @@ module Document =
 
     /// Must have .ppt or .pptx extension. 
     let getPowerPointFile (absolutePath:string) : DocMonad<'res,PowerPointFile> = 
-        new Uri(absolutePath) |> getDocument [".ppt"; ".pptx"]
+        getDocument [".ppt"; ".pptx"] absolutePath
 
     /// Must have .ppt or .pptx extension.
     let workingPowerPointFile (relativeName:string) : DocMonad<'res,PowerPointFile> = 
@@ -285,7 +275,7 @@ module Document =
 
     /// Must have .txt extension.  
     let getTextFile (absolutePath:string) : DocMonad<'res,TextFile> = 
-        new Uri(absolutePath) |> getDocument[".txt"]
+        getDocument[".txt"] absolutePath
 
 
     /// Must have .txt extension.
