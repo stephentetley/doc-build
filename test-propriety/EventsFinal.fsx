@@ -60,6 +60,7 @@ open DocBuild.Office
 #load "Coversheet.fs"
 open Coversheet
 open System
+open DocBuild.Base
 
 // ImageMagick Dll loader.
 // A hack to get over Dll loading error due to the 
@@ -195,7 +196,7 @@ let getWorkList () : string list =
 
 let buildOne (sourceName:string) 
              (siteName:string) 
-             (saiNumber:string) : DocMonadWord<unit> = 
+             (saiNumber:string) : DocMonadWord<PdfFile> = 
     commonSubdirectory sourceName <| 
         docMonad {
             let! cover = genCoversheet siteName saiNumber
@@ -203,7 +204,10 @@ let buildOne (sourceName:string)
             let! surveyPhotos = optionalM <| genSurveyPhotos ()
             let! worksheets = processSiteWork ()
             let! worksPhotos = optionalM <| genSiteWorkPhotos ()
-            return ()
+            let col = Collection.singleton cover 
+                            &>> surveys &>> surveyPhotos &>> worksheets &>> worksPhotos
+            let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
+            return! pdfConcat GsQuality.GsScreen outputAbsPath col
         }
 
 let buildAll () : DocMonadWord<unit> = 

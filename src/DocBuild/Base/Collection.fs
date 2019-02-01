@@ -37,7 +37,14 @@ module Collection =
             match col with
             | Empty -> One item
             | _  -> Join (col, One(item))
-        
+
+        static member ( &>> ) (col:Collection<'a>, items:Document<'a> list) = 
+            let rec work xs acc =
+                match xs with
+                | [] -> acc
+                | d :: ds -> work ds (acc &>> d)
+            work items col 
+                    
         static member ( &>> ) (col:Collection<'a>, item:Document<'a> option) = 
             match item, col with
             | None, _ -> col
