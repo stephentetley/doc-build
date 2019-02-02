@@ -9,7 +9,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DocBuildTest", "test\DocBui
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DocBuildOffice", "src-msoffice\DocBuildOffice.fsproj", "{DFFBC706-401A-4897-9570-CA47EC8B212D}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocBuildTestPropriety", "test-propriety\DocBuildTestPropriety.fsproj", "{F19FDCDC-884B-490F-8F63-DB39E4F51D6A}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocBuildTestProprietary", "test-proprietary\DocBuildTestProprietary.fsproj", "{F19FDCDC-884B-490F-8F63-DB39E4F51D6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
