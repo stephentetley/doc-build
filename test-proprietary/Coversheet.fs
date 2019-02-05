@@ -32,7 +32,7 @@ let safeName (input:string) : string =
 //      SiteName: string }
 
 let nbsp2 : Markdown = 
-    preformatted [nbsp; nbsp]
+    markdownTile (nbsp ^&^ nbsp)
 
 let doubleQuote (s:string) : string = sprintf "\"%s\"" s
 
@@ -42,7 +42,7 @@ let changeSlashes (path:string) : string =
 
 /// @"include/YW-logo.jpg"
 let logo (includePath:string) : Markdown = 
-    tile (inlineImage (text " ") (changeSlashes includePath) None)
+    markdownTile (inlineImage (text " ") (changeSlashes includePath) None)
 
 let title1 : Markdown = 
     h1 (text "T0975 - Event Duration Monitoring Phase 2 (EDM2)")
@@ -54,7 +54,7 @@ let title2 (sai:string) (name:string) : Markdown =
 
 
 let contents (workItems:string list) : Markdown = 
-    h3 (text "Contents") ^@^ unordList (List.map (tile << text) workItems)
+    h3 (text "Contents") ^@^ markdown (unordList (List.map (paraTile << text) workItems))
 
 let documentControl : Markdown = 
     h3 (text "Document Control")
@@ -71,24 +71,25 @@ let controlTable (author:string) : Markdown =
 
     let nowstring = System.DateTime.Now.ToShortDateString()
 
-    let makeHeaderCell (s:string) : Markdown = 
-        text s |> doubleAsterisks |> tile
+    let makeHeaderCell (s:string) : Paragraph = 
+        text s |> doubleAsterisks |> paraTile
 
-    let makeCell (s:string) : Markdown = text s |> tile
+    let makeCell (s:string) : Paragraph = text s |> paraTile
 
     let headers = 
         List.map makeHeaderCell ["Revision"; "Prepared By"; "Date"; "Comments"]
     let row1 = 
         List.map makeCell ["1.0"; author; nowstring; "For EDMS"]
-    let row2 = [tile nbsp; tile empty; tile empty; tile empty]
-    gridTable columnSpecs [headers;row1;row2] true
+    let row2 = [paraTile nbsp; paraTile empty; paraTile empty; paraTile empty]
+    gridTable columnSpecs (Some headers) [row1;row2] 
 
 
 let makeDoc (saiNumber:string) 
             (siteName:string)
             (logoPath:string)
             (author:string) : Markdown = 
-    concat [ logo logoPath
+    concatMarkdown
+        <| [ logo logoPath
            ; nbsp2
            ; title1
            ; nbsp2

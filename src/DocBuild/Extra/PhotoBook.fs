@@ -28,20 +28,22 @@ module PhotoBook =
     let private makePage1 (title:string) 
                           (imagePath:string) 
                           (imageName:string) : Markdown = 
-        concat [ h1 (text title)
-               ; tile <| nbsp       // should be Markdown...
-               ; tile <| inlineImage (text " ") imagePath None
-               ; tile <| text imageName
+        concatMarkdown
+            <| [ h1 (text title)
+               ; markdownTile <| nbsp       // should be Markdown...
+               ; markdownTile <| inlineImage (text " ") imagePath None
+               ; markdownTile <| text imageName
                ]
 
     let private makePageRest (title:string) 
                              (imagePath:string) 
                              (imageName:string) : Markdown = 
-        concat [ openxmlPagebreak
+        concatMarkdown 
+            <| [ openxmlPagebreak
                ; h2 (text title)
-               ; tile <| nbsp       // should be Markdown...
-               ; tile <| inlineImage (text " ") imagePath None
-               ; tile <| text imageName
+               ; markdownTile <| nbsp       // should be Markdown...
+               ; markdownTile <| inlineImage (text " ") imagePath None
+               ; markdownTile <| text imageName
                ]
 
 
@@ -51,7 +53,7 @@ module PhotoBook =
         | x :: xs -> 
             let page1 = makePage1 title x.LocalPath x.Title
             let rest = xs |> List.map (fun x -> makePageRest title x.LocalPath x.Title) 
-            concat (page1 :: rest)
+            concatMarkdown (page1 :: rest)
         | [] -> h1 (text title)
 
     

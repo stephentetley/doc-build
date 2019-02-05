@@ -18,10 +18,10 @@ module Shell =
         
 
 
-    let exitcodeToResult (code:int) (stdout:string) : BuildResult<string> = 
-        match code with
-        | 0 -> Ok stdout
-        | _ -> Error (procErrorCodeMessage code)
+    let exitcodeToResult (errCode:int) (stdOutput:string) : BuildResult<string> = 
+        match errCode with
+        | 0 -> Ok stdOutput
+        | _ -> Error (procErrorCodeMessage errCode)
 
     type ProcessOptions = 
         { WorkingDirectory: string 

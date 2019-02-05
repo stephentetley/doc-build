@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MarkdownDoc" Version="1.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\src-msoffice\DocBuildOffice.fsproj" />
     <ProjectReference Include="..\src\DocBuild.fsproj" />
   </ItemGroup>
