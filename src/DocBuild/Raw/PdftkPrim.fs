@@ -14,6 +14,8 @@ namespace DocBuild.Raw
 module PdftkPrim = 
 
     open System.Text.RegularExpressions
+    
+    open SLFormat.CommandOptions
 
     open DocBuild.Base
     open DocBuild.Base.Shell
@@ -21,8 +23,8 @@ module PdftkPrim =
     
 
     /// Apparently we cannot send multiline commands to execProcess.
-    let dumpDataCommand (inputFile: string) : CommandArgs = 
-        noArg (doubleQuote inputFile) ^^ noArg "dump_data"
+    let dumpDataCommand (inputFile: string) : CmdOpt list = 
+        [ literal (doubleQuote inputFile) ; argument "dump_data" ]
 
 
     /// Seacrh for number of pages in a dump_data from Pdftk
@@ -55,28 +57,27 @@ module PdftkPrim =
           Direction: RotationDirection }
 
 
-    let rotationSpec (directive:RotationDirective): CommandArgs = 
+    let rotationSpec (directive:RotationDirective): CmdOpt = 
         let direction = directive.Direction.DirectionName
         match directive.StartPage, directive.EndPage with
         | s,t when s < t -> 
-            noArg (sprintf "%i-%i%s" s t direction)
+            literal (sprintf "%i-%i%s" s t direction)
         | s,t when s = t ->
-            noArg (sprintf "%i%s" s direction)
+            literal (sprintf "%i%s" s direction)
         | s,t ->
-            noArg (sprintf "%i-end%s" s direction)
+            literal (sprintf "%i-end%s" s direction)
 
-    let rotationSpecs (directives:RotationDirective list): CommandArgs = 
-        directives |> List.map rotationSpec |> CommandArgs.Concat 
+    let rotationSpecs (directives:RotationDirective list): CmdOpt list = 
+        List.map rotationSpec directives
 
     /// <inputFile> cat <directive1> ... output <outputFile>
     let rotationCommand (inputFile: string) 
                         (directives:RotationDirective list)
-                        (outputFile: string) : CommandArgs = 
-        noArg (doubleQuote inputFile)
-            ^^ noArg "cat"
-            ^^ rotationSpecs directives
-            ^^ noArg "output"
-            ^^ noArg (doubleQuote outputFile)
+                        (outputFile: string) : CmdOpt list = 
+        let aa = [ literal (doubleQuote inputFile) ; argument "cat"] 
+        let bb = rotationSpecs directives 
+        let cc = [ argument "output"; literal (doubleQuote outputFile) ]
+        aa @ bb @ cc
 
     /// To do - look at old pdftk rotate and redo the code 
     /// for rotating just islands in a document (keeping the water)

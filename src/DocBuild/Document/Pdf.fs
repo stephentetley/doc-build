@@ -12,10 +12,10 @@ module Pdf =
     
     open System
 
+    open SLFormat.CommandOptions
+
     open DocBuild.Base
-    open DocBuild.Base.Shell
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
     open DocBuild.Raw
 
     // ************************************************************************
@@ -29,14 +29,14 @@ module Pdf =
         | GsDefault
         | GsNone
         member internal v.QualityArgs
-            with get() : CommandArgs = 
+            with get() : CmdOpt = 
                 match v with
-                | GsScreen ->  reqArg "-dPDFSETTINGS" @"/screen"
-                | GsEbook -> reqArg "-dPDFSETTINGS" @"/ebook"
-                | GsPrinter -> reqArg "-dPDFSETTINGS" @"/printer"
-                | GsPrepress -> reqArg "-dPDFSETTINGS" @"/prepress"
-                | GsDefault -> reqArg "-dPDFSETTINGS" @"/default"
-                | GsNone -> emptyArgs
+                | GsScreen ->   argument "-dPDFSETTINGS"    &= @"/screen"
+                | GsEbook ->    argument "-dPDFSETTINGS"    &= @"/ebook"
+                | GsPrinter ->  argument "-dPDFSETTINGS"    &= @"/printer"
+                | GsPrepress -> argument "-dPDFSETTINGS"    &= @"/prepress"
+                | GsDefault ->  argument "-dPDFSETTINGS"    &= @"/default"
+                | GsNone -> noArgument
 
 
 

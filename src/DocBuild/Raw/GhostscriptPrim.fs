@@ -10,29 +10,31 @@ module GhostscriptPrim =
     
     open DocBuild.Base
     open DocBuild.Base.Shell
+    open SLFormat
+    open SLFormat.CommandOptions
 
 
     /// -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite [-dPDFSETTINGS=/screen]
-    let private gsConcatOptions (quality:CommandArgs) : CommandArgs =
-        noArg "-dBATCH" ^^ noArg "-dNOPAUSE" 
-                        ^^ noArg "-q" 
-                        ^^ reqArg "-sDEVICE" "pdfwrite"
-                        ^^ quality
+    let private gsConcatOptions (quality:CmdOpt) : CmdOpt list =
+        [ argument "-dBATCH"
+        ; argument "-dNOPAUSE" 
+        ; argument "-q" 
+        ; argument "-sDEVICE" &= "pdfwrite"
+        ; quality
+        ]
 
 
     /// -sOutputFile="somefile.pdf"
-    let private gsOutputFile (fileName:string) : CommandArgs = 
-        reqArg "-sOutputFile" (doubleQuote fileName)
+    let private gsOutputFile (fileName:string) : CmdOpt = 
+        argument "-sOutputFile" &= fileName
     
     /// "file1.pdf" "file2.pdf" ...
-    let private gsInputFiles (fileNames:string list) : CommandArgs = 
-        fileNames |> List.map (noArg << doubleQuote) |> CommandArgs.Concat
+    let private gsInputFiles (fileNames:string list) : CmdOpt list  = 
+        fileNames |> List.map (literal << doubleQuote)
 
 
     /// Apparently we cannot send multiline commands to execProcess.
-    let concatCommand (quality:CommandArgs) (outputFile:string) (inputFiles: string list) : CommandArgs = 
-        gsConcatOptions quality  
-            ^^ gsOutputFile outputFile 
-            ^^ gsInputFiles inputFiles
+    let concatCommand (quality:CmdOpt) (outputFile:string) (inputFiles: string list) : CmdOpt list = 
+        gsConcatOptions quality @ [gsOutputFile outputFile] @  gsInputFiles inputFiles
         
 

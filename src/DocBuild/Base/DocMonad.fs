@@ -14,6 +14,7 @@ module DocMonad =
 
     open DocBuild.Base
     open DocBuild.Base.Shell
+    open SLFormat.CommandOptions
 
 
     type BuilderEnv = 
@@ -436,21 +437,21 @@ module DocMonad =
                                 ; ExecutableName = exe})
     
     let private shellExecute (findExe:BuilderEnv -> string)
-                                 (command:CommandArgs) : DocMonad<'res,string> = 
+                             (args:CmdOpt list) : DocMonad<'res,string> = 
         docMonad { 
             let! options = getOptions findExe
-            let! ans = liftResult <| executeProcess options command.Command
+            let! ans = liftResult <| executeProcess options (arguments args)
             return ans
             }
         
-    let execGhostscript (command:CommandArgs) : DocMonad<'res,string> = 
-        shellExecute (fun env -> env.GhostscriptExe) command
+    let execGhostscript (args:CmdOpt list) : DocMonad<'res,string> = 
+        shellExecute (fun env -> env.GhostscriptExe) args
 
-    let execPandoc (command:CommandArgs) : DocMonad<'res,string> = 
-        shellExecute (fun env -> env.PandocExe) command
+    let execPandoc (args:CmdOpt list) : DocMonad<'res,string> = 
+        shellExecute (fun env -> env.PandocExe) args
 
-    let execPdftk (command:CommandArgs) : DocMonad<'res,string> = 
-        shellExecute (fun env -> env.PdftkExe) command
+    let execPdftk (args:CmdOpt list) : DocMonad<'res,string> = 
+        shellExecute (fun env -> env.PdftkExe) args
 
     // ****************************************************
     // Recursive functions
