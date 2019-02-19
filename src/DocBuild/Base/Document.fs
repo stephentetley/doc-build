@@ -24,7 +24,7 @@ module Document =
             let extension : string = System.IO.Path.GetExtension(absPath)
             let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
             if List.exists testExtension validFileExtensions then 
-                dreturn ()
+                mreturn ()
             else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions absPath
         else throwError <| sprintf "Could not find file: '%s'" absPath 
 

@@ -74,9 +74,9 @@ let test04 () =
 
 
 let test05a () = 
-    let script = assertM (dreturn false) "my error"
+    let script = assertM (mreturn false) "my error"
     runDocMonadNoCleanup () WindowsEnv script 
 
 let test05b () = 
-    let script = assertM (dreturn true) "my error"
+    let script = assertM (mreturn true) "my error"
     runDocMonadNoCleanup () WindowsEnv script 

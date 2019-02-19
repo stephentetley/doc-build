@@ -43,7 +43,7 @@ module DocMonad =
                               (env: BuilderEnv) : BuildResult<'a>= 
         let (DocMonad f) = ma in f res env
 
-    let inline dreturn (x:'a) : DocMonad<'res,'a> = 
+    let inline mreturn (x:'a) : DocMonad<'res,'a> = 
         DocMonad <| fun _ _ -> Ok x
 
     let inline private bindM (ma:DocMonad<'res,'a>) 
@@ -66,10 +66,10 @@ module DocMonad =
 
 
     let inline private  delayM (fn:unit -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        bindM (dreturn ()) fn 
+        bindM (mreturn ()) fn 
 
     type DocMonadBuilder() = 
-        member self.Return x            = dreturn x
+        member self.Return x            = mreturn x
         member self.Bind (p,f)          = bindM p f
         member self.Zero ()             = dzero ()
         member self.Combine (ma,mb)     = combineM ma mb

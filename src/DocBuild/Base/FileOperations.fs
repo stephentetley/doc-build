@@ -136,8 +136,8 @@ module FileOperations =
         docMonad { 
             let! suffix = 
                 if includeDirectoriesSuffix then 
-                    getPathSuffix absPath <||> dreturn (FileInfo(absPath).Name)
-                else dreturn (FileInfo(absPath).Name)
+                    getPathSuffix absPath <||> mreturn (FileInfo(absPath).Name)
+                else mreturn (FileInfo(absPath).Name)
             return! extendWorkingPath suffix
         }
 
@@ -170,7 +170,7 @@ module FileOperations =
         if Directory.Exists(oldPath) then
             let newPath = cwd </> newName
             Directory.Move(oldPath, newPath)
-            dreturn ()
+            mreturn ()
         else
             throwError (sprintf "renameWorkingFolder - folder does not exist '%s'" oldPath)
 

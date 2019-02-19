@@ -99,7 +99,7 @@ let getSiteName (folderName:string) : string =
 
 
 let getSaiNumber (siteName:string) : DocMonad<'res,string> = 
-    dreturn "SAI00001234"       // TEMP
+    mreturn "SAI00001234"       // TEMP
 
 
 
@@ -109,7 +109,7 @@ let renderMarkdownFile (stylesheetName:string option)
     docMonad {
         let! (stylesheet:WordFile option) = 
             match stylesheetName with
-            | None -> dreturn None
+            | None -> mreturn None
             | Some name -> includeWordFile name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
