@@ -19,6 +19,16 @@
 #r @"Magick.NET-Q8-AnyCPU.dll"
 #I @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\runtimes\win-x64\native"
 
+// ExcelProvider
+#I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
+#r "ExcelProvider.Runtime.dll"
+
+#I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\typeproviders\fsharp41\netstandard2.0"
+#r "ExcelDataReader.DataSet.dll"
+#r "ExcelDataReader.dll"
+#r "ExcelProvider.DesignTime.dll"
+open FSharp.Interop.Excel
+
 
 // SLFormat & MarkdownDoc (not on nuget.org)
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
@@ -61,10 +71,13 @@ open DocBuild.Document
 open DocBuild.Extra.PhotoBook
 open DocBuild.Office
 
+#load "ExcelProviderHelper.fs"
+#load "Proprietary.fs"
 #load "Coversheet.fs"
+open Proprietary
 open Coversheet
 open System
-open DocBuild.Base
+
 
 // ImageMagick Dll loader.
 // A hack to get over Dll loading error due to the 
@@ -252,3 +265,5 @@ let demo05 () =
     runDocMonad userRes WindowsEnv 
         <| buildOne @"AGBRIGG GARAGE_CSO" @"AGBRIGG GARAGE/CSO" "SAI00017527"
 
+let demo06 () = 
+    readADBAll () 
