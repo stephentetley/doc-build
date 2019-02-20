@@ -95,6 +95,7 @@ let WindowsEnv : BuilderEnv =
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" }
 
+type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 type SurveyTable = 
     ExcelFile< @"G:\work\Projects\rtu\year5\RTU Asset Replacement Y5 Surveys.xlsx",
@@ -109,3 +110,51 @@ let readSurveySpeadsheet () : SurveyRow list =
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
     excelReadRowsAsList helper (new SurveyTable())
+
+let survey (siteName:string) (saiNumber:string) : DocMonadWord<unit> = 
+    let outputName = sprintf "%s survey.docx" (safeName siteName)
+    let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
+    docMonad { 
+        let! (template:WordDoc) = includeWordDoc "TEMPLATE Survey.docx"
+        let! outpath = getOutputPath outputName
+        let! output = WordDocument.findReplaceAs searches outpath template
+        return ()
+    }
+
+let hazards (siteName:string) (saiNumber:string) : DocMonadWord<unit> = 
+    let outputName = sprintf "%s Hazard Identification Check List.docx" (safeName siteName)
+    let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
+    docMonad { 
+        let! (template:WordDoc) = includeWordDoc "TEMPLATE Hazard Identification Check List.docx"
+        let! outpath = getOutputPath outputName
+        let! output = WordDocument.findReplaceAs searches outpath template
+        return ()
+    }
+
+let ntrim (source:string) : string = 
+    match source with
+    | null -> ""
+    | _ -> source.Trim()
+
+let genSiteSheets (row:SurveyRow) :DocMonadWord<unit> = 
+    let sai = ntrim row.``SAI Number``
+    let name = ntrim row.``SAI Site Name``
+    localWorkingSubdirectory (safeName name) 
+        <| docMonad { 
+                do! survey name sai
+                do! hazards name sai
+                return ()
+            }
+
+
+let demo01 () = 
+    let userRes = new WordDocument.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| survey "HORSEFIELD TERRACE/WPS" "ADB00023042"
+
+
+let main () = 
+    let sites = readSurveySpeadsheet ()
+    let userRes = new WordDocument.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| forMz sites genSiteSheets

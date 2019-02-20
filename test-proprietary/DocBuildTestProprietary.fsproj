@@ -17,8 +17,6 @@
     <None Include="RtuYear5.fsx" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
     <PackageReference Include="ExcelProvider" Version="1.0.1" />
   </ItemGroup>

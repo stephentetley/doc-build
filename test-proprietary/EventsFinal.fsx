@@ -98,7 +98,7 @@ let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
 
 let (docxCustomReference:string) = @"custom-reference1.docx"
 
-type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle, 'a>
+type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : BuilderEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
