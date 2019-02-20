@@ -137,6 +137,7 @@ let ntrim (source:string) : string =
     | _ -> source.Trim()
 
 let genSiteSheets (row:SurveyRow) :DocMonadWord<unit> = 
+    printfn "%s" row.``SAI Site Name``
     let sai = ntrim row.``SAI Number``
     let name = ntrim row.``SAI Site Name``
     localWorkingSubdirectory (safeName name) 
@@ -154,7 +155,8 @@ let demo01 () =
 
 
 let main () = 
-    let sites = readSurveySpeadsheet ()
+    let sites = readSurveySpeadsheet () |> List.filter (fun row -> not (String.IsNullOrEmpty row.``Surveyed Assigned ``))
+    printfn "%i Sites" (List.length sites)
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| forMz sites genSiteSheets

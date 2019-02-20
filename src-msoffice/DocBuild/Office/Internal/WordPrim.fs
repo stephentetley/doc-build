@@ -102,6 +102,7 @@ module WordPrim =
             try 
                 let outpath1 = doubleQuote outputFile
                 doc.SaveAs (FileName = refobj outpath1)
+                doc.Close(SaveChanges = refobj false) |> ignore
                 Ok ()
             with 
             | _ -> 
