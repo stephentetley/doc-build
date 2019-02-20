@@ -20,7 +20,7 @@ module PhotoBook =
 
 
 
-    let optimizeJpeg (image:JpegFile) : DocMonad<'res,JpegFile> =
+    let optimizeJpeg (image:JpegDoc) : DocMonad<'res,JpegDoc> =
         autoOrient image >>= resizeForWord
 
         
@@ -48,7 +48,7 @@ module PhotoBook =
 
 
     let private photoBookMarkdown (title:string) 
-                                  (imagePaths: JpegFile list) : Markdown = 
+                                  (imagePaths: JpegDoc list) : Markdown = 
         match imagePaths with
         | x :: xs -> 
             let page1 = makePage1 title x.LocalPath x.Title
@@ -72,13 +72,13 @@ module PhotoBook =
     let makePhotoBook (title:string) 
                       (sourceSubFolder:string) 
                       (tempSubFolder:string)
-                      (outputRelName:string) : DocMonad<'res,MarkdownFile> =
+                      (outputRelName:string) : DocMonad<'res,MarkdownDoc> =
         docMonad {
             let! jpegs = copyJpegs sourceSubFolder tempSubFolder >>= Collection.mapM optimizeJpeg
             let mdDoc = photoBookMarkdown title (Collection.toList jpegs)
             let! outputAbsPath = extendWorkingPath outputRelName
             let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-            let! mdOutput = workingMarkdownFile outputAbsPath
+            let! mdOutput = workingMarkdownDoc outputAbsPath
             return mdOutput
         }
 

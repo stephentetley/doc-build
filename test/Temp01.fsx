@@ -2,7 +2,6 @@
 // License: BSD 3 Clause
 
 #r "netstandard"
-
 open System
 
 // Office deps
@@ -48,9 +47,9 @@ open System
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
-#load "..\src-msoffice\DocBuild\Office\WordFile.fs"
-#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
-#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
+#load "..\src-msoffice\DocBuild\Office\WordDocument.fs"
+#load "..\src-msoffice\DocBuild\Office\ExcelDocument.fs"
+#load "..\src-msoffice\DocBuild\Office\PowerPointDocument.fs"
 
 open DocBuild.Base
 open DocBuild.Document.Pdf

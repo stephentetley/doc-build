@@ -21,31 +21,31 @@ module Markdown =
 
     /// Output a Markdown doc to file.
     let saveMarkdown (outputAbsPath:string) 
-                     (markdown:Markdown) : DocMonad<'res,MarkdownFile> = 
+                     (markdown:Markdown) : DocMonad<'res,MarkdownDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let _ = markdown.Save outputAbsPath 
-            return! workingMarkdownFile outputAbsPath
+            return! workingMarkdownDoc outputAbsPath
         }
 
     // ************************************************************************
     // Export
 
-    let markdownToWordAs (customStyles:WordFile option)
+    let markdownToWordAs (customStyles:WordDoc option)
                          (outputAbsPath:string) 
-                         (src:MarkdownFile) : DocMonad<'res,WordFile> =
+                         (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let styles = customStyles |> Option.map (fun doc -> doc.LocalPath) 
             let command = 
                 PandocPrim.outputDocxCommand styles src.LocalPath outputAbsPath
             let! _ = execPandoc command
-            return! workingWordFile outputAbsPath
+            return! workingWordDoc outputAbsPath
          }
 
 
-    let markdownToWord (customStyles:WordFile option) 
-                       (src:MarkdownFile) : DocMonad<'res,WordFile> =
+    let markdownToWord (customStyles:WordDoc option) 
+                       (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         let outputFile = Path.ChangeExtension(src.LocalPath, "docx")
         markdownToWordAs customStyles outputFile src
 
@@ -56,7 +56,7 @@ module Markdown =
 
     let findReplaceAs (searches:SearchList) 
                       (outputAbsPath:string) 
-                      (src:MarkdownFile) : DocMonad<'res,MarkdownFile> = 
+                      (src:MarkdownDoc) : DocMonad<'res,MarkdownDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let original = File.ReadAllText(src.LocalPath)
@@ -64,10 +64,10 @@ module Markdown =
                source.Replace(searchText, replaceText)
             let final = List.fold action original searches
             let _ = File.WriteAllText(outputAbsPath, final)
-            return! workingMarkdownFile outputAbsPath
+            return! workingMarkdownDoc outputAbsPath
         }
 
 
     let findReplace (searches:SearchList)
-                    (src:MarkdownFile) : DocMonad<'res,MarkdownFile> = 
+                    (src:MarkdownDoc) : DocMonad<'res,MarkdownDoc> = 
         findReplaceAs searches src.LocalPath src

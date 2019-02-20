@@ -6,7 +6,7 @@ namespace DocBuild.Office
 
 
 [<RequireQualifiedAccess>]
-module WordFile = 
+module WordDocument = 
 
     open System.IO
 
@@ -65,19 +65,19 @@ module WordFile =
 
     let exportPdfAs (quality:PrintQuality) 
                     (outputAbsPath:string)
-                    (src:WordFile) : DocMonad<#HasWordHandle,PdfFile> = 
+                    (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let pdfQuality = wordExportQuality quality
             let! (ans:unit) = 
                 execWord <| fun app -> 
                     liftResult (wordExportAsPdf app pdfQuality src.LocalPath outputAbsPath)
-            return! workingPdfFile outputAbsPath
+            return! workingPdfDoc outputAbsPath
         }
 
     /// Saves the file in the top-level working directory.
     let exportPdf (quality:PrintQuality)  
-                  (src:WordFile) : DocMonad<#HasWordHandle,PdfFile> = 
+                  (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
@@ -91,16 +91,16 @@ module WordFile =
 
     let findReplaceAs (searches:SearchList) 
                       (outputAbsPath:string) 
-                      (src:WordFile) : DocMonad<#HasWordHandle,WordFile> = 
+                      (src:WordDoc) : DocMonad<#HasWordHandle,WordDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! ans = 
                 execWord <| fun app -> 
                         liftResult (wordFindReplace app searches src.LocalPath outputAbsPath)
-            return! workingWordFile outputAbsPath
+            return! workingWordDoc outputAbsPath
         }
 
 
 
-    let findReplace (searches:SearchList) (src:WordFile) : DocMonad<#HasWordHandle,WordFile> = 
+    let findReplace (searches:SearchList) (src:WordDoc) : DocMonad<#HasWordHandle,WordDoc> = 
         findReplaceAs searches src.LocalPath src 

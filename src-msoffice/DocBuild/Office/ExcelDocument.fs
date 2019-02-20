@@ -6,7 +6,7 @@ namespace DocBuild.Office
 
 
 [<RequireQualifiedAccess>]
-module ExcelFile = 
+module ExcelDocument = 
 
     open System.IO
 
@@ -66,20 +66,20 @@ module ExcelFile =
     let exportPdfAs (quality:PrintQuality) 
                     (fitWidth:bool)
                     (outputAbsPath:string)
-                    (src:ExcelFile) : DocMonad<#HasExcelHandle,PdfFile> = 
+                    (src:ExcelDoc) : DocMonad<#HasExcelHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let pdfQuality = excelExportQuality quality
             let! _ = 
                 execExcel <| fun app -> 
                         liftResult (excelExportAsPdf app  fitWidth pdfQuality src.LocalPath outputAbsPath)
-            return! workingPdfFile outputAbsPath
+            return! workingPdfDoc outputAbsPath
         }
 
     /// Saves the file in the top-level working directory.
     let exportPdf (quality:PrintQuality)
                   (fitWidth:bool) 
-                  (src:ExcelFile) : DocMonad<#HasExcelHandle,PdfFile> = 
+                  (src:ExcelDoc) : DocMonad<#HasExcelHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
@@ -91,16 +91,16 @@ module ExcelFile =
     // ************************************************************************
     // Find and replace
 
-    let findReplaceAs (searches:SearchList) (outputAbsPath:string) (src:ExcelFile) : DocMonad<#HasExcelHandle,ExcelFile> = 
+    let findReplaceAs (searches:SearchList) (outputAbsPath:string) (src:ExcelDoc) : DocMonad<#HasExcelHandle,ExcelDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! ans = 
                 execExcel <| fun app -> 
                         liftResult (excelFindReplace app searches src.LocalPath outputAbsPath)
-            return! workingExcelFile outputAbsPath
+            return! workingExcelDoc outputAbsPath
         }
 
 
 
-    let findReplace (searches:SearchList) (src:ExcelFile) : DocMonad<#HasExcelHandle,ExcelFile> = 
+    let findReplace (searches:SearchList) (src:ExcelDoc) : DocMonad<#HasExcelHandle,ExcelDoc> = 
         findReplaceAs searches src.LocalPath src

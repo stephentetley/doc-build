@@ -9,9 +9,9 @@
     <Compile Include="DocBuild\Office\Internal\WordPrim.fs" />
     <Compile Include="DocBuild\Office\Internal\ExcelPrim.fs" />
     <Compile Include="DocBuild\Office\Internal\PowerPointPrim.fs" />
-    <Compile Include="DocBuild\Office\WordFile.fs" />
-    <Compile Include="DocBuild\Office\ExcelFile.fs" />
-    <Compile Include="DocBuild\Office\PowerPointFile.fs" />
+    <Compile Include="DocBuild\Office\WordDocument.fs" />
+    <Compile Include="DocBuild\Office\ExcelDocument.fs" />
+    <Compile Include="DocBuild\Office\PowerPointDocument.fs" />
 </ItemGroup>
 
 <ItemGroup>

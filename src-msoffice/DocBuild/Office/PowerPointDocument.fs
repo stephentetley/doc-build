@@ -6,7 +6,7 @@ namespace DocBuild.Office
 
 
 [<RequireQualifiedAccess>]
-module PowerPointFile = 
+module PowerPointDocument = 
 
     open System.IO
 
@@ -64,18 +64,18 @@ module PowerPointFile =
 
     let exportPdfAs (quality:PrintQuality) 
                     (outputAbsPath:string) 
-                    (src:PowerPointFile) : DocMonad<#HasPowerPointHandle,PdfFile> = 
+                    (src:PowerPointDoc) : DocMonad<#HasPowerPointHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let pdfQuality = powerpointExportQuality quality
             let! ans = 
                 execPowerPoint <| fun app -> 
                     liftResult (powerPointExportAsPdf app pdfQuality src.LocalPath outputAbsPath)
-            return! workingPdfFile outputAbsPath
+            return! workingPdfDoc outputAbsPath
         }
 
     /// Saves the file in the working directory.
-    let exportPdf (src:PowerPointFile) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfFile> = 
+    let exportPdf (src:PowerPointDoc) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")

@@ -3,6 +3,8 @@
 
 
 #r "netstandard"
+open System
+
 
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
@@ -60,9 +62,9 @@ open FSharp.Interop.Excel
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\ExcelPrim.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\PowerPointPrim.fs"
-#load "..\src-msoffice\DocBuild\Office\WordFile.fs"
-#load "..\src-msoffice\DocBuild\Office\ExcelFile.fs"
-#load "..\src-msoffice\DocBuild\Office\PowerPointFile.fs"
+#load "..\src-msoffice\DocBuild\Office\WordDocument.fs"
+#load "..\src-msoffice\DocBuild\Office\ExcelDocument.fs"
+#load "..\src-msoffice\DocBuild\Office\PowerPointDocument.fs"
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad
@@ -76,7 +78,7 @@ open DocBuild.Office
 #load "Coversheet.fs"
 open Proprietary
 open Coversheet
-open System
+
 
 
 // ImageMagick Dll loader.
@@ -96,7 +98,7 @@ let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
 
 let (docxCustomReference:string) = @"custom-reference1.docx"
 
-type DocMonadWord<'a> = DocMonad<WordFile.WordHandle, 'a>
+type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle, 'a>
 
 let WindowsEnv : BuilderEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
@@ -118,25 +120,25 @@ let getSaiNumber (siteName:string) : DocMonad<'res,string> =
 
 let renderMarkdownFile (stylesheetName:string option)
                        (docTitle:string)
-                       (markdown:MarkdownFile) : DocMonadWord<PdfFile> =
+                       (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
     docMonad {
-        let! (stylesheet:WordFile option) = 
+        let! (stylesheet:WordDoc option) = 
             match stylesheetName with
             | None -> mreturn None
-            | Some name -> includeWordFile name |>> Some
+            | Some name -> includeWordDoc name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
-        let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle docTitle
+        let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
         return pdf
     }
 
-let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfFile> = 
+let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
     docMonad { 
         let! logoPath = extendIncludePath "YW-logo.jpg"
-        let! (stylesheet:WordFile option) = includeWordFile "custom-reference1.docx" |>> Some
+        let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
-        let! pdf = WordFile.exportPdf PqScreen docx |>> setTitle "Coversheet"
+        let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
         return pdf
     }
 
@@ -164,7 +166,7 @@ type PhotosDocType =
 
 
 
-let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfFile> = 
+let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfDoc> = 
     docMonad { 
         let title = sprintf "%s Photos" docType.Name
         let outputFile = sprintf "%s Photos.md" docType.Name |> safeName
@@ -175,30 +177,30 @@ let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfFile> =
 
 
 // May have multiple surveys...
-let processSurveys () : DocMonadWord<PdfFile list> = 
+let processSurveys () : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
                 <| findAllSourceFilesMatching "*Survey*.doc*" false
-        let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
+        let! pdfs = forM inputs (sourceWordDoc >=> WordDocument.exportPdf PqScreen)
         return pdfs
     }
 
-let genSurveyPhotos () : DocMonadWord<PdfFile> = 
+let genSurveyPhotos () : DocMonadWord<PdfDoc> = 
     photosDoc PhotosSurvey
 
 
-let genSiteWorkPhotos () : DocMonadWord<PdfFile> = 
+let genSiteWorkPhotos () : DocMonadWord<PdfDoc> = 
     photosDoc PhotosSiteWork
 
 /// May have multiple documents
 /// Get all doc files
-let processSiteWork () : DocMonadWord<PdfFile list> = 
+let processSiteWork () : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work" 
                 <| findAllSourceFilesMatching "*.doc*" false
-        let! pdfs = forM inputs (sourceWordFile >=> WordFile.exportPdf PqScreen)
+        let! pdfs = forM inputs (sourceWordDoc >=> WordDocument.exportPdf PqScreen)
         return pdfs
     }
 
@@ -213,7 +215,7 @@ let getWorkList () : string list =
 
 let buildOne (sourceName:string) 
              (siteName:string) 
-             (saiNumber:string) : DocMonadWord<PdfFile> = 
+             (saiNumber:string) : DocMonadWord<PdfDoc> = 
     commonSubdirectory sourceName <| 
         docMonad {
             let! cover = genCoversheet siteName saiNumber
@@ -238,30 +240,30 @@ let buildAll () : DocMonadWord<unit> =
 
 
 let demo01 () = 
-    let userRes = new WordFile.WordHandle()
+    let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (genCoversheet @"ABERFORD ROAD/NO 1 CSO" "SAI00036945")
 
 
 let demo02 () = 
-    let userRes = new WordFile.WordHandle()
+    let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSurveys ())
             
 
 let demo03 () = 
-    let userRes = new WordFile.WordHandle()
+    let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSiteWork ())
 
 
 let demo04 () = 
-    let userRes = new WordFile.WordHandle()
+    let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (genSurveyPhotos ())
 
 let demo05 () = 
-    let userRes = new WordFile.WordHandle()
+    let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| buildOne @"AGBRIGG GARAGE_CSO" @"AGBRIGG GARAGE/CSO" "SAI00017527"
 

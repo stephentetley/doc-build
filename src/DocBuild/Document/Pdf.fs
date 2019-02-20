@@ -56,11 +56,11 @@ module Pdf =
     /// The result is output in the working directory.
     let pdfConcat (quality:GsQuality)
                   (outputAbsPath:string) 
-                  (inputFiles:PdfCollection): DocMonad<'res,PdfFile> = 
+                  (inputFiles:PdfCollection): DocMonad<'res,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! _ = ghostscriptConcat quality outputAbsPath inputFiles
-            return! workingPdfFile outputAbsPath
+            return! workingPdfDoc outputAbsPath
  
         }
 
@@ -104,18 +104,18 @@ module Pdf =
     /// outputName is relatuive to Working directory.
     let extractRotationsAs (directives:RotationDirective list)
                            (outputAbsPath:string) 
-                           (src:PdfFile) : DocMonad<'res,PdfFile> = 
+                           (src:PdfDoc) : DocMonad<'res,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let command = 
                 PdftkPrim.rotationCommand src.LocalPath directives outputAbsPath
             let! _ = execPdftk command
-            return! workingPdfFile outputAbsPath
+            return! workingPdfDoc outputAbsPath
         }
 
     /// Rezize for Word generating a new temp file
     let extractRotations (directives:RotationDirective list) 
-                         (src:PdfFile) : DocMonad<'res,PdfFile> = 
+                         (src:PdfDoc) : DocMonad<'res,PdfDoc> = 
         extractRotationsAs directives src.LocalPath src
 
 
@@ -128,7 +128,7 @@ module Pdf =
     // ************************************************************************
     // Page count
 
-    let pdfPageCount (inputfile:PdfFile) : DocMonad<'res,int> = 
+    let pdfPageCount (inputfile:PdfDoc) : DocMonad<'res,int> = 
         docMonad { 
             let command = PdftkPrim.dumpDataCommand inputfile.LocalPath
             let! stdout = execPdftk command

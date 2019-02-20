@@ -103,7 +103,7 @@ let coversheet (saiNumber:string)
                (siteName:string) 
                (logoPath:string)
                (author:string)  
-               (outputFile:string) : DocMonad<'res,MarkdownFile> = 
+               (outputFile:string) : DocMonad<'res,MarkdownDoc> = 
     docMonad {         
         let markdown = makeDoc saiNumber siteName logoPath author
         let! fullPath = extendWorkingPath outputFile

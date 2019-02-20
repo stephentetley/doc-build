@@ -1,5 +1,6 @@
-﻿// Copyright (c) Stephen Tetley 2018,2019
+﻿// Copyright (c) Stephen Tetley 2019
 // License: BSD 3 Clause
+
 
 #r "netstandard"
 open System
@@ -15,8 +16,20 @@ open System
 #r "office"
 
 // ImageMagick
-#I @"C:\Users\stephen\.nuget\packages\Magick.NET-Q8-AnyCPU\7.9.2\lib\netstandard20"
+#I @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\lib\netstandard20"
 #r @"Magick.NET-Q8-AnyCPU.dll"
+#I @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\runtimes\win-x64\native"
+
+// ExcelProvider
+#I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
+#r "ExcelProvider.Runtime.dll"
+
+#I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\typeproviders\fsharp41\netstandard2.0"
+#r "ExcelDataReader.DataSet.dll"
+#r "ExcelDataReader.dll"
+#r "ExcelProvider.DesignTime.dll"
+open FSharp.Interop.Excel
+
 
 // SLFormat & MarkdownDoc (not on nuget.org)
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
@@ -53,79 +66,46 @@ open System
 #load "..\src-msoffice\DocBuild\Office\PowerPointDocument.fs"
 
 open DocBuild.Base
-open DocBuild.Document.Pdf
 open DocBuild.Base.DocMonad
 open DocBuild.Base.DocMonadOperators
-
+open DocBuild.Document
+open DocBuild.Extra.PhotoBook
 open DocBuild.Office
 
+
+#load "ExcelProviderHelper.fs"
+open ExcelProviderHelper
+
+// ImageMagick Dll loader.
+// A hack to get over Dll loading error due to the 
+// native dll `Magick.NET-Q8-x64.Native.dll`
+[<Literal>] 
+let NativeMagick = @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\runtimes\win-x64\native"
+Environment.SetEnvironmentVariable("PATH", 
+    Environment.GetEnvironmentVariable("PATH") + ";" + NativeMagick
+    )
+
+
+
 let WindowsEnv : BuilderEnv = 
-    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") |> DirectoryPath
-    { WorkingDirectory = cwd
-      SourceDirectory = cwd
-      IncludeDirectory = DirectoryPath (cwd <//> "include")
+    { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\output"
+      SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\year5"
+      IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc"
-    }
+      PandocExe = @"pandoc" }
 
 
-let demo01 () = 
-    runDocMonadNoCleanup () WindowsEnv <| 
-        docMonad { 
-            let! p1 = workingPdfDoc "One.pdf"
-            let! p2 = workingPdfDoc "Two.pdf" 
-            let! p3 = workingPdfDoc "Three.pdf"
-            let pdfs = Collection.fromList [p1;p2;p3]
-            let! outfile = workingPdfDoc "Concat.pdf"
-            let! _ = pdfConcat GsScreen outfile.LocalPath pdfs
-            return ()
-        }
+type SurveyTable = 
+    ExcelFile< @"G:\work\Projects\rtu\year5\RTU Asset Replacement Y5 Surveys.xlsx",
+               ForceString = true >
 
+type SurveyRow = SurveyTable.Row
 
-let demo02 () = 
-    runDocMonadNoCleanup () WindowsEnv <| 
-        docMonad { 
-            let! p1 = workingPdfDoc "Concat.pdf"
-            let! pageCount = pdfPageCount p1
-            return pageCount
-        }
-
-
-
-let demo03 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
-        docMonad { 
-            let! w1 = workingWordDoc "sample.docx" 
-            return! WordDocument.exportPdf PqScreen w1 
-        }
-
-let demo04 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
-        docMonad { 
-            let! w1 = sourceWordDoc "sample.docx" 
-            return! getDocPathSuffix w1
-        }
-
-
-let demo05 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
-        docMonad { 
-            return! findAllSourceFilesMatching "*.pdf" true
-        }
-
-let demo06 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
-        assertIsSourcePath @"D:\coding\fsharp\doc-build\data\Concat.pdf"
-
-let demo06a () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
-        (askSourceDirectory () |>> fun (src:DirectoryPath) -> src.Segments)
-
-
-
+let readSurveySpeadsheet () : SurveyRow list = 
+    let helper = 
+        { new IExcelProviderHelper<SurveyTable,SurveyRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
+    excelReadRowsAsList helper (new SurveyTable())
