@@ -14,7 +14,8 @@
     <Compile Include="Proprietary.fs" />
     <Compile Include="Coversheet.fs" />
     <Compile Include="EventsFinal.fsx" />
-    <None Include="RtuYear5.fsx" />
+    <None Include="RtuSurveys.fsx" />
+    <None Include="RtuFinals.fsx" />
   </ItemGroup>
 
   <ItemGroup>

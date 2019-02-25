@@ -406,6 +406,15 @@ module DocMonad =
             | Error _ -> Ok None
             | Ok a -> Ok (Some a)
 
+
+    let optionFailM (ma:DocMonad<'res,'a option>) 
+                    (errMsg:string) : DocMonad<'res,'a> = 
+        bindM ma (fun opt -> 
+                    match opt with
+                    | Some ans -> mreturn ans
+                    | None -> throwError errMsg)
+
+
     let kleisliL (mf:'a -> DocMonad<'res,'b>)
                  (mg:'b -> DocMonad<'res,'c>)
                  (source:'a) : DocMonad<'res,'c> = 

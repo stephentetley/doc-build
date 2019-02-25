@@ -196,6 +196,15 @@ module FileOperations =
         attemptM <| proc ()
 
 
+    /// Search file matching files in the SourceDirectory.
+    /// Uses glob pattern - the only wild cards are '?' and '*'
+    /// Returns a list of absolute paths.
+    let tryFindExactlyOneSourceFileMatching (pattern:string) 
+                                   (recurseIntoSubDirectories:bool) : DocMonad<'res, string option> =
+        let proc () = 
+            askSourceDirectoryPath () |>> FakeLikePrim.tryFindExactlyOneFileMatching pattern recurseIntoSubDirectories
+        attemptM <| proc ()
+
 
     /// Create a subdirectory under the working folder.
     let createWorkingSubdirectory (relPath:string) : DocMonad<'res,unit> = 

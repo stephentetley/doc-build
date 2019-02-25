@@ -48,7 +48,6 @@ module Pdf =
                                   (inputFiles:PdfCollection) : DocMonad<'res,string> = 
         let inputs = 
             inputFiles |> Collection.toList |> List.map (fun d -> d.LocalPath)
-
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputAbsPath inputs
         execGhostscript cmd
 

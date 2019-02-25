@@ -26,7 +26,7 @@ module GhostscriptPrim =
 
     /// -sOutputFile="somefile.pdf"
     let private gsOutputFile (fileName:string) : CmdOpt = 
-        argument "-sOutputFile" &= fileName
+        argument "-sOutputFile" &= (doubleQuote fileName)
     
     /// "file1.pdf" "file2.pdf" ...
     let private gsInputFiles (fileNames:string list) : CmdOpt list  = 
