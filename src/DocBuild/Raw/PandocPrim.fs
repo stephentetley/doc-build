@@ -26,7 +26,7 @@ module PandocPrim =
         [ argument "--from"     &= "markdown"
         ; argument "--to"       &= "docx" &+ "table_captions"
         ; argument "--standalone"
-        ; argument "--output"   &= outputFile
+        ; argument "--output"   &= (doubleQuote outputFile)
         ; literal (argValue inputFile)
         ; customRef
         ]

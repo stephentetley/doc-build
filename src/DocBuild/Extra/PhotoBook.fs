@@ -23,7 +23,8 @@ module PhotoBook =
     let optimizeJpeg (image:JpegDoc) : DocMonad<'res,JpegDoc> =
         autoOrient image >>= resizeForWord
 
-        
+    let unixLikePath (path:string) : string = 
+        path.Replace('\\', '/')
 
     let private makePage1 (title:string) 
                           (imagePath:string) 
@@ -31,9 +32,11 @@ module PhotoBook =
         concatMarkdown
             <| [ h1 (text title)
                ; markdownTile <| nbsp       // should be Markdown...
-               ; markdownTile <| inlineImage (text " ") imagePath None
+               ; markdown     <| inlineImage  " " (unixLikePath imagePath) None
                ; markdownTile <| text imageName
                ]
+
+
 
     let private makePageRest (title:string) 
                              (imagePath:string) 
@@ -42,7 +45,7 @@ module PhotoBook =
             <| [ openxmlPagebreak
                ; h2 (text title)
                ; markdownTile <| nbsp       // should be Markdown...
-               ; markdownTile <| inlineImage (text " ") imagePath None
+               ; markdown     <| inlineImage " " (unixLikePath imagePath) None
                ; markdownTile <| text imageName
                ]
 

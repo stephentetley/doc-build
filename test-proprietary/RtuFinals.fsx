@@ -34,7 +34,7 @@ open FSharp.Interop.Excel
 // SLFormat & MarkdownDoc (not on nuget.org)
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
 #r @"SLFormat.dll"
-#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190225\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
 
@@ -114,7 +114,7 @@ let readWorkSpeadsheet () : WorkRow list =
          
     excelReadRowsAsList helper (new WorkTable())
 
-let renderMarkdownFile (stylesheetName:string option)
+let renderMarkdownDoc (stylesheetName:string option)
                        (docTitle:string)
                        (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
     docMonad {
@@ -177,8 +177,11 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 
 let photosDoc (props:PhotosProps) : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! md = makePhotoBook props.Title props.SourceSubpath  props.SourceSubpath props.OutputFileRelPath
-        let! pdf = renderMarkdownFile (Some docxCustomReference) props.Title md
+        let! md = 
+            makePhotoBook props.Title 
+                          props.SourceSubpath  
+                          props.WorkingSubpath props.OutputFileRelPath
+        let! pdf = renderMarkdownDoc (Some docxCustomReference) props.Title md
         return pdf
     }
 
@@ -187,7 +190,7 @@ let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
     let props : PhotosProps = 
         { Title = "Survey Photos"
         ; SourceSubpath = "1.Surveys" </> name1 </> "photos"
-        ; WorkingSubpath= name1 </> "survey_photos"
+        ; WorkingSubpath = "survey_photos"
         ; OutputFileRelPath= sprintf "%s survey photos.md" name1 }
     optionalM (photosDoc props)
 
@@ -197,7 +200,7 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
     let props : PhotosProps = 
         { Title = "Install Photos"
         ; SourceSubpath = "2.Install" </> name1 </> "photos"
-        ; WorkingSubpath= name1 </> "install_photos"
+        ; WorkingSubpath = "install_photos"
         ; OutputFileRelPath= sprintf "%s install photos.md" name1 }
     optionalM (photosDoc props)
     

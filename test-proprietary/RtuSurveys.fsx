@@ -34,7 +34,7 @@ open FSharp.Interop.Excel
 // SLFormat & MarkdownDoc (not on nuget.org)
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
 #r @"SLFormat.dll"
-#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190225\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
 
@@ -98,8 +98,9 @@ let WindowsEnv : BuilderEnv =
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 type SurveyTable = 
-    ExcelFile< @"G:\work\Projects\rtu\year5\RTU Asset Replacement Y5 Surveys.xlsx",
-               ForceString = true >
+    ExcelFile< 
+        FileName = @"G:\work\Projects\rtu\year5\RTU Asset Replacement Y5 Surveys.xlsx",
+        ForceString = true >
 
 type SurveyRow = SurveyTable.Row
 
@@ -155,7 +156,7 @@ let demo01 () =
 
 
 let main () = 
-    let sites = readSurveySpeadsheet () |> List.filter (fun row -> not (String.IsNullOrEmpty row.``Surveyed Assigned ``))
+    let sites = readSurveySpeadsheet () |> List.filter (fun row -> (String.IsNullOrEmpty row.``Surveyed Assigned ``))
     printfn "%i Sites" (List.length sites)
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 

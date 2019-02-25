@@ -144,13 +144,13 @@ module FileOperations =
     /// Copy a file to working, returning the copy as a Document.
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
-    let copyFileToWorking (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'res,Document<'a>> = 
+    let copyFileToWorking (includeDirectoriesSuffix:bool) (sourceAbsPath:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! target = generateWorkingFileName includeDirectoriesSuffix absPath
+            let! target = generateWorkingFileName includeDirectoriesSuffix sourceAbsPath
             if File.Exists(target) then 
                 File.Delete(target) 
             else ()
-            File.Copy( sourceFileName = absPath, destFileName = target )
+            File.Copy( sourceFileName = sourceAbsPath, destFileName = target )
             return Document(target)
         }
 
