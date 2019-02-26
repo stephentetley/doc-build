@@ -32,7 +32,7 @@ module PhotoBook =
         concatMarkdown
             <| [ h1 (text title)
                ; markdownTile <| nbsp       // should be Markdown...
-               ; markdown     <| inlineImage  " " (unixLikePath imagePath) None
+               ; markdown     <| inlineImage space (unixLikePath imagePath) None
                ; markdownTile <| text imageName
                ]
 
@@ -45,7 +45,7 @@ module PhotoBook =
             <| [ openxmlPagebreak
                ; h2 (text title)
                ; markdownTile <| nbsp       // should be Markdown...
-               ; markdown     <| inlineImage " " (unixLikePath imagePath) None
+               ; markdown     <| inlineImage space (unixLikePath imagePath) None
                ; markdownTile <| text imageName
                ]
 

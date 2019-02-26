@@ -4,6 +4,7 @@
 
 #r "netstandard"
 open System
+open System.Text.RegularExpressions
 
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
@@ -34,7 +35,7 @@ open FSharp.Interop.Excel
 // SLFormat & MarkdownDoc (not on nuget.org)
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
 #r @"SLFormat.dll"
-#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190225\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190226d\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
 
@@ -85,6 +86,9 @@ Environment.SetEnvironmentVariable("PATH",
     Environment.GetEnvironmentVariable("PATH") + ";" + NativeMagick
     )
 
+open MarkdownDoc
+let tempTC () = 
+    inlineImage space (unixLikePath "G:\work\photo1.jpg") None
 
 
 let WindowsEnv : BuilderEnv = 
@@ -149,7 +153,9 @@ let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMona
     let subdirectory = folder1 </> (row.``Site Name`` |> safeName ) 
     localSourceSubdirectory (subdirectory) 
         <| docMonad { 
+            printfn "<<<<<"
             let! input = tryFindExactlyOneSourceFileMatching fileGlob false
+            printfn ">>>>>"
             match input with
             | None -> return None
             | Some infile ->
@@ -225,8 +231,12 @@ let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> =
             }
 
 
+let isLike (pattern:string) (source:string) = 
+    Regex.IsMatch(input=source, pattern=pattern)
+
 let main () = 
-    let sites = readWorkSpeadsheet () |> List.take 1
+    let sites = readWorkSpeadsheet () 
+                    |> List.filter (fun row -> isLike "OWTHORNE" row.``Site Name``)
     printfn "%i Sites" (List.length sites)
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 

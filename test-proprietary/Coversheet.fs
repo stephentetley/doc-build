@@ -42,7 +42,7 @@ let changeSlashes (path:string) : string =
 
 /// @"include/YW-logo.jpg"
 let logo (includePath:string) : Markdown = 
-    markdown (inlineImage " " (changeSlashes includePath) None)
+    markdown (inlineImage space (changeSlashes includePath) None)
 
 let title1 : Markdown = 
     h1 (text "T0975 - Event Duration Monitoring Phase 2 (EDM2)")
