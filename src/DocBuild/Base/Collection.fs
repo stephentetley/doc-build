@@ -4,6 +4,12 @@
 
 /// Generally use Collection.* prefix with this module
 
+// Note
+// We don't need collection to do very much, just build from 
+// either end allowing cons and snoc of option<Document<'a>>,
+// plus we need access to the elements when built.
+// Currently this module is overkill.
+
 namespace DocBuild.Base
 
 
@@ -22,6 +28,38 @@ module Collection =
             | One of Document<'a>
             | Join of Collection<'a> * Collection<'a>
         
+        
+    /// Left-associative fold of a JoinList.
+    /// In CPS form
+        member v.fold (op:Document<'a> -> 'ans -> 'ans) 
+                      (initial:'ans)  : 'ans = 
+            let rec work (src:Collection<'a>) 
+                         (acc:'ans) 
+                         (cont:'ans -> 'ans): 'ans = 
+                match src with
+                | Empty -> cont acc
+                | One(a) -> cont (op a acc)
+                | Join(t,u) -> 
+                    work t acc (fun v1 -> 
+                    work u v1 cont)
+            work v initial (fun a -> a)   
+
+            /// Right-associative fold of a JoinList.
+            /// In CPS form
+        member v.foldBack (op:Document<'a> -> 'ans -> 'ans) 
+                          (initial:'ans)  : 'ans = 
+            let rec work (src:Collection<'a>) (acc:'ans) (cont:'ans -> 'ans): 'ans = 
+                match src with
+                | Empty -> cont acc
+                | One(a) -> cont (op a acc)
+                | Join(t,u) -> 
+                    work u acc (fun v1 -> 
+                    work t v1 cont)
+            work v initial (fun a -> a)
+
+        member v.Elements
+            with get () : Document<'a> list = v.foldBack (fun a ac -> a::ac) []
+
         static member ( <<& ) (item:Document<'a>, col:Collection<'a>) = 
             match col with
             | Empty -> One item
@@ -67,35 +105,8 @@ module Collection =
         | ViewR of Collection<'a> * Document<'a>
 
 
-    /// Right-associative fold of a JoinList.
-    /// In CPS form
-    let private joinfoldr (op:Document<'a> -> 'ans -> 'ans) 
-                          (initial:'ans) 
-                          (source:Collection<'a>) : 'ans = 
-        let rec work (src:Collection<'a>) (acc:'ans) (cont:'ans -> 'ans): 'ans = 
-            match src with
-            | Empty -> cont acc
-            | One(a) -> cont (op a acc)
-            | Join(t,u) -> 
-                work u acc  (fun v1 -> 
-                work t v1   (fun v2 -> 
-                cont v2))
-        work source initial (fun a -> a)
 
-    /// Left-associative fold of a JoinList.
-    /// In CPS form
-    let private joinfoldl (op:Document<'a> -> 'ans -> 'ans) 
-                          (initial:'ans) 
-                          (source:Collection<'a>) : 'ans = 
-        let rec work (src:Collection<'a>) (acc:'ans) (cont:'ans -> 'ans): 'ans = 
-            match src with
-            | Empty -> cont acc
-            | One(a) -> cont (op a acc)
-            | Join(t,u) -> 
-                work t acc  (fun v1 -> 
-                work u v1   (fun v2 -> 
-                cont v2))
-        work source initial (fun a -> a)      
+   
 
 
 
@@ -135,7 +146,7 @@ module Collection =
 
     /// Convert a Collection to a regular list.
     let toList (source:Collection<'a>) : Document<'a> list = 
-        joinfoldr (fun x xs -> x :: xs) [] source
+        source.foldBack (fun x xs -> x :: xs) []
 
     /// Build a Collection from a regular list.
     let fromList (source:Document<'a> list) : Collection<'a> = 

@@ -5,9 +5,8 @@
 namespace DocBuild.Document
 
 
-// Supports rotation via Pdftk, extraction to add...
+// Supports rotation via Pdftk, Pdftk page extraction to add...
 
-[<AutoOpen>]
 module Pdf = 
     
     open System
@@ -16,6 +15,7 @@ module Pdf =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Raw
 
     // ************************************************************************
@@ -53,9 +53,9 @@ module Pdf =
 
     /// Concatenate a collection of Pdfs into a single Pdf.
     /// The result is output in the working directory.
-    let pdfConcat (quality:GsQuality)
-                  (outputAbsPath:string) 
-                  (inputFiles:PdfCollection): DocMonad<'res,PdfDoc> = 
+    let concatPdfs (quality:GsQuality)
+                   (outputAbsPath:string) 
+                   (inputFiles:PdfCollection): DocMonad<'res,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! _ = ghostscriptConcat quality outputAbsPath inputFiles
@@ -127,9 +127,13 @@ module Pdf =
     // ************************************************************************
     // Page count
 
-    let pdfPageCount (inputfile:PdfDoc) : DocMonad<'res,int> = 
+    let countPages (inputfile:PdfDoc) : DocMonad<'res,int> = 
         docMonad { 
             let command = PdftkPrim.dumpDataCommand inputfile.LocalPath
             let! stdout = execPdftk command
             return! liftResult (PdftkPrim.regexSearchNumberOfPages stdout)
         }
+
+
+    let sumPages (col:PdfCollection) : DocMonad<'res,int> = 
+        mapM countPages col.Elements |>> List.sum

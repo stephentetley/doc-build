@@ -224,7 +224,7 @@ let buildOne (sourceName:string)
                             &>> surveys &>> oSurveyPhotos 
                             &>> worksheets &>> oWorksPhotos
             let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
-            return! pdfConcat GsQuality.GsScreen outputAbsPath col
+            return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath col
         }
 
 

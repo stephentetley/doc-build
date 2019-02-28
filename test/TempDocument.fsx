@@ -53,7 +53,7 @@ open System
 #load "..\src-msoffice\DocBuild\Office\PowerPointDocument.fs"
 
 open DocBuild.Base
-open DocBuild.Document.Pdf
+open DocBuild.Document
 open DocBuild.Base.DocMonad
 open DocBuild.Base.DocMonadOperators
 
@@ -78,7 +78,7 @@ let demo01 () =
             let! p3 = workingPdfDoc "Three.pdf"
             let pdfs = Collection.fromList [p1;p2;p3]
             let! outfile = workingPdfDoc "Concat.pdf"
-            let! _ = pdfConcat GsScreen outfile.LocalPath pdfs
+            let! _ = Pdf.concatPdfs Pdf.GsScreen outfile.LocalPath pdfs
             return ()
         }
 
@@ -87,7 +87,7 @@ let demo02 () =
     runDocMonadNoCleanup () WindowsEnv <| 
         docMonad { 
             let! p1 = workingPdfDoc "Concat.pdf"
-            let! pageCount = pdfPageCount p1
+            let! pageCount = Pdf.countPages p1
             return pageCount
         }
 
