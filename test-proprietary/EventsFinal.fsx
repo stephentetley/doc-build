@@ -33,9 +33,9 @@ open FSharp.Interop.Excel
 
 
 // SLFormat & MarkdownDoc (not on nuget.org)
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190227\lib\netstandard2.0"
 #r @"SLFormat.dll"
-#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190226d\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190228\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
 
@@ -112,9 +112,6 @@ let WindowsEnv : BuilderEnv =
 let getSiteName (folderName:string) : string = 
     folderName.Replace('_', '/')
 
-
-let getSaiNumber (siteName:string) : DocMonad<'res,string> = 
-    mreturn "SAI00001234"       // TEMP
 
 
 
@@ -220,21 +217,33 @@ let buildOne (sourceName:string)
         docMonad {
             let! cover = genCoversheet siteName saiNumber
             let! surveys = processSurveys ()
-            let! surveyPhotos = optionalM <| genSurveyPhotos ()
+            let! oSurveyPhotos = optionalM <| genSurveyPhotos ()
             let! worksheets = processSiteWork ()
-            let! worksPhotos = optionalM <| genSiteWorkPhotos ()
+            let! oWorksPhotos = optionalM <| genSiteWorkPhotos ()
             let col = Collection.singleton cover 
-                            &>> surveys &>> surveyPhotos &>> worksheets &>> worksPhotos
+                            &>> surveys &>> oSurveyPhotos 
+                            &>> worksheets &>> oWorksPhotos
             let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
             return! pdfConcat GsQuality.GsScreen outputAbsPath col
         }
 
+
+let build1 (saiMap:SaiMap) (sourceName:string) : DocMonadWord<PdfDoc option> = 
+    let siteName = getSiteName sourceName
+    printfn "Site name: %s" siteName
+    match getSaiNumber saiMap siteName with
+    | None -> printfn "No sai"; mreturn None
+    | Some sai -> 
+        fmapM Some <| buildOne sourceName siteName sai
+
+
 let buildAll () : DocMonadWord<unit> = 
     let worklist = getWorkList ()
+    let saiMap = buildSaiMap ()
     foriMz worklist 
         <| fun ix name ->
                 ignore <| printfn "Site %i: %s" (ix+1) name
-                buildOne name "TEMP" "SAI01"
+                build1 saiMap name |>> ignore
 
         
 
@@ -267,5 +276,7 @@ let demo05 () =
     runDocMonad userRes WindowsEnv 
         <| buildOne @"AGBRIGG GARAGE_CSO" @"AGBRIGG GARAGE/CSO" "SAI00017527"
 
-let demo06 () = 
-    readADBAll () 
+let main () = 
+    let userRes = new WordDocument.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| buildAll ()

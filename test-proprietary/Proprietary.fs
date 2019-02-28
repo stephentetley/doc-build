@@ -8,8 +8,10 @@ module Proprietary
 open FSharp.Interop.Excel
 open ExcelProviderHelper
 
+
+
 type ADBTable = 
-    ExcelFile< FileName = @"G:\work\Projects\events2\ADB-all_sites_20181010.xlsx",
+    ExcelFile< FileName = @"G:\work\ADB-all_sites_20181010.xlsx",
                SheetName = "Sheet1!",
                ForceString = true >
 
@@ -21,6 +23,21 @@ let readADBAll () : ADBRow list =
           with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
     new ADBTable() |> excelReadRowsAsList helper
+
+
+
+type SaiMap = Map<string,string> 
+
+let buildSaiMap () : SaiMap = 
+    let rows = readADBAll () 
+    List.fold (fun acc (row:ADBRow) -> 
+                    Map.add row.InstCommonName row.InstReference acc) 
+              Map.empty
+              rows
+    
+
+let getSaiNumber (saiMap:SaiMap) (siteName:string) : string option = 
+    Map.tryFind siteName saiMap
 
 
 

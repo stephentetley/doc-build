@@ -31,9 +31,9 @@ module PhotoBook =
                           (imageName:string) : Markdown = 
         concatMarkdown
             <| [ h1 (text title)
-               ; markdownTile <| nbsp       // should be Markdown...
-               ; markdown     <| inlineImage space (unixLikePath imagePath) None
-               ; markdownTile <| text imageName
+               ; nbsp       // should be Markdown...
+               ; markdownText <| inlineImage "" imagePath None
+               ; markdownText <| text imageName
                ]
 
 
@@ -44,9 +44,9 @@ module PhotoBook =
         concatMarkdown 
             <| [ openxmlPagebreak
                ; h2 (text title)
-               ; markdownTile <| nbsp       // should be Markdown...
-               ; markdown     <| inlineImage space (unixLikePath imagePath) None
-               ; markdownTile <| text imageName
+               ; nbsp       // should be Markdown...
+               ; markdownText   <| inlineImage "" imagePath None
+               ; markdownText   <| text imageName
                ]
 
 
@@ -71,7 +71,7 @@ module PhotoBook =
             return (Collection.fromList jpegs)
         }
 
-
+    /// TODO should we check for nonempty?
     let makePhotoBook (title:string) 
                       (sourceSubFolder:string) 
                       (tempSubFolder:string)
