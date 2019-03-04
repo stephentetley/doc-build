@@ -57,6 +57,8 @@ module FilePaths =
         member x.Segments
             with get () : string list = filePathSegments x.Body
 
+        /// TODO - LocalPath is a really bad name.
+        /// Implies relative path.
         member x.LocalPath 
             with get () : string = localPath x.Segments
 

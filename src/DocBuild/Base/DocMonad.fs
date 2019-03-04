@@ -9,8 +9,7 @@ namespace DocBuild.Base
 
 module DocMonad = 
 
-    open System
-    open System.Text.RegularExpressions
+    open System.IO
 
     open DocBuild.Base
     open DocBuild.Base.Shell
@@ -36,32 +35,33 @@ module DocMonad =
         abstract RunFinalizer : unit
 
     type DocMonad<'res,'a> = 
-        DocMonad of ('res -> BuilderEnv -> BuildResult<'a>)
+        DocMonad of (StreamWriter -> 'res -> BuilderEnv -> BuildResult<'a>)
 
     let inline private apply1 (ma: DocMonad<'res,'a>) 
+                              (sw: StreamWriter)
                               (res:'res) 
                               (env: BuilderEnv) : BuildResult<'a>= 
-        let (DocMonad f) = ma in f res env
+        let (DocMonad f) = ma in f sw res env
 
     let inline mreturn (x:'a) : DocMonad<'res,'a> = 
-        DocMonad <| fun _ _ -> Ok x
+        DocMonad <| fun _ _ _ -> Ok x
 
     let inline private bindM (ma:DocMonad<'res,'a>) 
                         (f :'a -> DocMonad<'res,'b>) : DocMonad<'res,'b> =
-        DocMonad <| fun res env -> 
-            match apply1 ma res env with
+        DocMonad <| fun sw res env -> 
+            match apply1 ma sw res env with
             | Error msg -> Error msg
-            | Ok a -> apply1 (f a) res env
+            | Ok a -> apply1 (f a) sw res env
 
-    let inline dzero () : DocMonad<'res,'a> = 
-        DocMonad <| fun _ _ -> Error "bzero"
+    let inline private zeroM () : DocMonad<'res,'a> = 
+        DocMonad <| fun _ _ _ -> Error "zeroM"
 
     /// "First success"
     let inline private combineM (ma:DocMonad<'res,'a>) 
                                 (mb:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun res env -> 
-            match apply1 ma res env with
-            | Error msg -> apply1 mb res env
+        DocMonad <| fun sw res env -> 
+            match apply1 ma sw res env with
+            | Error msg -> apply1 mb sw res env
             | Ok a -> Ok a
 
 
@@ -71,7 +71,7 @@ module DocMonad =
     type DocMonadBuilder() = 
         member self.Return x            = mreturn x
         member self.Bind (p,f)          = bindM p f
-        member self.Zero ()             = dzero ()
+        member self.Zero ()             = zeroM ()
         member self.Combine (ma,mb)     = combineM ma mb
         member self.Delay fn            = delayM fn
         member self.ReturnFrom(ma)      = ma
@@ -87,14 +87,18 @@ module DocMonad =
     let runDocMonad (userResources:#ResourceFinalize) 
                     (config:BuilderEnv) 
                     (ma:DocMonad<#ResourceFinalize,'a>) : BuildResult<'a> = 
-        let ans = apply1 ma userResources config
+        let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
+        use sw = new StreamWriter(path = logPath)
+        let ans = apply1 ma sw userResources config
         userResources.RunFinalizer |> ignore
         ans
 
     let runDocMonadNoCleanup (userResources:'res) 
                              (config:BuilderEnv) 
                              (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
-        apply1 ma userResources config
+        let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
+        use sw = new StreamWriter(path = logPath)
+        apply1 ma sw userResources config
         
     let execDocMonad (userResources:#ResourceFinalize) 
                      (config:BuilderEnv) 
@@ -106,7 +110,7 @@ module DocMonad =
     let execDocMonadNoCleanup (userResources:'res) 
                      (config:BuilderEnv) 
                      (ma:DocMonad<'res,'a>) : 'a = 
-        match apply1 ma userResources config with
+        match runDocMonadNoCleanup userResources config ma with
         | Ok a -> a
         | Error msg -> failwith msg
 
@@ -117,11 +121,11 @@ module DocMonad =
     // Errors
 
     let throwError (msg:string) : DocMonad<'res,'a> = 
-        DocMonad <| fun _ _ -> Error msg
+        DocMonad <| fun _ _ _ -> Error msg
 
     let swapError (msg:string) (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun res env ->
-            match apply1 ma res env with
+        DocMonad <| fun sw res env ->
+            match apply1 ma sw res env with
             | Error _ -> Error msg
             | Ok a -> Ok a
 
@@ -130,21 +134,28 @@ module DocMonad =
     /// Capture the exception with try ... with
     /// and return the answer or the expection message in the monad.
     let attemptM (ma: DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun res env -> 
+        DocMonad <| fun sw res env -> 
             try
-                apply1 ma res env
+                apply1 ma sw res env
             with
             | ex -> Error (sprintf "attemptM: %s" ex.Message)
 
+    // ****************************************************
+    // Logging
+
+    let tellLine (msg:string) : DocMonad<'res,unit> = 
+        DocMonad <| fun sw _  _ -> 
+            sw.WriteLine msg
+            Ok ()
 
     // ****************************************************
     // Reader
 
     let ask () : DocMonad<'res,BuilderEnv> = 
-        DocMonad <| fun _ env -> Ok env
+        DocMonad <| fun _ _ env -> Ok env
 
     let asks (extract:BuilderEnv -> 'a) : DocMonad<'res,'a> = 
-        DocMonad <| fun _ env -> Ok (extract env)
+        DocMonad <| fun _ _ env -> Ok (extract env)
 
 
 
@@ -171,22 +182,23 @@ module DocMonad =
     /// working directory
     let local (update:BuilderEnv -> BuilderEnv) 
               (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun res env -> apply1 ma res (update env)
+        DocMonad <| fun sw res env -> 
+            apply1 ma sw res (update env)
 
 
 
     let askUserResources () : DocMonad<'res,'res> = 
-        DocMonad <| fun res _ -> Ok res
+        DocMonad <| fun _ res _ -> Ok res
 
     let asksUserResources (extract:'res -> 'a) : DocMonad<'res,'a> = 
-        DocMonad <| fun res _ -> Ok (extract res)
+        DocMonad <| fun _ res _ -> Ok (extract res)
 
     /// Use with caution.
     /// Generally you might only want to update the 
     /// working directory
     let localUserResource (update:'res -> 'res) 
                           (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun res env -> apply1 ma (update res) env
+        DocMonad <| fun sw res env -> apply1 ma sw (update res) env
             
 
 
@@ -194,7 +206,7 @@ module DocMonad =
     // Lift operations
 
     let liftResult (answer:BuildResult<'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun _ _ -> answer
+        DocMonad <| fun _ _ _ -> answer
 
  
 
@@ -222,8 +234,8 @@ module DocMonad =
 
     /// fmap 
     let fmapM (fn:'a -> 'b) (ma:DocMonad<'res,'a>) : DocMonad<'res,'b> = 
-        DocMonad <| fun res env -> 
-           match apply1 ma res env with
+        DocMonad <| fun sw res env -> 
+           match apply1 ma sw res env with
            | Error msg -> Error msg
            | Ok a -> Ok (fn a)
 
@@ -401,8 +413,8 @@ module DocMonad =
     /// Optionally run a computation. 
     /// If the build fails return None otherwise retun Some<'a>.
     let optionalM (ma:DocMonad<'res,'a>) : DocMonad<'res,'a option> = 
-        DocMonad <| fun res env ->
-            match apply1 ma res env with
+        DocMonad <| fun sw res env ->
+            match apply1 ma sw res env with
             | Error _ -> Ok None
             | Ok a -> Ok (Some a)
 
@@ -469,12 +481,12 @@ module DocMonad =
     /// Implemented in CPS 
     let mapM (mf: 'a -> DocMonad<'res,'b>) 
              (source:'a list) : DocMonad<'res,'b list> = 
-        DocMonad <| fun res env -> 
+        DocMonad <| fun sw res env -> 
             let rec work ac ys fk sk = 
                 match ys with
                 | [] -> sk (List.rev ac)
                 | z :: zs -> 
-                    match apply1 (mf z) res env with
+                    match apply1 (mf z) sw res env with
                     | Error msg -> fk msg
                     | Ok ans -> 
                         work ac zs fk (fun acs ->
@@ -489,12 +501,12 @@ module DocMonad =
     /// Forgetful mapM
     let mapMz (mf: 'a -> DocMonad<'res,'b>) 
               (source:'a list) : DocMonad<'res,unit> = 
-        DocMonad <| fun res env -> 
+        DocMonad <| fun sw res env -> 
             let rec work ys cont = 
                 match ys with
                 | [] -> cont (Ok ())
                 | z :: zs -> 
-                    match apply1 (mf z) res env with
+                    match apply1 (mf z) sw res env with
                     | Error msg -> cont (Error msg)
                     | Ok ans -> work zs cont
             work source id
@@ -508,12 +520,12 @@ module DocMonad =
     /// Implemented in CPS 
     let mapiM (mf:int -> 'a -> DocMonad<'res,'b>) 
               (source:'a list) : DocMonad<'res,'b list> = 
-        DocMonad <| fun res env -> 
+        DocMonad <| fun sw res env -> 
             let rec work ac n ys fk sk = 
                 match ys with
                 | [] -> sk (List.rev ac)
                 | z :: zs -> 
-                    match apply1 (mf n z) res env with
+                    match apply1 (mf n z) sw res env with
                     | Error msg -> fk msg
                     | Ok ans -> 
                         work ac (n+1) zs fk (fun acs ->
@@ -528,12 +540,12 @@ module DocMonad =
     /// Forgetful mapiM
     let mapiMz (mf: int -> 'a -> DocMonad<'res,'b>) 
               (source:'a list) : DocMonad<'res,unit> = 
-        DocMonad <| fun res env -> 
+        DocMonad <| fun sw res env -> 
             let rec work n ys cont = 
                 match ys with
                 | [] -> cont (Ok ())
                 | z :: zs -> 
-                    match apply1 (mf n z) res env with
+                    match apply1 (mf n z) sw res env with
                     | Error msg -> cont (Error msg)
                     | Ok ans -> work (n+1) zs cont
             work 0 source id

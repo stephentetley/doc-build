@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 #r "netstandard"
-open System
+open System.IO
 
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
@@ -208,3 +208,11 @@ let getEnv (resources:UserResources) : Env1 =
     match Map.tryFind "Env1" resources with
     | Some o -> o :?> Env1
     | None -> failwith "Lookup"
+
+let dummyLog () = 
+    let logPath = Path.Combine(__SOURCE_DIRECTORY__, @"../data/log1.txt")
+    use sw : StreamWriter = new StreamWriter(path = logPath)
+    sw.WriteLine "Start"
+    sw.WriteLine "End"
+
+
