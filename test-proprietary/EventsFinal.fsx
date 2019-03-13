@@ -4,7 +4,7 @@
 
 #r "netstandard"
 open System
-
+open System.Text
 
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
@@ -170,23 +170,46 @@ let photosDoc  (config:PhotoBookConfig) : DocMonadWord<PdfDoc option> =
         | None -> return None
     }
 
+let sourceFileToTitle (siteName:string) (filePath:string) : string = 
+    let fileNameExt = IO.Path.GetFileName filePath
+    let fileName = IO.Path.GetFileNameWithoutExtension fileNameExt
+    let safe = safeName siteName
+    let patt = sprintf "^%s (?<good>.*)" safe
+    printfn "'%s'" patt
+    let rmatch = RegularExpressions.Regex.Match(fileName, patt)
+    if rmatch.Success then        
+        rmatch.Groups.["good"].Value
+    else
+        fileName
+
+
+let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> = 
+    let title = sourceFileToTitle siteName absPath
+    docMonad { 
+        let! doc = sourceWordDoc absPath
+        let! pdf = WordDocument.exportPdf PqScreen doc
+        return (setTitle title pdf)
+        }
 
 // May have multiple surveys...
-let processSurveys () : DocMonadWord<PdfDoc list> = 
+let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
                 <| findAllSourceFilesMatching "*Survey*.doc*" false
-        let! pdfs = forM inputs (sourceWordDoc >=> WordDocument.exportPdf PqScreen)
-        return pdfs
+        return! mapM (wordDocToPdf siteName) inputs
+        
     }
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    surveyPhotosConfig siteName |> photosDoc
-
+    surveyPhotosConfig siteName 
+        |> photosDoc
+        |>> Option.map (setTitle "Survey Photos")
 
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    siteWorksPhotosConfig siteName |> photosDoc
+    siteWorksPhotosConfig siteName 
+        |> photosDoc
+        |>> Option.map (setTitle "Site Work Photos")
 
 
 let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
@@ -199,21 +222,21 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
     }
 
 /// May have multiple documents
-/// Get all doc files
-let processSiteWork (glob:string) : DocMonadWord<PdfDoc list> = 
+/// Get doc files matching glob 
+// (run twice for Calibrations and RTU installs)
+let processSiteWork (siteName:string) (glob:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work" 
                 <| findAllSourceFilesMatching glob false
-        let! pdfs = forM inputs (sourceWordDoc >=> WordDocument.exportPdf PqScreen)
-        return pdfs
+        return! mapM (wordDocToPdf siteName) inputs
     }
 
-let processRTUInstalls () : DocMonadWord<PdfDoc list> = 
-    processSiteWork "*RTU Install*.doc*"
+let processRTUInstalls (siteName:string) : DocMonadWord<PdfDoc list> = 
+    processSiteWork siteName "*RTU Install*.doc*"
 
-let processUSCalibrations () : DocMonadWord<PdfDoc list> = 
-    processSiteWork "*US Calib*.doc*"
+let processUSCalibrations (siteName:string) : DocMonadWord<PdfDoc list> = 
+    processSiteWork siteName "*US Calib*.doc*"
 
 
 
@@ -230,10 +253,10 @@ let buildOne (sourceName:string)
     commonSubdirectory sourceName <| 
         docMonad {
             let! cover = genCoversheet siteName saiNumber
-            let! surveys = processSurveys ()
+            let! surveys = processSurveys siteName
             let! oSurveyPhotos = genSurveyPhotos siteName
-            let! calibrations = processUSCalibrations ()
-            let! rtuInstalls = processRTUInstalls ()
+            let! calibrations = processUSCalibrations siteName
+            let! rtuInstalls = processRTUInstalls siteName
             let! oWorksPhotos = genSiteWorkPhotos siteName
             let col1 = Collection.empty  
                             &^^ surveys 
@@ -277,13 +300,13 @@ let demo01 () =
 let demo02 () = 
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSurveys ())
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSurveys "ABERFORD ROAD/NO 1 CSO")
             
 
 let demo03 () = 
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processUSCalibrations ())
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processUSCalibrations "ABERFORD ROAD/NO 1 CSO")
 
 
 let demo04 () = 

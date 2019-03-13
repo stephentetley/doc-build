@@ -8,7 +8,7 @@ namespace DocBuild.Document
 module Markdown = 
 
     open System.IO
-
+    open SLFormat.CommandOptions
     open MarkdownDoc
 
     open DocBuild.Base
@@ -34,11 +34,13 @@ module Markdown =
     let markdownToWordAs (customStyles:WordDoc option)
                          (outputAbsPath:string) 
                          (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
+        let a4 = 
+            argument "--variable" &= "pagesize:a4"
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let styles = customStyles |> Option.map (fun doc -> doc.LocalPath) 
             let command = 
-                PandocPrim.outputDocxCommand styles src.LocalPath outputAbsPath
+                PandocPrim.outputDocxCommand styles [a4] src.LocalPath outputAbsPath
             let! _ = execPandoc command
             return! workingWordDoc outputAbsPath
          }
