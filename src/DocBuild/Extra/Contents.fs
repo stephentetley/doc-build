@@ -25,7 +25,7 @@ module Contents =
         List.fold (fun (i,ac) (info:DocInfo) -> 
                         let d1 = ac ^@^ h2 (text info.Title ^+^ text "..." ^+^ formatted "%i" i)
                         (i + info.PageCount, d1))
-                  (start, nbsp)
+                  (start, Markdown.empty)
                   infos
             |> snd
 

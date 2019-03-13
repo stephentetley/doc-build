@@ -7,7 +7,7 @@ open System
 // SLFormat & MarkdownDoc (not on nuget.org)
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190304\lib\netstandard2.0"
 #r @"SLFormat.dll"
-#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190304\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190313\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
@@ -47,17 +47,9 @@ let test01 () =
     
 let test02 () = 
     test01 () 
-        |> Result.map Collection.toList
+        |> Result.map (fun col -> col.Elements)
 
-let test03l () = 
-    test01 () |> Result.map Collection.viewl
 
-let test03r () = 
-    let final ans = 
-        match ans with
-        | Collection.ViewR(col,one) -> printfn "col: %O" col; printfn "doc: %O" one
-        | Collection.EmptyR -> printfn "EmptyR"
-    test01 () |> Result.map (Collection.viewr >> final)
 
 
 let test04 () = 
@@ -67,9 +59,9 @@ let test04 () =
             let! docs = 
                 Collection.fromList <&&> mapM (workingPdfDoc) sources
             let! last = workingPdfDoc "Three.pdf"
-            return (docs &>> last)
+            return (docs &^^ last)
             }
-    runDocMonadNoCleanup () WindowsEnv script |> Result.map Collection.toList
+    runDocMonadNoCleanup () WindowsEnv script |> Result.map (fun col -> col.Elements)
 
 
 let test05a () = 

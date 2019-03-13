@@ -80,7 +80,7 @@ let controlTable (author:string) : Markdown =
         List.map makeHeaderCell ["Revision"; "Prepared By"; "Date"; "Comments"]
     let row1 = 
         List.map makeCell ["1.0"; author; nowstring; "For EDMS"]
-    let row2 = [paraText empty; paraText empty; paraText empty; paraText empty]
+    let row2 = [PElement.empty; PElement.empty; PElement.empty; PElement.empty]
     gridTable columnSpecs (Some headers) [row1;row2] 
 
 
