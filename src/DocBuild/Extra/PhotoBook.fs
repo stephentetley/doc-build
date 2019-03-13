@@ -71,6 +71,11 @@ module PhotoBook =
             return (Collection.fromList jpegs)
         }
 
+    let internal optimizeJpegs (jpegs:JpegCollection) : DocMonad<'res, JpegCollection> =
+        mapM optimizeJpeg jpegs.Elements |>> Collection.fromList
+
+
+
     type PhotoBookConfig = 
         { Title: string
           SourceSubFolder: string
@@ -83,12 +88,12 @@ module PhotoBook =
         docMonad {
             let! jpegs = 
                 optionalM (copyJpegs config.SourceSubFolder config.WorkingSubFolder 
-                            >>= Collection.mapM optimizeJpeg)
+                            >>= optimizeJpegs)
             match jpegs with
             | None -> return None
             | Some col when col.Elements.IsEmpty -> return None
             | Some col -> 
-                let mdDoc = photoBookMarkdown config.Title (Collection.toList col)
+                let mdDoc = photoBookMarkdown config.Title col.Elements
                 let! outputAbsPath = extendWorkingPath config.RelativeOutputName
                 let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
                 let! mdOutput = workingMarkdownDoc outputAbsPath

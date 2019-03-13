@@ -95,19 +95,7 @@ module Collection =
             | x, Empty -> x
             | x, y -> Join (x,y)
 
-
-    type ViewL<'a> = 
-        | EmptyL
-        | ViewL of Document<'a> * Collection<'a>
-
-    type ViewR<'a> = 
-        | EmptyR
-        | ViewR of Collection<'a> * Document<'a>
-
-
-
-   
-
+ 
 
 
     
@@ -121,6 +109,11 @@ module Collection =
     /// Create a singleton Collection.
     let singleton (item:Document<'a>) : Collection<'a> = One(item)
 
+    /// Build a Collection from a regular list.
+    let fromList (source:Document<'a> list) : Collection<'a> = 
+        List.fold (&^^) Empty source
+
+
     /// Concat.
     let concat (col1:Collection<'a>) 
                (col2:Collection<'a>) : Collection<'a> =
@@ -129,75 +122,6 @@ module Collection =
         | x, Empty -> x
         | x, y -> Join (x,y)
 
-    /// Add a Document to the left.
-    let cons (item:Document<'a>) (col:Collection<'a>) : Collection<'a> = 
-        match col with
-        | Empty -> One(item)
-        | _ -> Join(One(item), col)
-
-    /// Add a Document to the right.
-    let snoc (col:Collection<'a>) (item:Document<'a>) : Collection<'a> = 
-        match col with
-        | Empty -> One(item)
-        | _ -> Join(col, One(item))
-        
-    // ************************************************************************
-    // Conversion
-
-    /// Convert a Collection to a regular list.
-    let toList (source:Collection<'a>) : Document<'a> list = 
-        source.foldBack (fun x xs -> x :: xs) []
-
-    /// Build a Collection from a regular list.
-    let fromList (source:Document<'a> list) : Collection<'a> = 
-        List.fold snoc Empty source
-
-    // ************************************************************************
-    // Views
-
-    /// Access the left end of a Collection.
-    ///
-    /// Note this is not a cheap operation, the Collection must 
-    /// be traversed down the left spine to find the leftmost node.
-    let viewl (source:Collection<'a>) : ViewL<'a> = 
-        let rec work (src:Collection<'a>) (cont:ViewL<'a> -> ViewL<'a>) : ViewL<'a>= 
-            match src with
-            | Empty -> cont EmptyL
-            | One(a) -> cont (ViewL(a,Empty))
-            | Join(t,u) -> 
-                work t (fun v1 -> 
-                match v1 with 
-                | EmptyL -> work u id
-                | ViewL(a,spineL) ->
-                    cont (ViewL(a, concat spineL u)))
-        work source id
-
-
-    /// Access the right end of a Collection.
-    ///
-    /// Note this is not a cheap operation, the Collection must 
-    /// be traversed down the right spine to find the rightmost node.
-    let viewr (source:Collection<'a>) : ViewR<'a> = 
-        let rec work (src:Collection<'a>) (cont:ViewR<'a> -> ViewR<'a>) : ViewR<'a>= 
-            match src with
-            | Empty -> cont EmptyR
-            | One(a) -> cont (ViewR(Empty,a))
-            | Join(t,u) -> 
-                work u (fun v1 -> 
-                match v1 with 
-                | EmptyR -> work t id
-                | ViewR(spineR, a) ->
-                    cont (ViewR(concat t spineR, a)))
-        work source id
-
-    let map (fn:Document<'a> -> Document<'b>) 
-             (collection:Collection<'a>) : Collection<'b> =
-        List.map fn (toList collection) |> fromList
-
-    let mapM (fn:Document<'a> -> DocMonad.DocMonad<'res, Document<'b>>) 
-             (collection:Collection<'a>) : DocMonad.DocMonad<'res, Collection<'b>> =
-        DocMonad.mapM fn (toList collection) |>> fromList
-        
 
 
 [<AutoOpen>]

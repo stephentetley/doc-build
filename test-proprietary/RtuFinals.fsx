@@ -172,43 +172,37 @@ let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> =
     optionFailM (sourceWordDocToPdf "2.Installs" "*Works*.doc*" row)
                 "No Site Works document"
 
-type PhotosProps = 
-    { Title: string
-      SourceSubpath: string 
-      WorkingSubpath: string 
-      OutputFileRelPath: string
-    }
 
 let (docxCustomReference:string) = @"custom-reference1.docx"
 
-let photosDoc (props:PhotosProps) : DocMonadWord<PdfDoc> = 
+let photosDoc (config:PhotoBookConfig) : DocMonadWord<PdfDoc option> = 
     docMonad { 
-        let! md = 
-            makePhotoBook props.Title 
-                          props.SourceSubpath  
-                          props.WorkingSubpath props.OutputFileRelPath
-        let! pdf = renderMarkdownDoc (Some docxCustomReference) props.Title md
-        return pdf
+        let! book = makePhotoBook config
+        match book with
+        | Some md ->
+            let! pdf = renderMarkdownDoc (Some docxCustomReference) config.Title md
+            return (Some pdf)
+        | None -> return None
     }
 
 let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
     let name1 = safeName row.``Site Name``
-    let props : PhotosProps = 
+    let props : PhotoBookConfig = 
         { Title = "Survey Photos"
-        ; SourceSubpath = "1.Surveys" </> name1 </> "photos"
-        ; WorkingSubpath = "survey_photos"
-        ; OutputFileRelPath= sprintf "%s survey photos.md" name1 }
-    optionalM (photosDoc props)
+        ; SourceSubFolder = "1.Surveys" </> name1 </> "photos"
+        ; WorkingSubFolder = "survey_photos"
+        ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
+    photosDoc props
 
 
 let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
     let name1 = safeName row.``Site Name``
-    let props : PhotosProps = 
+    let props : PhotoBookConfig = 
         { Title = "Install Photos"
-        ; SourceSubpath = "2.Install" </> name1 </> "photos"
-        ; WorkingSubpath = "install_photos"
-        ; OutputFileRelPath= sprintf "%s install photos.md" name1 }
-    optionalM (photosDoc props)
+        ; SourceSubFolder  = "2.Install" </> name1 </> "photos"
+        ; WorkingSubFolder = "install_photos"
+        ; RelativeOutputName= sprintf "%s install photos.md" name1 }
+    photosDoc props
     
 
 let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> = 
@@ -223,8 +217,8 @@ let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> =
 
                 let (col:PdfCollection) = 
                     Collection.singleton cover 
-                        &>> oSurvey     &>> oSurveyPhotos
-                        &>> works       &>> oWorksPhotos
+                        &^^ oSurvey     &^^ oSurveyPhotos
+                        &^^ works       &^^ oWorksPhotos
 
                 let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" safeSiteName)
                 return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath col
