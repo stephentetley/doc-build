@@ -71,18 +71,27 @@ module PhotoBook =
             return (Collection.fromList jpegs)
         }
 
+    type PhotoBookConfig = 
+        { Title: string
+          SourceSubFolder: string
+          WorkingSubFolder: string
+          RelativeOutputName: string
+        }
+
     /// TODO should we check for nonempty?
-    let makePhotoBook (title:string) 
-                      (sourceSubFolder:string) 
-                      (tempSubFolder:string)
-                      (outputRelName:string) : DocMonad<'res,MarkdownDoc> =
+    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'res,MarkdownDoc option> =
         docMonad {
-            let! jpegs = copyJpegs sourceSubFolder tempSubFolder >>= Collection.mapM optimizeJpeg
-            let mdDoc = photoBookMarkdown title (Collection.toList jpegs)
-            let! outputAbsPath = extendWorkingPath outputRelName
-            let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-            let! mdOutput = workingMarkdownDoc outputAbsPath
-            return mdOutput
+            let! jpegs = 
+                copyJpegs config.SourceSubFolder config.WorkingSubFolder 
+                    >>= Collection.mapM optimizeJpeg
+            if jpegs.Elements.IsEmpty then 
+                return None
+            else
+                let mdDoc = photoBookMarkdown config.Title (Collection.toList jpegs)
+                let! outputAbsPath = extendWorkingPath config.RelativeOutputName
+                let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
+                let! mdOutput = workingMarkdownDoc outputAbsPath
+                return (Some mdOutput)
         }
 
 

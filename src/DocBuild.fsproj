@@ -21,6 +21,7 @@
     <Compile Include="DocBuild\Document\Pdf.fs" />
     <Compile Include="DocBuild\Document\Jpeg.fs" />
     <Compile Include="DocBuild\Document\Markdown.fs" />
+    <Compile Include="DocBuild\Extra\Contents.fs" />
     <Compile Include="DocBuild\Extra\PhotoBook.fs" />
   </ItemGroup>
 

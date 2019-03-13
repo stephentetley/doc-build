@@ -139,37 +139,33 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
         return pdf
     }
 
-type PhotosDocType = 
-    | PhotosSurvey 
-    | PhotosSiteWork
 
-    member x.Name 
-        with get() : string = 
-            match x with
-            | PhotosSurvey -> "Survey"
-            | PhotosSiteWork -> "Site Work"
-
-    member x.SourceSubPath 
-        with get() : string = 
-            match x with
-            | PhotosSurvey -> "1.Survey" </> "PHOTOS"
-            | PhotosSiteWork -> "2.Site_Work" </> "PHOTOS"
-
-    member x.WorkingSubPath 
-        with get() : string = 
-            match x with
-            | PhotosSurvey -> "Survey_Photos"
-            | PhotosSiteWork -> "Site_Work_Photos"
+let surveyPhotosConfig (siteName:string) : PhotoBookConfig = 
+    { Title = sprintf "%s Survey Photos" siteName
+      SourceSubFolder = "1.Survey" </> "PHOTOS"
+      WorkingSubFolder = "Survey_Photos"
+      RelativeOutputName = "survey_photos.md"
+    }
+              
+let siteWorksPhotosConfig (siteName:string) : PhotoBookConfig = 
+    { Title = sprintf "%s Site Work Photos" siteName
+      SourceSubFolder = "2.Site_Work" </> "PHOTOS"
+      WorkingSubFolder =  "Site_Work_Photos"
+      RelativeOutputName = "site_works_photos.md"
+    }
 
 
+// let title = sprintf "%s Photos" docType.Name
+// let outputFile = sprintf "%s Photos.md" docType.Name |> safeName
 
-let photosDoc  (docType:PhotosDocType) : DocMonadWord<PdfDoc> = 
+let photosDoc  (config:PhotoBookConfig) : DocMonadWord<PdfDoc option> = 
     docMonad { 
-        let title = sprintf "%s Photos" docType.Name
-        let outputFile = sprintf "%s Photos.md" docType.Name |> safeName
-        let! md = makePhotoBook title docType.SourceSubPath docType.WorkingSubPath outputFile
-        let! pdf = renderMarkdownFile (Some docxCustomReference) docType.WorkingSubPath md
-        return pdf
+        let! book = makePhotoBook config
+        match book with
+        | Some md ->
+            let! pdf = renderMarkdownFile (Some docxCustomReference) config.Title md
+            return (Some pdf)
+        | None -> return None
     }
 
 
@@ -183,23 +179,29 @@ let processSurveys () : DocMonadWord<PdfDoc list> =
         return pdfs
     }
 
-let genSurveyPhotos () : DocMonadWord<PdfDoc> = 
-    photosDoc PhotosSurvey
+let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
+    surveyPhotosConfig siteName |> photosDoc
 
 
-let genSiteWorkPhotos () : DocMonadWord<PdfDoc> = 
-    photosDoc PhotosSiteWork
+let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
+    siteWorksPhotosConfig siteName |> photosDoc
 
 /// May have multiple documents
 /// Get all doc files
-let processSiteWork () : DocMonadWord<PdfDoc list> = 
+let processSiteWork (glob:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work" 
-                <| findAllSourceFilesMatching "*.doc*" false
+                <| findAllSourceFilesMatching glob false
         let! pdfs = forM inputs (sourceWordDoc >=> WordDocument.exportPdf PqScreen)
         return pdfs
     }
+
+let processRTUInstalls () : DocMonadWord<PdfDoc list> = 
+    processSiteWork "*RTU Install*.doc*"
+
+let processUSCalibrations () : DocMonadWord<PdfDoc list> = 
+    processSiteWork "*US Calib*.doc*"
 
 
 
@@ -217,12 +219,16 @@ let buildOne (sourceName:string)
         docMonad {
             let! cover = genCoversheet siteName saiNumber
             let! surveys = processSurveys ()
-            let! oSurveyPhotos = optionalM <| genSurveyPhotos ()
-            let! worksheets = processSiteWork ()
-            let! oWorksPhotos = optionalM <| genSiteWorkPhotos ()
+            let! oSurveyPhotos = genSurveyPhotos siteName
+            let! calibrations = processUSCalibrations ()
+            let! rtuInstalls = processRTUInstalls ()
+            let! oWorksPhotos = genSiteWorkPhotos siteName
             let col = Collection.singleton cover 
-                            &>> surveys &>> oSurveyPhotos 
-                            &>> worksheets &>> oWorksPhotos
+                            &>> surveys 
+                            &>> oSurveyPhotos 
+                            &>> calibrations 
+                            &>> rtuInstalls
+                            &>> oWorksPhotos
             let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
             return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath col
         }
@@ -263,13 +269,14 @@ let demo02 () =
 let demo03 () = 
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSiteWork ())
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processUSCalibrations ())
 
 
 let demo04 () = 
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (genSurveyPhotos ())
+        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" 
+                              (genSurveyPhotos @"ABERFORD ROAD/NO 1 CSO")
 
 let demo05 () = 
     let userRes = new WordDocument.WordHandle()
