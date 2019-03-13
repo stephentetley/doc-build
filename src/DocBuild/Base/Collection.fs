@@ -60,30 +60,30 @@ module Collection =
         member v.Elements
             with get () : Document<'a> list = v.foldBack (fun a ac -> a::ac) []
 
-        static member ( <<& ) (item:Document<'a>, col:Collection<'a>) = 
+        static member ( ^^& ) (item:Document<'a>, col:Collection<'a>) = 
             match col with
             | Empty -> One item
             | _  -> Join (One(item), col)
 
-        static member ( <<& ) (item:Document<'a> option, col:Collection<'a>) = 
+        static member ( ^^& ) (item:Document<'a> option, col:Collection<'a>) = 
             match item, col with
             | None, _ -> col
             | Some x, Empty -> One (x)
             | Some x, _ -> Join (One(x), col)
 
-        static member ( &>> ) (col:Collection<'a>, item:Document<'a>) = 
+        static member ( &^^ ) (col:Collection<'a>, item:Document<'a>) = 
             match col with
             | Empty -> One item
             | _  -> Join (col, One(item))
 
-        static member ( &>> ) (col:Collection<'a>, items:Document<'a> list) = 
+        static member ( &^^ ) (col:Collection<'a>, items:Document<'a> list) = 
             let rec work xs acc =
                 match xs with
                 | [] -> acc
-                | d :: ds -> work ds (acc &>> d)
+                | d :: ds -> work ds (acc &^^ d)
             work items col 
                     
-        static member ( &>> ) (col:Collection<'a>, item:Document<'a> option) = 
+        static member ( &^^ ) (col:Collection<'a>, item:Document<'a> option) = 
             match item, col with
             | None, _ -> col
             | Some x, Empty -> One (x)

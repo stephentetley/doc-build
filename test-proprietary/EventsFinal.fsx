@@ -56,6 +56,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
+#load "..\src\DocBuild\Extra\Contents.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
@@ -70,6 +71,7 @@ open DocBuild.Base
 open DocBuild.Base.DocMonad
 open DocBuild.Base.DocMonadOperators
 open DocBuild.Document
+open DocBuild.Extra.Contents
 open DocBuild.Extra.PhotoBook
 open DocBuild.Office
 
@@ -186,6 +188,13 @@ let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     siteWorksPhotosConfig siteName |> photosDoc
 
+
+let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
+    docMonad {
+        let! md = makeContents pdfs
+        return! renderMarkdownFile (Some docxCustomReference) "Contents" md
+    }
+
 /// May have multiple documents
 /// Get all doc files
 let processSiteWork (glob:string) : DocMonadWord<PdfDoc list> = 
@@ -223,14 +232,16 @@ let buildOne (sourceName:string)
             let! calibrations = processUSCalibrations ()
             let! rtuInstalls = processRTUInstalls ()
             let! oWorksPhotos = genSiteWorkPhotos siteName
-            let col = Collection.singleton cover 
-                            &>> surveys 
-                            &>> oSurveyPhotos 
-                            &>> calibrations 
-                            &>> rtuInstalls
-                            &>> oWorksPhotos
+            let col1 = Collection.empty  
+                            &^^ surveys 
+                            &^^ oSurveyPhotos 
+                            &^^ calibrations 
+                            &^^ rtuInstalls
+                            &^^ oWorksPhotos
+            // let! contents = genContents col1
+            let colAll = cover ^^& col1  // contents ^^& col1
             let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
-            return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath col
+            return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath colAll
         }
 
 

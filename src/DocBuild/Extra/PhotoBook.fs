@@ -78,16 +78,17 @@ module PhotoBook =
           RelativeOutputName: string
         }
 
-    /// TODO should we check for nonempty?
+    /// Check for empty & handle missing source folder.
     let makePhotoBook (config:PhotoBookConfig) : DocMonad<'res,MarkdownDoc option> =
         docMonad {
             let! jpegs = 
-                copyJpegs config.SourceSubFolder config.WorkingSubFolder 
-                    >>= Collection.mapM optimizeJpeg
-            if jpegs.Elements.IsEmpty then 
-                return None
-            else
-                let mdDoc = photoBookMarkdown config.Title (Collection.toList jpegs)
+                optionalM (copyJpegs config.SourceSubFolder config.WorkingSubFolder 
+                            >>= Collection.mapM optimizeJpeg)
+            match jpegs with
+            | None -> return None
+            | Some col when col.Elements.IsEmpty -> return None
+            | Some col -> 
+                let mdDoc = photoBookMarkdown config.Title (Collection.toList col)
                 let! outputAbsPath = extendWorkingPath config.RelativeOutputName
                 let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
                 let! mdOutput = workingMarkdownDoc outputAbsPath

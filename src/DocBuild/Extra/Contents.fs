@@ -12,9 +12,11 @@ module Contents =
     open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
-
+    open DocBuild.Base.Collection
 
 
     open DocBuild.Document
 
     // TODO
+    let makeContents (pdfs:PdfCollection): DocMonad<'res,MarkdownDoc> =
+        throwError "TODO"
