@@ -11,12 +11,47 @@ module Contents =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
-    open DocBuild.Base.Collection
-
 
     open DocBuild.Document
+    open DocBuild.Document.Pdf
 
-    // TODO
-    let makeContents (pdfs:PdfCollection): DocMonad<'res,MarkdownDoc> =
-        throwError "TODO"
+    // We can render a preliminary version of contents to get its length.
+
+    type private DocInfo = 
+        { Title: string 
+          PageCount: int }
+
+    let private contentsTable (start:int) (infos:DocInfo list) : Markdown = 
+        List.fold (fun (i,ac) (info:DocInfo) -> 
+                        let d1 = ac ^@^ h2 (text info.Title ^+^ text "..." ^+^ formatted "%i" i)
+                        (i + info.PageCount, d1))
+                  (start, nbsp)
+                  infos
+            |> snd
+
+    let private genMarkdown (start:int) (infos:DocInfo list) : Markdown = 
+        h1 (text "Contents") ^@^ contentsTable start infos 
+
+
+
+    type ContentsConfig = 
+        { CountStart: int
+          RelativeOutputName: string }
+
+    let private getInfo (pdf:PdfDoc) : DocMonad<'res, DocInfo> =
+        docMonad { 
+            let! count = countPages pdf
+            return { Title = pdf.Title; PageCount = count}        
+        }
+
+    // TODO - render a dummy doc, to get length of contents
+    let makeContents (config:ContentsConfig) 
+                     (col:PdfCollection) : DocMonad<'res, MarkdownDoc> =
+        docMonad {
+            let! (infos:DocInfo list) = mapM getInfo col.Elements
+            let mdDoc = genMarkdown config.CountStart infos
+            let! outputAbsPath = extendWorkingPath config.RelativeOutputName
+            let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
+            return! workingMarkdownDoc outputAbsPath
+            
+        }

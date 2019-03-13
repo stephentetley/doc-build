@@ -80,8 +80,7 @@ module PhotoBook =
         { Title: string
           SourceSubFolder: string
           WorkingSubFolder: string
-          RelativeOutputName: string
-        }
+          RelativeOutputName: string }
 
     /// Check for empty & handle missing source folder.
     let makePhotoBook (config:PhotoBookConfig) : DocMonad<'res,MarkdownDoc option> =

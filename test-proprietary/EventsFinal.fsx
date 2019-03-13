@@ -190,8 +190,11 @@ let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
 
 
 let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
+    let config : ContentsConfig = 
+        { CountStart = 3
+          RelativeOutputName = "contents.md" }
     docMonad {
-        let! md = makeContents pdfs
+        let! md = makeContents config pdfs
         return! renderMarkdownFile (Some docxCustomReference) "Contents" md
     }
 
@@ -238,8 +241,8 @@ let buildOne (sourceName:string)
                             &^^ calibrations 
                             &^^ rtuInstalls
                             &^^ oWorksPhotos
-            // let! contents = genContents col1
-            let colAll = cover ^^& col1  // contents ^^& col1
+            let! contents = genContents col1
+            let colAll = cover ^^& contents ^^& col1
             let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
             return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath colAll
         }
