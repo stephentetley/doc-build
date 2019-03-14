@@ -27,8 +27,8 @@
 
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="7.9.2" />
-    <PackageReference Include="MarkdownDoc" Version="1.0.1-alpha-20190313" />
-    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190304" />
+    <PackageReference Include="MarkdownDoc" Version="1.0.1-alpha-20190314" />
+    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190313" />
   </ItemGroup>
 
 </Project>

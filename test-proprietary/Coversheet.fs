@@ -54,7 +54,7 @@ let title2 (sai:string) (name:string) : Markdown =
 
 
 let contents (workItems:string list) : Markdown = 
-    h3 (text "Contents") ^@^ markdown (unordList (List.map (paraText << text) workItems))
+    h3 (text "Contents") ^@^ markdown (unorderedList (List.map (paraText << text) workItems))
 
 let documentControl : Markdown = 
     h3 (text "Document Control")
@@ -71,16 +71,16 @@ let controlTable (author:string) : Markdown =
 
     let nowstring = System.DateTime.Now.ToShortDateString()
 
-    let makeHeaderCell (s:string) : PElement = 
+    let makeHeaderCell (s:string) : ParaElement = 
         text s |> doubleAsterisks |> paraText
 
-    let makeCell (s:string) : PElement = text s |> paraText
+    let makeCell (s:string) : ParaElement = text s |> paraText
 
     let headers = 
         List.map makeHeaderCell ["Revision"; "Prepared By"; "Date"; "Comments"]
     let row1 = 
         List.map makeCell ["1.0"; author; nowstring; "For EDMS"]
-    let row2 = [PElement.empty; PElement.empty; PElement.empty; PElement.empty]
+    let row2 = [ParaElement.empty; ParaElement.empty; ParaElement.empty; ParaElement.empty]
     gridTable columnSpecs (Some headers) [row1;row2] 
 
 
