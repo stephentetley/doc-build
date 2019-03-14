@@ -12,6 +12,7 @@
     <Compile Include="DocBuild\Office\WordDocument.fs" />
     <Compile Include="DocBuild\Office\ExcelDocument.fs" />
     <Compile Include="DocBuild\Office\PowerPointDocument.fs" />
+    <Compile Include="DocBuild\Office\MarkdownWordPdf.fs" />
 </ItemGroup>
 
 <ItemGroup>

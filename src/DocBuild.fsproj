@@ -23,6 +23,7 @@
     <Compile Include="DocBuild\Document\Markdown.fs" />
     <Compile Include="DocBuild\Extra\Contents.fs" />
     <Compile Include="DocBuild\Extra\PhotoBook.fs" />
+    <Compile Include="DocBuild\Extra\TitlePage.fs" />
   </ItemGroup>
 
   <ItemGroup>

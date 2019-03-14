@@ -66,6 +66,7 @@ open FSharp.Interop.Excel
 #load "..\src-msoffice\DocBuild\Office\WordDocument.fs"
 #load "..\src-msoffice\DocBuild\Office\ExcelDocument.fs"
 #load "..\src-msoffice\DocBuild\Office\PowerPointDocument.fs"
+#load "..\src-msoffice\DocBuild\Office\MarkdownWordPdf.fs"
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad
@@ -175,7 +176,6 @@ let sourceFileToTitle (siteName:string) (filePath:string) : string =
     let fileName = IO.Path.GetFileNameWithoutExtension fileNameExt
     let safe = safeName siteName
     let patt = sprintf "^%s (?<good>.*)" safe
-    printfn "'%s'" patt
     let rmatch = RegularExpressions.Regex.Match(fileName, patt)
     if rmatch.Success then        
         rmatch.Groups.["good"].Value

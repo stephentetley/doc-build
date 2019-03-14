@@ -5,10 +5,8 @@ namespace DocBuild.Extra
 
 module Contents = 
 
-
     open MarkdownDoc
-    open MarkdownDoc.Pandoc
-
+    
     open DocBuild.Base
     open DocBuild.Base.DocMonad
 

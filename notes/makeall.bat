@@ -1,7 +1,10 @@
 @echo on
 
-REM notes
-pandoc notes.md -s -o notes.pdf
 
-pandoc notes.md --metadata pagetitle="Notes" -f markdown+pandoc_title_block -t html -s -o notes.html
+REM Directly ouput PDF (calling pdflatex)
+pandoc --from=markdown --pdf-engine=pdflatex --standalone --output=output/notes.pdf notes.md
+
+pandoc  --from=markdown+pandoc_title_block --to=html --metadata pagetitle="Notes" --standalone --output=output/notes.html notes.md
+
+pandoc --from=markdown --to=docx --reference-doc=include/custom-reference1.docx --standalone --output=output/notes.docx notes.md
 

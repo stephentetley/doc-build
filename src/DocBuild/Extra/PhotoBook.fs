@@ -5,7 +5,6 @@ namespace DocBuild.Extra
 
 module PhotoBook = 
 
-
     open MarkdownDoc
     open MarkdownDoc.Pandoc
 
