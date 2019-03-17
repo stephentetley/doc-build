@@ -137,15 +137,19 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
               SaiNumber = saiNumber
               SiteName = siteName  
               Author = "S Tetley"
-              Title = "S3820 TODO"
+              Title = "AMP6 Ultrasonic Asset Replacement (Scheme code S3820)"
             }
         let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet config "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
-        let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
-        return pdf
+        return! WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
     }
 
+let genProjectScope () : DocMonadWord<PdfDoc> =  
+    docMonad { 
+        let! (docx:WordDoc) = includeWordDoc "project-scope.docx"
+        return! WordDocument.exportPdf PqScreen docx |>> setTitle "Project Scope"
+    }
 
 let surveyPhotosConfig (siteName:string) : PhotoBookConfig = 
     { Title = sprintf "%s Survey Photos" siteName
@@ -198,8 +202,9 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
 let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
-            localSourceSubdirectory "1.Survey" 
-                <| findAllSourceFilesMatching "*Survey*.doc*" false
+            altM (localSourceSubdirectory "1.Survey" 
+                    <| findAllSourceFilesMatching "*Survey*.doc*" false)
+                (mreturn [])
         return! mapM (wordDocToPdf siteName) inputs
         
     }
@@ -231,7 +236,7 @@ let processInstalls (siteName:string) : DocMonadWord<PdfDoc list> =
     docMonad {
         let! inputs = 
             altM (localSourceSubdirectory "2.Site_work"
-                    <| findAllSourceFilesMatching "Install*.doc*" false )
+                    <| findAllSourceFilesMatching "*Install*.doc*" false )
                  (mreturn [])
         return! mapM (wordDocToPdf siteName) inputs
     }
@@ -253,11 +258,13 @@ let buildOne (sourceName:string)
     commonSubdirectory sourceName <| 
         docMonad {
             let! cover = genCoversheet siteName saiNumber
+            let! scope = genProjectScope ()
             let! surveys = processSurveys siteName
             let! oSurveyPhotos = genSurveyPhotos siteName
             let! ultras = processInstalls siteName
             let! oWorksPhotos = genSiteWorkPhotos siteName
             let col1 = Collection.empty  
+                            &^^ scope
                             &^^ surveys 
                             &^^ oSurveyPhotos 
                             &^^ ultras
