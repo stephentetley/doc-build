@@ -16,6 +16,7 @@
     <Compile Include="EventsFinal.fsx" />
     <None Include="RtuSurveys.fsx" />
     <None Include="RtuFinals.fsx" />
+    <Compile Include="UsarFinal.fsx" />
   </ItemGroup>
 
   <ItemGroup>
