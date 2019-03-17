@@ -44,8 +44,7 @@ let changeSlashes (path:string) : string =
 let logo (includePath:string) : Markdown = 
     markdownText (inlineImage "" includePath None)
 
-let title1 : Markdown = 
-    h1 (text "T0975 - Event Duration Monitoring Phase 2 (EDM2)")
+let title1 (titleText:string) : Markdown = h1 (text titleText)
     
 
 let title2 (sai:string) (name:string) : Markdown = 
@@ -66,6 +65,7 @@ let columnSpecs : ColumnSpec list =
     ;  { Width = 16; Alignment = Alignment.AlignLeft }
     ;  { Width = 24; Alignment = Alignment.AlignLeft }
     ]
+
 /// | 1.0 | S Tetley | 18/10/2018 | For EDMS |
 let controlTable (author:string) : Markdown = 
 
@@ -83,29 +83,29 @@ let controlTable (author:string) : Markdown =
     let row2 = [ParaElement.empty; ParaElement.empty; ParaElement.empty; ParaElement.empty]
     gridTable columnSpecs (Some headers) [row1;row2] 
 
+type CoversheetConfig = 
+    { LogoPath: string
+      SaiNumber: string 
+      SiteName: string  
+      Author:string 
+      Title: string }
 
-let makeDoc (saiNumber:string) 
-            (siteName:string)
-            (logoPath:string)
-            (author:string) : Markdown = 
+let makeDoc (config:CoversheetConfig) : Markdown = 
     concatMarkdown
-        <| [ logo logoPath
+        <| [ logo config.LogoPath
            ; nbsp2
-           ; title1
+           ; title1 config.Title
            ; nbsp2
-           ; title2 saiNumber siteName
+           ; title2 config.SaiNumber config.SiteName
            ; nbsp2
            ; documentControl 
-           ; controlTable author
+           ; controlTable config.Author
            ]
 
-let coversheet (saiNumber:string) 
-               (siteName:string) 
-               (logoPath:string)
-               (author:string)  
+let coversheet (config:CoversheetConfig)
                (outputFile:string) : DocMonad<'res,MarkdownDoc> = 
     docMonad {         
-        let markdown = makeDoc saiNumber siteName logoPath author
+        let markdown = makeDoc config
         let! fullPath = extendWorkingPath outputFile
         let! markdownFile = Markdown.saveMarkdown fullPath markdown
         return markdownFile

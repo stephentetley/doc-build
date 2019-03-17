@@ -135,8 +135,15 @@ let renderMarkdownFile (stylesheetName:string option)
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
     docMonad { 
         let! logoPath = extendIncludePath "YW-logo.jpg"
+        let config:CoversheetConfig = 
+            { LogoPath = logoPath
+              SaiNumber = saiNumber
+              SiteName = siteName  
+              Author = "S Tetley"
+              Title = "T0975 - Event Duration Monitoring Phase 2 (EDM2)"
+            }
         let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
-        let! markdownFile = coversheet saiNumber siteName logoPath "S Tetley" "coversheet.md" 
+        let! markdownFile = coversheet config "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
         let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
         return pdf
