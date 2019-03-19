@@ -110,10 +110,6 @@ module Document =
             }
 
 
-
-
-
-
     // ************************************************************************
     // Pdf file
 
@@ -205,8 +201,7 @@ module Document =
     let workingWordDoc (relativeName:string) : DocMonad<'res,WordDoc> = 
         getWorkingDocument [".doc"; ".docx"] relativeName
 
-    /// Must have .doc or .docx extension.
-    /// Writes a mutable copy to Working.    
+    /// Must have .doc or .docx extension.  
     let sourceWordDoc (relativeName:string) : DocMonad<'res,WordDoc> = 
         getSourceDocument [".doc"; ".docx"] relativeName
 

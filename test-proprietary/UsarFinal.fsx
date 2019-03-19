@@ -81,6 +81,7 @@ open DocBuild.Office
 #load "Coversheet.fs"
 open Proprietary
 open Coversheet
+open DocBuild.Office
 
 
 
@@ -125,8 +126,7 @@ let renderMarkdownFile (stylesheetName:string option)
             | Some name -> includeWordDoc name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
-        let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
-        return pdf
+        return! WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
     }
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
@@ -198,16 +198,35 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
         return! WordDocument.exportPdf PqScreen doc |>> setTitle title
     }
 
+let processMarkdown (title:string)
+                    (subfolder: string option)
+                    (glob:string) : DocMonadWord<PdfDoc list> = 
+    docMonad {
+        let contextM ma = 
+            match subfolder with 
+            | None -> ma
+            | Some name -> localSourceSubdirectory name ma
+        let! inputs = contextM  <| findSomeSourceFilesMatching glob false
+        return! mapM (fun path -> 
+                        sourceMarkdownDoc path >>= fun md1 ->
+                        copyToWorking false md1 >>= fun md2 ->
+                        renderMarkdownFile (Some docxCustomReference) title md2) inputs
+    }
+
+
 // May have multiple surveys...
-let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
+// Can fail - should be caught
+let processSurveySheets (siteName:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
-            altM (localSourceSubdirectory "1.Survey" 
-                    <| findAllSourceFilesMatching "*Survey*.doc*" false)
-                (mreturn [])
+            localSourceSubdirectory "1.Survey" 
+                <| findSomeSourceFilesMatching "*Survey*.doc*" false
         return! mapM (wordDocToPdf siteName) inputs
-        
     }
+
+let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
+    processSurveySheets siteName 
+        <||> processMarkdown "Survey Info" (Some "1.Survey") "*.md"
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     surveyPhotosConfig siteName 
@@ -231,19 +250,17 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
 
 /// May have multiple documents
 /// Get doc files matching glob 
-// (run twice for Calibrations and RTU installs)
-let processInstalls (siteName:string) : DocMonadWord<PdfDoc list> = 
+let processInstallSheets (siteName:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
-            altM (localSourceSubdirectory "2.Site_work"
-                    <| findAllSourceFilesMatching "*Install*.doc*" false )
-                 (mreturn [])
+            localSourceSubdirectory "2.Site_work"
+                    <| findSomeSourceFilesMatching "*Install*.doc*" false
         return! mapM (wordDocToPdf siteName) inputs
     }
 
-
-
-
+let processInstalls(siteName:string) : DocMonadWord<PdfDoc list> = 
+    processInstallSheets siteName 
+        <||> processMarkdown "Installation Info" (Some "2.Site_work") "*.md"
 
 
 
@@ -286,7 +303,7 @@ let build1 (saiMap:SaiMap) (sourceName:string) : DocMonadWord<PdfDoc option> =
 
 
 let buildAll () : DocMonadWord<unit> = 
-    let worklist = getWorkList () |> List.take 2
+    let worklist = getWorkList () |> List.take 5
     let saiMap = buildSaiMap ()
     foriMz worklist 
         <| fun ix name ->

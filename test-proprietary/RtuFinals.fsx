@@ -86,9 +86,6 @@ Environment.SetEnvironmentVariable("PATH",
     Environment.GetEnvironmentVariable("PATH") + ";" + NativeMagick
     )
 
-//open MarkdownDoc
-//let tempTC () = 
-//    inlineImage "" (unixLikePath "G:\work\photo1.jpg") None
 
 
 let WindowsEnv : BuilderEnv = 
@@ -227,6 +224,7 @@ let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> =
 
 let isLike (pattern:string) (source:string) = 
     Regex.IsMatch(input=source, pattern=pattern)
+
 
 let main () = 
     let sites = readWorkSpeadsheet () 

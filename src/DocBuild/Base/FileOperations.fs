@@ -195,6 +195,14 @@ module FileOperations =
             askSourceDirectoryPath () |>> FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories
         attemptM <| proc ()
 
+    /// Search file matching files in the SourceDirectory.
+    /// Uses glob pattern - the only wild cards are '?' and '*'
+    /// Returns a list of absolute paths.
+    let findSomeSourceFilesMatching (pattern:string) 
+                                    (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
+        let proc () = 
+            askSourceDirectoryPath () |>> FakeLikePrim.tryFindSomeFilesMatching pattern recurseIntoSubDirectories
+        optionFailM "fail - findSomeSourceFilesMatching" <| proc ()
 
     /// Search file matching files in the SourceDirectory.
     /// Uses glob pattern - the only wild cards are '?' and '*'

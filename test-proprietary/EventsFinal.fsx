@@ -96,8 +96,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 
-let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
-let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
+//let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
+//let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
 
 let (docxCustomReference:string) = @"custom-reference1.docx"
 
@@ -128,8 +128,7 @@ let renderMarkdownFile (stylesheetName:string option)
             | Some name -> includeWordDoc name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
-        let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
-        return pdf
+        return! WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
     }
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
@@ -145,8 +144,7 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
         let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet config "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
-        let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
-        return pdf
+        return! WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
     }
 
 
@@ -194,8 +192,7 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     let title = sourceFileToTitle siteName absPath
     docMonad { 
         let! doc = sourceWordDoc absPath
-        let! pdf = WordDocument.exportPdf PqScreen doc
-        return (setTitle title pdf)
+        return! WordDocument.exportPdf PqScreen doc |>> setTitle title
         }
 
 // May have multiple surveys...
@@ -246,13 +243,11 @@ let processUSCalibrations (siteName:string) : DocMonadWord<PdfDoc list> =
     processSiteWork siteName "*US Calib*.doc*"
 
 
-
-
-
 let getWorkList () : string list = 
-    System.IO.DirectoryInfo(inputRoot).GetDirectories()
+    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory.LocalPath).GetDirectories()
         |> Array.map (fun di -> di.Name)
         |> Array.toList
+
 
 let buildOne (sourceName:string) 
              (siteName:string) 
@@ -297,35 +292,6 @@ let buildAll () : DocMonadWord<unit> =
 
         
 
-
-let demo01 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (genCoversheet @"ABERFORD ROAD/NO 1 CSO" "SAI00036945")
-
-
-let demo02 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processSurveys "ABERFORD ROAD/NO 1 CSO")
-            
-
-let demo03 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" (processUSCalibrations "ABERFORD ROAD/NO 1 CSO")
-
-
-let demo04 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
-        <| commonSubdirectory @"ABERFORD ROAD_NO 1 CSO" 
-                              (genSurveyPhotos @"ABERFORD ROAD/NO 1 CSO")
-
-let demo05 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
-        <| buildOne @"AGBRIGG GARAGE_CSO" @"AGBRIGG GARAGE/CSO" "SAI00017527"
 
 let main () = 
     let userRes = new WordDocument.WordHandle()

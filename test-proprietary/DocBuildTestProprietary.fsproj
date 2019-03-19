@@ -13,10 +13,10 @@
     <Compile Include="ExcelProviderHelper.fs" />
     <Compile Include="Proprietary.fs" />
     <Compile Include="Coversheet.fs" />
-    <Compile Include="EventsFinal.fsx" />
+    <None Include="EventsFinal.fsx" />
     <None Include="RtuSurveys.fsx" />
     <None Include="RtuFinals.fsx" />
-    <Compile Include="UsarFinal.fsx" />
+    <None Include="UsarFinal.fsx" />
   </ItemGroup>
 
   <ItemGroup>

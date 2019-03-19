@@ -419,8 +419,8 @@ module DocMonad =
             | Ok a -> Ok (Some a)
 
 
-    let optionFailM (ma:DocMonad<'res,'a option>) 
-                    (errMsg:string) : DocMonad<'res,'a> = 
+    let optionFailM (errMsg:string)
+                    (ma:DocMonad<'res,'a option>) : DocMonad<'res,'a> = 
         bindM ma (fun opt -> 
                     match opt with
                     | Some ans -> mreturn ans

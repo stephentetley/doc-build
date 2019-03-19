@@ -5,9 +5,12 @@
 namespace DocBuild.Raw
 
 
-// TODO - can use pdftk to get number of pages:
-// > pdftk mydoc.pdf dump_data 
-// Look for NumberOfPages in the output
+// TODO
+// Use pdftk for an alternative non-optimizing `pdf concat`.
+// It appears Ghostscript concat can be too aggressive with 
+// optimization.
+// We should only optimize on a final pass.
+
 
 
 [<RequireQualifiedAccess>]
