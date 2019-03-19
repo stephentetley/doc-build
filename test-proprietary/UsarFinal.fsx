@@ -147,8 +147,8 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
 
 let genProjectScope () : DocMonadWord<PdfDoc> =  
     docMonad { 
-        let! (docx:WordDoc) = includeWordDoc "project-scope.docx"
-        return! WordDocument.exportPdf PqScreen docx |>> setTitle "Project Scope"
+        let! (input:PdfDoc) = includePdfDoc "project-scope.pdf"
+        return! copyFileToWorking false input.LocalPath |>> setTitle "Project Scope"
     }
 
 let surveyPhotosConfig (siteName:string) : PhotoBookConfig = 
@@ -289,7 +289,7 @@ let buildOne (sourceName:string)
             let! contents = genContents col1
             let colAll = cover ^^& contents ^^& col1
             let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
-            return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath colAll
+            return! Pdf.concatPdfs Pdf.GsDefault outputAbsPath colAll
         }
 
 
@@ -309,8 +309,6 @@ let buildAll () : DocMonadWord<unit> =
         <| fun ix name ->
                 printfn "Site %i: %s" (ix+1) name |> ignore
                 build1 saiMap name |>> ignore
-
-        
 
 
 let main () = 

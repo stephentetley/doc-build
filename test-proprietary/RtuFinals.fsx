@@ -218,7 +218,7 @@ let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> =
                         &^^ works       &^^ oWorksPhotos
 
                 let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" safeSiteName)
-                return! Pdf.concatPdfs Pdf.GsScreen outputAbsPath col
+                return! Pdf.concatPdfs Pdf.GsDefault outputAbsPath col
             }
 
 
