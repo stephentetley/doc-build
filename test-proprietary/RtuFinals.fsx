@@ -90,12 +90,16 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
+    let includePath = DirectoryPath @"G:\work\Projects\rtu\final-docs\include"
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\output\year4-batch2"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\final-docs\input\year4-batch2"
-      IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\include"
+      IncludeDirectory = includePath
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc" }
+      PandocExe = @"pandoc" 
+      PrintOrScreen = PrintQuality.Screen
+      CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+      }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
@@ -116,18 +120,11 @@ let readWorkSpeadsheet () : WorkRow list =
          
     excelReadRowsAsList helper (new WorkTable())
 
-let renderMarkdownDoc (stylesheetName:string option)
-                       (docTitle:string)
-                       (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
+let renderMarkdownDoc (docTitle:string)
+                      (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
     docMonad {
-        let! (stylesheet:WordDoc option) = 
-            match stylesheetName with
-            | None -> mreturn None
-            | Some name -> includeWordDoc name |>> Some
- 
-        let! docx = Markdown.markdownToWord stylesheet markdown
-        let! pdf = WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle docTitle
-        return pdf
+        let! docx = Markdown.markdownToWord markdown
+        return! WordDocument.exportPdf  docx |>> setTitle docTitle
     }
 
 
@@ -144,7 +141,7 @@ let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> =
         let! (template:WordDoc) = includeWordDoc "TEMPLATE MM3x-to-MMIM Cover Sheet.docx"
         let! outpath = getOutputPath outputName
         let! wordFile = WordDocument.findReplaceAs searches outpath template
-        return! WordDocument.exportPdf PrintQuality.Screen wordFile
+        return! WordDocument.exportPdf wordFile
     }
 
 let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMonadWord<PdfDoc option> = 
@@ -158,7 +155,7 @@ let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMona
             | None -> return None
             | Some infile ->
                 let! doc = getWordDoc infile
-                return! (WordDocument.exportPdf PrintQuality.Screen doc |>> Some)
+                return! (WordDocument.exportPdf doc |>> Some)
         }
 
 
@@ -172,14 +169,14 @@ let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> =
                 
 
 
-let (docxCustomReference:string) = @"custom-reference1.docx"
+
 
 let photosDoc (config:PhotoBookConfig) : DocMonadWord<PdfDoc option> = 
     docMonad { 
         let! book = makePhotoBook config
         match book with
         | Some md ->
-            let! pdf = renderMarkdownDoc (Some docxCustomReference) config.Title md
+            let! pdf = renderMarkdownDoc config.Title md
             return (Some pdf)
         | None -> return None
     }

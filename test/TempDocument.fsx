@@ -67,6 +67,8 @@ let WindowsEnv : DocBuildEnv =
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"
+      PrintOrScreen = PrintQuality.Screen
+      CustomStylesDocx = None
     }
 
 
@@ -98,7 +100,7 @@ let demo03 () =
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
             let! w1 = workingWordDoc "sample.docx" 
-            return! WordDocument.exportPdf PrintQuality.Screen w1 
+            return! WordDocument.exportPdf w1 
         }
 
 let demo04 () = 

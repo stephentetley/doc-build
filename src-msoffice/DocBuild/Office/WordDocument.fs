@@ -16,6 +16,7 @@ module WordDocument =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Office.Internal
 
     type WordHandle = 
@@ -63,12 +64,12 @@ module WordDocument =
         | Print -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
 
 
-    let exportPdfAs (quality:PrintQuality) 
-                    (outputAbsPath:string)
+    let exportPdfAs (outputAbsPath:string)
                     (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let pdfQuality = wordExportQuality quality
+            let! pdfQuality = 
+                asks (fun env -> env.PrintOrScreen) |>> wordExportQuality
             let! (ans:unit) = 
                 execWord <| fun app -> 
                     liftResult (wordExportAsPdf app pdfQuality src.LocalPath outputAbsPath)
@@ -76,12 +77,11 @@ module WordDocument =
         }
 
     /// Saves the file in the top-level working directory.
-    let exportPdf (quality:PrintQuality)  
-                  (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
+    let exportPdf (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
-            return! exportPdfAs quality outputAbsPath src
+            return! exportPdfAs outputAbsPath src
         }
 
 

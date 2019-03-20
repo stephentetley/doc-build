@@ -13,6 +13,7 @@ module Markdown =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Raw
 
 
@@ -31,12 +32,11 @@ module Markdown =
     // ************************************************************************
     // Export
 
-    let markdownToWordAs (customStyles:WordDoc option)
-                         (outputAbsPath:string) 
+    let markdownToWordAs (outputAbsPath:string) 
                          (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let styles = customStyles |> Option.map (fun doc -> doc.LocalPath) 
+            let! styles = asks(fun env -> env.CustomStylesDocx) 
             let command = 
                 PandocPrim.outputDocxCommand styles [] src.LocalPath outputAbsPath
             let! _ = execPandoc command
@@ -44,10 +44,9 @@ module Markdown =
          }
 
 
-    let markdownToWord (customStyles:WordDoc option) 
-                       (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
+    let markdownToWord (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         let outputFile = Path.ChangeExtension(src.LocalPath, "docx")
-        markdownToWordAs customStyles outputFile src
+        markdownToWordAs outputFile src
 
 
     // ************************************************************************

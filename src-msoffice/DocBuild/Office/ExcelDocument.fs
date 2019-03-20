@@ -15,6 +15,7 @@ module ExcelDocument =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Office.Internal
 
     type ExcelHandle = 
@@ -63,13 +64,13 @@ module ExcelDocument =
         | Print -> Excel.XlFixedFormatQuality.xlQualityStandard
 
 
-    let exportPdfAs (quality:PrintQuality) 
-                    (fitWidth:bool)
+    let exportPdfAs (fitWidth:bool)
                     (outputAbsPath:string)
                     (src:ExcelDoc) : DocMonad<#HasExcelHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let pdfQuality = excelExportQuality quality
+            let! pdfQuality = 
+                asks (fun env -> env.PrintOrScreen) |>> excelExportQuality
             let! _ = 
                 execExcel <| fun app -> 
                         liftResult (excelExportAsPdf app  fitWidth pdfQuality src.LocalPath outputAbsPath)
@@ -77,13 +78,12 @@ module ExcelDocument =
         }
 
     /// Saves the file in the top-level working directory.
-    let exportPdf (quality:PrintQuality)
-                  (fitWidth:bool) 
+    let exportPdf (fitWidth:bool) 
                   (src:ExcelDoc) : DocMonad<#HasExcelHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
-            return! exportPdfAs quality fitWidth outputAbsPath src
+            return! exportPdfAs fitWidth outputAbsPath src
         }
 
 

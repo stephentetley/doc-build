@@ -120,7 +120,10 @@ let WindowsEnv : DocBuildEnv =
       IncludeDirectory = DirectoryPath(dataDir <//> "include")
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc" }
+      PandocExe = @"pandoc" 
+      PrintOrScreen = PrintQuality.Screen
+      CustomStylesDocx = None
+      }
 
 
 

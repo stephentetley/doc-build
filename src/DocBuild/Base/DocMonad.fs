@@ -23,6 +23,8 @@ module DocMonad =
           GhostscriptExe: string
           PdftkExe: string 
           PandocExe: string
+          PrintOrScreen: PrintQuality
+          CustomStylesDocx: string option
         }
 
 

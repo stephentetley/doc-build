@@ -16,37 +16,38 @@ module MarkdownWordPdf =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Document.Markdown
     open DocBuild.Extra.TitlePage
     open DocBuild.Office
+
+    let asksCustomStyles () : DocMonad<'res, WordDoc option> = 
+        asks (fun env -> env.CustomStylesDocx) >>= fun opt -> 
+        match opt with 
+        | None -> mreturn None 
+        | Some absPath -> getWordDoc absPath |>> Some
+
 
     // ************************************************************************
     // Export to Pdf with Pandoc (and TeX)
 
 
-    let markdownToWordToPdfAs (customStyles:WordDoc option) 
-                              (quality:PrintQuality)
-                              (outputAbsPath:string) 
+    let markdownToWordToPdfAs (outputAbsPath:string) 
                               (src:MarkdownDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
         docMonad { 
             let docAbsPath = Path.ChangeExtension(outputAbsPath, "docx")
-            let! doc = markdownToWordAs customStyles docAbsPath src
-            return! WordDocument.exportPdfAs quality outputAbsPath doc
+            let! doc = markdownToWordAs docAbsPath src
+            return! WordDocument.exportPdfAs outputAbsPath doc
          }
 
 
-    let markdownToWordToPdf (customStyles:WordDoc option) 
-                            (quality:PrintQuality)                  
-                            (src:MarkdownDoc)  : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+    let markdownToWordToPdf (src:MarkdownDoc)  : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
         let outputFile = Path.ChangeExtension(src.LocalPath, "pdf")
-        markdownToWordToPdfAs customStyles quality outputFile src
+        markdownToWordToPdfAs outputFile src
 
 
 
-    let prefixTitlePage (customStyles:WordDoc option)
-                        (title:string) 
+    let prefixTitlePage (title:string) 
                         (body: Markdown option) 
                         (pdf:PdfDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
-        let render : MarkdownDoc -> DocMonad<#WordDocument.HasWordHandle,PdfDoc> = 
-            markdownToWordToPdf customStyles Screen 
-        genPrefixTitlePage render title body pdf
+        genPrefixTitlePage markdownToWordToPdf title body pdf

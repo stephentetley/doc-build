@@ -16,6 +16,7 @@ module PowerPointDocument =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
+    open DocBuild.Base.DocMonadOperators
     open DocBuild.Office.Internal
 
     type PowerPointHandle = 
@@ -62,12 +63,12 @@ module PowerPointDocument =
 
 
 
-    let exportPdfAs (quality:PrintQuality) 
-                    (outputAbsPath:string) 
+    let exportPdfAs (outputAbsPath:string) 
                     (src:PowerPointDoc) : DocMonad<#HasPowerPointHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let pdfQuality = powerpointExportQuality quality
+            let! pdfQuality = 
+                asks (fun env -> env.PrintOrScreen) |>> powerpointExportQuality
             let! ans = 
                 execPowerPoint <| fun app -> 
                     liftResult (powerPointExportAsPdf app pdfQuality src.LocalPath outputAbsPath)
@@ -75,9 +76,9 @@ module PowerPointDocument =
         }
 
     /// Saves the file in the working directory.
-    let exportPdf (src:PowerPointDoc) (quality:PrintQuality) : DocMonad<#HasPowerPointHandle,PdfDoc> = 
+    let exportPdf (src:PowerPointDoc) : DocMonad<#HasPowerPointHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
-            return! exportPdfAs quality outputAbsPath src
+            return! exportPdfAs outputAbsPath src
         }

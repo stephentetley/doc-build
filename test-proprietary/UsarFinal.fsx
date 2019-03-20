@@ -99,17 +99,20 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 
-let (docxCustomReference:string) = @"custom-reference1.docx"
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
+    let includePath = DirectoryPath @"G:\work\Projects\usar\final-docs\include"
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\batch3_clean\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\batch3_clean\input"
-      IncludeDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\include"
+      IncludeDirectory = includePath
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc" }
+      PandocExe = @"pandoc" 
+      PrintOrScreen = PrintQuality.Screen
+      CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+      }
 
 
 let getSiteName (folderName:string) : string = 
@@ -118,17 +121,11 @@ let getSiteName (folderName:string) : string =
 
 
 
-let renderMarkdownFile (stylesheetName:string option)
-                       (docTitle:string)
+let renderMarkdownFile (docTitle:string)
                        (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
     docMonad {
-        let! (stylesheet:WordDoc option) = 
-            match stylesheetName with
-            | None -> mreturn None
-            | Some name -> includeWordDoc name |>> Some
- 
-        let! docx = Markdown.markdownToWord stylesheet markdown
-        return! WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle docTitle
+        let! docx = Markdown.markdownToWord markdown
+        return! WordDocument.exportPdf docx |>> setTitle docTitle
     }
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
@@ -143,8 +140,8 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
             }
         let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet config "coversheet.md" 
-        let! docx = Markdown.markdownToWord stylesheet markdownFile 
-        return! WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle "Coversheet"
+        let! docx = Markdown.markdownToWord markdownFile 
+        return! WordDocument.exportPdf docx |>> setTitle "Coversheet"
     }
 
 let genProjectScope () : DocMonadWord<PdfDoc> =  
@@ -176,7 +173,7 @@ let photosDoc  (config:PhotoBookConfig) : DocMonadWord<PdfDoc option> =
         let! book = makePhotoBook config
         match book with
         | Some md ->
-            let! pdf = renderMarkdownFile (Some docxCustomReference) config.Title md
+            let! pdf = renderMarkdownFile config.Title md
             return (Some pdf)
         | None -> return None
     }
@@ -197,7 +194,7 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     let title = sourceFileToTitle siteName absPath
     docMonad { 
         let! doc = sourceWordDoc absPath
-        return! WordDocument.exportPdf PrintQuality.Screen doc |>> setTitle title
+        return! WordDocument.exportPdf doc |>> setTitle title
     }
 
 let processMarkdown (title:string)
@@ -212,7 +209,7 @@ let processMarkdown (title:string)
         return! mapM (fun path -> 
                         sourceMarkdownDoc path >>= fun md1 ->
                         copyToWorking false md1 >>= fun md2 ->
-                        renderMarkdownFile (Some docxCustomReference) title md2) inputs
+                        renderMarkdownFile title md2) inputs
     }
 
 
@@ -247,7 +244,7 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
           RelativeOutputName = "contents.md" }
     docMonad {
         let! md = makeContents config pdfs
-        return! renderMarkdownFile (Some docxCustomReference) "Contents" md
+        return! renderMarkdownFile "Contents" md
     }
 
 /// May have multiple documents
@@ -327,5 +324,5 @@ let temp01 () =
                                      ; DocBody = None
                                      ; RelativeOutputName = "title1.md" }
 
-            return! MarkdownWordPdf.markdownToWordToPdf None PrintQuality.Screen md1
+            return! MarkdownWordPdf.markdownToWordToPdf md1
         }
