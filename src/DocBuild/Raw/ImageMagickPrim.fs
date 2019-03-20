@@ -20,8 +20,8 @@ module ImageMagickPrim =
     // orientation is stored as an Exif tag.
     let getOrientation (info:MagickImageInfo) : PageOrientation = 
         if info.Width > info.Height then 
-            OrientationLandscape 
-        else OrientationPortrait
+            PageOrientation.Landscape 
+        else PageOrientation.Portrait
 
 
     // todo should have maxwidth, maxheight
@@ -32,10 +32,10 @@ module ImageMagickPrim =
             maxd / currentd
         let scale (i:int) (factor:float) : int = int (float i * factor)
         match getOrientation info with
-        | OrientationLandscape -> 
+        | Landscape -> 
             let scaling = getScaling maxWidth info.Width 
             (maxWidth, scale info.Height scaling)
-        | OrientationPortrait -> 
+        | Portrait -> 
             let scaling = getScaling maxHeight info.Height 
             (scale info.Width scaling, maxHeight)
 

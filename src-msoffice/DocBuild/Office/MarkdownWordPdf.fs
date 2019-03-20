@@ -12,10 +12,12 @@ module MarkdownWordPdf =
     // Open at .Interop rather than .Word then the Word API has to be qualified
     open Microsoft.Office.Interop
 
+    open MarkdownDoc
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
     open DocBuild.Document.Markdown
+    open DocBuild.Extra.TitlePage
     open DocBuild.Office
 
     // ************************************************************************
@@ -40,3 +42,11 @@ module MarkdownWordPdf =
         markdownToWordToPdfAs customStyles quality outputFile src
 
 
+
+    let prefixTitlePage (customStyles:WordDoc option)
+                        (title:string) 
+                        (body: Markdown option) 
+                        (pdf:PdfDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+        let render : MarkdownDoc -> DocMonad<#WordDocument.HasWordHandle,PdfDoc> = 
+            markdownToWordToPdf customStyles Screen 
+        genPrefixTitlePage render title body pdf

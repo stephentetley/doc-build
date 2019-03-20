@@ -10,6 +10,7 @@ open System
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190314\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
+#load "..\src\DocBuild\Base\BaseDefinitions.fs"
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
@@ -25,7 +26,7 @@ open DocBuild.Base.DocMonad
 open DocBuild.Base.DocMonadOperators
 
 
-let WindowsEnv : BuilderEnv = 
+let WindowsEnv : DocBuildEnv = 
     let dataDir = DirectoryPath(System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data"))
     { WorkingDirectory = dataDir
       SourceDirectory = dataDir

@@ -14,6 +14,23 @@ module FileOperations =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
 
+    /// TODO - idea of working directory is too complicated.
+    /// And we need a simple way to make temp files.
+
+    /// Modify the file name, leave the directory path 
+    /// and the extension the same.
+    let modifyFileName (modify:string -> string) 
+                       (absPath:string) : string = 
+        let left = Path.GetDirectoryName absPath
+        let name = Path.GetFileNameWithoutExtension absPath
+        let name2 = 
+            if Path.HasExtension absPath then
+                let ext = Path.GetExtension absPath
+                modify name + ext
+            else
+                modify name
+        Path.Combine(left, name2)
+
 
     let getOutputPath (relativeFileName:string) : DocMonad<'res,string> = 
         askWorkingDirectory () |>> fun cwd -> (cwd.LocalPath </> relativeFileName)

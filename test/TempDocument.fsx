@@ -25,7 +25,7 @@ open System
 #r @"MarkdownDoc.dll"
 
 
-
+#load "..\src\DocBuild\Base\BaseDefinitions.fs"
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
@@ -59,7 +59,7 @@ open DocBuild.Base.DocMonadOperators
 
 open DocBuild.Office
 
-let WindowsEnv : BuilderEnv = 
+let WindowsEnv : DocBuildEnv = 
     let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") |> DirectoryPath
     { WorkingDirectory = cwd
       SourceDirectory = cwd
@@ -78,7 +78,7 @@ let demo01 () =
             let! p3 = workingPdfDoc "Three.pdf"
             let pdfs = Collection.fromList [p1;p2;p3]
             let! outfile = workingPdfDoc "Concat.pdf"
-            let! _ = Pdf.concatPdfs Pdf.GsScreen outfile.LocalPath pdfs
+            let! _ = Pdf.concatPdfs Pdf.GsScreen pdfs outfile.LocalPath 
             return ()
         }
 
@@ -98,7 +98,7 @@ let demo03 () =
     runDocMonad userRes WindowsEnv <| 
         docMonad { 
             let! w1 = workingWordDoc "sample.docx" 
-            return! WordDocument.exportPdf PqScreen w1 
+            return! WordDocument.exportPdf PrintQuality.Screen w1 
         }
 
 let demo04 () = 

@@ -59,8 +59,8 @@ module ExcelDocument =
     /// PqPrint maps to standard
     let excelExportQuality (quality:PrintQuality) : Excel.XlFixedFormatQuality = 
         match quality with
-        | PqScreen -> Excel.XlFixedFormatQuality.xlQualityMinimum
-        | PqPrint -> Excel.XlFixedFormatQuality.xlQualityStandard
+        | Screen -> Excel.XlFixedFormatQuality.xlQualityMinimum
+        | Print -> Excel.XlFixedFormatQuality.xlQualityStandard
 
 
     let exportPdfAs (quality:PrintQuality) 

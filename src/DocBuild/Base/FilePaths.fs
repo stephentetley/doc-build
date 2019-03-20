@@ -115,3 +115,7 @@ module FilePaths =
             | [], _ -> true
             | _, _ -> false
         work root.Segments y.GetPathSegments 
+
+
+    let ( <//> ) (root:DirectoryPath) (path2:string) : string = 
+        Path.Combine(root.LocalPath, path2)

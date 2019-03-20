@@ -57,8 +57,8 @@ module PowerPointDocument =
 
     let private powerpointExportQuality (quality:PrintQuality) : PowerPoint.PpFixedFormatIntent = 
         match quality with
-        | PqScreen -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentScreen
-        | PqPrint -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentPrint
+        | Screen -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentScreen
+        | Print -> PowerPoint.PpFixedFormatIntent.ppFixedFormatIntentPrint
 
 
 

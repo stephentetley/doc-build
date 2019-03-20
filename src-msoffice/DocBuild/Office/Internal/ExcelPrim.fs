@@ -10,7 +10,7 @@ module ExcelPrim =
 
     open Microsoft.Office.Interop
 
-    open DocBuild.Base.Common
+    open DocBuild.Base
 
     let withExcelApp (operation:Excel.Application -> 'a) : 'a = 
         let app = new Excel.ApplicationClass(Visible = true) :> Excel.Application

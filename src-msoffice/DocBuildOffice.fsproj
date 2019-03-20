@@ -51,6 +51,11 @@
   </ItemGroup>
 
 <ItemGroup>
+  <PackageReference Include="MarkdownDoc" Version="1.0.1-alpha-20190314" />
+  <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190313" />
+</ItemGroup>
+
+<ItemGroup>
   <ProjectReference Include="..\src\DocBuild.fsproj" />
 </ItemGroup>
   

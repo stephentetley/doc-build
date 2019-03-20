@@ -39,7 +39,7 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-
+#load "..\src\DocBuild\Base\BaseDefinitions.fs"
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
@@ -58,6 +58,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Document\Markdown.fs"
 #load "..\src\DocBuild\Extra\Contents.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
+#load "..\src\DocBuild\Extra\TitlePage.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
@@ -103,7 +104,7 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
-let WindowsEnv : BuilderEnv = 
+let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
       IncludeDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\input\include"
@@ -128,7 +129,7 @@ let renderMarkdownFile (stylesheetName:string option)
             | Some name -> includeWordDoc name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
-        return! WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
+        return! WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle docTitle
     }
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
@@ -144,7 +145,7 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
         let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet config "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
-        return! WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
+        return! WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle "Coversheet"
     }
 
 
@@ -192,7 +193,7 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     let title = sourceFileToTitle siteName absPath
     docMonad { 
         let! doc = sourceWordDoc absPath
-        return! WordDocument.exportPdf PqScreen doc |>> setTitle title
+        return! WordDocument.exportPdf PrintQuality.Screen doc |>> setTitle title
         }
 
 // May have multiple surveys...

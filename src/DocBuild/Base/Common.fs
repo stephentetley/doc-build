@@ -13,15 +13,7 @@ module Common =
     open DocBuild.Base
 
 
-    type PageOrientation = 
-        | OrientationPortrait 
-        | OrientationLandscape
 
-
-
-    type PrintQuality = 
-        | PqScreen
-        | PqPrint
 
 
     type ErrMsg = string
@@ -41,17 +33,11 @@ module Common =
     let ( </> ) (path1:string) (path2:string) : string = 
         Path.Combine(path1, path2)
 
-    let ( <//> ) (root:DirectoryPath) (path2:string) : string = 
-        Path.Combine(root.LocalPath, path2)
 
 
 
 
-    // ************************************************************************
-    // Find and replace
 
-
-    type SearchList = (string * string) list
 
 
     // ************************************************************************

@@ -39,7 +39,7 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-
+#load "..\src\DocBuild\Base\BaseDefinitions.fs"
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
@@ -58,6 +58,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Document\Markdown.fs"
 #load "..\src\DocBuild\Extra\Contents.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
+#load "..\src\DocBuild\Extra\TitlePage.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
@@ -74,6 +75,7 @@ open DocBuild.Base.DocMonadOperators
 open DocBuild.Document
 open DocBuild.Extra.Contents
 open DocBuild.Extra.PhotoBook
+open DocBuild.Extra.TitlePage
 open DocBuild.Office
 
 #load "ExcelProviderHelper.fs"
@@ -101,7 +103,7 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
-let WindowsEnv : BuilderEnv = 
+let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\batch3_clean\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\batch3_clean\input"
       IncludeDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\include"
@@ -126,7 +128,7 @@ let renderMarkdownFile (stylesheetName:string option)
             | Some name -> includeWordDoc name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
-        return! WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
+        return! WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle docTitle
     }
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
@@ -142,7 +144,7 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
         let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet config "coversheet.md" 
         let! docx = Markdown.markdownToWord stylesheet markdownFile 
-        return! WordDocument.exportPdf PqScreen docx |>> setTitle "Coversheet"
+        return! WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle "Coversheet"
     }
 
 let genProjectScope () : DocMonadWord<PdfDoc> =  
@@ -195,7 +197,7 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     let title = sourceFileToTitle siteName absPath
     docMonad { 
         let! doc = sourceWordDoc absPath
-        return! WordDocument.exportPdf PqScreen doc |>> setTitle title
+        return! WordDocument.exportPdf PrintQuality.Screen doc |>> setTitle title
     }
 
 let processMarkdown (title:string)
@@ -315,3 +317,15 @@ let main () =
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
         <| buildAll ()
+
+
+let temp01 () = 
+    let userRes = new WordDocument.WordHandle()
+    runDocMonad userRes WindowsEnv 
+        <| docMonad { 
+            let! md1 = makeTitlePage { Title = "Ultrasonic Survey"
+                                     ; DocBody = None
+                                     ; RelativeOutputName = "title1.md" }
+
+            return! MarkdownWordPdf.markdownToWordToPdf None PrintQuality.Screen md1
+        }

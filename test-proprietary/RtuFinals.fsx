@@ -39,7 +39,7 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-
+#load "..\src\DocBuild\Base\BaseDefinitions.fs"
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
@@ -57,6 +57,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
+#load "..\src\DocBuild\Extra\TitlePage.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
@@ -88,7 +89,7 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 
-let WindowsEnv : BuilderEnv = 
+let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\output\year4-batch2"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\final-docs\input\year4-batch2"
       IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\include"
@@ -125,7 +126,7 @@ let renderMarkdownDoc (stylesheetName:string option)
             | Some name -> includeWordDoc name |>> Some
  
         let! docx = Markdown.markdownToWord stylesheet markdown
-        let! pdf = WordDocument.exportPdf PqScreen docx |>> setTitle docTitle
+        let! pdf = WordDocument.exportPdf PrintQuality.Screen docx |>> setTitle docTitle
         return pdf
     }
 
@@ -143,7 +144,7 @@ let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> =
         let! (template:WordDoc) = includeWordDoc "TEMPLATE MM3x-to-MMIM Cover Sheet.docx"
         let! outpath = getOutputPath outputName
         let! wordFile = WordDocument.findReplaceAs searches outpath template
-        return! WordDocument.exportPdf PrintQuality.PqScreen wordFile
+        return! WordDocument.exportPdf PrintQuality.Screen wordFile
     }
 
 let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMonadWord<PdfDoc option> = 
@@ -157,7 +158,7 @@ let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMona
             | None -> return None
             | Some infile ->
                 let! doc = getWordDoc infile
-                return! (WordDocument.exportPdf PqScreen doc |>> Some)
+                return! (WordDocument.exportPdf PrintQuality.Screen doc |>> Some)
         }
 
 

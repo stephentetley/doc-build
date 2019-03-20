@@ -38,7 +38,7 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-
+#load "..\src\DocBuild\Base\BaseDefinitions.fs"
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
@@ -56,6 +56,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
+#load "..\src\DocBuild\Extra\TitlePage.fs"
 
 #load "..\src-msoffice\DocBuild\Office\Internal\Utils.fs"
 #load "..\src-msoffice\DocBuild\Office\Internal\WordPrim.fs"
@@ -87,7 +88,7 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 
-let WindowsEnv : BuilderEnv = 
+let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\year5"
       IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\include"

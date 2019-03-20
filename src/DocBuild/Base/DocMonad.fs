@@ -16,7 +16,7 @@ module DocMonad =
     open SLFormat.CommandOptions
 
 
-    type BuilderEnv = 
+    type DocBuildEnv = 
         { WorkingDirectory: DirectoryPath
           SourceDirectory: DirectoryPath
           IncludeDirectory: DirectoryPath
@@ -35,12 +35,12 @@ module DocMonad =
         abstract RunFinalizer : unit
 
     type DocMonad<'res,'a> = 
-        DocMonad of (StreamWriter -> 'res -> BuilderEnv -> BuildResult<'a>)
+        DocMonad of (StreamWriter -> 'res -> DocBuildEnv -> BuildResult<'a>)
 
     let inline private apply1 (ma: DocMonad<'res,'a>) 
                               (sw: StreamWriter)
                               (res:'res) 
-                              (env: BuilderEnv) : BuildResult<'a>= 
+                              (env: DocBuildEnv) : BuildResult<'a>= 
         let (DocMonad f) = ma in f sw res env
 
     let inline mreturn (x:'a) : DocMonad<'res,'a> = 
@@ -85,7 +85,7 @@ module DocMonad =
 
     /// This runs the finalizer on userResources
     let runDocMonad (userResources:#ResourceFinalize) 
-                    (config:BuilderEnv) 
+                    (config:DocBuildEnv) 
                     (ma:DocMonad<#ResourceFinalize,'a>) : BuildResult<'a> = 
         let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
@@ -94,21 +94,21 @@ module DocMonad =
         ans
 
     let runDocMonadNoCleanup (userResources:'res) 
-                             (config:BuilderEnv) 
+                             (config:DocBuildEnv) 
                              (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
         let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
         apply1 ma sw userResources config
         
     let execDocMonad (userResources:#ResourceFinalize) 
-                     (config:BuilderEnv) 
+                     (config:DocBuildEnv) 
                      (ma:DocMonad<#ResourceFinalize,'a>) : 'a = 
         match runDocMonad userResources config ma with
         | Ok a -> a
         | Error msg -> failwith msg
 
     let execDocMonadNoCleanup (userResources:'res) 
-                     (config:BuilderEnv) 
+                     (config:DocBuildEnv) 
                      (ma:DocMonad<'res,'a>) : 'a = 
         match runDocMonadNoCleanup userResources config ma with
         | Ok a -> a
@@ -151,10 +151,10 @@ module DocMonad =
     // ****************************************************
     // Reader
 
-    let ask () : DocMonad<'res,BuilderEnv> = 
+    let ask () : DocMonad<'res,DocBuildEnv> = 
         DocMonad <| fun _ _ env -> Ok env
 
-    let asks (extract:BuilderEnv -> 'a) : DocMonad<'res,'a> = 
+    let asks (extract:DocBuildEnv -> 'a) : DocMonad<'res,'a> = 
         DocMonad <| fun _ _ env -> Ok (extract env)
 
 
@@ -180,7 +180,7 @@ module DocMonad =
     /// Use with caution.
     /// Generally you might only want to update the 
     /// working directory
-    let local (update:BuilderEnv -> BuilderEnv) 
+    let local (update:DocBuildEnv -> DocBuildEnv) 
               (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         DocMonad <| fun sw res env -> 
             apply1 ma sw res (update env)
@@ -451,13 +451,13 @@ module DocMonad =
     // Execute 'builtin' processes 
     // (Respective applications must be installed)
 
-    let private getOptions (findExe:BuilderEnv -> string) : DocMonad<'res,ProcessOptions> = 
+    let private getOptions (findExe:DocBuildEnv -> string) : DocMonad<'res,ProcessOptions> = 
         pipeM2 (asks findExe)
                 (asks (fun env -> env.WorkingDirectory))
                 (fun exe cwd -> { WorkingDirectory = cwd.LocalPath
                                 ; ExecutableName = exe})
     
-    let private shellExecute (findExe:BuilderEnv -> string)
+    let private shellExecute (findExe:DocBuildEnv -> string)
                              (args:CmdOpt list) : DocMonad<'res,string> = 
         docMonad { 
             let! options = getOptions findExe

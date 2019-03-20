@@ -13,7 +13,9 @@ module Contents =
     open DocBuild.Document
     open DocBuild.Document.Pdf
 
-    // We can render a preliminary version of contents to get its length.
+    // We can render a preliminary version of contents to get its length,
+    // or choose to render a certain number of items per page and know 
+    // the length in advance (caveat, expect one entry = one line)
 
     type private DocInfo = 
         { Title: string 

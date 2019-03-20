@@ -59,8 +59,8 @@ module WordDocument =
 
     let private wordExportQuality (quality:PrintQuality) : Word.WdExportOptimizeFor = 
         match quality with
-        | PqScreen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
-        | PqPrint -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
+        | Screen -> Word.WdExportOptimizeFor.wdExportOptimizeForOnScreen
+        | Print -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
 
 
     let exportPdfAs (quality:PrintQuality) 
