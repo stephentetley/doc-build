@@ -77,6 +77,7 @@ open DocBuild.Extra.Contents
 open DocBuild.Extra.PhotoBook
 open DocBuild.Extra.TitlePage
 open DocBuild.Office
+open DocBuild.Office.MarkdownWordPdf
 
 #load "ExcelProviderHelper.fs"
 #load "Proprietary.fs"
@@ -112,6 +113,7 @@ let WindowsEnv : DocBuildEnv =
       PandocExe = @"pandoc" 
       PrintOrScreen = PrintQuality.Screen
       CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+      PandocPdfEngine = Some "pdflatex"
       }
 
 
@@ -194,7 +196,8 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     let title = sourceFileToTitle siteName absPath
     docMonad { 
         let! doc = sourceWordDoc absPath
-        return! WordDocument.exportPdf doc |>> setTitle title
+        let! pdf1 = WordDocument.exportPdf doc 
+        return! prefixWithTitlePageWord title None pdf1 |>> setTitle title
     }
 
 let processMarkdown (title:string)
@@ -302,7 +305,7 @@ let build1 (saiMap:SaiMap) (sourceName:string) : DocMonadWord<PdfDoc option> =
 
 
 let buildAll () : DocMonadWord<unit> = 
-    let worklist = getWorkList () |> List.take 5
+    let worklist = getWorkList () 
     let saiMap = buildSaiMap ()
     foriMz worklist 
         <| fun ix name ->
@@ -315,14 +318,3 @@ let main () =
     runDocMonad userRes WindowsEnv 
         <| buildAll ()
 
-
-let temp01 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
-        <| docMonad { 
-            let! md1 = makeTitlePage { Title = "Ultrasonic Survey"
-                                     ; DocBody = None
-                                     ; RelativeOutputName = "title1.md" }
-
-            return! MarkdownWordPdf.markdownToWordToPdf md1
-        }

@@ -15,7 +15,7 @@ module DocMonad =
     open DocBuild.Base.Shell
     open SLFormat.CommandOptions
 
-
+    /// PandocPdfEngine needs TeX installed
     type DocBuildEnv = 
         { WorkingDirectory: DirectoryPath
           SourceDirectory: DirectoryPath
@@ -25,9 +25,23 @@ module DocMonad =
           PandocExe: string
           PrintOrScreen: PrintQuality
           CustomStylesDocx: string option
+          PandocPdfEngine: string option        
         }
 
-
+        static member defaultEnv ( workingAbsPath:string
+                                 , sourceAbsPath:string
+                                 , includeAbsPath:string
+                                 , ghostscript:string ) : DocBuildEnv = 
+            { WorkingDirectory = DirectoryPath workingAbsPath
+              SourceDirectory =  DirectoryPath sourceAbsPath
+              IncludeDirectory = DirectoryPath includeAbsPath
+              GhostscriptExe = ghostscript
+              PdftkExe = "pdftk"
+              PandocExe = "pandoc"
+              PrintOrScreen = PrintQuality.Screen
+              CustomStylesDocx = None
+              PandocPdfEngine = None  
+            }
 
     /// DocMonad is parametric on 'res (user resources)
     /// This allows a level of extensibility on the applications

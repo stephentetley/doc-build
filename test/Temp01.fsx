@@ -123,6 +123,7 @@ let WindowsEnv : DocBuildEnv =
       PandocExe = @"pandoc" 
       PrintOrScreen = PrintQuality.Screen
       CustomStylesDocx = None
+      PandocPdfEngine = Some "pdflatex"
       }
 
 

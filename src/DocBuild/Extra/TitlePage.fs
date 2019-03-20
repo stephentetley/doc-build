@@ -12,6 +12,7 @@ module TitlePage =
 
     open DocBuild.Document
     open DocBuild.Document.Pdf
+    open DocBuild.Document.Markdown
 
 
     let private genMarkdown (title:string) 
@@ -38,10 +39,10 @@ module TitlePage =
             return! workingMarkdownDoc outputAbsPath
         }
 
-    let genPrefixTitlePage (render: MarkdownDoc -> DocMonad<'res,PdfDoc>)
-                           (title:string) 
-                           (body: Markdown option) 
-                           (pdf:PdfDoc) : DocMonad<'res,PdfDoc> =
+    let genPrefixWithTitlePage (render: MarkdownDoc -> DocMonad<'res,PdfDoc>)
+                               (title:string) 
+                               (body: Markdown option) 
+                               (pdf:PdfDoc) : DocMonad<'res,PdfDoc> =
         docMonad {
             // TODO this is imperminent, need an easy genfile function
             let temp = "title.temp.md"    
@@ -51,3 +52,12 @@ module TitlePage =
             let! ans = pdftkConcatPdfs (Collection.fromList [title; pdf]) outPath
             return ans |> setTitle pdf.Title
         }
+
+    /// Prefix the Pdf with a title page.
+    /// Use Pandoc to render to PDF via TeX.
+    /// TeX must be installed and callable by Pandoc.
+    let prefixWithTitlePageTeX (title:string) 
+                               (body: Markdown option) 
+                               (pdf:PdfDoc) : DocMonad<'res,PdfDoc> =
+        genPrefixWithTitlePage markdownToTeXToPdf title body pdf
+        

@@ -46,8 +46,9 @@ module MarkdownWordPdf =
         markdownToWordToPdfAs outputFile src
 
 
-
-    let prefixTitlePage (title:string) 
-                        (body: Markdown option) 
-                        (pdf:PdfDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
-        genPrefixTitlePage markdownToWordToPdf title body pdf
+    /// Prefix the Pdf with a title page.
+    /// Render to docx then use Word to render to PDF.
+    let prefixWithTitlePageWord (title:string) 
+                                (body: Markdown option) 
+                                (pdf:PdfDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+        genPrefixWithTitlePage markdownToWordToPdf title body pdf

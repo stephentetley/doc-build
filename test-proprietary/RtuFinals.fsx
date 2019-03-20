@@ -99,6 +99,7 @@ let WindowsEnv : DocBuildEnv =
       PandocExe = @"pandoc" 
       PrintOrScreen = PrintQuality.Screen
       CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+      PandocPdfEngine = Some "pdflatex"
       }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>

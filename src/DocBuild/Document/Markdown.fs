@@ -52,11 +52,14 @@ module Markdown =
     // ************************************************************************
     // Export to Pdf with Pandoc (and TeX)
 
-    let markdownToTeXToPdfAs (pdfEngine:string option)
-                             (outputAbsPath:string) 
+
+    ///  Specific TeX backend is set in DocBuildEnv, generally you 
+    /// should use "pdflatex".
+    let markdownToTeXToPdfAs (outputAbsPath:string) 
                              (src:MarkdownDoc) : DocMonad<'res,PdfDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
+            let! pdfEngine = asks (fun env -> env.PandocPdfEngine)       
             let command = 
                 PandocPrim.outputPdfCommand pdfEngine [] src.LocalPath outputAbsPath
             let! _ = execPandoc command
@@ -64,10 +67,9 @@ module Markdown =
          }
 
 
-    let markdownToTeXToPdf (pdfEngine:string option) 
-                           (src:MarkdownDoc) : DocMonad<'res,PdfDoc> =
+    let markdownToTeXToPdf (src:MarkdownDoc) : DocMonad<'res,PdfDoc> =
         let outputFile = Path.ChangeExtension(src.LocalPath, "pdf")
-        markdownToTeXToPdfAs pdfEngine outputFile src
+        markdownToTeXToPdfAs outputFile src
 
     // ************************************************************************
     // Find and replace

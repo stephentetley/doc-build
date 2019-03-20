@@ -113,7 +113,8 @@ let WindowsEnv : DocBuildEnv =
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc"
       PrintOrScreen = PrintQuality.Screen
-      CustomStylesDocx = Some (includePath.LocalPath </> "custom-reference1.docx")
+      CustomStylesDocx = Some (includePath <//> "custom-reference1.docx")
+      PandocPdfEngine = Some "pdflatex"
       }
 
 
