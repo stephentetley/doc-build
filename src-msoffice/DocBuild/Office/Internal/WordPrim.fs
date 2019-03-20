@@ -10,6 +10,7 @@ module WordPrim =
     open Microsoft.Office.Interop
     open DocBuild.Base
     open DocBuild.Office.Internal
+    open Microsoft.Office.Interop.Word
 
     let internal withWordApp (operation:Word.Application -> 'a) : 'a = 
         let app = new Word.ApplicationClass (Visible = true) :> Word.Application
@@ -23,12 +24,19 @@ module WordPrim =
     // ****************************************************************************
     // Export to Pdf
 
+
+    /// TODO - Paper Size should be under user control...
     let wordExportAsPdf (app:Word.Application) 
+                        (paperSize:Word.WdPaperSize option)
                         (quality:Word.WdExportOptimizeFor)
                         (inputFile:string) 
                         (outputFile:string) : Result<unit,ErrMsg> =
         try 
             let doc:(Word.Document) = app.Documents.Open(FileName = refobj inputFile)
+            match paperSize with
+            | None -> ()
+            | Some sz -> 
+                doc.PageSetup.PaperSize <- sz
             doc.ExportAsFixedFormat ( OutputFileName = outputFile
                                     , ExportFormat = Word.WdExportFormat.wdExportFormatPDF
                                     , OptimizeFor = quality)

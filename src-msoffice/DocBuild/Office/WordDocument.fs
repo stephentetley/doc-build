@@ -18,12 +18,13 @@ module WordDocument =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
     open DocBuild.Office.Internal
+    open Microsoft.Office.Interop.Word
 
     type WordHandle = 
         val mutable private WordApplication : Word.Application 
-
+        val mutable private WordPaperSize : Word.WdPaperSize option
         new () = 
-            { WordApplication = null }
+            { WordApplication = null; WordPaperSize = None }
 
         /// Opens a handle as needed.
         member x.WordExe : Word.Application = 
@@ -34,6 +35,10 @@ module WordDocument =
                 word1
             | app -> app
 
+        member x.PaperSize 
+            with get () : Word.WdPaperSize option = x.WordPaperSize
+            and set(v) = x.WordPaperSize <- v
+
         interface ResourceFinalize with
             member x.RunFinalizer = 
                 match x.WordApplication with
@@ -42,11 +47,13 @@ module WordDocument =
     
         interface HasWordHandle with
             member x.WordAppHandle = x
+            member x.PaperSizeForWord = x.WordPaperSize
 
     
 
     and HasWordHandle =
         abstract WordAppHandle : WordHandle
+        abstract PaperSizeForWord : Word.WdPaperSize option
 
     let execWord (mf: Word.Application -> DocMonad<#HasWordHandle,'a>) : DocMonad<#HasWordHandle,'a> = 
         docMonad { 
@@ -68,11 +75,13 @@ module WordDocument =
                     (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
+            let! userRes = askUserResources ()
+            let paperSize = userRes.PaperSizeForWord
             let! pdfQuality = 
                 asks (fun env -> env.PrintOrScreen) |>> wordExportQuality
             let! (ans:unit) = 
                 execWord <| fun app -> 
-                    liftResult (wordExportAsPdf app pdfQuality src.LocalPath outputAbsPath)
+                    liftResult (wordExportAsPdf app paperSize pdfQuality src.LocalPath outputAbsPath)
             return! workingPdfDoc outputAbsPath
         }
 

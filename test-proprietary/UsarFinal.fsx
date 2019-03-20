@@ -15,6 +15,7 @@ open System.Text
 #r "Microsoft.Office.Interop.PowerPoint"
 #I @"C:\Windows\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c"
 #r "office"
+open Microsoft.Office.Interop
 
 // ImageMagick
 #I @"C:\Users\stephen\.nuget\packages\magick.net-q8-anycpu\7.9.2\lib\netstandard20"
@@ -305,7 +306,7 @@ let build1 (saiMap:SaiMap) (sourceName:string) : DocMonadWord<PdfDoc option> =
 
 
 let buildAll () : DocMonadWord<unit> = 
-    let worklist = getWorkList () 
+    let worklist = getWorkList () |> List.take 5
     let saiMap = buildSaiMap ()
     foriMz worklist 
         <| fun ix name ->
@@ -315,6 +316,7 @@ let buildAll () : DocMonadWord<unit> =
 
 let main () = 
     let userRes = new WordDocument.WordHandle()
+    userRes.PaperSize <- Some Word.WdPaperSize.wdPaperA4
     runDocMonad userRes WindowsEnv 
         <| buildAll ()
 
