@@ -269,7 +269,7 @@ let buildOne (sourceName:string)
             let! contents = genContents col1
             let colAll = cover ^^& contents ^^& col1
             let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
-            return! Pdf.concatPdfs Pdf.GsDefault outputAbsPath colAll
+            return! Pdf.concatPdfs Pdf.GsDefault colAll outputAbsPath 
         }
 
 
@@ -290,7 +290,6 @@ let buildAll () : DocMonadWord<unit> =
                 ignore <| printfn "Site %i: %s" (ix+1) name
                 build1 saiMap name |>> ignore
 
-        
 
 
 let main () = 

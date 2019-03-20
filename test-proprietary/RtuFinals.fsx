@@ -166,8 +166,9 @@ let genSurvey (row:WorkRow) :DocMonadWord<PdfDoc option> =
     
 
 let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> = 
-    optionFailM (sourceWordDocToPdf "2.Installs" "*Works*.doc*" row)
-                "No Site Works document"
+    optionFailM "No Site Works document" 
+                (sourceWordDocToPdf "2.Installs" "*Works*.doc*" row)
+                
 
 
 let (docxCustomReference:string) = @"custom-reference1.docx"
@@ -218,7 +219,7 @@ let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> =
                         &^^ works       &^^ oWorksPhotos
 
                 let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" safeSiteName)
-                return! Pdf.concatPdfs Pdf.GsDefault outputAbsPath col
+                return! Pdf.concatPdfs Pdf.GsDefault col outputAbsPath 
             }
 
 

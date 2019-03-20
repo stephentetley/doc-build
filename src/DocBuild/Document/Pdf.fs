@@ -21,6 +21,24 @@ module Pdf =
     // ************************************************************************
     // Concatenation
     
+
+    /// Concatenate a collection of Pdfs into a single Pdf with PDFtk.
+    /// The result is output in the working directory.
+    /// This produces large files than Ghostscipt with the option
+    /// `/default`.
+    let pdftkConcatPdfs (inputFiles:PdfCollection)
+                   (outputAbsPath:string) : DocMonad<'res,PdfDoc> = 
+        docMonad { 
+            do! assertIsWorkingPath outputAbsPath
+            let inputs = 
+                inputFiles.Elements |> List.map (fun d -> d.LocalPath)
+            let cmd = PdftkPrim.concatCommand inputs outputAbsPath
+            let! _ = execPdftk cmd
+            return! workingPdfDoc outputAbsPath
+        }
+
+
+
     type GsQuality = 
         | GsScreen 
         | GsEbook
@@ -39,10 +57,6 @@ module Pdf =
                 | GsNone -> noArgument
 
 
-
-
-
-
     let private ghostscriptConcat (quality:GsQuality)
                                   (outputAbsPath:string) 
                                   (inputFiles:PdfCollection) : DocMonad<'res,string> = 
@@ -51,11 +65,12 @@ module Pdf =
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputAbsPath inputs
         execGhostscript cmd
 
-    /// Concatenate a collection of Pdfs into a single Pdf.
+    /// Concatenate a collection of Pdfs into a single Pdf
+    /// with Ghostscript.
     /// The result is output in the working directory.
     let concatPdfs (quality:GsQuality)
-                   (outputAbsPath:string) 
-                   (inputFiles:PdfCollection): DocMonad<'res,PdfDoc> = 
+                   (inputFiles:PdfCollection)
+                   (outputAbsPath:string) : DocMonad<'res,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! _ = ghostscriptConcat quality outputAbsPath inputFiles

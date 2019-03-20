@@ -34,7 +34,9 @@ module GhostscriptPrim =
 
 
     /// Apparently we cannot send multiline commands to execProcess.
-    let concatCommand (quality:CmdOpt) (outputFile:string) (inputFiles: string list) : CmdOpt list = 
+    let concatCommand (quality:CmdOpt) 
+                      (outputFile:string) 
+                      (inputFiles: string list) : CmdOpt list = 
         gsConcatOptions quality @ [gsOutputFile outputFile] @  gsInputFiles inputFiles
         
 

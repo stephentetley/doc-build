@@ -23,11 +23,24 @@ module PdftkPrim =
     open DocBuild.Base
     open DocBuild.Base.Shell
 
-    
+    /// <input1.pdf> <input2.pdf> ... cat output <output.pdf>
+    let concatCommand (inputFiles:string list) 
+                      (outputFile:string) : CmdOpt list =
+        [ group (List.map (argument << doubleQuote) inputFiles)
+        ; argument "cat" 
+        ; argument "output" 
+        ; argument (doubleQuote outputFile)
+        ]
+        
+    // ************************************************************************
+    // Dump data (for page count)
+
 
     /// Apparently we cannot send multiline commands to execProcess.
     let dumpDataCommand (inputFile: string) : CmdOpt list = 
-        [ literal (doubleQuote inputFile) ; argument "dump_data" ]
+        [ literal (doubleQuote inputFile) 
+        ; argument "dump_data" 
+        ]
 
 
     /// Seacrh for number of pages in a dump_data from Pdftk
