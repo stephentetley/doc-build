@@ -33,19 +33,19 @@ module ExcelDocument =
                 excel1
             | app -> app
 
-        interface ResourceFinalize with
+        interface IResourceFinalize with
             member x.RunFinalizer = 
                 match x.ExcelApplication with
                 | null -> () 
                 | app -> finalizeExcel app
 
-        interface HasExcelHandle with
+        interface IExcelHandle with
             member x.ExcelAppHandle = x
 
-    and HasExcelHandle =
+    and IExcelHandle =
         abstract ExcelAppHandle : ExcelHandle
 
-    let execExcel (mf: Excel.Application -> DocMonad<#HasExcelHandle,'a>) : DocMonad<#HasExcelHandle,'a> = 
+    let execExcel (mf: Excel.Application -> DocMonad<#IExcelHandle,'a>) : DocMonad<#IExcelHandle,'a> = 
         docMonad { 
             let! userRes = askUserResources ()
             let excelHandle = userRes.ExcelAppHandle
@@ -66,7 +66,7 @@ module ExcelDocument =
 
     let exportPdfAs (fitWidth:bool)
                     (outputAbsPath:string)
-                    (src:ExcelDoc) : DocMonad<#HasExcelHandle,PdfDoc> = 
+                    (src:ExcelDoc) : DocMonad<#IExcelHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! pdfQuality = 
@@ -79,7 +79,7 @@ module ExcelDocument =
 
     /// Saves the file in the top-level working directory.
     let exportPdf (fitWidth:bool) 
-                  (src:ExcelDoc) : DocMonad<#HasExcelHandle,PdfDoc> = 
+                  (src:ExcelDoc) : DocMonad<#IExcelHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
@@ -91,7 +91,9 @@ module ExcelDocument =
     // ************************************************************************
     // Find and replace
 
-    let findReplaceAs (searches:SearchList) (outputAbsPath:string) (src:ExcelDoc) : DocMonad<#HasExcelHandle,ExcelDoc> = 
+    let findReplaceAs (searches:SearchList) 
+                      (outputAbsPath:string) 
+                      (src:ExcelDoc) : DocMonad<#IExcelHandle,ExcelDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! ans = 
@@ -102,5 +104,6 @@ module ExcelDocument =
 
 
 
-    let findReplace (searches:SearchList) (src:ExcelDoc) : DocMonad<#HasExcelHandle,ExcelDoc> = 
+    let findReplace (searches:SearchList) 
+                    (src:ExcelDoc) : DocMonad<#IExcelHandle,ExcelDoc> = 
         findReplaceAs searches src.LocalPath src

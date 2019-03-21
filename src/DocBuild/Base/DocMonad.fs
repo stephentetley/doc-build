@@ -47,7 +47,7 @@ module DocMonad =
     /// This allows a level of extensibility on the applications
     /// that DocMonad can run (e.g. Office apps Word, Excel)
 
-    type ResourceFinalize =
+    type IResourceFinalize =
         abstract RunFinalizer : unit
 
     type DocMonad<'res,'a> = 
@@ -100,9 +100,9 @@ module DocMonad =
     // Run
 
     /// This runs the finalizer on userResources
-    let runDocMonad (userResources:#ResourceFinalize) 
+    let runDocMonad (userResources:#IResourceFinalize) 
                     (config:DocBuildEnv) 
-                    (ma:DocMonad<#ResourceFinalize,'a>) : BuildResult<'a> = 
+                    (ma:DocMonad<#IResourceFinalize,'a>) : BuildResult<'a> = 
         let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
         let ans = apply1 ma sw userResources config
@@ -116,9 +116,9 @@ module DocMonad =
         use sw = new StreamWriter(path = logPath)
         apply1 ma sw userResources config
         
-    let execDocMonad (userResources:#ResourceFinalize) 
+    let execDocMonad (userResources:#IResourceFinalize) 
                      (config:DocBuildEnv) 
-                     (ma:DocMonad<#ResourceFinalize,'a>) : 'a = 
+                     (ma:DocMonad<#IResourceFinalize,'a>) : 'a = 
         match runDocMonad userResources config ma with
         | Ok a -> a
         | Error msg -> failwith msg

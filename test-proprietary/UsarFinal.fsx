@@ -313,7 +313,7 @@ let buildAll () : DocMonadWord<unit> =
 
 let main () = 
     let userRes = new WordDocument.WordHandle()
-    (userRes :> WordDocument.HasWordHandle).PaperSizeForWord <- Some Word.WdPaperSize.wdPaperA4
+    (userRes :> WordDocument.IWordHandle).PaperSizeForWord <- Some Word.WdPaperSize.wdPaperA4
     runDocMonad userRes WindowsEnv 
         <| buildAll ()
 

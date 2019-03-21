@@ -34,19 +34,19 @@ module PowerPointDocument =
                 powerPoint1
             | app -> app
 
-        interface ResourceFinalize with
+        interface IResourceFinalize with
             member x.RunFinalizer = 
                 match x.PowerPointApplication with
                 | null -> () 
                 | app -> finalizePowerPoint app
 
-        interface HasPowerPointHandle with
+        interface IPowerPointHandle with
             member x.PowerPointAppHandle = x
 
-    and HasPowerPointHandle =
+    and IPowerPointHandle =
         abstract PowerPointAppHandle : PowerPointHandle
 
-    let execPowerPoint (mf: PowerPoint.Application -> DocMonad<#HasPowerPointHandle,'a>) : DocMonad<#HasPowerPointHandle,'a> = 
+    let execPowerPoint (mf: PowerPoint.Application -> DocMonad<#IPowerPointHandle,'a>) : DocMonad<#IPowerPointHandle,'a> = 
         docMonad { 
             let! userRes = askUserResources ()
             let powerPointHandle = userRes.PowerPointAppHandle
@@ -64,7 +64,7 @@ module PowerPointDocument =
 
 
     let exportPdfAs (outputAbsPath:string) 
-                    (src:PowerPointDoc) : DocMonad<#HasPowerPointHandle,PdfDoc> = 
+                    (src:PowerPointDoc) : DocMonad<#IPowerPointHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! pdfQuality = 
@@ -76,7 +76,7 @@ module PowerPointDocument =
         }
 
     /// Saves the file in the working directory.
-    let exportPdf (src:PowerPointDoc) : DocMonad<#HasPowerPointHandle,PdfDoc> = 
+    let exportPdf (src:PowerPointDoc) : DocMonad<#IPowerPointHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")

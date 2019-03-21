@@ -36,13 +36,13 @@ module WordDocument =
             | app -> app
 
 
-        interface ResourceFinalize with
+        interface IResourceFinalize with
             member x.RunFinalizer = 
                 match x.WordApplication with
                 | null -> () 
                 | app -> finalizeWord app
     
-        interface HasWordHandle with
+        interface IWordHandle with
             member x.WordAppHandle = x
             member x.PaperSizeForWord 
                 with get () = x.WordPaperSize
@@ -50,11 +50,11 @@ module WordDocument =
 
     
 
-    and HasWordHandle =
+    and IWordHandle =
         abstract WordAppHandle : WordHandle
         abstract PaperSizeForWord : Word.WdPaperSize option with get, set
 
-    let execWord (mf: Word.Application -> DocMonad<#HasWordHandle,'a>) : DocMonad<#HasWordHandle,'a> = 
+    let execWord (mf: Word.Application -> DocMonad<#IWordHandle,'a>) : DocMonad<#IWordHandle,'a> = 
         docMonad { 
             let! userRes = askUserResources ()
             let wordHandle = userRes.WordAppHandle
@@ -71,7 +71,7 @@ module WordDocument =
 
 
     let exportPdfAs (outputAbsPath:string)
-                    (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
+                    (src:WordDoc) : DocMonad<#IWordHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! userRes = askUserResources ()
@@ -85,7 +85,7 @@ module WordDocument =
         }
 
     /// Saves the file in the top-level working directory.
-    let exportPdf (src:WordDoc) : DocMonad<#HasWordHandle,PdfDoc> = 
+    let exportPdf (src:WordDoc) : DocMonad<#IWordHandle,PdfDoc> = 
         docMonad { 
             let! path1 = extendWorkingPath src.FileName
             let outputAbsPath = Path.ChangeExtension(path1, "pdf")
@@ -99,7 +99,7 @@ module WordDocument =
 
     let findReplaceAs (searches:SearchList) 
                       (outputAbsPath:string) 
-                      (src:WordDoc) : DocMonad<#HasWordHandle,WordDoc> = 
+                      (src:WordDoc) : DocMonad<#IWordHandle,WordDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! ans = 
@@ -110,5 +110,5 @@ module WordDocument =
 
 
 
-    let findReplace (searches:SearchList) (src:WordDoc) : DocMonad<#HasWordHandle,WordDoc> = 
+    let findReplace (searches:SearchList) (src:WordDoc) : DocMonad<#IWordHandle,WordDoc> = 
         findReplaceAs searches src.LocalPath src 

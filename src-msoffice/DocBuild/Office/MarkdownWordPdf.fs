@@ -35,7 +35,7 @@ module MarkdownWordPdf =
 
 
     let markdownToWordToPdfAs (outputAbsPath:string) 
-                              (src:MarkdownDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+                              (src:MarkdownDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
         docMonad { 
             let docAbsPath = Path.ChangeExtension(outputAbsPath, "docx")
             let! doc = markdownToWordAs docAbsPath src
@@ -43,7 +43,7 @@ module MarkdownWordPdf =
          }
 
 
-    let markdownToWordToPdf (src:MarkdownDoc)  : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+    let markdownToWordToPdf (src:MarkdownDoc)  : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
         let outputFile = Path.ChangeExtension(src.LocalPath, "pdf")
         markdownToWordToPdfAs outputFile src
 
@@ -52,12 +52,12 @@ module MarkdownWordPdf =
     /// Render to docx then use Word to render to PDF.
     let prefixWithTitlePageWord (title:string) 
                                 (body: Markdown option) 
-                                (pdf:PdfDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+                                (pdf:PdfDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
         genPrefixWithTitlePage markdownToWordToPdf title body pdf
 
 
     /// Make a title page PDF.
     /// Render to docx then use Word to render to PDF.
     let makeContentsWord (config:ContentsConfig) 
-                        (col:PdfCollection) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+                        (col:PdfCollection) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
         genMakeContents markdownToWordToPdf config col  // FIX AFTER DEBUGGING
