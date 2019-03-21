@@ -106,8 +106,8 @@ type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
     let includePath = DirectoryPath @"G:\work\Projects\usar\final-docs\include"
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\batch3_clean\output"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\batch3_clean\input"
+    { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\nswc_mopup\output"
+      SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\nswc_mopup\input"
       IncludeDirectory = includePath
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
@@ -244,12 +244,9 @@ let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
 
 let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
     let config : ContentsConfig = 
-        { CountStart = 3
+        { PrologLength = 2
           RelativeOutputName = "contents.md" }
-    docMonad {
-        let! md = makeContents config pdfs
-        return! renderMarkdownFile "Contents" md
-    }
+    MarkdownWordPdf.makeContentsWord config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 
@@ -306,7 +303,7 @@ let build1 (saiMap:SaiMap) (sourceName:string) : DocMonadWord<PdfDoc option> =
 
 
 let buildAll () : DocMonadWord<unit> = 
-    let worklist = getWorkList () |> List.take 5
+    let worklist = getWorkList () 
     let saiMap = buildSaiMap ()
     foriMz worklist 
         <| fun ix name ->

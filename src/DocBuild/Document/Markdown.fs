@@ -62,6 +62,7 @@ module Markdown =
             let! pdfEngine = asks (fun env -> env.PandocPdfEngine)       
             let command = 
                 PandocPrim.outputPdfCommand pdfEngine [] src.LocalPath outputAbsPath
+            printfn "// %s" (arguments command)
             let! _ = execPandoc command
             return! workingPdfDoc outputAbsPath
          }

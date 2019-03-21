@@ -47,8 +47,8 @@ module PandocPrim =
                           (outputFile:string)  : CmdOpt list = 
         let pdfEngineOpt = 
             match pdfEngine with
-            | None -> argument "--pdf-engine=" &= "pdflatex"
-            | Some engine -> argument "--pdf-engine=" &= engine
+            | None -> argument "--pdf-engine" &= "pdflatex"
+            | Some engine -> argument "--pdf-engine" &= engine
         
         [ argument "--from"     &= "markdown"
         ; pdfEngineOpt

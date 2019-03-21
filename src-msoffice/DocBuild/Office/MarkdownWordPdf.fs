@@ -18,7 +18,9 @@ module MarkdownWordPdf =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
     open DocBuild.Document.Markdown
+    open DocBuild.Extra.Contents
     open DocBuild.Extra.TitlePage
+    
     open DocBuild.Office
 
     let asksCustomStyles () : DocMonad<'res, WordDoc option> = 
@@ -52,3 +54,10 @@ module MarkdownWordPdf =
                                 (body: Markdown option) 
                                 (pdf:PdfDoc) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
         genPrefixWithTitlePage markdownToWordToPdf title body pdf
+
+
+    /// Make a title page PDF.
+    /// Render to docx then use Word to render to PDF.
+    let makeContentsWord (config:ContentsConfig) 
+                        (col:PdfCollection) : DocMonad<#WordDocument.HasWordHandle,PdfDoc> =
+        genMakeContents markdownToWordToPdf config col  // FIX AFTER DEBUGGING
