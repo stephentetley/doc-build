@@ -218,12 +218,9 @@ let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
 
 let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
     let config : ContentsConfig = 
-        { CountStart = 3
+        { PrologLength = 1
           RelativeOutputName = "contents.md" }
-    docMonad {
-        let! md = makeContents config pdfs
-        return! renderMarkdownFile "Contents" md
-    }
+    MarkdownWordPdf.makeContentsWord config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 

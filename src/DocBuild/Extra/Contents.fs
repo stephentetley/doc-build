@@ -64,6 +64,7 @@ module Contents =
                         (config:ContentsConfig) 
                         (col:PdfCollection) : DocMonad<'res, PdfDoc> =
         docMonad {
+            let config1 = { config with RelativeOutputName = "contents-zero.md" }
             let! tocTemp = makeContents1 config col >>= render
             let! pageCount = countPages tocTemp
             let config2 =  { config with PrologLength = config.PrologLength + pageCount }
