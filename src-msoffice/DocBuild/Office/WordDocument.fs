@@ -35,9 +35,6 @@ module WordDocument =
                 word1
             | app -> app
 
-        member x.PaperSize 
-            with get () : Word.WdPaperSize option = x.WordPaperSize
-            and set(v) = x.WordPaperSize <- v
 
         interface ResourceFinalize with
             member x.RunFinalizer = 
@@ -47,13 +44,15 @@ module WordDocument =
     
         interface HasWordHandle with
             member x.WordAppHandle = x
-            member x.PaperSizeForWord = x.WordPaperSize
+            member x.PaperSizeForWord 
+                with get () = x.WordPaperSize
+                and set(v) = x.WordPaperSize <- v
 
     
 
     and HasWordHandle =
         abstract WordAppHandle : WordHandle
-        abstract PaperSizeForWord : Word.WdPaperSize option
+        abstract PaperSizeForWord : Word.WdPaperSize option with get, set
 
     let execWord (mf: Word.Application -> DocMonad<#HasWordHandle,'a>) : DocMonad<#HasWordHandle,'a> = 
         docMonad { 

@@ -106,8 +106,8 @@ type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
     let includePath = DirectoryPath @"G:\work\Projects\usar\final-docs\include"
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\nswc_mopup\output"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\nswc_mopup\input"
+    { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\output"
+      SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\input"
       IncludeDirectory = includePath
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
@@ -313,7 +313,7 @@ let buildAll () : DocMonadWord<unit> =
 
 let main () = 
     let userRes = new WordDocument.WordHandle()
-    userRes.PaperSize <- Some Word.WdPaperSize.wdPaperA4
+    (userRes :> WordDocument.HasWordHandle).PaperSizeForWord <- Some Word.WdPaperSize.wdPaperA4
     runDocMonad userRes WindowsEnv 
         <| buildAll ()
 
