@@ -20,6 +20,7 @@ module MarkdownWordPdf =
     open DocBuild.Document.Markdown
     open DocBuild.Extra.Contents
     open DocBuild.Extra.TitlePage
+    open DocBuild.Extra.PhotoBook
     
     open DocBuild.Office
 
@@ -50,14 +51,18 @@ module MarkdownWordPdf =
 
     /// Prefix the Pdf with a title page.
     /// Render to docx then use Word to render to PDF.
-    let prefixWithTitlePageWord (title:string) 
-                                (body: Markdown option) 
-                                (pdf:PdfDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
+    let prefixWithTitlePageWithWord (title:string) 
+                                    (body: Markdown option) 
+                                    (pdf:PdfDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
         genPrefixWithTitlePage markdownToWordToPdf title body pdf
 
 
     /// Make a title page PDF.
     /// Render to docx then use Word to render to PDF.
-    let makeContentsWord (config:ContentsConfig) 
-                        (col:PdfCollection) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
-        genMakeContents markdownToWordToPdf config col  // FIX AFTER DEBUGGING
+    let makeContentsWithWord (config:ContentsConfig) 
+                             (col:PdfCollection) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
+        genMakeContents markdownToWordToPdf config col 
+
+
+    let makePhotoBookWithWord (config:PhotoBookConfig) : DocMonad<'res, PdfDoc option> =
+        genPhotoBook markdownToWordToPdf config

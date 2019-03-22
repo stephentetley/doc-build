@@ -220,7 +220,7 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
     let config : ContentsConfig = 
         { PrologLength = 1
           RelativeOutputName = "contents.md" }
-    MarkdownWordPdf.makeContentsWord config pdfs
+    MarkdownWordPdf.makeContentsWithWord config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 

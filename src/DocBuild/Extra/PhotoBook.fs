@@ -12,9 +12,9 @@ module PhotoBook =
     open DocBuild.Base.DocMonad
     open DocBuild.Base.DocMonadOperators
 
-
-    open DocBuild.Document.Jpeg
     open DocBuild.Document
+    open DocBuild.Document.Jpeg
+    open DocBuild.Document.Markdown
 
 
 
@@ -94,10 +94,16 @@ module PhotoBook =
                 let mdDoc = photoBookMarkdown config.Title col.Elements
                 let! outputAbsPath = extendWorkingPath config.RelativeOutputName
                 let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-                let! mdOutput = workingMarkdownDoc outputAbsPath
-                return (Some mdOutput)
+                return! workingMarkdownDoc outputAbsPath |>> Some
         }
 
+    let genPhotoBook (render: MarkdownDoc -> DocMonad<'res,PdfDoc>)
+                     (config:PhotoBookConfig) : DocMonad<'res, PdfDoc option> =
+        makePhotoBook config >>= fun opt -> 
+        match opt with
+        | Some md -> render md |>> Some
+        | None -> mreturn None
 
 
-
+    let makePhotoBookWithTex (config:PhotoBookConfig) : DocMonad<'res, PdfDoc option> =
+        genPhotoBook markdownToTeXToPdf config

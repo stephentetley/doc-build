@@ -198,7 +198,7 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     docMonad { 
         let! doc = sourceWordDoc absPath
         let! pdf1 = WordDocument.exportPdf doc 
-        return! prefixWithTitlePageWord title None pdf1 |>> setTitle title
+        return! prefixWithTitlePageWithWord title None pdf1 |>> setTitle title
     }
 
 let processMarkdown (title:string)
@@ -246,7 +246,7 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
     let config : ContentsConfig = 
         { PrologLength = 2
           RelativeOutputName = "contents.md" }
-    MarkdownWordPdf.makeContentsWord config pdfs
+    MarkdownWordPdf.makeContentsWithWord config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 

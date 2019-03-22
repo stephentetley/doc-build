@@ -75,6 +75,6 @@ module Contents =
     /// Make a title page PDF.
     /// Use Pandoc to render to PDF via TeX.
     /// TeX must be installed and callable by Pandoc.
-    let makeContentsTeX (config:ContentsConfig) 
-                        (col:PdfCollection) : DocMonad<'res, PdfDoc> =
+    let makeContentsWithTeX (config:ContentsConfig) 
+                            (col:PdfCollection) : DocMonad<'res, PdfDoc> =
         genMakeContents markdownToTeXToPdf config col
