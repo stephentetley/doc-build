@@ -15,7 +15,6 @@ module ExcelDocument =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
     open DocBuild.Office.Internal
 
     type ExcelHandle = 

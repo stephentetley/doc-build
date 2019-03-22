@@ -3,6 +3,7 @@
 
 #r "netstandard"
 open System.IO
+open System.Text.RegularExpressions
 
 // Office deps
 #I @"C:\WINDOWS\assembly\GAC_MSIL\Microsoft.Office.Interop.Word\15.0.0.0__71e9bce111e9429c"
@@ -30,7 +31,6 @@ open System.IO
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
-#load "..\src\DocBuild\Base\DocMonadOperators.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
@@ -54,10 +54,7 @@ open System.IO
 open DocBuild.Base
 open DocBuild.Document.Pdf
 open DocBuild.Base.DocMonad
-open DocBuild.Base.DocMonadOperators
 
-open System.IO
-open System.Text.RegularExpressions
 
 
 let temp01 () = 

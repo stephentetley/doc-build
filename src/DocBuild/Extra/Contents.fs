@@ -9,7 +9,6 @@ module Contents =
     
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
 
     open DocBuild.Document
     open DocBuild.Document.Pdf

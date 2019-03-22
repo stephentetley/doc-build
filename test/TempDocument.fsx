@@ -31,7 +31,6 @@ open System
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
-#load "..\src\DocBuild\Base\DocMonadOperators.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
@@ -55,7 +54,6 @@ open System
 open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Base.DocMonad
-open DocBuild.Base.DocMonadOperators
 
 open DocBuild.Office
 

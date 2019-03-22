@@ -11,7 +11,6 @@ module PandocPrim =
     open SLFormat.CommandOptions
 
     open DocBuild.Base
-    open DocBuild.Base.Shell
 
     // One for SLFormat...
     let group (cmds:CmdOpt list) : CmdOpt = 

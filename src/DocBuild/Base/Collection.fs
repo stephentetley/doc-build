@@ -16,7 +16,6 @@ namespace DocBuild.Base
 module Collection = 
 
     open DocBuild.Base
-    open DocBuild.Base.DocMonadOperators
 
 
     /// A Collection is a so called JoinList (unbalanced binary tree)

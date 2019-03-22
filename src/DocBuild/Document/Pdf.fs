@@ -15,7 +15,6 @@ module Pdf =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
     open DocBuild.Raw
 
     // ************************************************************************

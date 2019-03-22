@@ -10,7 +10,6 @@ module PhotoBook =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
 
     open DocBuild.Document
     open DocBuild.Document.Jpeg

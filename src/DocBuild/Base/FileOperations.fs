@@ -12,7 +12,6 @@ module FileOperations =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
 
     /// TODO - idea of working directory is too complicated.
     /// And we need a simple way to make temp files.

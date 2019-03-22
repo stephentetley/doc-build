@@ -16,7 +16,6 @@ module PowerPointDocument =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
     open DocBuild.Office.Internal
 
     type PowerPointHandle = 

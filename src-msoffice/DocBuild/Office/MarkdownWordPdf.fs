@@ -16,7 +16,6 @@ module MarkdownWordPdf =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
     open DocBuild.Document.Markdown
     open DocBuild.Extra.Contents
     open DocBuild.Extra.TitlePage

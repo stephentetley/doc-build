@@ -8,12 +8,12 @@ namespace DocBuild.Raw
 [<RequireQualifiedAccess>]
 module GhostscriptPrim = 
     
-    open DocBuild.Base
-    open DocBuild.Base.Shell
-    open SLFormat
+
     open SLFormat.CommandOptions
 
+    open DocBuild.Base
 
+    
     /// -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite [-dPDFSETTINGS=/screen]
     let private gsConcatOptions (quality:CmdOpt) : CmdOpt list =
         [ argument "-dBATCH"

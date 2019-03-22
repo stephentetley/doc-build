@@ -16,7 +16,6 @@ module WordDocument =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
     open DocBuild.Office.Internal
     open Microsoft.Office.Interop.Word
 

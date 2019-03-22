@@ -12,7 +12,6 @@ module Document =
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad
-    open DocBuild.Base.DocMonadOperators
 
 
 

@@ -45,7 +45,6 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
-#load "..\src\DocBuild\Base\DocMonadOperators.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
@@ -69,7 +68,6 @@ open FSharp.Interop.Excel
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad
-open DocBuild.Base.DocMonadOperators
 open DocBuild.Document
 open DocBuild.Extra.PhotoBook
 open DocBuild.Office

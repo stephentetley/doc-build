@@ -21,7 +21,6 @@ module PdftkPrim =
     open SLFormat.CommandOptions
 
     open DocBuild.Base
-    open DocBuild.Base.Shell
 
     /// <input1.pdf> <input2.pdf> ... cat output <output.pdf>
     let concatCommand (inputFiles:string list) 
