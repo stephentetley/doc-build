@@ -103,6 +103,3 @@ module PhotoBook =
         | Some md -> render md |>> Some
         | None -> mreturn None
 
-
-    let makePhotoBookWithTex (config:PhotoBookConfig) : DocMonad<'res, PdfDoc option> =
-        genPhotoBook markdownToTeXToPdf config

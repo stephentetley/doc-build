@@ -67,23 +67,19 @@ open FSharp.Interop.Excel
 #load "..\src-msoffice\DocBuild\Office\WordDocument.fs"
 #load "..\src-msoffice\DocBuild\Office\ExcelDocument.fs"
 #load "..\src-msoffice\DocBuild\Office\PowerPointDocument.fs"
-#load "..\src-msoffice\DocBuild\Office\MarkdownWordPdf.fs"
+#load "..\src-msoffice\DocBuild\Office\PandocWordShim.fs"
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad
 open DocBuild.Document
-open DocBuild.Extra.Contents
-open DocBuild.Extra.PhotoBook
-open DocBuild.Extra.TitlePage
 open DocBuild.Office
-open DocBuild.Office.MarkdownWordPdf
+open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
 #load "Proprietary.fs"
 #load "Coversheet.fs"
 open Proprietary
 open Coversheet
-open DocBuild.Office
 
 
 
@@ -166,18 +162,6 @@ let siteWorksPhotosConfig (siteName:string) : PhotoBookConfig =
     }
 
 
-// let title = sprintf "%s Photos" docType.Name
-// let outputFile = sprintf "%s Photos.md" docType.Name |> safeName
-
-let photosDoc  (config:PhotoBookConfig) : DocMonadWord<PdfDoc option> = 
-    docMonad { 
-        let! book = makePhotoBook config
-        match book with
-        | Some md ->
-            let! pdf = renderMarkdownFile config.Title md
-            return (Some pdf)
-        | None -> return None
-    }
 
 let sourceFileToTitle (siteName:string) (filePath:string) : string = 
     let fileNameExt = IO.Path.GetFileName filePath
@@ -196,7 +180,7 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     docMonad { 
         let! doc = sourceWordDoc absPath
         let! pdf1 = WordDocument.exportPdf doc 
-        return! prefixWithTitlePageWithWord title None pdf1 |>> setTitle title
+        return! prefixWithTitlePage title None pdf1 |>> setTitle title
     }
 
 let processMarkdown (title:string)
@@ -231,12 +215,12 @@ let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> =
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     surveyPhotosConfig siteName 
-        |> photosDoc
+        |> makePhotoBook
         |>> Option.map (setTitle "Survey Photos")
 
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     siteWorksPhotosConfig siteName 
-        |> photosDoc
+        |> makePhotoBook
         |>> Option.map (setTitle "Site Work Photos")
 
 
@@ -244,7 +228,7 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
     let config : ContentsConfig = 
         { PrologLength = 2
           RelativeOutputName = "contents.md" }
-    MarkdownWordPdf.makeContentsWithWord config pdfs
+    makeTableOfContents config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 

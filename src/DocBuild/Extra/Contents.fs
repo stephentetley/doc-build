@@ -59,9 +59,9 @@ module Contents =
             
         }
 
-    let genMakeContents (render: MarkdownDoc -> DocMonad<'res,PdfDoc>)
-                        (config:ContentsConfig) 
-                        (col:PdfCollection) : DocMonad<'res, PdfDoc> =
+    let genTableOfContents (render: MarkdownDoc -> DocMonad<'res,PdfDoc>)
+                           (config:ContentsConfig) 
+                           (col:PdfCollection) : DocMonad<'res, PdfDoc> =
         docMonad {
             let config1 = { config with RelativeOutputName = "contents-zero.md" }
             let! tocTemp = makeContents1 config col >>= render
@@ -71,9 +71,3 @@ module Contents =
             return final
         }
 
-    /// Make a title page PDF.
-    /// Use Pandoc to render to PDF via TeX.
-    /// TeX must be installed and callable by Pandoc.
-    let makeContentsWithTeX (config:ContentsConfig) 
-                            (col:PdfCollection) : DocMonad<'res, PdfDoc> =
-        genMakeContents markdownToTeXToPdf config col

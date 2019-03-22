@@ -4,6 +4,7 @@
 
 namespace DocBuild.Base
 
+/// TODO - this can be removed when the SL-Format dependency is updated.
 
 module Shell = 
 

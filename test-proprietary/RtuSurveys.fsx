@@ -68,7 +68,6 @@ open FSharp.Interop.Excel
 open DocBuild.Base
 open DocBuild.Base.DocMonad
 open DocBuild.Document
-open DocBuild.Extra.PhotoBook
 open DocBuild.Office
 
 

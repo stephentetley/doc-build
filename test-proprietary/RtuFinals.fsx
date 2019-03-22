@@ -55,6 +55,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
+#load "..\src\DocBuild\Extra\Contents.fs"
 #load "..\src\DocBuild\Extra\PhotoBook.fs"
 #load "..\src\DocBuild\Extra\TitlePage.fs"
 
@@ -65,13 +66,13 @@ open FSharp.Interop.Excel
 #load "..\src-msoffice\DocBuild\Office\WordDocument.fs"
 #load "..\src-msoffice\DocBuild\Office\ExcelDocument.fs"
 #load "..\src-msoffice\DocBuild\Office\PowerPointDocument.fs"
+#load "..\src-msoffice\DocBuild\Office\PandocWordShim.fs"
 
 open DocBuild.Base
 open DocBuild.Base.DocMonad
 open DocBuild.Document
-open DocBuild.Extra.PhotoBook
 open DocBuild.Office
-
+open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
 open ExcelProviderHelper
@@ -167,19 +168,6 @@ let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> =
                 (sourceWordDocToPdf "2.Installs" "*Works*.doc*" row)
                 
 
-
-
-
-let photosDoc (config:PhotoBookConfig) : DocMonadWord<PdfDoc option> = 
-    docMonad { 
-        let! book = makePhotoBook config
-        match book with
-        | Some md ->
-            let! pdf = renderMarkdownDoc config.Title md
-            return (Some pdf)
-        | None -> return None
-    }
-
 let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
     let name1 = safeName row.``Site Name``
     let props : PhotoBookConfig = 
@@ -187,7 +175,7 @@ let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
         ; SourceSubFolder = "1.Surveys" </> name1 </> "photos"
         ; WorkingSubFolder = "survey_photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
-    photosDoc props
+    makePhotoBook props
 
 
 let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
@@ -197,7 +185,7 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
         ; SourceSubFolder  = "2.Install" </> name1 </> "photos"
         ; WorkingSubFolder = "install_photos"
         ; RelativeOutputName= sprintf "%s install photos.md" name1 }
-    photosDoc props
+    makePhotoBook props
     
 
 let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> = 

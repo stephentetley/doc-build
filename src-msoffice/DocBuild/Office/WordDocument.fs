@@ -23,7 +23,8 @@ module WordDocument =
         val mutable private WordApplication : Word.Application 
         val mutable private WordPaperSize : Word.WdPaperSize option
         new () = 
-            { WordApplication = null; WordPaperSize = None }
+            { WordApplication = null
+            ; WordPaperSize = Some WdPaperSize.wdPaperA4 }
 
         /// Opens a handle as needed.
         member x.WordExe : Word.Application = 

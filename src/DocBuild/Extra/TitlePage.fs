@@ -53,9 +53,7 @@ module TitlePage =
             return ans |> setTitle pdf.Title
         }
 
-    /// Prefix the Pdf with a title page.
-    /// Use Pandoc to render to PDF via TeX.
-    /// TeX must be installed and callable by Pandoc.
+
     let prefixWithTitlePageWithTeX (title:string) 
                                    (body: Markdown option) 
                                    (pdf:PdfDoc) : DocMonad<'res,PdfDoc> =

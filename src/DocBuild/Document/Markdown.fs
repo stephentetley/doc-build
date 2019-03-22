@@ -31,6 +31,7 @@ module Markdown =
     // ************************************************************************
     // Export
 
+    /// Requires pandoc
     let markdownToWordAs (outputAbsPath:string) 
                          (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         docMonad { 
@@ -42,7 +43,7 @@ module Markdown =
             return! workingWordDoc outputAbsPath
          }
 
-
+    /// Requires pandoc
     let markdownToWord (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         let outputFile = Path.ChangeExtension(src.LocalPath, "docx")
         markdownToWordAs outputFile src
