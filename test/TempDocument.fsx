@@ -15,7 +15,7 @@ open System
 #r "office"
 
 // ImageMagick
-#I @"C:\Users\stephen\.nuget\packages\Magick.NET-Q8-AnyCPU\7.9.2\lib\netstandard20"
+#I @"C:\Users\stephen\.nuget\packages\Magick.NET-Q8-AnyCPU\7.11.1\lib\netstandard20"
 #r @"Magick.NET-Q8-AnyCPU.dll"
 
 // SLFormat & MarkdownDoc (not on nuget.org)
