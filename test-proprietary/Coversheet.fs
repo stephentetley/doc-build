@@ -28,10 +28,6 @@ let safeName (input:string) : string =
 // Build a document
 
 
-//type Item = 
-//    { SaiNumber: string 
-//      SiteName: string }
-
 let nbsp2 : Markdown = nbsp ^@^ nbsp
 
 let doubleQuote (s:string) : string = sprintf "\"%s\"" s
@@ -111,6 +107,3 @@ let coversheet (config:CoversheetConfig)
         return markdownFile
     } 
 
-//let generateDocx (workingDirectory:string) (mdInputPath:string) (outputDocxName:string) : unit  =
-//    let stylesDoc = @"include/custom-reference1.docx" 
-//    runPandocDocx workingDirectory mdInputPath outputDocxName stylesDoc []

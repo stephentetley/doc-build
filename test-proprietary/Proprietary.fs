@@ -11,7 +11,7 @@ open ExcelProviderHelper
 
 
 type ADBTable = 
-    ExcelFile< FileName = @"G:\work\ADB-all_sites_20181010.xlsx",
+    ExcelFile< FileName = @"G:\work\ADB-exports\ADB-all_sites_20181010.xlsx",
                SheetName = "Sheet1!",
                ForceString = true >
 
