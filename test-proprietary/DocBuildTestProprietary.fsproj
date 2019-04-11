@@ -14,6 +14,7 @@
     <Compile Include="Proprietary.fs" />
     <Compile Include="Coversheet.fs" />
     <None Include="EventsFinal.fsx" />
+    <None Include="Mk5mmimFinal.fsx" />
     <None Include="PBInstall.fsx" />
     <None Include="RtuSurveys.fsx" />
     <None Include="RtuFinals.fsx" />
