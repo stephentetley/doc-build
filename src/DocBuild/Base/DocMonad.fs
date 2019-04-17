@@ -156,6 +156,12 @@ module DocMonad =
             with
             | ex -> Error (sprintf "attemptM: %s" ex.Message)
 
+    let liftIO (action: unit -> 'a) : DocMonad<'res, 'a> = 
+        try
+            action () |> mreturn
+        with
+        | ex -> throwError (sprintf "liftIO: %s" ex.Message)        
+
     // ****************************************************
     // Logging
 
