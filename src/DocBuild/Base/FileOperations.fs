@@ -287,25 +287,27 @@ module FileOperations =
             return (kids |> Array.map (fun info -> info.Name) |> Array.toList)
         }
 
-    type GenStepMessage = int -> int -> string -> string
+    type SkeletonStepBeginMessage = int -> int -> string -> string
 
-    type SkeletonOptions<'res> = 
-        { StepMessageConsole: GenStepMessage option
-          StepMessageLog: GenStepMessage option
+    type SkeletonStepFailMessage = string -> string
+
+    type SkeletonOptions = 
+        { GenStepBeginMessage: SkeletonStepBeginMessage option
+          GenStepFailMessage: SkeletonStepFailMessage option
           DebugSelectSample: (string list -> string list) option
           ContinueOnFail: bool
         }
 
-    let defaultSkeletonOptions:SkeletonOptions<'res> = 
-        let simpleMsg = fun ix count childFolderName -> 
-            sprintf "%i of %i: %s" ix count childFolderName
-        { StepMessageConsole = Some simpleMsg 
-          StepMessageLog = Some simpleMsg
+    let defaultSkeletonOptions:SkeletonOptions = 
+        { GenStepBeginMessage = Some 
+            <| fun ix count childFolderName -> 
+                    sprintf "%i of %i: %s" ix count childFolderName
+          GenStepFailMessage = Some <| sprintf "%s failed"
           DebugSelectSample = None
           ContinueOnFail = false
         }
 
-    let private runSkeleton (skeletonOpts:SkeletonOptions<'res>) 
+    let private runSkeleton (skeletonOpts:SkeletonOptions) 
                             (strategy: string -> DocMonad<'res,unit> -> DocMonad<'res,unit>)
                             (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> =  
         let processZ: DocMonad<'res, unit> = process1 |>> fun _ -> ()
@@ -313,22 +315,26 @@ module FileOperations =
             match skeletonOpts.DebugSelectSample with
             | None -> id
             | Some fn -> fn
-        let consoleBegin (ix:int) (count:int) = 
-            match skeletonOpts.StepMessageConsole with
+        let logStepBegin (ix:int) (count:int) = 
+            match skeletonOpts.GenStepBeginMessage with
             | None -> mreturn ()
             | Some genMessage -> 
                 docMonad { 
                    let! kid = askSourceDirectoryName ()
-                   do (genMessage ix count kid |> printfn "%s")
+                   let message = genMessage ix count kid 
+                   do (printfn "%s" message)
+                   do! tellLine message
                    return ()
                 }
-        let logBegin (ix:int) (count:int) = 
-            match skeletonOpts.StepMessageLog with
+        let logStepFail () = 
+            match skeletonOpts.GenStepFailMessage with
             | None -> mreturn ()
             | Some genMessage -> 
                 docMonad { 
                     let! kid = askSourceDirectoryName ()
-                    do! tellLine (genMessage ix count kid)
+                    let message = genMessage kid
+                    do (printfn "%s" message)
+                    do! tellLine message
                     return ()
                 }
         let proceedM (proc:DocMonad<'res,unit>) : DocMonad<'res, unit> = 
@@ -338,13 +344,12 @@ module FileOperations =
                     if skeletonOpts.ContinueOnFail then 
                         return ()
                     else 
-                        throwError "Build step failed" |> ignore
+                        logStepFail () .>> throwError "Build step failed" |> ignore
                 | Some _ -> return ()
                 }
         let processChildDirectory (ix:int) (count:int) : DocMonad<'res, unit> = 
             docMonad { 
-                do! consoleBegin ix count
-                do! logBegin ix count
+                do! logStepBegin ix count
                 return! (proceedM processZ)
             }
 
@@ -360,7 +365,7 @@ module FileOperations =
     /// processing function on 'within' that folder. 
     /// Generate the results in a child folder of the same name under
     /// the working folder.
-    let dtodSourceChildren (skeletonOpts:SkeletonOptions<'res>) 
+    let dtodSourceChildren (skeletonOpts:SkeletonOptions) 
                            (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory 
@@ -371,7 +376,7 @@ module FileOperations =
     /// For every child source folder (one level down) run the
     /// processing function on 'within' that folder. 
     /// Generate the results in the top level working folder.
-    let dto1SourceChildren (skeletonOpts:SkeletonOptions<'res>) 
+    let dto1SourceChildren (skeletonOpts:SkeletonOptions) 
                            (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory action

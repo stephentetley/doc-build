@@ -273,4 +273,4 @@ let main () =
     let userRes = new WordDocument.WordHandle()
     let saiMap = buildSaiMap ()
     runDocMonad userRes WindowsEnv 
-        <| dtodSourceChildren (dtodSourceChildren (build1 saiMap))
+        <| dtodSourceChildren defaultSkeletonOptions (dtodSourceChildren defaultSkeletonOptions (build1 saiMap))
