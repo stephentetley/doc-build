@@ -106,15 +106,20 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
       IncludeDirectory = includePath
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
       PandocOpts = 
-        { PandocExe = @"pandoc"
-          CustomStylesDocx = Some (includePath <//> "custom-reference1.docx")
+        { CustomStylesDocx = Some (includePath <//> "custom-reference1.docx")
           PdfEngine = Some "pdflatex"
         }
       PrintOrScreen = PrintQuality.Screen
       }
+
+let WindowsWordResources () : Resources<WordDocument.WordHandle> = 
+    let userRes = new WordDocument.WordHandle()
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      UserResources = userRes
+    }
 
 
 let getSiteName (sourceName:string) : string = 
@@ -270,7 +275,7 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc option> =
 
 
 let main () = 
-    let userRes = new WordDocument.WordHandle()
+    let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()
-    runDocMonad userRes WindowsEnv 
+    runDocMonad resources WindowsEnv 
         <| dtodSourceChildren defaultSkeletonOptions (dtodSourceChildren defaultSkeletonOptions (build1 saiMap))

@@ -56,7 +56,7 @@ module WordDocument =
 
     let execWord (mf: Word.Application -> DocMonad<#IWordHandle,'a>) : DocMonad<#IWordHandle,'a> = 
         docMonad { 
-            let! userRes = askUserResources ()
+            let! userRes = getUserResources ()
             let wordHandle = userRes.WordAppHandle
             return! mf wordHandle.WordExe
         }
@@ -74,7 +74,7 @@ module WordDocument =
                     (src:WordDoc) : DocMonad<#IWordHandle,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let! userRes = askUserResources ()
+            let! userRes = getUserResources ()
             let paperSize = userRes.PaperSizeForWord
             let! pdfQuality = 
                 asks (fun env -> env.PrintOrScreen) |>> wordExportQuality

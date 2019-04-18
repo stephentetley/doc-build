@@ -62,17 +62,22 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = cwd
       SourceDirectory = cwd
       IncludeDirectory = DirectoryPath (cwd <//> "include")
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
-      PandocExe = @"pandoc"
       PrintOrScreen = PrintQuality.Screen
-      CustomStylesDocx = None
-      PandocPdfEngine = Some "pdflatex"
+      PandocOpts = 
+        { CustomStylesDocx = None
+          PdfEngine = Some "pdflatex"
+        }
+    }
+let makeResources (userRes:'res) : Resources<'res> = 
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc" 
+      UserResources = userRes
     }
 
 
 let demo01 () = 
-    runDocMonadNoCleanup () WindowsEnv <| 
+    runDocMonadNoCleanup (makeResources ()) WindowsEnv <| 
         docMonad { 
             let! p1 = workingPdfDoc "One.pdf"
             let! p2 = workingPdfDoc "Two.pdf" 
@@ -85,7 +90,7 @@ let demo01 () =
 
 
 let demo02 () = 
-    runDocMonadNoCleanup () WindowsEnv <| 
+    runDocMonadNoCleanup (makeResources ()) WindowsEnv <| 
         docMonad { 
             let! p1 = workingPdfDoc "Concat.pdf"
             let! pageCount = Pdf.countPages p1
@@ -95,16 +100,16 @@ let demo02 () =
 
 
 let demo03 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
+    let resources = makeResources <| new WordDocument.WordHandle()
+    runDocMonad resources WindowsEnv <| 
         docMonad { 
             let! w1 = workingWordDoc "sample.docx" 
             return! WordDocument.exportPdf w1 
         }
 
 let demo04 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
+    let resources = makeResources <| new WordDocument.WordHandle()
+    runDocMonad resources WindowsEnv <| 
         docMonad { 
             let! w1 = sourceWordDoc "sample.docx" 
             return! getDocPathSuffix w1
@@ -112,20 +117,20 @@ let demo04 () =
 
 
 let demo05 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
+    let resources = makeResources <| new WordDocument.WordHandle()
+    runDocMonad resources WindowsEnv <| 
         docMonad { 
             return! findAllSourceFilesMatching "*.pdf" true
         }
 
 let demo06 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
+    let resources = makeResources <| new WordDocument.WordHandle()
+    runDocMonad resources WindowsEnv <| 
         assertIsSourcePath @"D:\coding\fsharp\doc-build\data\Concat.pdf"
 
 let demo06a () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv <| 
+    let resources = makeResources <| new WordDocument.WordHandle()
+    runDocMonad resources WindowsEnv <| 
         (askSourceDirectory () |>> fun (src:DirectoryPath) -> src.Segments)
 
 

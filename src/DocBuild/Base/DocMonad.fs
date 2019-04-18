@@ -16,34 +16,34 @@ module DocMonad =
     open SLFormat.CommandOptions
 
     type PandocOptions = 
-        { PandocExe: string
-          CustomStylesDocx: string option
+        { CustomStylesDocx: string option
           PdfEngine: string option        /// usually "pdflatex"
+        }
+
+    type Resources<'res> = 
+        { PandocExe: string 
+          GhostscriptExe: string
+          PdftkExe: string 
+          UserResources: 'res
         }
 
     /// PandocPdfEngine needs TeX installed
     type DocBuildEnv = 
         { WorkingDirectory: DirectoryPath
           SourceDirectory: DirectoryPath
-          IncludeDirectory: DirectoryPath
-          GhostscriptExe: string
-          PdftkExe: string 
+          IncludeDirectory: DirectoryPath          
           PandocOpts: PandocOptions
           PrintOrScreen: PrintQuality                
         }
 
-        static member defaultEnv ( workingAbsPath:string
-                                 , sourceAbsPath:string
-                                 , includeAbsPath:string
-                                 , ghostscript:string ) : DocBuildEnv = 
+    let defaultBuildEnv (workingAbsPath:string)
+                        (sourceAbsPath:string)
+                        (includeAbsPath:string ) : DocBuildEnv = 
             { WorkingDirectory = DirectoryPath workingAbsPath
               SourceDirectory =  DirectoryPath sourceAbsPath
               IncludeDirectory = DirectoryPath includeAbsPath
-              GhostscriptExe = ghostscript
-              PdftkExe = "pdftk"
               PandocOpts = 
-                { PandocExe = "pandoc"
-                  CustomStylesDocx = None
+                { CustomStylesDocx = None
                   PdfEngine = None  
                 }
               PrintOrScreen = PrintQuality.Screen
@@ -57,11 +57,11 @@ module DocMonad =
         abstract RunFinalizer : unit
 
     type DocMonad<'res,'a> = 
-        DocMonad of (StreamWriter -> 'res -> DocBuildEnv -> BuildResult<'a>)
+        DocMonad of (StreamWriter -> Resources<'res> -> DocBuildEnv -> BuildResult<'a>)
 
     let inline private apply1 (ma: DocMonad<'res,'a>) 
                               (sw: StreamWriter)
-                              (res:'res) 
+                              (res: Resources<'res>) 
                               (env: DocBuildEnv) : BuildResult<'a>= 
         let (DocMonad f) = ma in f sw res env
 
@@ -106,33 +106,33 @@ module DocMonad =
     // Run
 
     /// This runs the finalizer on userResources
-    let runDocMonad (userResources:#IResourceFinalize) 
+    let runDocMonad (resources:Resources<#IResourceFinalize>) 
                     (config:DocBuildEnv) 
                     (ma:DocMonad<#IResourceFinalize,'a>) : BuildResult<'a> = 
         let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
-        let ans = apply1 ma sw userResources config
-        userResources.RunFinalizer |> ignore
+        let ans = apply1 ma sw resources config
+        resources.UserResources.RunFinalizer |> ignore
         ans
 
-    let runDocMonadNoCleanup (userResources:'res) 
+    let runDocMonadNoCleanup (resources:Resources<'res>) 
                              (config:DocBuildEnv) 
                              (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
         let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
-        apply1 ma sw userResources config
+        apply1 ma sw resources config
         
-    let execDocMonad (userResources:#IResourceFinalize) 
+    let execDocMonad (resources:Resources<#IResourceFinalize>) 
                      (config:DocBuildEnv) 
                      (ma:DocMonad<#IResourceFinalize,'a>) : 'a = 
-        match runDocMonad userResources config ma with
+        match runDocMonad resources config ma with
         | Ok a -> a
         | Error msg -> failwith msg
 
-    let execDocMonadNoCleanup (userResources:'res) 
+    let execDocMonadNoCleanup (resources:Resources<'res>) 
                      (config:DocBuildEnv) 
                      (ma:DocMonad<'res,'a>) : 'a = 
-        match runDocMonadNoCleanup userResources config ma with
+        match runDocMonadNoCleanup resources config ma with
         | Ok a -> a
         | Error msg -> failwith msg
 
@@ -223,19 +223,21 @@ module DocMonad =
             apply1 ma sw res (update env)
 
 
-
-    let askUserResources () : DocMonad<'res,'res> = 
+    let getResources () : DocMonad<'res,Resources<'res>> = 
         DocMonad <| fun _ res _ -> Ok res
 
-    let asksUserResources (extract:'res -> 'a) : DocMonad<'res,'a> = 
+    let getsResources (extract:Resources<'res> -> 'a) : DocMonad<'res,'a> = 
         DocMonad <| fun _ res _ -> Ok (extract res)
 
-    /// Use with caution.
-    /// Generally you might only want to update the 
-    /// working directory
-    let localUserResource (update:'res -> 'res) 
-                          (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        DocMonad <| fun sw res env -> apply1 ma sw (update res) env
+    let getUserResources () : DocMonad<'res,'res> = 
+        getsResources (fun res -> res.UserResources)
+
+    let getsUserResources (extract:'res -> 'a) : DocMonad<'res,'a> = 
+        docMonad { 
+            let! res = getUserResources ()
+            return (extract res)
+        }
+
             
 
 
@@ -496,28 +498,30 @@ module DocMonad =
     // Execute 'builtin' processes 
     // (Respective applications must be installed)
 
-    let private getOptions (findExe:DocBuildEnv -> string) : DocMonad<'res,ProcessOptions> = 
-        pipeM2 (asks findExe)
-                (asks (fun env -> env.WorkingDirectory))
-                (fun exe cwd -> { WorkingDirectory = cwd.LocalPath
-                                ; ExecutableName = exe})
+    let private getProcessOptions (findExe:Resources<'res> -> string) : DocMonad<'res,ProcessOptions> = 
+        docMonad { 
+            let! exe = getsResources findExe
+            let! cwd = askWorkingDirectory ()
+            return { WorkingDirectory = cwd.LocalPath
+                   ; ExecutableName = exe}
+        }
     
-    let private shellExecute (findExe:DocBuildEnv -> string)
+    let private shellExecute (findExe:Resources<'res> -> string)
                              (args:CmdOpt list) : DocMonad<'res,string> = 
         docMonad { 
-            let! options = getOptions findExe
+            let! options = getProcessOptions findExe
             let! ans = liftResult <| executeProcess options (arguments args)
             return ans
             }
         
     let execGhostscript (args:CmdOpt list) : DocMonad<'res,string> = 
-        shellExecute (fun env -> env.GhostscriptExe) args
+        shellExecute (fun res -> res.GhostscriptExe) args
 
     let execPandoc (args:CmdOpt list) : DocMonad<'res,string> = 
-        shellExecute (fun env -> env.PandocOpts.PandocExe) args
+        shellExecute (fun res -> res.PandocExe) args
 
     let execPdftk (args:CmdOpt list) : DocMonad<'res,string> = 
-        shellExecute (fun env -> env.PdftkExe) args
+        shellExecute (fun res -> res.PdftkExe) args
 
     // ****************************************************
     // Recursive functions

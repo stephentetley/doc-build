@@ -47,7 +47,7 @@ module PowerPointDocument =
 
     let execPowerPoint (mf: PowerPoint.Application -> DocMonad<#IPowerPointHandle,'a>) : DocMonad<#IPowerPointHandle,'a> = 
         docMonad { 
-            let! userRes = askUserResources ()
+            let! userRes = getUserResources ()
             let powerPointHandle = userRes.PowerPointAppHandle
             return! mf powerPointHandle.PowerPointExe
         }

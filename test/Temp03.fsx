@@ -29,14 +29,19 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = dataDir
       SourceDirectory = dataDir
       IncludeDirectory = DirectoryPath(dataDir <//> "include")
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
-      PandocExe = @"pandoc" 
       PrintOrScreen = PrintQuality.Screen
-      CustomStylesDocx = None
-      PandocPdfEngine = Some "pdflatex"
+      PandocOpts = 
+        { CustomStylesDocx = None
+          PdfEngine = Some "pdflatex"
+        }
       }
 
+let makeResources (userRes:'res) : Resources<'res> = 
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc" 
+      UserResources = userRes
+    }
 
 let test01 () = 
     let sources = ["One.pdf"; "Two.pdf"; "Three.pdf"]
@@ -45,7 +50,7 @@ let test01 () =
             let! docs = Collection.fromList <&&> mapM workingPdfDoc sources
             return docs
             }
-    runDocMonadNoCleanup () WindowsEnv script
+    runDocMonadNoCleanup (makeResources ()) WindowsEnv script
        
     
 let test02 () = 
@@ -64,13 +69,13 @@ let test04 () =
             let! last = workingPdfDoc "Three.pdf"
             return (docs &^^ last)
             }
-    runDocMonadNoCleanup () WindowsEnv script |> Result.map (fun col -> col.Elements)
+    runDocMonadNoCleanup (makeResources ()) WindowsEnv script |> Result.map (fun col -> col.Elements)
 
 
 let test05a () = 
     let script = assertM (mreturn false) "my error"
-    runDocMonadNoCleanup () WindowsEnv script 
+    runDocMonadNoCleanup (makeResources ()) WindowsEnv script 
 
 let test05b () = 
     let script = assertM (mreturn true) "my error"
-    runDocMonadNoCleanup () WindowsEnv script 
+    runDocMonadNoCleanup (makeResources ()) WindowsEnv script 

@@ -103,14 +103,20 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\input"
       IncludeDirectory = includePath
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { PandocExe = @"pandoc" 
-          CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+        { CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
           PdfEngine = Some "pdflatex"
         }
+    }
+
+
+let WindowsWordResources () : Resources<WordDocument.WordHandle> = 
+    let userRes = new WordDocument.WordHandle()
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      UserResources = userRes
     }
 
 
@@ -296,8 +302,8 @@ let buildAll () : DocMonadWord<unit> =
 
 
 let main () = 
-    let userRes = new WordDocument.WordHandle()
-    (userRes :> WordDocument.IWordHandle).PaperSizeForWord <- Some Word.WdPaperSize.wdPaperA4
-    runDocMonad userRes WindowsEnv 
+    let resources = WindowsWordResources ()
+    (resources.UserResources :> WordDocument.IWordHandle).PaperSizeForWord <- Some Word.WdPaperSize.wdPaperA4
+    runDocMonad resources WindowsEnv 
         <| buildAll ()
 

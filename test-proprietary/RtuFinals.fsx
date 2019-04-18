@@ -93,14 +93,20 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\output\year4-batch2"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\final-docs\input\year4-batch2"
       IncludeDirectory = includePath
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { PandocExe = @"pandoc" 
-          CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+        { CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
           PdfEngine = Some "pdflatex"
         }
+    }
+
+
+let WindowsWordResources () : Resources<WordDocument.WordHandle> = 
+    let userRes = new WordDocument.WordHandle()
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      UserResources = userRes
     }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
@@ -218,6 +224,6 @@ let main () =
     let sites = readWorkSpeadsheet () 
                     |> List.filter (fun row -> isLike "OWTHORNE" row.``Site Name``)
     printfn "%i Sites" (List.length sites)
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
+    let resources = WindowsWordResources ()
+    runDocMonad resources WindowsEnv 
         <| forMz sites genFinal

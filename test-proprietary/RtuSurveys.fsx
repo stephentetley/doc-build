@@ -89,14 +89,19 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\year5"
       IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\include"
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { PandocExe = @"pandoc" 
-          CustomStylesDocx = None
+        { CustomStylesDocx = None
           PdfEngine = Some "pdflatex"
         }
+    }
+
+let WindowsWordResources () : Resources<WordDocument.WordHandle> = 
+    let userRes = new WordDocument.WordHandle()
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      UserResources = userRes
     }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
@@ -154,14 +159,14 @@ let genSiteSheets (row:SurveyRow) :DocMonadWord<unit> =
 
 
 let demo01 () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
+    let resources = WindowsWordResources ()
+    runDocMonad resources WindowsEnv 
         <| survey "HORSEFIELD TERRACE/WPS" "ADB00023042"
 
 
 let main () = 
     let sites = readSurveySpeadsheet () |> List.filter (fun row -> (String.IsNullOrEmpty row.``Surveyed Assigned ``))
     printfn "%i Sites" (List.length sites)
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
+    let resources = WindowsWordResources ()
+    runDocMonad resources WindowsEnv 
         <| forMz sites genSiteSheets

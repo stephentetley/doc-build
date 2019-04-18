@@ -93,15 +93,21 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\output\Batch04"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\input\batch4_finals_source"
       IncludeDirectory = includePath
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { PandocExe = @"pandoc" 
+        {  
           CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
           PdfEngine = Some "pdflatex"
         }
       }
+
+let WindowsWordResources () : Resources<WordDocument.WordHandle> = 
+    let userRes = new WordDocument.WordHandle()
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      UserResources = userRes
+    }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
@@ -153,31 +159,13 @@ let genFinalDoc1 () : DocMonadWord<PdfDoc> =
             Collection.empty 
                 &^^ workSheet     &^^ phodoDoc
 
-        let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
+        let! outputAbsPath = extendWorkingPath (sprintf "%s S3953 IS Barrier Final.pdf" sourceName)
         return! Pdf.concatPdfs Pdf.GsDefault col outputAbsPath 
     }
-
-//let genFinal (sourceFolderName:string) :DocMonadWord<PdfDoc> = 
-//    localWorkingSubdirectory (sourceFolderName) 
-//        <| docMonad { 
-//                let! cover = genCover row 
-//                let! oSurvey = genSurvey row
-//                let! works = genSiteWorks row
-//                let! oSurveyPhotos = genSurveyPhotos row
-//                let! oWorksPhotos = genWorkPhotos row
-
-//                let (col:PdfCollection) = 
-//                    Collection.singleton cover 
-//                        &^^ oSurvey     &^^ oSurveyPhotos
-//                        &^^ works       &^^ oWorksPhotos
-
-//                let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" safeSiteName)
-//                return! Pdf.concatPdfs Pdf.GsDefault col outputAbsPath 
-//            }
 
 
 
 let main () = 
-    let userRes = new WordDocument.WordHandle()
-    runDocMonad userRes WindowsEnv 
+    let res = WindowsWordResources ()
+    runDocMonad res WindowsEnv 
         <| dtodSourceChildren defaultSkeletonOptions (genFinalDoc1 ())

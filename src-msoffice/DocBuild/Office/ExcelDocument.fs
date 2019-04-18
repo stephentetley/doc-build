@@ -46,7 +46,7 @@ module ExcelDocument =
 
     let execExcel (mf: Excel.Application -> DocMonad<#IExcelHandle,'a>) : DocMonad<#IExcelHandle,'a> = 
         docMonad { 
-            let! userRes = askUserResources ()
+            let! userRes = getUserResources ()
             let excelHandle = userRes.ExcelAppHandle
             return! mf excelHandle.ExcelExe
         }

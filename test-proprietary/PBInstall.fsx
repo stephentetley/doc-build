@@ -98,15 +98,20 @@ let WindowsEnv : DocBuildEnv =
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\point-blue\batch3_to_build\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\point-blue\batch3_to_build\input"
       IncludeDirectory = includePath
-      GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
-      PdftkExe = @"pdftk"
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { PandocExe = @"pandoc" 
-          CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+        { CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
           PdfEngine = Some "pdflatex"
         }
       }
+
+let WindowsWordResources () : Resources<WordDocument.WordHandle> = 
+    let userRes = new WordDocument.WordHandle()
+    { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
+      PdftkExe = @"pdftk"
+      PandocExe = @"pandoc"
+      UserResources = userRes
+    }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
@@ -196,11 +201,9 @@ let buildPhase (phase:string) (saiMap:SaiMap) : DocMonadWord<unit> =
             }
 
 let main () = 
-    // let sites = readSurveySpeadsheet () // |> List.filter (fun row -> (String.IsNullOrEmpty row.``Surveyed Assigned ``))
-    // printfn "%i Sites" (List.length sites)
-    let userRes = new WordDocument.WordHandle()
+    let resources = WindowsWordResources ()
     let saiMap : SaiMap = buildSaiMap () 
-    runDocMonad userRes WindowsEnv 
+    runDocMonad resources WindowsEnv 
         <| docMonad { 
                 do! buildPhase "T0877" saiMap
                 do! buildPhase "T0942" saiMap
