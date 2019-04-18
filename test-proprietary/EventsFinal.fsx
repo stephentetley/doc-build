@@ -48,6 +48,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
+#load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
