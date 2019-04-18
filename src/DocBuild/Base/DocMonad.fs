@@ -15,6 +15,12 @@ module DocMonad =
     open DocBuild.Base.Shell
     open SLFormat.CommandOptions
 
+    type PandocOptions = 
+        { PandocExe: string
+          CustomStylesDocx: string option
+          PdfEngine: string option        /// usually "pdflatex"
+        }
+
     /// PandocPdfEngine needs TeX installed
     type DocBuildEnv = 
         { WorkingDirectory: DirectoryPath
@@ -22,10 +28,8 @@ module DocMonad =
           IncludeDirectory: DirectoryPath
           GhostscriptExe: string
           PdftkExe: string 
-          PandocExe: string
-          PrintOrScreen: PrintQuality
-          CustomStylesDocx: string option
-          PandocPdfEngine: string option        
+          PandocOpts: PandocOptions
+          PrintOrScreen: PrintQuality                
         }
 
         static member defaultEnv ( workingAbsPath:string
@@ -37,10 +41,12 @@ module DocMonad =
               IncludeDirectory = DirectoryPath includeAbsPath
               GhostscriptExe = ghostscript
               PdftkExe = "pdftk"
-              PandocExe = "pandoc"
+              PandocOpts = 
+                { PandocExe = "pandoc"
+                  CustomStylesDocx = None
+                  PdfEngine = None  
+                }
               PrintOrScreen = PrintQuality.Screen
-              CustomStylesDocx = None
-              PandocPdfEngine = None  
             }
 
     /// DocMonad is parametric on 'res (user resources)
@@ -146,6 +152,8 @@ module DocMonad =
             | Ok a -> Ok a
 
 
+
+
     /// Execute an action that may throw an exception.
     /// Capture the exception with try ... with
     /// and return the answer or the expection message in the monad.
@@ -156,11 +164,7 @@ module DocMonad =
             with
             | ex -> Error (sprintf "attemptM: %s" ex.Message)
 
-    let liftIO (action: unit -> 'a) : DocMonad<'res, 'a> = 
-        try
-            action () |> mreturn
-        with
-        | ex -> throwError (sprintf "liftIO: %s" ex.Message)        
+     
 
     // ****************************************************
     // Logging
@@ -180,6 +184,9 @@ module DocMonad =
         DocMonad <| fun _ _ env -> Ok (extract env)
 
 
+    //let private assertDirectory (path:string) : DocMonad<'res, string> = 
+    //    liftAction (fun _ -> "not a directory")
+    //        <| fun () -> System.IO.Directory.Exists(path) |> ignore; path
 
 
     /// Note - this asserts that the Working directory path represents a 
@@ -192,6 +199,14 @@ module DocMonad =
     /// folder not a file.
     let askSourceDirectory () : DocMonad<'res,DirectoryPath> = 
         asks (fun env -> env.SourceDirectory)
+
+    /// Note - this asserts that the Source directory path represents a 
+    /// folder not a file.
+    let askSourceDirectoryName () : DocMonad<'res,string> = 
+        docMonad { 
+            let! dir = askSourceDirectory ()
+            return dir.DirectoryName
+        }
 
 
     /// Note - this asserts that the Include directory path represents a 
@@ -230,7 +245,15 @@ module DocMonad =
     let liftResult (answer:BuildResult<'a>) : DocMonad<'res,'a> = 
         DocMonad <| fun _ _ _ -> answer
 
- 
+    /// Run an F# 'action' that may fail (and throw an exception).
+    /// Catch exceptions with try...with and return them as Error
+    /// within the DocBuild monad.
+    let liftAction (errorGen: exn -> string) 
+                   (action: unit -> 'a) : DocMonad<'res, 'a> = 
+        try
+            action () |> mreturn
+        with
+        | ex -> throwError (errorGen ex)   
 
     // ****************************************************
     // Monadic operations
@@ -491,7 +514,7 @@ module DocMonad =
         shellExecute (fun env -> env.GhostscriptExe) args
 
     let execPandoc (args:CmdOpt list) : DocMonad<'res,string> = 
-        shellExecute (fun env -> env.PandocExe) args
+        shellExecute (fun env -> env.PandocOpts.PandocExe) args
 
     let execPdftk (args:CmdOpt list) : DocMonad<'res,string> = 
         shellExecute (fun env -> env.PdftkExe) args

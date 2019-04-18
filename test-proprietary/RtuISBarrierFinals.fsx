@@ -95,15 +95,18 @@ let WindowsEnv : DocBuildEnv =
       IncludeDirectory = includePath
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc" 
       PrintOrScreen = PrintQuality.Screen
-      CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
-      PandocPdfEngine = Some "pdflatex"
+      PandocOpts = 
+        { PandocExe = @"pandoc" 
+          CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+          PdfEngine = Some "pdflatex"
+        }
       }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
-
+let sourceToSiteName (sourceName:string) : string = 
+    sourceName.Replace("_", "/")
 
 let renderMarkdownDoc (docTitle:string)
                       (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
@@ -114,7 +117,7 @@ let renderMarkdownDoc (docTitle:string)
 
 
 
-let sourceWordDocToPdf (fileGlob:string) :DocMonadWord<PdfDoc option> = 
+let sourceWordDocToPdf (fileGlob:string) : DocMonadWord<PdfDoc option> = 
     docMonad { 
         let! input = tryFindExactlyOneSourceFileMatching fileGlob false
         match input with
@@ -132,19 +135,26 @@ let genSiteWorks () : DocMonadWord<PdfDoc> =
                 (sourceWordDocToPdf "*Site Works*.doc*")
                 
 
-//let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-//    let name1 = safeName row.``Site Name``
-//    let props : PhotoBookConfig = 
-//        { Title = "Survey Photos"
-//        ; SourceSubFolder = "1.Surveys" </> name1 </> "photos"
-//        ; WorkingSubFolder = "survey_photos"
-//        ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
-//    makePhotoBook props
+let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
+    let props : PhotoBookConfig = 
+        { Title = "Site Photos"
+        ; SourceSubFolder = "photos"
+        ; WorkingSubFolder = "photos"
+        ; RelativeOutputName = sprintf "%s survey photos.md" (safeName siteName) }
+    makePhotoBook props
 
-let genFinalDoc1 () :DocMonadWord<unit> = 
+let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
+        let! sourceName =  askSourceDirectoryName ()
+        let siteName = sourceName |> sourceToSiteName
         let! workSheet = genSiteWorks ()
-        return ()
+        let! phodoDoc = genPhotos siteName
+        let (col:PdfCollection) = 
+            Collection.empty 
+                &^^ workSheet     &^^ phodoDoc
+
+        let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
+        return! Pdf.concatPdfs Pdf.GsDefault col outputAbsPath 
     }
 
 //let genFinal (sourceFolderName:string) :DocMonadWord<PdfDoc> = 
@@ -166,29 +176,8 @@ let genFinalDoc1 () :DocMonadWord<unit> =
 //            }
 
 
-let isLike (pattern:string) (source:string) = 
-    Regex.IsMatch(input=source, pattern=pattern)
-
-
-let getWorkList () : string list = 
-    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory.LocalPath).GetDirectories()
-        |> Array.map (fun info -> info.Name)
-        |> Array.toList
-
-let getSourceChildren () : DocMonad<'res,string list> = 
-    docMonad { 
-        let! source = askSourceDirectoryPath ()
-        let! (kids: IO.DirectoryInfo[]) = liftIO <| fun _ -> System.IO.DirectoryInfo(source).GetDirectories() 
-        return (kids |> Array.map (fun info -> info.Name) |> Array.toList)
-    }
-
-
-
-let forallSourceChildren (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> = 
-    getSourceChildren () >>= fun srcDirs -> 
-    forMz srcDirs (fun dir -> commonSubdirectory dir process1)
 
 let main () = 
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| forallSourceChildren (genFinalDoc1 ())
+        <| dtodSourceChildren (genFinalDoc1 ())

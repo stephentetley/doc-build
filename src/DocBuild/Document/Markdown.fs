@@ -36,7 +36,7 @@ module Markdown =
                          (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let! styles = asks(fun env -> env.CustomStylesDocx) 
+            let! styles = asks(fun env -> env.PandocOpts.CustomStylesDocx) 
             let command = 
                 PandocPrim.outputDocxCommand styles [] src.LocalPath outputAbsPath
             let! _ = execPandoc command
@@ -59,7 +59,7 @@ module Markdown =
                              (src:MarkdownDoc) : DocMonad<'res,PdfDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let! pdfEngine = asks (fun env -> env.PandocPdfEngine)       
+            let! pdfEngine = asks (fun env -> env.PandocOpts.PdfEngine)       
             let command = 
                 PandocPrim.outputPdfCommand pdfEngine [] src.LocalPath outputAbsPath
             printfn "// %s" (arguments command)

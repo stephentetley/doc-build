@@ -100,10 +100,12 @@ let WindowsEnv : DocBuildEnv =
       IncludeDirectory = includePath
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc" 
       PrintOrScreen = PrintQuality.Screen
-      CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
-      PandocPdfEngine = Some "pdflatex"
+      PandocOpts = 
+        { PandocExe = @"pandoc" 
+          CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+          PdfEngine = Some "pdflatex"
+        }
       }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>

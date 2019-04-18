@@ -108,15 +108,17 @@ let WindowsEnv : DocBuildEnv =
       IncludeDirectory = includePath
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc"
+      PandocOpts = 
+        { PandocExe = @"pandoc"
+          CustomStylesDocx = Some (includePath <//> "custom-reference1.docx")
+          PdfEngine = Some "pdflatex"
+        }
       PrintOrScreen = PrintQuality.Screen
-      CustomStylesDocx = Some (includePath <//> "custom-reference1.docx")
-      PandocPdfEngine = Some "pdflatex"
       }
 
 
-let getSiteName (folderName:string) : string = 
-    folderName.Replace('_', '/')
+let getSiteName (sourceName:string) : string = 
+    sourceName.Replace("_", "/")
 
 
 
@@ -230,50 +232,45 @@ let getWorkList () : string list =
         |> Array.toList
 
 
-let buildOne (sourceName:string) 
-             (siteName:string) 
+let buildOne (siteName:string) 
              (saiNumber:string) : DocMonadWord<PdfDoc> = 
-    commonSubdirectory sourceName <| 
-        docMonad {
-            let! cover = genCoversheet siteName saiNumber
-            let! surveys = processSurveys siteName
-            let! oSurveyPhotos = genSurveyPhotos siteName
-            let! calibrations = processUSCalibrations siteName
-            let! rtuInstalls = processRTUInstalls siteName
-            let! oWorksPhotos = genSiteWorkPhotos siteName
-            let col1 = Collection.empty  
-                            &^^ surveys 
-                            &^^ oSurveyPhotos 
-                            &^^ calibrations 
-                            &^^ rtuInstalls
-                            &^^ oWorksPhotos
-            let! contents = genContents col1
-            let colAll = cover ^^& contents ^^& col1
-            let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
-            return! Pdf.concatPdfs Pdf.GsDefault colAll outputAbsPath 
-        }
+    docMonad {
+        let sourceName = safeName siteName
+        let! cover = genCoversheet siteName saiNumber
+        let! surveys = processSurveys siteName
+        let! oSurveyPhotos = genSurveyPhotos siteName
+        let! calibrations = processUSCalibrations siteName
+        let! rtuInstalls = processRTUInstalls siteName
+        let! oWorksPhotos = genSiteWorkPhotos siteName
+        let col1 = Collection.empty  
+                        &^^ surveys 
+                        &^^ oSurveyPhotos 
+                        &^^ calibrations 
+                        &^^ rtuInstalls
+                        &^^ oWorksPhotos
+        let! contents = genContents col1
+        let colAll = cover ^^& contents ^^& col1
+        let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
+        return! Pdf.concatPdfs Pdf.GsDefault colAll outputAbsPath 
+    }
 
 
-let build1 (saiMap:SaiMap) (sourceName:string) : DocMonadWord<PdfDoc option> = 
-    let siteName = getSiteName sourceName
-    printfn "Site name: %s" siteName
-    match getSaiNumber saiMap siteName with
-    | None -> printfn "No sai"; mreturn None
-    | Some sai -> 
-        fmapM Some <| buildOne sourceName siteName sai
-
-
-let buildAll () : DocMonadWord<unit> = 
-    let worklist = getWorkList ()
-    let saiMap = buildSaiMap ()
-    foriMz worklist 
-        <| fun ix name ->
-                ignore <| printfn "Site %i: %s" (ix+1) name
-                build1 saiMap name |>> ignore
+let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc option> = 
+    docMonad { 
+        let! sourceName = askSourceDirectoryName ()
+        let siteName = getSiteName sourceName
+        printfn "Site name: %s, source name: %s" siteName sourceName
+        match getSaiNumber saiMap siteName with
+        | None -> printfn "No sai"; return None
+        | Some sai -> 
+            return! (buildOne siteName sai |>> Some)
+    }
+    
 
 
 
 let main () = 
     let userRes = new WordDocument.WordHandle()
+    let saiMap = buildSaiMap ()
     runDocMonad userRes WindowsEnv 
-        <| buildAll ()
+        <| dtodSourceChildren (dtodSourceChildren (build1 saiMap))

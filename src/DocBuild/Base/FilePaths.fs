@@ -78,6 +78,9 @@ module FilePaths =
         member x.LocalPath 
             with get () : string = localPath x.Segments
 
+        member x.DirectoryName
+            with get () : string = System.IO.DirectoryInfo(x.Body).Name
+
         interface HasPathSegments with
             member x.GetPathSegments = x.Segments
 

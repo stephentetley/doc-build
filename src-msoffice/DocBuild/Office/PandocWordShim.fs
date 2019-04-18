@@ -23,7 +23,7 @@ module PandocWordShim =
     open DocBuild.Office
 
     let asksCustomStyles () : DocMonad<'res, WordDoc option> = 
-        asks (fun env -> env.CustomStylesDocx) >>= fun opt -> 
+        asks (fun env -> env.PandocOpts.CustomStylesDocx) >>= fun opt -> 
         match opt with 
         | None -> mreturn None 
         | Some absPath -> getWordDoc absPath |>> Some

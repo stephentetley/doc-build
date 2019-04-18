@@ -267,7 +267,7 @@ module FileOperations =
             return! local (fun env -> {env with IncludeDirectory = DirectoryPath(path)}) ma
         }
 
-
+    /// Consider this deprecated...
     let commonSubdirectory (subdirectory:string) 
                            (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         localWorkingSubdirectory subdirectory <| localSourceSubdirectory subdirectory ma
@@ -276,3 +276,31 @@ module FileOperations =
     let copyFileToWorkingSubdirectory (subdirectory:string) (srcAbsPath:string) : DocMonad<'res,Document<'a>> = 
         localWorkingSubdirectory subdirectory 
             <| copyFileToWorking false srcAbsPath
+
+
+    let private getSourceChildren () : DocMonad<'res,string list> = 
+        let failMessage = fun _ -> "getSourceChildren directory error"
+        docMonad { 
+            let! source = askSourceDirectoryPath ()
+            let! (kids: IO.DirectoryInfo[]) = 
+                liftAction failMessage <| fun _ -> System.IO.DirectoryInfo(source).GetDirectories() 
+            return (kids |> Array.map (fun info -> info.Name) |> Array.toList)
+        }
+
+    /// Processing skeleton.
+    /// For every child source folder (one level down) run the
+    /// processing function on 'within' that folder. 
+    /// Generate the results in a child folder of the same name under
+    /// the working folder.
+    let dtodSourceChildren (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> = 
+        getSourceChildren () >>= fun srcDirs -> 
+        forMz srcDirs (fun dir -> localSourceSubdirectory dir 
+                                    (localWorkingSubdirectory dir process1))
+
+    /// Processing skeleton.
+    /// For every child source folder (one level down) run the
+    /// processing function on 'within' that folder. 
+    /// Generate the results in the top level working folder.
+    let dto1SourceChildren (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> = 
+        getSourceChildren () >>= fun srcDirs -> 
+        forMz srcDirs (fun dir -> localSourceSubdirectory dir process1)

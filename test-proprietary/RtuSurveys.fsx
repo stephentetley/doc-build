@@ -91,11 +91,13 @@ let WindowsEnv : DocBuildEnv =
       IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\include"
       GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
-      PandocExe = @"pandoc" 
       PrintOrScreen = PrintQuality.Screen
-      CustomStylesDocx = None
-      PandocPdfEngine = Some "pdflatex"
-      }
+      PandocOpts = 
+        { PandocExe = @"pandoc" 
+          CustomStylesDocx = None
+          PdfEngine = Some "pdflatex"
+        }
+    }
 
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
