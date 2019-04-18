@@ -180,4 +180,4 @@ let genFinalDoc1 () : DocMonadWord<PdfDoc> =
 let main () = 
     let userRes = new WordDocument.WordHandle()
     runDocMonad userRes WindowsEnv 
-        <| dtodSourceChildren (genFinalDoc1 ())
+        <| dtodSourceChildren defaultSkeletonOptions (genFinalDoc1 ())
