@@ -89,14 +89,13 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    let includePath = DirectoryPath @"G:\work\Projects\rtu\final-docs\include"
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\output\Batch04"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\input\batch4_finals_source"
-      IncludeDirectory = includePath
+      IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\include"
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         {  
-          CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+          CustomStylesDocx = Some "custom-reference1.docx"
           PdfEngine = Some "pdflatex"
         }
       }
@@ -114,19 +113,10 @@ type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 let sourceToSiteName (sourceName:string) : string = 
     sourceName.Replace("_", "/")
 
-let renderMarkdownDoc (docTitle:string)
-                      (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
-    docMonad {
-        let! docx = Markdown.markdownToWord markdown
-        return! WordDocument.exportPdf  docx |>> setTitle docTitle
-    }
-
-
 
 let sourceWordDocToPdf (fileGlob:string) : DocMonadWord<PdfDoc option> = 
     docMonad { 
-        let! input = tryFindExactlyOneSourceFileMatching fileGlob false
-        match input with
+        match! tryFindExactlyOneSourceFileMatching fileGlob false with
         | None -> return None
         | Some infile ->
             let! doc = getWordDoc infile

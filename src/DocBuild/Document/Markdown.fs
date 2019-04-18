@@ -15,6 +15,26 @@ module Markdown =
     open DocBuild.Base.DocMonad
     open DocBuild.Raw
 
+    // ************************************************************************
+    // Retrieve Custom styles
+    
+    let getCustomStyles () : DocMonad<'res, WordDoc option> = 
+        docMonad { 
+            match! asks(fun env -> env.PandocOpts.CustomStylesDocx)  with
+            | None -> return None
+            | Some path -> 
+                if isAbsolutePath path then 
+                    return! getWordDoc path |>> Some
+                else
+                    let! docPath = extendIncludePath path
+                    return! getWordDoc docPath |>> Some
+        }
+                    
+    let private getCustomStylesPath () : DocMonad<'res, string option> = 
+        getCustomStyles () 
+            |>> Option.map (fun (doc:WordDoc) -> doc.LocalPath)
+
+
 
     // ************************************************************************
     // Save output from MarkdownDoc
@@ -36,7 +56,7 @@ module Markdown =
                          (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let! styles = asks(fun env -> env.PandocOpts.CustomStylesDocx) 
+            let! styles = getCustomStylesPath () 
             let command = 
                 PandocPrim.outputDocxCommand styles [] src.LocalPath outputAbsPath
             let! _ = execPandoc command

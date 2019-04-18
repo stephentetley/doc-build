@@ -15,8 +15,11 @@ module DocMonad =
     open DocBuild.Base.Shell
     open SLFormat.CommandOptions
 
+
+    /// If CustomStylesDocx is not an abs path, it will be looked for
+    /// in the include directory.
     type PandocOptions = 
-        { CustomStylesDocx: string option
+        { CustomStylesDocx: string option   
           PdfEngine: string option        /// usually "pdflatex"
         }
 

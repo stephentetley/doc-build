@@ -19,7 +19,7 @@ module Document =
     /// The path should be an absolute path.
     /// Throws an error within DocMonad on failure.
     let assertExistingFile (validFileExtensions:string list) 
-                             (absPath:string) : DocMonad<'res,unit> = 
+                           (absPath:string) : DocMonad<'res,unit> = 
         if System.IO.File.Exists(absPath) then 
             let extension : string = System.IO.Path.GetExtension(absPath)
             let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
@@ -28,6 +28,14 @@ module Document =
             else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions absPath
         else throwError <| sprintf "Could not find file: '%s'" absPath 
 
+
+    let isAbsolutePath (filePath:string) : bool = 
+        try 
+            match System.IO.Path.GetPathRoot(filePath) with
+            | "" | null -> false
+            | _ -> true
+        with
+        | _ -> false 
 
 
 
@@ -40,7 +48,7 @@ module Document =
     // we aren't duplicating the API for each Doc type.
 
 
-    /// Work with System.Uri for file paths.
+    /// Work with string for file paths. System.Uri is unusable.
     type Document<'a> = 
         val private DocAbsPath: string
         val private DocTitle : string
@@ -80,8 +88,7 @@ module Document =
             do! assertExistingFile validFileExtensions absPath
             return Document(absPath)
             }
-
-
+        
 
     /// Gets a Document from the working directory.
     let getWorkingDocument (validFileExtensions:string list) 

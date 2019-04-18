@@ -29,15 +29,10 @@ module FilePaths =
     let private directoryPathSegments (path:string) = 
         directoryStep (new DirectoryInfo(path)) []
 
-    let private localPath (segments:string list) = 
+    let private segmentsToPath (segments:string list) = 
         let sep = Path.DirectorySeparatorChar.ToString()
-        match segments with
-        | root :: rest -> 
-            if root.EndsWith(sep) then 
-                root + String.concat sep rest
-            else
-                String.concat sep segments
-        | [] -> ""
+        Path.Combine(paths = List.toArray segments)
+
 
     
     // ************************************************************************
@@ -60,7 +55,7 @@ module FilePaths =
         /// TODO - LocalPath is a really bad name.
         /// Implies relative path.
         member x.LocalPath 
-            with get () : string = localPath x.Segments
+            with get () : string = segmentsToPath x.Segments
 
         interface HasPathSegments with
             member x.GetPathSegments = x.Segments
@@ -76,7 +71,7 @@ module FilePaths =
             with get () : string list = directoryPathSegments x.Body
 
         member x.LocalPath 
-            with get () : string = localPath x.Segments
+            with get () : string = segmentsToPath x.Segments
 
         member x.DirectoryName
             with get () : string = System.IO.DirectoryInfo(x.Body).Name
@@ -93,7 +88,7 @@ module FilePaths =
                 else
                     List.rev acc
             | _, _ -> List.rev acc
-        work x.GetPathSegments y.GetPathSegments [] |> localPath
+        work x.GetPathSegments y.GetPathSegments [] |> segmentsToPath
 
 
 
@@ -105,7 +100,7 @@ module FilePaths =
                     work ss ts
                 else ys
             | _, _ -> ys
-        work root.Segments y.GetPathSegments  |> localPath
+        work root.Segments y.GetPathSegments  |> segmentsToPath
 
 
     let rootIsPrefix (root:DirectoryPath) (y:#HasPathSegments) : bool = 
