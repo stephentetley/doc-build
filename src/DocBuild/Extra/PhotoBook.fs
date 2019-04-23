@@ -65,7 +65,9 @@ module PhotoBook =
                 localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
             let! ys = 
                 localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
-            let! jpegs = mapM (copyFileToWorkingSubdirectory workingSubdirectory) (xs @ ys)
+            let! srcJpegs = mapM getJpegDoc (xs @ ys)
+            let! jpegs = 
+                localWorkingSubdirectory workingSubdirectory (mapM copyToWorking srcJpegs)
             return (Collection.fromList jpegs)
         }
 

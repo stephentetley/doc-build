@@ -112,9 +112,11 @@ module Document =
     let getIncludeDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'res,Document<'a>> = 
        docMonad { 
-            let! path = askIncludeDirectory () |>> fun dir -> dir <//> relativeName
-            return! getDocument validFileExtensions path 
-            }
+            let! (includeDirs :string list) = askIncludeDirectories () 
+            let actions =
+                List.map (fun dir -> getDocument validFileExtensions (dir </> relativeName)) includeDirs
+            return! firstOfM actions
+        }
 
 
     // ************************************************************************

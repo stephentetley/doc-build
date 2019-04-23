@@ -103,12 +103,11 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
-    let includePath = DirectoryPath @"G:\work\Projects\events2\final-docs\input\include"
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
-      IncludeDirectory = includePath
+      IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\input\include" ]
       PandocOpts = 
-        { CustomStylesDocx = Some (includePath <//> "custom-reference1.docx")
+        { CustomStylesDocx = Some "custom-reference1.docx"
           PdfEngine = Some "pdflatex"
         }
       PrintOrScreen = PrintQuality.Screen
@@ -138,9 +137,9 @@ let renderMarkdownFile  (docTitle:string)
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! logoPath = extendIncludePath "YW-logo.jpg"
+        let! logoPath = includeJpegDoc "YW-logo.jpg"
         let config:CoversheetConfig = 
-            { LogoPath = logoPath
+            { LogoPath = logoPath.LocalPath
               SaiNumber = saiNumber
               SiteName = siteName  
               Author = "S Tetley"

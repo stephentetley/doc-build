@@ -36,13 +36,12 @@ module FileOperations =
 
 
     let askWorkingDirectoryPath () : DocMonad<'res,string> = 
-        askWorkingDirectory () |>> fun uri -> uri.LocalPath
+        askWorkingDirectory () |>> fun path -> path.LocalPath
 
     let askSourceDirectoryPath () : DocMonad<'res,string> = 
-        askSourceDirectory () |>> fun uri -> uri.LocalPath
+        askSourceDirectory () |>> fun path -> path.LocalPath
 
-    let askIncludeDirectoryPath () : DocMonad<'res,string> = 
-        askIncludeDirectory () |>> fun uri -> uri.LocalPath
+
 
     let extendWorkingPath (relPath:string) : DocMonad<'res,string> = 
         askWorkingDirectoryPath () |>> fun root -> root </> relPath
@@ -50,8 +49,7 @@ module FileOperations =
     let extendSourcePath (relPath:string) : DocMonad<'res,string> = 
         askSourceDirectoryPath () |>> fun root -> root </> relPath
     
-    let extendIncludePath (relPath:string) : DocMonad<'res,string> = 
-        askIncludeDirectoryPath () |>> fun root -> root </> relPath
+
 
     let isWorkingPath (absPath:string) : DocMonad<'res,bool> = 
         askWorkingDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
@@ -69,7 +67,8 @@ module FileOperations =
 
 
     let isIncludePath (absPath:string) : DocMonad<'res,bool> = 
-        askIncludeDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
+        askIncludeDirectories () |>> fun dirs -> 
+        List.exists (fun dir -> rootIsPrefix (DirectoryPath dir) (FilePath(absPath))) dirs 
         
     
     let isIncludeDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
@@ -115,25 +114,25 @@ module FileOperations =
     let getSourceDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
         getSourcePathSuffix doc.LocalPath
 
-    let getIncludePathSuffix (absPath:string) : DocMonad<'res,string> = 
-        docMonad { 
-            do! assertIsIncludePath absPath
-            let! root = askIncludeDirectory ()
-            return rightPathComplement root (FilePath(absPath))
-        }
+    //let getIncludePathSuffix (absPath:string) : DocMonad<'res,string> = 
+    //    docMonad { 
+    //        do! assertIsIncludePath absPath
+    //        let! root = askIncludeDirectory ()
+    //        return rightPathComplement root (FilePath(absPath))
+    //    }
 
-    let getIncludeDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
-        getIncludePathSuffix doc.LocalPath
+    //let getIncludeDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+    //    getIncludePathSuffix doc.LocalPath
 
-    let getPathSuffix (absPath:string) : DocMonad<'res,string> =
-        getWorkingPathSuffix absPath 
-            <||> getSourcePathSuffix absPath 
-            <||> getIncludePathSuffix absPath 
+    //let getPathSuffix (absPath:string) : DocMonad<'res,string> =
+    //    getWorkingPathSuffix absPath 
+    //        <||> getSourcePathSuffix absPath 
+    //        <||> getIncludePathSuffix absPath 
 
-    let getDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> =
-        getWorkingDocPathSuffix doc 
-            <||> getSourceDocPathSuffix doc
-            <||> getIncludeDocPathSuffix doc
+    //let getDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> =
+    //    getWorkingDocPathSuffix doc 
+    //        <||> getSourceDocPathSuffix doc
+    //        <||> getIncludeDocPathSuffix doc
 
     /// Create a subdirectory in the Working directory.
     let createWorkingFolder (subfolderName:string) : DocMonad<'res,unit> = 
@@ -144,25 +143,26 @@ module FileOperations =
         else Directory.CreateDirectory(absFolderName) |> ignore
             
 
-    /// Rewrite the the file name to site it in the working folder.
-    /// If the file is from Source or Include directories generate the name with 
-    /// the respective subfolder path from root.
-    /// Otherwise, generate the file name at the top level of Workgin.
-    let generateWorkingFileName (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'res,string> = 
-        docMonad { 
-            let! suffix = 
-                if includeDirectoriesSuffix then 
-                    getPathSuffix absPath <||> mreturn (FileInfo(absPath).Name)
-                else mreturn (FileInfo(absPath).Name)
-            return! extendWorkingPath suffix
-        }
+    ///// Rewrite the the file name to site it in the working folder.
+    ///// If the file is from Source or Include directories generate the name with 
+    ///// the respective subfolder path from root.
+    ///// Otherwise, generate the file name at the top level of Workgin.
+    //let generateWorkingFileName (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'res,string> = 
+    //    docMonad { 
+    //        let! suffix = 
+    //            if includeDirectoriesSuffix then 
+    //                getPathSuffix absPath <||> mreturn (FileInfo(absPath).Name)
+    //            else mreturn (FileInfo(absPath).Name)
+    //        return! extendWorkingPath suffix
+    //    }
 
     /// Copy a file to working, returning the copy as a Document.
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
-    let copyFileToWorking (includeDirectoriesSuffix:bool) (sourceAbsPath:string) : DocMonad<'res,Document<'a>> = 
+    let private copyFileToWorking (sourceAbsPath:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! target = generateWorkingFileName includeDirectoriesSuffix sourceAbsPath
+            let name = FileInfo(sourceAbsPath).Name
+            let! target = extendWorkingPath name
             if File.Exists(target) then 
                 File.Delete(target) 
             else ()
@@ -170,11 +170,10 @@ module FileOperations =
             return Document(target)
         }
 
-    /// Copy a doc to working.
-    /// If the file is from Source or Include copy with the respective
-    /// subfolder path from root.
-    let copyToWorking (includeDirectoriesSuffix:bool) (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
-        copyFileToWorking includeDirectoriesSuffix doc.LocalPath
+    /// Copy a doc to the toplevel working directory.
+    let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
+        let title = doc.Title
+        copyFileToWorking doc.LocalPath |>> setTitle title
 
 
 
@@ -258,14 +257,7 @@ module FileOperations =
             return! local (fun env -> {env with SourceDirectory = DirectoryPath(path)}) ma
         }
 
-    /// Run an operation with the Include directory restricted to the
-    /// supplied sub-directory.
-    let localIncludeSubdirectory (subdirectory:string) 
-                                 (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
-        docMonad {
-            let! path = extendIncludePath subdirectory
-            return! local (fun env -> {env with IncludeDirectory = DirectoryPath(path)}) ma
-        }
+
 
     /// Consider this deprecated...
     let commonSubdirectory (subdirectory:string) 
@@ -273,7 +265,4 @@ module FileOperations =
         localWorkingSubdirectory subdirectory <| localSourceSubdirectory subdirectory ma
 
 
-    let copyFileToWorkingSubdirectory (subdirectory:string) (srcAbsPath:string) : DocMonad<'res,Document<'a>> = 
-        localWorkingSubdirectory subdirectory 
-            <| copyFileToWorking false srcAbsPath
 

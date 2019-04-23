@@ -92,7 +92,7 @@ Environment.SetEnvironmentVariable("PATH",
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\output\Batch04"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\input\batch4_finals_source"
-      IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\include"
+      IncludeDirectories = [ @"G:\work\Projects\rtu\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         {  

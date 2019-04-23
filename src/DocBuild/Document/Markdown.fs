@@ -26,8 +26,7 @@ module Markdown =
                 if isAbsolutePath path then 
                     return! getWordDoc path |>> Some
                 else
-                    let! docPath = extendIncludePath path
-                    return! getWordDoc docPath |>> Some
+                    return! includeWordDoc path |>> Some
         }
                     
     let private getCustomStylesPath () : DocMonad<'res, string option> = 

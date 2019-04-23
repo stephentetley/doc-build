@@ -34,17 +34,17 @@ module DocMonad =
     type DocBuildEnv = 
         { WorkingDirectory: DirectoryPath
           SourceDirectory: DirectoryPath
-          IncludeDirectory: DirectoryPath          
+          IncludeDirectories: string list          
           PandocOpts: PandocOptions
           PrintOrScreen: PrintQuality                
         }
 
     let defaultBuildEnv (workingAbsPath:string)
                         (sourceAbsPath:string)
-                        (includeAbsPath:string ) : DocBuildEnv = 
+                        (includeAbsPaths:string list) : DocBuildEnv = 
             { WorkingDirectory = DirectoryPath workingAbsPath
               SourceDirectory =  DirectoryPath sourceAbsPath
-              IncludeDirectory = DirectoryPath includeAbsPath
+              IncludeDirectories = includeAbsPaths
               PandocOpts = 
                 { CustomStylesDocx = None
                   PdfEngine = None  
@@ -214,8 +214,8 @@ module DocMonad =
 
     /// Note - this asserts that the Include directory path represents a 
     /// folder not a file.
-    let askIncludeDirectory () : DocMonad<'res,DirectoryPath> = 
-        asks (fun env -> env.IncludeDirectory)
+    let askIncludeDirectories () : DocMonad<'res,string list> = 
+        asks (fun env -> env.IncludeDirectories)
 
     /// Use with caution.
     /// Generally you might only want to update the 
@@ -606,6 +606,20 @@ module DocMonad =
     let foriMz (source:'a list) 
                (mf: int -> 'a -> DocMonad<'res,'b>) : DocMonad<'res,unit> = 
         mapiMz mf source
+
+
+    /// Implemented in CPS 
+    let firstOfM (actions: DocMonad<'res,'a> list) : DocMonad<'res,'a> = 
+        DocMonad <| fun sw res env -> 
+            let rec work ops fk sk = 
+                match ops with
+                | [] -> fk "firstOfM - no successes"
+                | ma :: rest -> 
+                    match apply1 ma sw res env with
+                    | Ok ans -> sk ans
+                    | Error _ -> 
+                        work rest fk sk
+            work actions (fun msg -> Error msg) (fun ans -> Ok ans)
 
     // ****************************************************
     // Operators
