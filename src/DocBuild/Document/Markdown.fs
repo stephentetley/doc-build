@@ -31,7 +31,7 @@ module Markdown =
                     
     let private getCustomStylesPath () : DocMonad<'res, string option> = 
         getCustomStyles () 
-            |>> Option.map (fun (doc:WordDoc) -> doc.LocalPath)
+            |>> Option.map (fun (doc:WordDoc) -> doc.AbsolutePath)
 
 
 
@@ -57,14 +57,14 @@ module Markdown =
             do! assertIsWorkingPath outputAbsPath
             let! styles = getCustomStylesPath () 
             let command = 
-                PandocPrim.outputDocxCommand styles [] src.LocalPath outputAbsPath
+                PandocPrim.outputDocxCommand styles [] src.AbsolutePath outputAbsPath
             let! _ = execPandoc command
             return! workingWordDoc outputAbsPath
          }
 
     /// Requires pandoc
     let markdownToWord (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
-        let outputFile = Path.ChangeExtension(src.LocalPath, "docx")
+        let outputFile = Path.ChangeExtension(src.AbsolutePath, "docx")
         markdownToWordAs outputFile src
 
 
@@ -80,7 +80,7 @@ module Markdown =
             do! assertIsWorkingPath outputAbsPath
             let! pdfEngine = asks (fun env -> env.PandocOpts.PdfEngine)       
             let command = 
-                PandocPrim.outputPdfCommand pdfEngine [] src.LocalPath outputAbsPath
+                PandocPrim.outputPdfCommand pdfEngine [] src.AbsolutePath outputAbsPath
             printfn "// %s" (arguments command)
             let! _ = execPandoc command
             return! workingPdfDoc outputAbsPath
@@ -88,7 +88,7 @@ module Markdown =
 
 
     let markdownToTeXToPdf (src:MarkdownDoc) : DocMonad<'res,PdfDoc> =
-        let outputFile = Path.ChangeExtension(src.LocalPath, "pdf")
+        let outputFile = Path.ChangeExtension(src.AbsolutePath, "pdf")
         markdownToTeXToPdfAs outputFile src
 
     // ************************************************************************
@@ -99,7 +99,7 @@ module Markdown =
                       (src:MarkdownDoc) : DocMonad<'res,MarkdownDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let original = File.ReadAllText(src.LocalPath)
+            let original = File.ReadAllText(src.AbsolutePath)
             let action (source:string) (searchText:string, replaceText:string) = 
                source.Replace(searchText, replaceText)
             let final = List.fold action original searches
@@ -110,4 +110,4 @@ module Markdown =
 
     let findReplace (searches:SearchList)
                     (src:MarkdownDoc) : DocMonad<'res,MarkdownDoc> = 
-        findReplaceAs searches src.LocalPath src
+        findReplaceAs searches src.AbsolutePath src

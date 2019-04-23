@@ -56,14 +56,14 @@ module FileOperations =
 
 
     let isWorkingDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
-        isWorkingPath doc.LocalPath
+        isWorkingPath doc.AbsolutePath
 
     let isSourcePath (absPath:string) : DocMonad<'res,bool> = 
         askSourceDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
         
 
     let isSourceDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
-        isSourcePath doc.LocalPath
+        isSourcePath doc.AbsolutePath
 
 
     let isIncludePath (absPath:string) : DocMonad<'res,bool> = 
@@ -72,7 +72,7 @@ module FileOperations =
         
     
     let isIncludeDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
-        isIncludePath doc.LocalPath
+        isIncludePath doc.AbsolutePath
 
     let assertIsWorkingPath (path:string) : DocMonad<'res, unit> = 
         assertM (isWorkingPath path) (sprintf "Not a working path - '%s'" path)
@@ -101,7 +101,7 @@ module FileOperations =
         }
             
     let getWorkingDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
-        getWorkingPathSuffix doc.LocalPath
+        getWorkingPathSuffix doc.AbsolutePath
 
 
     let getSourcePathSuffix (absPath:string) : DocMonad<'res,string> = 
@@ -112,7 +112,7 @@ module FileOperations =
         }
 
     let getSourceDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
-        getSourcePathSuffix doc.LocalPath
+        getSourcePathSuffix doc.AbsolutePath
 
     //let getIncludePathSuffix (absPath:string) : DocMonad<'res,string> = 
     //    docMonad { 
@@ -173,7 +173,7 @@ module FileOperations =
     /// Copy a doc to the toplevel working directory.
     let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
         let title = doc.Title
-        copyFileToWorking doc.LocalPath |>> setTitle title
+        copyFileToWorking doc.AbsolutePath |>> setTitle title
 
 
 

@@ -99,13 +99,12 @@ Environment.SetEnvironmentVariable("PATH",
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
-    let includePath = DirectoryPath @"G:\work\Projects\usar\final-docs\include"
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\input"
-      IncludeDirectory = includePath
+      IncludeDirectories = [ @"G:\work\Projects\usar\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+        { CustomStylesDocx = Some "custom-reference1.docx"
           PdfEngine = Some "pdflatex"
         }
     }
@@ -135,9 +134,9 @@ let renderMarkdownFile (docTitle:string)
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! logoPath = extendIncludePath "YW-logo.jpg"
+        let! logoPath = includeJpegDoc "YW-logo.jpg"
         let config:CoversheetConfig = 
-            { LogoPath = logoPath
+            { LogoPath = logoPath.AbsolutePath
               SaiNumber = saiNumber
               SiteName = siteName  
               Author = "S Tetley"
@@ -152,7 +151,7 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
 let genProjectScope () : DocMonadWord<PdfDoc> =  
     docMonad { 
         let! (input:PdfDoc) = includePdfDoc "project-scope.pdf"
-        return! copyFileToWorking false input.LocalPath |>> setTitle "Project Scope"
+        return! copyToWorking input |>> setTitle "Project Scope"
     }
 
 let surveyPhotosConfig (siteName:string) : PhotoBookConfig = 
@@ -202,7 +201,7 @@ let processMarkdown (title:string)
         let! inputs = contextM  <| findSomeSourceFilesMatching glob false
         return! mapM (fun path -> 
                         sourceMarkdownDoc path >>= fun md1 ->
-                        copyToWorking false md1 >>= fun md2 ->
+                        copyToWorking md1 >>= fun md2 ->
                         renderMarkdownFile title md2) inputs
     }
 

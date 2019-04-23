@@ -61,7 +61,7 @@ let WindowsEnv : DocBuildEnv =
     let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") |> DirectoryPath
     { WorkingDirectory = cwd
       SourceDirectory = cwd
-      IncludeDirectory = DirectoryPath (cwd <//> "include")
+      IncludeDirectories = [ cwd <//> "include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = None
@@ -84,7 +84,7 @@ let demo01 () =
             let! p3 = workingPdfDoc "Three.pdf"
             let pdfs = Collection.fromList [p1;p2;p3]
             let! outfile = workingPdfDoc "Concat.pdf"
-            let! _ = Pdf.concatPdfs Pdf.GsScreen pdfs outfile.LocalPath 
+            let! _ = Pdf.concatPdfs Pdf.GsScreen pdfs outfile.AbsolutePath 
             return ()
         }
 
@@ -112,7 +112,7 @@ let demo04 () =
     runDocMonad resources WindowsEnv <| 
         docMonad { 
             let! w1 = sourceWordDoc "sample.docx" 
-            return! getDocPathSuffix w1
+            return w1.AbsolutePath
         }
 
 

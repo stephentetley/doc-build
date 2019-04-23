@@ -139,7 +139,7 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
     docMonad { 
         let! logoPath = includeJpegDoc "YW-logo.jpg"
         let config:CoversheetConfig = 
-            { LogoPath = logoPath.LocalPath
+            { LogoPath = logoPath.AbsolutePath
               SaiNumber = saiNumber
               SiteName = siteName  
               Author = "S Tetley"

@@ -89,13 +89,12 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    let includePath = DirectoryPath @"G:\work\Projects\rtu\final-docs\include"
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\output\year4-batch2"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\final-docs\input\year4-batch2"
-      IncludeDirectory = includePath
+      IncludeDirectories = [ @"G:\work\Projects\rtu\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+        { CustomStylesDocx = Some "custom-reference1.docx"
           PdfEngine = Some "pdflatex"
         }
     }

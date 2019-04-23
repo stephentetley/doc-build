@@ -21,26 +21,26 @@ module Jpeg =
     let autoOrientAs (outputAbsPath:string) (src:JpegDoc) : DocMonad<'res,JpegDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let _ = ImageMagickPrim.imAutoOrient src.LocalPath outputAbsPath
+            let _ = ImageMagickPrim.imAutoOrient src.AbsolutePath outputAbsPath
             return! workingJpegDoc outputAbsPath
         }
 
     /// Auto-orient overwriting the input file
     let autoOrient (src:JpegDoc) : DocMonad<'res,JpegDoc> = 
-        autoOrientAs src.LocalPath src
+        autoOrientAs src.AbsolutePath src
 
 
     /// Save in working directory (or a child of).
     let resizeForWordAs (outputAbsPath:string) (src:JpegDoc) : DocMonad<'res,JpegDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
-            let _ = ImageMagickPrim.imOptimizeForMsWord src.LocalPath outputAbsPath
+            let _ = ImageMagickPrim.imOptimizeForMsWord src.AbsolutePath outputAbsPath
             return! workingJpegDoc outputAbsPath
         }
 
     /// Resize for Word overwriting the input file
     let resizeForWord (src:JpegDoc) : DocMonad<'res,JpegDoc> = 
-        resizeForWordAs src.LocalPath src
+        resizeForWordAs src.AbsolutePath src
 
 
 

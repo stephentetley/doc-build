@@ -88,7 +88,7 @@ Environment.SetEnvironmentVariable("PATH",
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\year5"
-      IncludeDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\include"
+      IncludeDirectories = [ @"G:\work\Projects\rtu\year5\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = None

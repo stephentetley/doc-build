@@ -94,13 +94,13 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    let includePath = DirectoryPath @"G:\work\Projects\events2\point-blue\batch3_to_build\include"
+    let includePath = DirectoryPath 
     { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\point-blue\batch3_to_build\output"
       SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\point-blue\batch3_to_build\input"
-      IncludeDirectory = includePath
+      IncludeDirectories = [ @"G:\work\Projects\events2\point-blue\batch3_to_build\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
-        { CustomStylesDocx = Some (includePath <//> @"custom-reference1.docx")
+        { CustomStylesDocx = Some "custom-reference1.docx"
           PdfEngine = Some "pdflatex"
         }
       }
@@ -148,7 +148,7 @@ let genCoverSheet (sai:string)
                   (phase:string) : DocMonadWord<PdfDoc> = 
     docMonad {
         let! logo = includeJpegDoc "YW-logo.jpg"
-        let md = coverSheetMarkdown sai siteName phase logo.LocalPath
+        let md = coverSheetMarkdown sai siteName phase logo.AbsolutePath
         let! outpath1 = getOutputPath "cover.md"
         printfn "%O" md
         let! mdDoc = saveMarkdown outpath1 md

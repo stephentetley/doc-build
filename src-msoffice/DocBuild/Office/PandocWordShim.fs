@@ -43,7 +43,7 @@ module PandocWordShim =
 
 
     let markdownToWordToPdf (src:MarkdownDoc)  : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
-        let outputFile = Path.ChangeExtension(src.LocalPath, "pdf")
+        let outputFile = Path.ChangeExtension(src.AbsolutePath, "pdf")
         markdownToWordToPdfAs outputFile src
 
 

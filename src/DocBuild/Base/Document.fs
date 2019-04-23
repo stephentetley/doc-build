@@ -65,19 +65,19 @@ module Document =
         member x.Title 
             with get () : string = x.DocTitle
 
-        member x.LocalPath
-            with get () : string = FilePath(x.DocAbsPath).LocalPath
+        member x.AbsolutePath
+            with get () : string = x.DocAbsPath
 
         member x.FileName
             with get () : string = 
-                FileInfo(x.LocalPath).Name
+                FileInfo(x.DocAbsPath).Name
 
                 
     /// Set the document Title - title is the name of the document
     /// that might be used by some other process, e.g. to generate
     /// a table of contents.
     let setTitle (title:string) (doc:Document<'a>) : Document<'a> = 
-        new Document<'a>(absPath=doc.LocalPath, title=title)
+        new Document<'a>(absPath=doc.AbsolutePath, title=title)
 
 
     /// Warning - this allows random access to the file system, not

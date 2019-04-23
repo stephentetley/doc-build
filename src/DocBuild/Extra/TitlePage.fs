@@ -48,7 +48,7 @@ module TitlePage =
             let temp = "title.temp.md"    
             let! md = makeTitlePage { Title = title; DocBody = body; RelativeOutputName = temp }
             let! title = render md
-            let outPath = modifyFileName (fun s -> s + "+title") pdf.LocalPath 
+            let outPath = modifyFileName (fun s -> s + "+title") pdf.AbsolutePath 
             let! ans = pdftkConcatPdfs (Collection.fromList [title; pdf]) outPath
             return ans |> setTitle pdf.Title
         }

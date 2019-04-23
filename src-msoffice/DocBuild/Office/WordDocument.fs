@@ -80,7 +80,7 @@ module WordDocument =
                 asks (fun env -> env.PrintOrScreen) |>> wordExportQuality
             let! (ans:unit) = 
                 execWord <| fun app -> 
-                    liftResult (wordExportAsPdf app paperSize pdfQuality src.LocalPath outputAbsPath)
+                    liftResult (wordExportAsPdf app paperSize pdfQuality src.AbsolutePath outputAbsPath)
             return! workingPdfDoc outputAbsPath
         }
 
@@ -104,11 +104,11 @@ module WordDocument =
             do! assertIsWorkingPath outputAbsPath
             let! ans = 
                 execWord <| fun app -> 
-                        liftResult (wordFindReplace app searches src.LocalPath outputAbsPath)
+                        liftResult (wordFindReplace app searches src.AbsolutePath outputAbsPath)
             return! workingWordDoc outputAbsPath
         }
 
 
 
     let findReplace (searches:SearchList) (src:WordDoc) : DocMonad<#IWordHandle,WordDoc> = 
-        findReplaceAs searches src.LocalPath src 
+        findReplaceAs searches src.AbsolutePath src 

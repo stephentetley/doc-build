@@ -72,7 +72,7 @@ module ExcelDocument =
                 asks (fun env -> env.PrintOrScreen) |>> excelExportQuality
             let! _ = 
                 execExcel <| fun app -> 
-                        liftResult (excelExportAsPdf app  fitWidth pdfQuality src.LocalPath outputAbsPath)
+                        liftResult (excelExportAsPdf app fitWidth pdfQuality src.AbsolutePath outputAbsPath)
             return! workingPdfDoc outputAbsPath
         }
 
@@ -97,7 +97,7 @@ module ExcelDocument =
             do! assertIsWorkingPath outputAbsPath
             let! ans = 
                 execExcel <| fun app -> 
-                        liftResult (excelFindReplace app searches src.LocalPath outputAbsPath)
+                        liftResult (excelFindReplace app searches src.AbsolutePath outputAbsPath)
             return! workingExcelDoc outputAbsPath
         }
 
@@ -105,4 +105,4 @@ module ExcelDocument =
 
     let findReplace (searches:SearchList) 
                     (src:ExcelDoc) : DocMonad<#IExcelHandle,ExcelDoc> = 
-        findReplaceAs searches src.LocalPath src
+        findReplaceAs searches src.AbsolutePath src

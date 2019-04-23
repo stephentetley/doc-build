@@ -30,7 +30,7 @@ module Pdf =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let inputs = 
-                inputFiles.Elements |> List.map (fun d -> d.LocalPath)
+                inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
             let cmd = PdftkPrim.concatCommand inputs outputAbsPath
             let! _ = execPdftk cmd
             return! workingPdfDoc outputAbsPath
@@ -60,7 +60,7 @@ module Pdf =
                                   (outputAbsPath:string) 
                                   (inputFiles:PdfCollection) : DocMonad<'res,string> = 
         let inputs = 
-            inputFiles.Elements |> List.map (fun d -> d.LocalPath)
+            inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputAbsPath inputs
         execGhostscript cmd
 
@@ -121,7 +121,7 @@ module Pdf =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let command = 
-                PdftkPrim.rotationCommand src.LocalPath directives outputAbsPath
+                PdftkPrim.rotationCommand src.AbsolutePath directives outputAbsPath
             let! _ = execPdftk command
             return! workingPdfDoc outputAbsPath
         }
@@ -129,7 +129,7 @@ module Pdf =
     /// Rezize for Word generating a new temp file
     let extractRotations (directives:RotationDirective list) 
                          (src:PdfDoc) : DocMonad<'res,PdfDoc> = 
-        extractRotationsAs directives src.LocalPath src
+        extractRotationsAs directives src.AbsolutePath src
 
 
 
@@ -143,7 +143,7 @@ module Pdf =
 
     let countPages (inputfile:PdfDoc) : DocMonad<'res,int> = 
         docMonad { 
-            let command = PdftkPrim.dumpDataCommand inputfile.LocalPath
+            let command = PdftkPrim.dumpDataCommand inputfile.AbsolutePath
             let! stdout = execPdftk command
             return! liftResult (PdftkPrim.regexSearchNumberOfPages stdout)
         }
