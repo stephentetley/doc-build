@@ -70,6 +70,8 @@ module WordDocument =
         | Print -> Word.WdExportOptimizeFor.wdExportOptimizeForPrint
 
 
+    /// TODO - because we only want output in the working directory
+    /// it would be better to supply just a file name...
     let exportPdfAs (outputAbsPath:string)
                     (src:WordDoc) : DocMonad<#IWordHandle,PdfDoc> = 
         docMonad { 

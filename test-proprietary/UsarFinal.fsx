@@ -47,6 +47,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
+#load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
@@ -249,57 +250,35 @@ let processInstalls(siteName:string) : DocMonadWord<PdfDoc list> =
         <||> processMarkdown "Installation Info" (Some "2.Site_work") "*.md"
 
 
-
-let getWorkList () : string list = 
-    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory).GetDirectories()
-        |> Array.map (fun info -> info.Name)
-        |> Array.toList
-
-let buildOne (sourceName:string) 
-             (siteName:string) 
-             (saiNumber:string) : DocMonadWord<PdfDoc> = 
-    commonSubdirectory sourceName <| 
-        docMonad {
-            let! cover = genCoversheet siteName saiNumber
-            let! scope = genProjectScope ()
-            let! surveys = processSurveys siteName
-            let! oSurveyPhotos = genSurveyPhotos siteName
-            let! ultras = processInstalls siteName
-            let! oWorksPhotos = genSiteWorkPhotos siteName
-            let col1 = Collection.empty  
-                            &^^ scope
-                            &^^ surveys 
-                            &^^ oSurveyPhotos 
-                            &^^ ultras
-                            &^^ oWorksPhotos
-            let! contents = genContents col1
-            let allDocs = cover ^^& contents ^^& col1
-            let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
-            return! Pdf.concatPdfs Pdf.GsDefault allDocs outputAbsPath 
-        }
-
-
-let build1 (saiMap:SaiMap) (sourceName:string) : DocMonadWord<PdfDoc option> = 
-    let siteName = getSiteName sourceName
-    printfn "Site name: %s" siteName
-    match getSaiNumber saiMap siteName with
-    | None -> printfn "No sai"; mreturn None
-    | Some sai -> 
-        fmapM Some <| buildOne sourceName siteName sai
-
-
-let buildAll () : DocMonadWord<unit> = 
-    let worklist = getWorkList () 
-    let saiMap = buildSaiMap ()
-    foriMz worklist 
-        <| fun ix name ->
-                printfn "Site %i: %s" (ix+1) name |> ignore
-                build1 saiMap name |>> ignore
+let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> = 
+    docMonad {
+        let! sourceName = askSourceDirectory () |>> fileObjectName
+        let  siteName = getSiteName sourceName
+        let! saiNumber = getSaiNumber saiMap siteName |> liftOption "No SAI Number"
+        let! cover = genCoversheet siteName saiNumber
+        let! scope = genProjectScope ()
+        let! surveys = processSurveys siteName
+        let! oSurveyPhotos = genSurveyPhotos siteName
+        let! ultras = processInstalls siteName
+        let! oWorksPhotos = genSiteWorkPhotos siteName
+        let col1 = Collection.empty  
+                        &^^ scope
+                        &^^ surveys 
+                        &^^ oSurveyPhotos 
+                        &^^ ultras
+                        &^^ oWorksPhotos
+        let! contents = genContents col1
+        let allDocs = cover ^^& contents ^^& col1
+        let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
+        return! Pdf.concatPdfs Pdf.GsDefault allDocs outputAbsPath 
+    }
 
 
 let main () = 
+    let saiMap = buildSaiMap ()
     let resources = WindowsWordResources ()
     (resources.UserResources :> WordDocument.IWordHandle).PaperSizeForWord <- Some Word.WdPaperSize.wdPaperA4
     runDocMonad resources WindowsEnv 
-        <| buildAll ()
+        <| foreachSourceIndividualOutput defaultSkeletonOptions 
+                (build1 saiMap)
 

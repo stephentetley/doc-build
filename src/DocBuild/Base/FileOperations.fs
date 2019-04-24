@@ -241,11 +241,3 @@ module FileOperations =
         }
 
 
-
-    /// Consider this deprecated...
-    let commonSubdirectory (subdirectory:string) 
-                           (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
-        localWorkingSubdirectory subdirectory <| localSourceSubdirectory subdirectory ma
-
-
-

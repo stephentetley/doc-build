@@ -229,16 +229,12 @@ let processUSCalibrations (siteName:string) : DocMonadWord<PdfDoc list> =
     processSiteWork siteName "*US Calib*.doc*"
 
 
-let getWorkList () : string list = 
-    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory).GetDirectories()
-        |> Array.map (fun di -> di.Name)
-        |> Array.toList
 
-
-let buildOne (siteName:string) 
-             (saiNumber:string) : DocMonadWord<PdfDoc> = 
+let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> = 
     docMonad {
-        let sourceName = safeName siteName
+        let! sourceName = askSourceDirectory () |>> fileObjectName
+        let  siteName = getSiteName sourceName
+        let! saiNumber = getSaiNumber saiMap siteName |> liftOption "No SAI Number"
         let! cover = genCoversheet siteName saiNumber
         let! surveys = processSurveys siteName
         let! oSurveyPhotos = genSurveyPhotos siteName
@@ -258,17 +254,6 @@ let buildOne (siteName:string)
     }
 
 
-let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc option> = 
-    docMonad { 
-        let! sourceName = askSourceDirectory () |>> Internal.FilePaths.getPathName1
-        let siteName = getSiteName sourceName
-        printfn "Site name: %s, source name: %s" siteName sourceName
-        match getSaiNumber saiMap siteName with
-        | None -> printfn "No sai"; return None
-        | Some sai -> 
-            return! (buildOne siteName sai |>> Some)
-    }
-    
 
 
 
@@ -276,4 +261,5 @@ let main () =
     let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()
     runDocMonad resources WindowsEnv 
-        <| dtodSourceChildren defaultSkeletonOptions (dtodSourceChildren defaultSkeletonOptions (build1 saiMap))
+        <| foreachSourceIndividualOutput defaultSkeletonOptions 
+                                         (foreachSourceIndividualOutput defaultSkeletonOptions (build1 saiMap))

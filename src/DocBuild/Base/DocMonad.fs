@@ -166,6 +166,11 @@ module DocMonad =
                 mreturn () 
             else throwError failMsg
 
+    let liftOption (failMsg:string) (opt:'a option) : DocMonad<'userRes, 'a> = 
+        match opt with
+        | Some a -> mreturn a 
+        | None -> throwError failMsg
+
     // ****************************************************
     // Logging
 

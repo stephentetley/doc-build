@@ -119,24 +119,22 @@ let readSurveySpeadsheet () : SurveyRow list =
          
     excelReadRowsAsList helper (new SurveyTable())
 
-let survey (siteName:string) (saiNumber:string) : DocMonadWord<unit> = 
+let survey (siteName:string) (saiNumber:string) : DocMonadWord<WordDoc> = 
     let outputName = sprintf "%s survey.docx" (safeName siteName)
     let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
     docMonad { 
         let! (template:WordDoc) = getIncludeWordDoc "TEMPLATE Survey.docx"
         let! outpath = extendWorkingPath outputName
-        let! output = WordDocument.findReplaceAs searches outpath template
-        return ()
+        return! WordDocument.findReplaceAs searches outpath template
     }
 
-let hazards (siteName:string) (saiNumber:string) : DocMonadWord<unit> = 
+let hazards (siteName:string) (saiNumber:string) : DocMonadWord<WordDoc> = 
     let outputName = sprintf "%s Hazard Identification Check List.docx" (safeName siteName)
     let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
     docMonad { 
         let! (template:WordDoc) = getIncludeWordDoc "TEMPLATE Hazard Identification Check List.docx"
         let! outpath = extendWorkingPath outputName
-        let! output = WordDocument.findReplaceAs searches outpath template
-        return ()
+        return! WordDocument.findReplaceAs searches outpath template
     }
 
 let ntrim (source:string) : string = 
@@ -144,14 +142,14 @@ let ntrim (source:string) : string =
     | null -> ""
     | _ -> source.Trim()
 
-let genSiteSheets (row:SurveyRow) :DocMonadWord<unit> = 
+let genSiteSheets (row:SurveyRow) : DocMonadWord<unit> = 
     printfn "%s" row.``SAI Site Name``
-    let sai = ntrim row.``SAI Number``
-    let name = ntrim row.``SAI Site Name``
-    localWorkingSubdirectory (safeName name) 
+    let saiNumber = ntrim row.``SAI Number``
+    let siteName = ntrim row.``SAI Site Name``
+    localWorkingSubdirectory (safeName siteName) 
         <| docMonad { 
-                do! survey name sai
-                do! hazards name sai
+                do! survey siteName saiNumber |>> ignore
+                do! hazards siteName saiNumber |>> ignore
                 return ()
             }
 

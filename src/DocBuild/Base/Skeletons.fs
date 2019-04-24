@@ -92,15 +92,14 @@ module Skeletons =
         foriMz sources 
                (fun ix dir -> strategy dir (processChildDirectory (ix + 1) count))
 
-    /// dtodSourceChildren => manySourcesManyOutputs ?
-
+    
     /// Processing skeleton.
     /// For every child source folder (one level down) run the
     /// processing function on 'within' that folder. 
     /// Generate the results in a child folder of the same name under
     /// the working folder.
-    let dtodSourceChildren (skeletonOpts:SkeletonOptions) 
-                           (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
+    let foreachSourceIndividualOutput (skeletonOpts:SkeletonOptions) 
+                                      (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory 
                                         (localWorkingSubdirectory childDirectory action)
@@ -110,8 +109,8 @@ module Skeletons =
     /// For every child source folder (one level down) run the
     /// processing function on 'within' that folder. 
     /// Generate the results in the top level working folder.
-    let dto1SourceChildren (skeletonOpts:SkeletonOptions) 
-                           (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
+    let foreachSourceCommonOutput (skeletonOpts:SkeletonOptions) 
+                                  (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory action
         runSkeleton skeletonOpts strategy process1

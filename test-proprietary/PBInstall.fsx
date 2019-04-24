@@ -47,6 +47,7 @@ open MarkdownDoc.Pandoc
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
+#load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
@@ -114,6 +115,10 @@ let WindowsWordResources () : AppResources<WordDocument.WordHandle> =
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 
+let getSiteName (sourceName:string) : string = 
+    sourceName.Replace("_", "/")
+
+
 let coverSheetMarkdown (sai:string) 
                        (siteName:string) 
                        (phase:string) 
@@ -162,41 +167,25 @@ let genInstallSheet () : DocMonadWord<PdfDoc> =
         return! WordDocument.exportPdfAs outpath1 wordDoc
         }
      
-let build1 (siteName:string) 
-           (saiNumber:string)
-           (phase:string) : DocMonadWord<PdfDoc> =
-    let safe = safeName siteName           
+let build1 (phase:string) (saiMap:SaiMap) : DocMonadWord<PdfDoc> =        
     docMonad { 
+        let! sourceName = askSourceDirectory () |>> fileObjectName
+        let  siteName = getSiteName sourceName
+        let! saiNumber = getSaiNumber saiMap siteName |> liftOption "No SAI Number"
         let! cover = genCoverSheet saiNumber siteName phase
         let! scope = genInstallSheet ()
         let col1 = Collection.fromList [ cover; scope ]  
-        let! outputAbsPath = extendWorkingPath (sprintf "%s %s Final.pdf" safe phase)
+        let! outputAbsPath = extendWorkingPath (sprintf "%s %s Final.pdf" sourceName phase)
         return! Pdf.concatPdfs Pdf.GsDefault col1 outputAbsPath 
     }
 
 
-let getWorkList () : DocMonadWord<string list> = 
-    askSourceDirectory () >>= fun srcDir -> 
-    let dirs = System.IO.DirectoryInfo(srcDir).GetDirectories()
-                    |> Array.map (fun info -> info.Name)
-                    |> Array.toList
-    mreturn dirs
- 
 
 let buildPhase (phase:string) (saiMap:SaiMap) : DocMonadWord<unit> =
     localSourceSubdirectory phase 
-        <|  docMonad { 
-                let! worklist = getWorkList () 
-                do! forMz worklist <| fun dir -> 
-                    let sitename = dir.Replace("_", "/")
-                    let sai0 = getSaiNumber saiMap sitename 
-                    let sai = 
-                        match sai0 with 
-                        | None -> printfn "BAD - %s" sitename; "SAI0000"
-                        | Some ans -> ans
-                    commonSubdirectory dir (build1 sitename sai phase)
-                return ()
-            }
+        << localWorkingSubdirectory phase
+        <| foreachSourceIndividualOutput defaultSkeletonOptions (build1 phase saiMap)
+
 
 let main () = 
     let resources = WindowsWordResources ()

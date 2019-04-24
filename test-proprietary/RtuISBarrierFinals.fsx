@@ -141,14 +141,12 @@ let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
 
 let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! sourceName =  askSourceDirectory () |>> Internal.FilePaths.getPathName1
+        let! sourceName =  askSourceDirectory () |>> fileObjectName
         let siteName = sourceName |> sourceToSiteName
         let! workSheet = genSiteWorks ()
         let! phodoDoc = genPhotos siteName
         let (col:PdfCollection) = 
-            Collection.empty 
-                &^^ workSheet     &^^ phodoDoc
-
+            Collection.empty &^^ workSheet     &^^ phodoDoc
         let! outputAbsPath = extendWorkingPath (sprintf "%s S3953 IS Barrier Final.pdf" sourceName)
         return! Pdf.concatPdfs Pdf.GsDefault col outputAbsPath 
     }
@@ -158,4 +156,4 @@ let genFinalDoc1 () : DocMonadWord<PdfDoc> =
 let main () = 
     let res = WindowsWordResources ()
     runDocMonad res WindowsEnv 
-        <| dtodSourceChildren defaultSkeletonOptions (genFinalDoc1 ())
+        <| foreachSourceIndividualOutput defaultSkeletonOptions (genFinalDoc1 ())

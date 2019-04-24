@@ -48,6 +48,7 @@ open MarkdownDoc.Pandoc
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
+#load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Raw\PandocPrim.fs"
 #load "..\src\DocBuild\Raw\PdftkPrim.fs"
@@ -116,36 +117,17 @@ type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        do! askSourceDirectory () |>> fun path -> printfn "%s" (Internal.FilePaths.getPathName1 path)
+        do! askSourceDirectory () |>> fun path -> printfn "%s" (fileObjectName path)
         let! inputPath = optionFailM "no match" <| tryFindExactlyOneSourceFileMatching "*Site*Works*.docx" false
         let! wordDoc = getWordDoc inputPath
-        let name = Path.ChangeExtension(wordDoc.FileName, "pdf")
-        let! outpath1 = extendWorkingPath name
-        return! WordDocument.exportPdfAs outpath1 wordDoc
+        return! WordDocument.exportPdf wordDoc
         }
      
 let build1 () : DocMonadWord<PdfDoc> =
     genInstallSheet ()
-    
-
-
-let getWorkList () : DocMonadWord<string list> = 
-    askSourceDirectory () >>= fun srcDir -> 
-    let dirs = System.IO.DirectoryInfo(srcDir).GetDirectories()
-                    |> Array.map (fun info -> info.Name)
-                    |> Array.toList
-    mreturn dirs
- 
-
-let buildAll () : DocMonadWord<unit> =
-    docMonad { 
-        let! worklist = getWorkList () 
-        do! forMz worklist <| fun dir -> 
-            localSourceSubdirectory dir (build1 ())
-        return ()
-    }
+   
 
 let main () = 
     let resources = WindowsWordResources ()
     runDocMonad resources WindowsEnv 
-        <| buildAll ()
+        <| foreachSourceIndividualOutput defaultSkeletonOptions (build1 ())
