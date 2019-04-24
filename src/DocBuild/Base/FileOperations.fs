@@ -10,6 +10,7 @@ module FileOperations =
     open System.IO
     open System
 
+    open DocBuild.Base.Internal
     open DocBuild.Base
     open DocBuild.Base.DocMonad
 
@@ -43,14 +44,14 @@ module FileOperations =
 
 
     let isWorkingPath (absPath:string) : DocMonad<'res,bool> = 
-        askWorkingDirectory () |>> fun dir -> rootIsPrefix dir absPath
+        askWorkingDirectory () |>> fun dir -> FilePaths.rootIsPrefix dir absPath
 
 
     let isWorkingDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
         isWorkingPath doc.AbsolutePath
 
     let isSourcePath (absPath:string) : DocMonad<'res,bool> = 
-        askSourceDirectory () |>> fun dir -> rootIsPrefix dir absPath
+        askSourceDirectory () |>> fun dir -> FilePaths.rootIsPrefix dir absPath
         
 
     let isSourceDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
@@ -59,7 +60,7 @@ module FileOperations =
 
     let isIncludePath (absPath:string) : DocMonad<'res,bool> = 
         askIncludeDirectories () |>> fun dirs -> 
-        List.exists (fun dir -> rootIsPrefix dir absPath) dirs 
+        List.exists (fun dir -> FilePaths.rootIsPrefix dir absPath) dirs 
         
     
     let isIncludeDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
@@ -94,7 +95,7 @@ module FileOperations =
         docMonad { 
             do! assertIsWorkingPath absPath
             let! root = askWorkingDirectory ()
-            return rightPathComplement root absPath
+            return FilePaths.rightPathComplement root absPath
         }
             
     let getWorkingDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
@@ -105,7 +106,7 @@ module FileOperations =
         docMonad { 
             do! assertIsSourcePath absPath
             let! root = askSourceDirectory ()
-            return rightPathComplement root absPath
+            return FilePaths.rightPathComplement root absPath
         }
 
     let getSourceDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 

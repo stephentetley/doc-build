@@ -6,8 +6,8 @@
 open System.IO
 open System
 
-#load "..\src\DocBuild\Base\FilePaths.fs"
-open DocBuild.Base
+#load "..\src\DocBuild\Base\Internal\FilePaths.fs"
+open DocBuild.Base.Internal
 
 
 /// Note cwd is not a directory

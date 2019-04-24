@@ -11,9 +11,11 @@ module DocMonad =
 
     open System.IO
 
-    open DocBuild.Base
-    open DocBuild.Base.Shell
     open SLFormat.CommandOptions
+
+    open DocBuild.Base
+    open DocBuild.Base.Internal.Shell
+
 
 
     /// If CustomStylesDocx is not an abs path, it will be looked for

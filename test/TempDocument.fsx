@@ -24,11 +24,10 @@ open System
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190314\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-
-#load "..\src\DocBuild\Base\FakeLikePrim.fs"
-#load "..\src\DocBuild\Base\FilePaths.fs"
+#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
+#load "..\src\DocBuild\Base\Internal\FilePaths.fs"
+#load "..\src\DocBuild\Base\Internal\Shell.fs"
 #load "..\src\DocBuild\Base\Common.fs"
-#load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
@@ -53,6 +52,7 @@ open System
 open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Base.DocMonad
+open DocBuild.Base.Internal         // TEMP
 
 open DocBuild.Office
 
@@ -130,7 +130,7 @@ let demo06 () =
 let demo06a () = 
     let resources = makeResources <| new WordDocument.WordHandle()
     runDocMonad resources WindowsEnv <| 
-        (askSourceDirectory () |>> fun (src:string) -> pathToSegments src)
+        (askSourceDirectory () |>> fun (src:string) -> FilePaths.pathToSegments src)
 
 
 

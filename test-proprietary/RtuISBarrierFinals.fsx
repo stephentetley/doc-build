@@ -39,10 +39,10 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-#load "..\src\DocBuild\Base\FakeLikePrim.fs"
-#load "..\src\DocBuild\Base\FilePaths.fs"
+#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
+#load "..\src\DocBuild\Base\Internal\FilePaths.fs"
+#load "..\src\DocBuild\Base\Internal\Shell.fs"
 #load "..\src\DocBuild\Base\Common.fs"
-#load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
@@ -141,7 +141,7 @@ let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
 
 let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! sourceName =  askSourceDirectory () |>> getPathName1
+        let! sourceName =  askSourceDirectory () |>> Internal.FilePaths.getPathName1
         let siteName = sourceName |> sourceToSiteName
         let! workSheet = genSiteWorks ()
         let! phodoDoc = genPhotos siteName

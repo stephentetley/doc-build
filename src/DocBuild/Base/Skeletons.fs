@@ -53,7 +53,7 @@ module Skeletons =
             | None -> mreturn ()
             | Some genMessage -> 
                 docMonad { 
-                   let! kid = askSourceDirectory () |>> getPathName1
+                   let! kid = askSourceDirectory () |>> Internal.FilePaths.getPathName1
                    let message = genMessage ix count kid 
                    do (printfn "%s" message)
                    do! tellLine message
@@ -64,7 +64,7 @@ module Skeletons =
             | None -> mreturn ()
             | Some genMessage -> 
                 docMonad { 
-                    let! kid = askSourceDirectory () |>> getPathName1
+                    let! kid = askSourceDirectory () |>> Internal.FilePaths.getPathName1
                     let message = genMessage kid
                     do (printfn "%s" message)
                     do! tellLine message

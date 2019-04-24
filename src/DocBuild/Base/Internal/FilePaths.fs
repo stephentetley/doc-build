@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Stephen Tetley 2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Base
+namespace DocBuild.Base.Internal
 
 
-[<AutoOpen>]
 module FilePaths = 
 
     open System.IO

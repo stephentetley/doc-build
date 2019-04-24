@@ -39,10 +39,10 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-#load "..\src\DocBuild\Base\FakeLikePrim.fs"
-#load "..\src\DocBuild\Base\FilePaths.fs"
+#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
+#load "..\src\DocBuild\Base\Internal\FilePaths.fs"
+#load "..\src\DocBuild\Base\Internal\Shell.fs"
 #load "..\src\DocBuild\Base\Common.fs"
-#load "..\src\DocBuild\Base\Shell.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
@@ -261,7 +261,7 @@ let buildOne (siteName:string)
 
 let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc option> = 
     docMonad { 
-        let! sourceName = askSourceDirectory () |>> getPathName1
+        let! sourceName = askSourceDirectory () |>> Internal.FilePaths.getPathName1
         let siteName = getSiteName sourceName
         printfn "Site name: %s, source name: %s" siteName sourceName
         match getSaiNumber saiMap siteName with

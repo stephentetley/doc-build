@@ -2,14 +2,13 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Base
+namespace DocBuild.Base.Internal
 
 /// TODO - this can be removed when the SL-Format dependency is updated.
 
 module Shell = 
 
     open System.IO
-    open DocBuild.Base
 
     let private procErrorCodeMessage (code:int) : string = 
         sprintf "process error: code %i" code
@@ -19,7 +18,7 @@ module Shell =
         
 
 
-    let exitcodeToResult (errCode:int) (stdOutput:string) : BuildResult<string> = 
+    let exitcodeToResult (errCode:int) (stdOutput:string) : Result<string,string> = 
         match errCode with
         | 0 -> Ok stdOutput
         | _ -> Error (procErrorCodeMessage errCode)
@@ -34,7 +33,7 @@ module Shell =
 
     /// Result is contents of stdout
     let executeProcess (procOptions:ProcessOptions) 
-                        (command:string) : BuildResult<string> = 
+                        (command:string) : Result<string, string> = 
         try
             use proc = new System.Diagnostics.Process()
             proc.StartInfo.FileName <- procOptions.ExecutableName
