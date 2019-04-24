@@ -103,8 +103,8 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
+    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
+      SourceDirectory =  @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
       IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\input\include" ]
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
@@ -232,7 +232,7 @@ let processUSCalibrations (siteName:string) : DocMonadWord<PdfDoc list> =
 
 
 let getWorkList () : string list = 
-    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory.LocalPath).GetDirectories()
+    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory).GetDirectories()
         |> Array.map (fun di -> di.Name)
         |> Array.toList
 
@@ -262,7 +262,7 @@ let buildOne (siteName:string)
 
 let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc option> = 
     docMonad { 
-        let! sourceName = askSourceDirectoryName ()
+        let! sourceName = askSourceDirectory () |>> getPathName1
         let siteName = getSiteName sourceName
         printfn "Site name: %s, source name: %s" siteName sourceName
         match getSaiNumber saiMap siteName with

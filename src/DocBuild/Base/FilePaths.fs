@@ -3,12 +3,45 @@
 
 namespace DocBuild.Base
 
+
 [<AutoOpen>]
 module FilePaths = 
 
     open System.IO
 
-    type PathSegments = string list
+    type FilePath = string
+
+    /// Is the path a "folder path"?
+    /// This does not check for existence, it only checks that 
+    /// the path is a folder path (i.e. ends in "/" or "\\")
+    let isDirectoryPath (path:string) = 
+        // Get the "full path".
+        // This normalizes the path to use backslash (Windows style).
+        // It horribly adds a prefix to relative files to root them in the users
+        // "home folder" but that doesn't matter here.
+        let fullname = Path.GetFullPath path
+        match Path.GetFileName fullname with
+        | null | "" -> true
+        | _ -> false
+
+    let isFilePath (path:string) = 
+        // Get the "full path".
+        // This normalizes the path to use backslash (Windows style).
+        // It horribly adds a prefix to relative files to root them in the users
+        // "home folder" but that doesn't matter here.
+        let fullname = Path.GetFullPath path
+        match Path.GetFileName fullname with
+        | null | "" -> false
+        | _ -> true
+
+
+    /// Get the "child name".
+    /// This is oblivious as to whether the path points to a file or a folder.
+    let getPathName1 (path:string) : string = 
+        if isDirectoryPath path then 
+            Path.GetDirectoryName path
+        else
+            Path.GetFileName path
 
 
     let private directoryStep (directory:DirectoryInfo) (initialAcc:string list) : string list =
@@ -22,64 +55,24 @@ module FilePaths =
         work directory initialAcc
             
 
-    let private filePathSegments (path:string) = 
-        let fileInfo = new FileInfo(path)
-        directoryStep fileInfo.Directory [fileInfo.Name]
+    let pathToSegments (path:string) : option<string list> = 
+        if isDirectoryPath path then 
+            directoryStep (new DirectoryInfo(path)) [] |> Some
+        elif isFilePath path then 
+            let fileInfo = new FileInfo(path)
+            directoryStep fileInfo.Directory [fileInfo.Name] |> Some
+        else  None
 
-    let private directoryPathSegments (path:string) = 
-        directoryStep (new DirectoryInfo(path)) []
 
-    let private segmentsToPath (segments:string list) = 
-        let sep = Path.DirectorySeparatorChar.ToString()
-        Path.Combine(paths = List.toArray segments)
-
+    let segmentsToPath (segments:string list) : string = 
+        Path.Combine(paths = Array.ofList segments)
 
     
-    // ************************************************************************
-    // Abstract over FilePaths and DirectoryPaths
+    // Maybe the functions (and their names) are not a good enough API.
 
-    type HasPathSegments =
-        abstract GetPathSegments : string list
-        
-
-    [<Struct>]
-    type FilePath = 
-        | FilePath of string
-
-        member private x.Body 
-            with get () : string = match x with | FilePath(s) -> s
-
-        member x.Segments
-            with get () : string list = filePathSegments x.Body
-
-        /// TODO - LocalPath is a really bad name.
-        /// Implies relative path.
-        member x.LocalPath 
-            with get () : string = segmentsToPath x.Segments
-
-        interface HasPathSegments with
-            member x.GetPathSegments = x.Segments
-
-    [<Struct>]
-    type DirectoryPath = 
-        | DirectoryPath of string
-
-        member private x.Body 
-            with get () : string = match x with | DirectoryPath(s) -> s
-
-        member x.Segments
-            with get () : string list = directoryPathSegments x.Body
-
-        member x.LocalPath 
-            with get () : string = segmentsToPath x.Segments
-
-        member x.DirectoryName
-            with get () : string = System.IO.DirectoryInfo(x.Body).Name
-
-        interface HasPathSegments with
-            member x.GetPathSegments = x.Segments
-
-    let commonPathPrefix (x:#HasPathSegments) (y:#HasPathSegments) : string = 
+    let commonPathPrefix (path1:string) (path2:string) : string = 
+        let segments1 = pathToSegments path1 |> Option.defaultValue [] 
+        let segments2 = pathToSegments path2 |> Option.defaultValue [] 
         let rec work xs ys (acc:string list) = 
             match xs, ys with
             | (s :: ss), (t :: ts) -> 
@@ -88,11 +81,13 @@ module FilePaths =
                 else
                     List.rev acc
             | _, _ -> List.rev acc
-        work x.GetPathSegments y.GetPathSegments [] |> segmentsToPath
+        work segments1 segments2 [] |> segmentsToPath
 
 
 
-    let rightPathComplement (root:DirectoryPath) (y:#HasPathSegments) : string = 
+    let rightPathComplement (ancestor:string) (child:string) : string = 
+        let segments1 = pathToSegments ancestor |> Option.defaultValue [] 
+        let segments2 = pathToSegments child    |> Option.defaultValue [] 
         let rec work xs ys  = 
             match xs, ys with
             | (s :: ss), (t :: ts) -> 
@@ -100,10 +95,12 @@ module FilePaths =
                     work ss ts
                 else ys
             | _, _ -> ys
-        work root.Segments y.GetPathSegments  |> segmentsToPath
+        work segments1 segments2 |> segmentsToPath
 
 
-    let rootIsPrefix (root:DirectoryPath) (y:#HasPathSegments) : bool = 
+    let rootIsPrefix (root:string) (child:string) : bool = 
+        let segments1 = pathToSegments root     |> Option.defaultValue [] 
+        let segments2 = pathToSegments child    |> Option.defaultValue [] 
         let rec work xs ys  = 
             match xs, ys with
             | (s :: ss), (t :: ts) -> 
@@ -112,8 +109,6 @@ module FilePaths =
                 else false
             | [], _ -> true
             | _, _ -> false
-        work root.Segments y.GetPathSegments 
+        work segments1 segments2
 
 
-    let ( <//> ) (root:DirectoryPath) (path2:string) : string = 
-        Path.Combine(root.LocalPath, path2)

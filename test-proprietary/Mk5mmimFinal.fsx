@@ -95,8 +95,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\mk5-mmim-replacement\finals\output"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\mk5-mmim-replacement\finals\input\batch1"
+    { WorkingDirectory = @"G:\work\Projects\rtu\mk5-mmim-replacement\finals\output"
+      SourceDirectory =  @"G:\work\Projects\rtu\mk5-mmim-replacement\finals\input\batch1"
       IncludeDirectories = [ @"G:\work\Projects\rtu\mk5-mmim-replacement\finals" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -117,11 +117,11 @@ type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        do! askSourceDirectory () |>> fun o -> printfn "%s" o.LocalPath
+        do! askSourceDirectory () |>> fun path -> printfn "%s" (getPathName1 path)
         let! inputPath = optionFailM "no match" <| tryFindExactlyOneSourceFileMatching "*Site*Works*.docx" false
         let! wordDoc = getWordDoc inputPath
         let name = Path.ChangeExtension(wordDoc.FileName, "pdf")
-        let! outpath1 = getOutputPath name
+        let! outpath1 = extendWorkingPath name
         return! WordDocument.exportPdfAs outpath1 wordDoc
         }
      
@@ -132,7 +132,7 @@ let build1 () : DocMonadWord<PdfDoc> =
 
 let getWorkList () : DocMonadWord<string list> = 
     askSourceDirectory () >>= fun srcDir -> 
-    let dirs = System.IO.DirectoryInfo(srcDir.LocalPath).GetDirectories()
+    let dirs = System.IO.DirectoryInfo(srcDir).GetDirectories()
                     |> Array.map (fun info -> info.Name)
                     |> Array.toList
     mreturn dirs

@@ -13,7 +13,7 @@ module Skeletons =
     let private getSourceChildren () : DocMonad<'res,string list> = 
         let failMessage = fun _ -> "getSourceChildren directory error"
         docMonad { 
-            let! source = askSourceDirectoryPath ()
+            let! source = askSourceDirectory ()
             let! (kids: System.IO.DirectoryInfo[]) = 
                 liftAction failMessage <| fun _ -> System.IO.DirectoryInfo(source).GetDirectories() 
             return (kids |> Array.map (fun info -> info.Name) |> Array.toList)
@@ -53,7 +53,7 @@ module Skeletons =
             | None -> mreturn ()
             | Some genMessage -> 
                 docMonad { 
-                   let! kid = askSourceDirectoryName ()
+                   let! kid = askSourceDirectory () |>> getPathName1
                    let message = genMessage ix count kid 
                    do (printfn "%s" message)
                    do! tellLine message
@@ -64,7 +64,7 @@ module Skeletons =
             | None -> mreturn ()
             | Some genMessage -> 
                 docMonad { 
-                    let! kid = askSourceDirectoryName ()
+                    let! kid = askSourceDirectory () |>> getPathName1
                     let message = genMessage kid
                     do (printfn "%s" message)
                     do! tellLine message

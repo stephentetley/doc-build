@@ -90,8 +90,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\output\Batch04"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\IS_barriers\final-docs\input\batch4_finals_source"
+    { WorkingDirectory  = @"G:\work\Projects\rtu\IS_barriers\final-docs\output\Batch04"
+      SourceDirectory   = @"G:\work\Projects\rtu\IS_barriers\final-docs\input\batch4_finals_source"
       IncludeDirectories = [ @"G:\work\Projects\rtu\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -142,7 +142,7 @@ let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
 
 let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! sourceName =  askSourceDirectoryName ()
+        let! sourceName =  askSourceDirectory () |>> getPathName1
         let siteName = sourceName |> sourceToSiteName
         let! workSheet = genSiteWorks ()
         let! phodoDoc = genPhotos siteName

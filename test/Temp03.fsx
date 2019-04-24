@@ -25,10 +25,10 @@ open DocBuild.Base.DocMonad
 
 
 let WindowsEnv : DocBuildEnv = 
-    let dataDir = DirectoryPath(System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data"))
+    let dataDir = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
     { WorkingDirectory = dataDir
       SourceDirectory = dataDir
-      IncludeDirectories = [ dataDir <//> "include" ]
+      IncludeDirectories = [ dataDir </> "include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = None
@@ -73,9 +73,9 @@ let test04 () =
 
 
 let test05a () = 
-    let script = assertM (mreturn false) "my error"
+    let script = assertM "my error" (mreturn false) 
     runDocMonadNoCleanup (makeResources ()) WindowsEnv script 
 
 let test05b () = 
-    let script = assertM (mreturn true) "my error"
+    let script = assertM "my error" (mreturn true)
     runDocMonadNoCleanup (makeResources ()) WindowsEnv script 

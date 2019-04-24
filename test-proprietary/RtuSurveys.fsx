@@ -86,8 +86,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\year5\output"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\year5"
+    { WorkingDirectory  = @"G:\work\Projects\rtu\year5\output"
+      SourceDirectory   = @"G:\work\Projects\rtu\year5"
       IncludeDirectories = [ @"G:\work\Projects\rtu\year5\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -126,7 +126,7 @@ let survey (siteName:string) (saiNumber:string) : DocMonadWord<unit> =
     let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
     docMonad { 
         let! (template:WordDoc) = includeWordDoc "TEMPLATE Survey.docx"
-        let! outpath = getOutputPath outputName
+        let! outpath = extendWorkingPath outputName
         let! output = WordDocument.findReplaceAs searches outpath template
         return ()
     }
@@ -136,7 +136,7 @@ let hazards (siteName:string) (saiNumber:string) : DocMonadWord<unit> =
     let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
     docMonad { 
         let! (template:WordDoc) = includeWordDoc "TEMPLATE Hazard Identification Check List.docx"
-        let! outpath = getOutputPath outputName
+        let! outpath = extendWorkingPath outputName
         let! output = WordDocument.findReplaceAs searches outpath template
         return ()
     }

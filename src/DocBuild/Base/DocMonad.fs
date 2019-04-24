@@ -32,25 +32,13 @@ module DocMonad =
 
     /// PandocPdfEngine needs TeX installed
     type DocBuildEnv = 
-        { WorkingDirectory: DirectoryPath
-          SourceDirectory: DirectoryPath
+        { WorkingDirectory: string
+          SourceDirectory: string
           IncludeDirectories: string list          
           PandocOpts: PandocOptions
           PrintOrScreen: PrintQuality                
         }
 
-    let defaultBuildEnv (workingAbsPath:string)
-                        (sourceAbsPath:string)
-                        (includeAbsPaths:string list) : DocBuildEnv = 
-            { WorkingDirectory = DirectoryPath workingAbsPath
-              SourceDirectory =  DirectoryPath sourceAbsPath
-              IncludeDirectories = includeAbsPaths
-              PandocOpts = 
-                { CustomStylesDocx = None
-                  PdfEngine = None  
-                }
-              PrintOrScreen = PrintQuality.Screen
-            }
 
     /// DocMonad is parametric on 'res (user resources)
     /// This allows a level of extensibility on the applications
@@ -112,7 +100,7 @@ module DocMonad =
     let runDocMonad (resources:Resources<#IResourceFinalize>) 
                     (config:DocBuildEnv) 
                     (ma:DocMonad<#IResourceFinalize,'a>) : BuildResult<'a> = 
-        let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
+        let logPath = Path.Combine (config.WorkingDirectory, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
         let ans = apply1 ma sw resources config
         resources.UserResources.RunFinalizer |> ignore
@@ -121,7 +109,7 @@ module DocMonad =
     let runDocMonadNoCleanup (resources:Resources<'res>) 
                              (config:DocBuildEnv) 
                              (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
-        let logPath = Path.Combine (config.WorkingDirectory.LocalPath, "doc-build.log")
+        let logPath = Path.Combine (config.WorkingDirectory, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
         apply1 ma sw resources config
         
@@ -167,7 +155,14 @@ module DocMonad =
             with
             | ex -> Error (sprintf "attemptM: %s" ex.Message)
 
-     
+    let liftAssert (failMsg:string) (condition:bool) : DocMonad<'res, unit> = 
+        if condition then mreturn () else throwError failMsg
+
+    let assertM (failMsg:string) (ma:DocMonad<'res, bool>) : DocMonad<'res, unit> = 
+        bindM ma <| fun condition -> 
+            if condition then 
+                mreturn () 
+            else throwError failMsg
 
     // ****************************************************
     // Logging
@@ -187,29 +182,31 @@ module DocMonad =
         DocMonad <| fun _ _ env -> Ok (extract env)
 
 
-    //let private assertDirectory (path:string) : DocMonad<'res, string> = 
-    //    liftAction (fun _ -> "not a directory")
-    //        <| fun () -> System.IO.Directory.Exists(path) |> ignore; path
+    let private assertDirectory (failMsg:string) (path:string) : DocMonad<'res, string> = 
+        docMonad { 
+            do! liftAssert failMsg (Directory.Exists(path))
+            return path
+            }
 
 
     /// Note - this asserts that the Working directory path represents a 
     /// folder not a file.
-    let askWorkingDirectory () : DocMonad<'res,DirectoryPath> = 
-        asks (fun env -> env.WorkingDirectory)
-
-
-    /// Note - this asserts that the Source directory path represents a 
-    /// folder not a file.
-    let askSourceDirectory () : DocMonad<'res,DirectoryPath> = 
-        asks (fun env -> env.SourceDirectory)
-
-    /// Note - this asserts that the Source directory path represents a 
-    /// folder not a file.
-    let askSourceDirectoryName () : DocMonad<'res,string> = 
+    let askWorkingDirectory () : DocMonad<'res,string> = 
         docMonad { 
-            let! dir = askSourceDirectory ()
-            return dir.DirectoryName
+            let! dir = asks (fun env -> env.WorkingDirectory)
+            return! assertDirectory "'Working' is not a directory" dir
+            }
+
+
+    /// Note - this asserts that the Source directory path represents a 
+    /// folder not a file.
+    let askSourceDirectory () : DocMonad<'res,string> = 
+        docMonad { 
+            let! dir = asks (fun env -> env.SourceDirectory) 
+            return! assertDirectory "'Source' is not a directory" dir
         }
+
+
 
 
     /// Note - this asserts that the Include directory path represents a 
@@ -263,13 +260,6 @@ module DocMonad =
     // ****************************************************
     // Monadic operations
 
-
-    let assertM (cond:DocMonad<'res,bool>) (failMsg:string) : DocMonad<'res,unit> = 
-        docMonad { 
-            match! cond with
-            | true -> return ()
-            | false -> throwError failMsg |> ignore
-        }
 
     let whenM (cond:DocMonad<'res,bool>) 
               (failMsg:string) 
@@ -505,7 +495,7 @@ module DocMonad =
         docMonad { 
             let! exe = getsResources findExe
             let! cwd = askWorkingDirectory ()
-            return { WorkingDirectory = cwd.LocalPath
+            return { WorkingDirectory = cwd
                    ; ExecutableName = exe}
         }
     

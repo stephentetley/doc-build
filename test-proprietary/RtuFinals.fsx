@@ -89,8 +89,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\rtu\final-docs\output\year4-batch2"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\rtu\final-docs\input\year4-batch2"
+    { WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\year4-batch2"
+      SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\year4-batch2"
       IncludeDirectories = [ @"G:\work\Projects\rtu\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -146,7 +146,7 @@ let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> =
     let searches : SearchList = coverSeaches workRow
     docMonad { 
         let! (template:WordDoc) = includeWordDoc "TEMPLATE MM3x-to-MMIM Cover Sheet.docx"
-        let! outpath = getOutputPath outputName
+        let! outpath = extendWorkingPath outputName
         let! wordFile = WordDocument.findReplaceAs searches outpath template
         return! WordDocument.exportPdf wordFile
     }

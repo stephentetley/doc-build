@@ -111,10 +111,10 @@ let numPages() =
 
 
 let WindowsEnv : DocBuildEnv = 
-    let dataDir = DirectoryPath(System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data"))
+    let dataDir = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data")
     { WorkingDirectory = dataDir
       SourceDirectory = dataDir
-      IncludeDirectories = [ dataDir <//> "include" ]
+      IncludeDirectories = [ dataDir </> "include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = None

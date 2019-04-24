@@ -94,9 +94,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    let includePath = DirectoryPath 
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\events2\point-blue\batch3_to_build\output"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\events2\point-blue\batch3_to_build\input"
+    { WorkingDirectory  = @"G:\work\Projects\events2\point-blue\batch3_to_build\output"
+      SourceDirectory   = @"G:\work\Projects\events2\point-blue\batch3_to_build\input"
       IncludeDirectories = [ @"G:\work\Projects\events2\point-blue\batch3_to_build\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -149,7 +148,7 @@ let genCoverSheet (sai:string)
     docMonad {
         let! logo = includeJpegDoc "YW-logo.jpg"
         let md = coverSheetMarkdown sai siteName phase logo.AbsolutePath
-        let! outpath1 = getOutputPath "cover.md"
+        let! outpath1 = extendWorkingPath "cover.md"
         printfn "%O" md
         let! mdDoc = saveMarkdown outpath1 md
         return! markdownToWordToPdf mdDoc
@@ -157,10 +156,10 @@ let genCoverSheet (sai:string)
 
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        do! askSourceDirectory () |>> fun o -> printfn "%s" o.LocalPath
+        do! askSourceDirectory () |>> fun o -> printfn "%s" (getPathName1 o)
         let! inputPath = optionFailM "no match" <| tryFindExactlyOneSourceFileMatching "*.docx" false
         let! wordDoc = getWordDoc inputPath
-        let! outpath1 = getOutputPath "install.pdf"
+        let! outpath1 = extendWorkingPath "install.pdf"
         return! WordDocument.exportPdfAs outpath1 wordDoc
         }
      
@@ -179,7 +178,7 @@ let build1 (siteName:string)
 
 let getWorkList () : DocMonadWord<string list> = 
     askSourceDirectory () >>= fun srcDir -> 
-    let dirs = System.IO.DirectoryInfo(srcDir.LocalPath).GetDirectories()
+    let dirs = System.IO.DirectoryInfo(srcDir).GetDirectories()
                     |> Array.map (fun info -> info.Name)
                     |> Array.toList
     mreturn dirs

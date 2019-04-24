@@ -99,9 +99,9 @@ Environment.SetEnvironmentVariable("PATH",
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\output"
-      SourceDirectory =  DirectoryPath @"G:\work\Projects\usar\final-docs\small_stw_mopup\input"
-      IncludeDirectories = [ @"G:\work\Projects\usar\final-docs\include" ]
+    { WorkingDirectory      = @"G:\work\Projects\usar\final-docs\small_stw_mopup\output"
+      SourceDirectory       = @"G:\work\Projects\usar\final-docs\small_stw_mopup\input"
+      IncludeDirectories    = [ @"G:\work\Projects\usar\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
@@ -254,7 +254,7 @@ let processInstalls(siteName:string) : DocMonadWord<PdfDoc list> =
 
 
 let getWorkList () : string list = 
-    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory.LocalPath).GetDirectories()
+    System.IO.DirectoryInfo(WindowsEnv.SourceDirectory).GetDirectories()
         |> Array.map (fun info -> info.Name)
         |> Array.toList
 

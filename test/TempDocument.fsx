@@ -58,10 +58,10 @@ open DocBuild.Base.DocMonad
 open DocBuild.Office
 
 let WindowsEnv : DocBuildEnv = 
-    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") |> DirectoryPath
+    let cwd = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data") 
     { WorkingDirectory = cwd
       SourceDirectory = cwd
-      IncludeDirectories = [ cwd <//> "include" ]
+      IncludeDirectories = [ cwd </> "include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = None
@@ -131,7 +131,7 @@ let demo06 () =
 let demo06a () = 
     let resources = makeResources <| new WordDocument.WordHandle()
     runDocMonad resources WindowsEnv <| 
-        (askSourceDirectory () |>> fun (src:DirectoryPath) -> src.Segments)
+        (askSourceDirectory () |>> fun (src:string) -> pathToSegments src)
 
 
 

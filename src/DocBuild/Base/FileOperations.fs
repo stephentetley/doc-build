@@ -31,35 +31,26 @@ module FileOperations =
         Path.Combine(left, name2)
 
 
-    let getOutputPath (relativeFileName:string) : DocMonad<'res,string> = 
-        askWorkingDirectory () |>> fun cwd -> (cwd.LocalPath </> relativeFileName)
-
-
-    let askWorkingDirectoryPath () : DocMonad<'res,string> = 
-        askWorkingDirectory () |>> fun path -> path.LocalPath
-
-    let askSourceDirectoryPath () : DocMonad<'res,string> = 
-        askSourceDirectory () |>> fun path -> path.LocalPath
 
 
 
     let extendWorkingPath (relPath:string) : DocMonad<'res,string> = 
-        askWorkingDirectoryPath () |>> fun root -> root </> relPath
+        askWorkingDirectory () |>> fun root -> root </> relPath
 
     let extendSourcePath (relPath:string) : DocMonad<'res,string> = 
-        askSourceDirectoryPath () |>> fun root -> root </> relPath
+        askSourceDirectory () |>> fun root -> root </> relPath
     
 
 
     let isWorkingPath (absPath:string) : DocMonad<'res,bool> = 
-        askWorkingDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
+        askWorkingDirectory () |>> fun dir -> rootIsPrefix dir absPath
 
 
     let isWorkingDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
         isWorkingPath doc.AbsolutePath
 
     let isSourcePath (absPath:string) : DocMonad<'res,bool> = 
-        askSourceDirectory () |>> fun dir -> rootIsPrefix dir (FilePath(absPath))
+        askSourceDirectory () |>> fun dir -> rootIsPrefix dir absPath
         
 
     let isSourceDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
@@ -68,36 +59,42 @@ module FileOperations =
 
     let isIncludePath (absPath:string) : DocMonad<'res,bool> = 
         askIncludeDirectories () |>> fun dirs -> 
-        List.exists (fun dir -> rootIsPrefix (DirectoryPath dir) (FilePath(absPath))) dirs 
+        List.exists (fun dir -> rootIsPrefix dir absPath) dirs 
         
     
     let isIncludeDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
         isIncludePath doc.AbsolutePath
 
     let assertIsWorkingPath (path:string) : DocMonad<'res, unit> = 
-        assertM (isWorkingPath path) (sprintf "Not a working path - '%s'" path)
+        assertM (sprintf "Not a working path - '%s'" path)
+                (isWorkingPath path)
 
     let assertIsWorkingDocument (doc:Document<'a>) : DocMonad<'res, unit> = 
-        assertM (isWorkingDocument doc) (sprintf "Not a working Document - '%s'" doc.Title)
+        assertM (sprintf "Not a working Document - '%s'" doc.Title)
+                (isWorkingDocument doc)
 
     let assertIsSourcePath (path:string) : DocMonad<'res, unit> = 
-        assertM (isSourcePath path) (sprintf "Not a source path - '%s'" path)
+        assertM (sprintf "Not a source path - '%s'" path)
+                (isSourcePath path)
 
     let assertIsSourceDocument (doc:Document<'a>) : DocMonad<'res, unit> = 
-        assertM (isSourceDocument doc) (sprintf "Not a source Document - '%s'" doc.Title)
+        assertM (sprintf "Not a source Document - '%s'" doc.Title)
+                (isSourceDocument doc) 
 
 
     let assertIsIncludePath (path:string) : DocMonad<'res, unit> = 
-        assertM (isIncludePath path) (sprintf "Not an include path - '%s'" path)
+        assertM (sprintf "Not an include path - '%s'" path)
+                (isIncludePath path)
 
     let assertIsIncludeDocument (doc:Document<'a>) : DocMonad<'res, unit> = 
-        assertM (isIncludeDocument doc) (sprintf "Not an include Document - '%s'" doc.Title)
+        assertM (sprintf "Not an include Document - '%s'" doc.Title)
+                (isIncludeDocument doc) 
 
     let getWorkingPathSuffix (absPath:string) : DocMonad<'res,string> = 
         docMonad { 
             do! assertIsWorkingPath absPath
             let! root = askWorkingDirectory ()
-            return rightPathComplement root (FilePath(absPath))
+            return rightPathComplement root absPath
         }
             
     let getWorkingDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
@@ -108,7 +105,7 @@ module FileOperations =
         docMonad { 
             do! assertIsSourcePath absPath
             let! root = askSourceDirectory ()
-            return rightPathComplement root (FilePath(absPath))
+            return rightPathComplement root absPath
         }
 
     let getSourceDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
@@ -136,7 +133,7 @@ module FileOperations =
 
     /// Create a subdirectory in the Working directory.
     let createWorkingFolder (subfolderName:string) : DocMonad<'res,unit> = 
-        askWorkingDirectoryPath () |>> fun cwd ->
+        askWorkingDirectory () |>> fun cwd ->
         let absFolderName = cwd </> subfolderName
         if Directory.Exists(absFolderName) then
             ()
@@ -180,7 +177,7 @@ module FileOperations =
 
     /// Rename a folder in the working drectory
     let renameWorkingFolder (oldName:string) (newName:string) : DocMonad<'res,unit> = 
-        askWorkingDirectoryPath () >>= fun cwd ->
+        askWorkingDirectory () >>= fun cwd ->
         let oldPath = cwd </> oldName
         if Directory.Exists(oldPath) then
             let newPath = cwd </> newName
@@ -195,7 +192,7 @@ module FileOperations =
     let hasSourceFilesMatching (pattern:string) 
                                (recurseIntoSubDirectories:bool) : DocMonad<'res, bool> = 
         let proc () = 
-            askSourceDirectoryPath () |>>  FakeLikePrim.hasFilesMatching pattern recurseIntoSubDirectories
+            askSourceDirectory () |>>  FakeLikePrim.hasFilesMatching pattern recurseIntoSubDirectories
         attemptM <| proc ()
 
 
@@ -207,7 +204,7 @@ module FileOperations =
     let findAllSourceFilesMatching (pattern:string) 
                                    (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
         let proc () = 
-            askSourceDirectoryPath () |>> FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories
+            askSourceDirectory () |>> FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories
         attemptM <| proc ()
 
     /// Search file matching files in the SourceDirectory.
@@ -216,7 +213,7 @@ module FileOperations =
     let findSomeSourceFilesMatching (pattern:string) 
                                     (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
         let proc () = 
-            askSourceDirectoryPath () |>> FakeLikePrim.tryFindSomeFilesMatching pattern recurseIntoSubDirectories
+            askSourceDirectory () |>> FakeLikePrim.tryFindSomeFilesMatching pattern recurseIntoSubDirectories
         optionFailM "fail - findSomeSourceFilesMatching" <| proc ()
 
     /// Search file matching files in the SourceDirectory.
@@ -225,13 +222,13 @@ module FileOperations =
     let tryFindExactlyOneSourceFileMatching (pattern:string) 
                                    (recurseIntoSubDirectories:bool) : DocMonad<'res, string option> =
         let proc () = 
-            askSourceDirectoryPath () |>> FakeLikePrim.tryFindExactlyOneFileMatching pattern recurseIntoSubDirectories
+            askSourceDirectory () |>> FakeLikePrim.tryFindExactlyOneFileMatching pattern recurseIntoSubDirectories
         attemptM <| proc ()
 
 
     /// Create a subdirectory under the working folder.
     let createWorkingSubdirectory (relPath:string) : DocMonad<'res,unit> = 
-        askWorkingDirectoryPath () |>> fun cwd ->
+        askWorkingDirectory () |>> fun cwd ->
         let path = cwd </> relPath 
         if Directory.Exists(path) then 
             ()
@@ -245,7 +242,7 @@ module FileOperations =
         docMonad {
             let! path = extendWorkingPath subdirectory
             let! _ = createWorkingSubdirectory subdirectory
-            return! local (fun env -> {env with WorkingDirectory = DirectoryPath(path)}) ma
+            return! local (fun env -> {env with WorkingDirectory = path}) ma
         }
             
     /// Run an operation with the Source directory restricted to the
@@ -254,7 +251,7 @@ module FileOperations =
                                 (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
         docMonad {
             let! path = extendSourcePath subdirectory
-            return! local (fun env -> {env with SourceDirectory = DirectoryPath(path)}) ma
+            return! local (fun env -> {env with SourceDirectory = path}) ma
         }
 
 

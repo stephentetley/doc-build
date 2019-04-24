@@ -94,7 +94,7 @@ module Document =
     let getWorkingDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! path = askWorkingDirectory () |>> fun uri -> uri <//> relativeName
+            let! path = askWorkingDirectory () |>> fun dir -> dir </> relativeName
             return! getDocument validFileExtensions path 
             }
 
@@ -103,7 +103,7 @@ module Document =
     let getSourceDocument (validFileExtensions:string list) 
                           (relativeName:string) : DocMonad<'res,Document<'a>> = 
         docMonad { 
-            let! path = askSourceDirectory () |>> fun uri -> uri <//> relativeName
+            let! path = askSourceDirectory () |>> fun dir -> dir </> relativeName
             return! getDocument validFileExtensions path 
             }
 
