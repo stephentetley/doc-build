@@ -80,8 +80,7 @@ let demo01 () =
             let! p2 = getWorkingPdfDoc "Two.pdf" 
             let! p3 = getWorkingPdfDoc "Three.pdf"
             let pdfs = Collection.fromList [p1;p2;p3]
-            let! outfile = extendWorkingPath "Concat.pdf"
-            let! _ = Pdf.concatPdfs Pdf.GsScreen pdfs outfile 
+            let! _ = Pdf.concatPdfs Pdf.GsScreen "Concat.pdf" pdfs 
             return ()
         }
 

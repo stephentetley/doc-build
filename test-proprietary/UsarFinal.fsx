@@ -218,14 +218,10 @@ let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> =
         <||> processMarkdown "Survey Info" (Some "1.Survey") "*.md"
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    surveyPhotosConfig siteName 
-        |> makePhotoBook
-        |>> Option.map (setTitle "Survey Photos")
+    optionalM (makePhotoBook (surveyPhotosConfig siteName) |>> setTitle "Survey Photos")
 
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    siteWorksPhotosConfig siteName 
-        |> makePhotoBook
-        |>> Option.map (setTitle "Site Work Photos")
+    optionalM (makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
 
 
 let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
@@ -268,8 +264,8 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
                         &^^ oWorksPhotos
         let! contents = genContents col1
         let allDocs = cover ^^& contents ^^& col1
-        let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" sourceName)
-        return! Pdf.concatPdfs Pdf.GsDefault allDocs outputAbsPath 
+        let finalName = sprintf "%s Final.pdf" sourceName |> safeName
+        return! Pdf.concatPdfs Pdf.GsDefault finalName allDocs 
     }
 
 

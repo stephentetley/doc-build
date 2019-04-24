@@ -23,17 +23,17 @@ module Pdf =
 
     /// Concatenate a collection of Pdfs into a single Pdf with PDFtk.
     /// The result is output in the working directory.
-    /// This produces large files than Ghostscipt with the option
+    /// This produces larger (but nicer) files than Ghostscipt with the option
     /// `/default`.
-    let pdftkConcatPdfs (inputFiles:PdfCollection)
-                        (outputAbsPath:string) : DocMonad<'userRes,PdfDoc> = 
+    let pdftkConcatPdfs (outputRelName:string)
+                        (inputFiles:PdfCollection) : DocMonad<'userRes,PdfDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let inputs = 
                 inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
             let cmd = PdftkPrim.concatCommand inputs outputAbsPath
             let! _ = execPdftk cmd
-            return! getWorkingPdfDoc outputAbsPath
+            return! getPdfDoc outputAbsPath
         }
 
 
@@ -69,12 +69,12 @@ module Pdf =
     /// with Ghostscript.
     /// The result is output in the working directory.
     let concatPdfs (quality:GsQuality)
-                   (inputFiles:PdfCollection)
-                   (outputAbsPath:string) : DocMonad<'userRes,PdfDoc> = 
+                   (outputRelName:string)
+                   (inputFiles:PdfCollection) : DocMonad<'userRes,PdfDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let! _ = ghostscriptConcat quality outputAbsPath inputFiles
-            return! getWorkingPdfDoc outputAbsPath
+            return! getPdfDoc outputAbsPath
  
         }
 
@@ -117,20 +117,20 @@ module Pdf =
 
     /// outputName is relatuive to Working directory.
     let extractRotationsAs (directives:RotationDirective list)
-                           (outputAbsPath:string) 
+                           (outputRelName:string) 
                            (src:PdfDoc) : DocMonad<'userRes,PdfDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let command = 
                 PdftkPrim.rotationCommand src.AbsolutePath directives outputAbsPath
             let! _ = execPdftk command
-            return! getWorkingPdfDoc outputAbsPath
+            return! getPdfDoc outputAbsPath
         }
 
     /// Rezize for Word generating a new temp file
     let extractRotations (directives:RotationDirective list) 
                          (src:PdfDoc) : DocMonad<'userRes,PdfDoc> = 
-        extractRotationsAs directives src.AbsolutePath src
+        extractRotationsAs directives src.FileName src
 
 
 

@@ -39,33 +39,33 @@ module Markdown =
     // Save output from MarkdownDoc
 
     /// Output a Markdown doc to file.
-    let saveMarkdown (outputAbsPath:string) 
+    let saveMarkdown (outputRelName:string) 
                      (markdown:Markdown) : DocMonad<'userRes,MarkdownDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let _ = markdown.Save outputAbsPath 
-            return! getWorkingMarkdownDoc outputAbsPath
+            return! getMarkdownDoc outputAbsPath
         }
 
     // ************************************************************************
     // Export
 
     /// Requires pandoc
-    let markdownToWordAs (outputAbsPath:string) 
+    let markdownToWordAs (outputRelName:string) 
                          (src:MarkdownDoc) : DocMonad<'userRes,WordDoc> =
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let! styles = getCustomStylesPath () 
             let command = 
                 PandocPrim.outputDocxCommand styles [] src.AbsolutePath outputAbsPath
             let! _ = execPandoc command
-            return! getWorkingWordDoc outputAbsPath
+            return! getWordDoc outputAbsPath
          }
 
     /// Requires pandoc
     let markdownToWord (src:MarkdownDoc) : DocMonad<'userRes,WordDoc> =
-        let outputFile = Path.ChangeExtension(src.AbsolutePath, "docx")
-        markdownToWordAs outputFile src
+        let outputName = Path.ChangeExtension(src.AbsolutePath, "docx") |> Path.GetFileName
+        markdownToWordAs outputName src
 
 
     // ************************************************************************
@@ -74,40 +74,40 @@ module Markdown =
 
     ///  Specific TeX backend is set in DocBuildEnv, generally you 
     /// should use "pdflatex".
-    let markdownToTeXToPdfAs (outputAbsPath:string) 
+    let markdownToTeXToPdfAs (outputRelName:string) 
                              (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let! pdfEngine = asks (fun env -> env.PandocOpts.PdfEngine)       
             let command = 
                 PandocPrim.outputPdfCommand pdfEngine [] src.AbsolutePath outputAbsPath
             printfn "// %s" (arguments command)
             let! _ = execPandoc command
-            return! getWorkingPdfDoc outputAbsPath
+            return! getPdfDoc outputAbsPath
          }
 
 
     let markdownToTeXToPdf (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
-        let outputFile = Path.ChangeExtension(src.AbsolutePath, "pdf")
-        markdownToTeXToPdfAs outputFile src
+        let outputName = Path.ChangeExtension(src.AbsolutePath, "pdf") |> Path.GetFileName
+        markdownToTeXToPdfAs outputName src
 
     // ************************************************************************
     // Find and replace
 
     let findReplaceAs (searches:SearchList) 
-                      (outputAbsPath:string) 
+                      (outputRelName:string) 
                       (src:MarkdownDoc) : DocMonad<'userRes,MarkdownDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let original = File.ReadAllText(src.AbsolutePath)
             let action (source:string) (searchText:string, replaceText:string) = 
                source.Replace(searchText, replaceText)
             let final = List.fold action original searches
             let _ = File.WriteAllText(outputAbsPath, final)
-            return! getWorkingMarkdownDoc outputAbsPath
+            return! getMarkdownDoc outputAbsPath
         }
 
 
     let findReplace (searches:SearchList)
                     (src:MarkdownDoc) : DocMonad<'userRes,MarkdownDoc> = 
-        findReplaceAs searches src.AbsolutePath src
+        findReplaceAs searches src.FileName src

@@ -9,11 +9,9 @@ module PhotoBook =
     open MarkdownDoc.Pandoc
 
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
 
     open DocBuild.Document
     open DocBuild.Document.Jpeg
-    open DocBuild.Document.Markdown
 
 
 
@@ -93,15 +91,14 @@ module PhotoBook =
             | Some col when col.Elements.IsEmpty -> return None
             | Some col -> 
                 let mdDoc = photoBookMarkdown config.Title col.Elements
-                let! outputAbsPath = extendWorkingPath config.RelativeOutputName
-                let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-                return! getWorkingMarkdownDoc outputAbsPath |>> Some
+                return! Markdown.saveMarkdown config.RelativeOutputName mdDoc |>> Some
         }
 
     let genPhotoBook (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)
-                     (config:PhotoBookConfig) : DocMonad<'userRes, PdfDoc option> =
-        makePhotoBook config >>= fun opt -> 
-        match opt with
-        | Some md -> render md |>> Some
-        | None -> mreturn None
+                     (config:PhotoBookConfig) : DocMonad<'userRes, PdfDoc> =
+        docMonad { 
+            match! makePhotoBook config with
+            | Some md -> return! render md
+            | None -> return! throwError "makePhotoBook failed"
+        }
 

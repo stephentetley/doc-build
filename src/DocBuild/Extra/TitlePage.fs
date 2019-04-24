@@ -34,9 +34,7 @@ module TitlePage =
     let makeTitlePage (config:TitlePageConfig) : DocMonad<'userRes, MarkdownDoc> =
         docMonad {
             let mdDoc = genMarkdown config.Title config.DocBody
-            let! outputAbsPath = extendWorkingPath config.RelativeOutputName
-            let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-            return! getWorkingMarkdownDoc outputAbsPath
+            return! Markdown.saveMarkdown config.RelativeOutputName mdDoc
         }
 
     let genPrefixWithTitlePage (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)
@@ -48,9 +46,8 @@ module TitlePage =
             let temp = "title.temp.md"    
             let! md = makeTitlePage { Title = title; DocBody = body; RelativeOutputName = temp }
             let! title = render md
-            let outPath = modifyFileName (fun s -> s + "+title") pdf.AbsolutePath 
-            let! ans = pdftkConcatPdfs (Collection.fromList [title; pdf]) outPath
-            return ans |> setTitle pdf.Title
+            let outName = modifyFileName (fun s -> s + "+title") pdf.FileName 
+            return! pdftkConcatPdfs outName (Collection.fromList [title; pdf]) |>> setTitle pdf.Title
         }
 
 

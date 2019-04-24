@@ -180,7 +180,7 @@ let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
         ; SourceSubFolder = "1.Surveys" </> name1 </> "photos"
         ; WorkingSubFolder = "survey_photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
-    makePhotoBook props
+    optionalM (makePhotoBook props)
 
 
 let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
@@ -190,7 +190,7 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
         ; SourceSubFolder  = "2.Install" </> name1 </> "photos"
         ; WorkingSubFolder = "install_photos"
         ; RelativeOutputName= sprintf "%s install photos.md" name1 }
-    makePhotoBook props
+    optionalM (makePhotoBook props)
     
 
 let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> = 
@@ -208,8 +208,8 @@ let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> =
                         &^^ oSurvey     &^^ oSurveyPhotos
                         &^^ works       &^^ oWorksPhotos
 
-                let! outputAbsPath = extendWorkingPath (sprintf "%s Final.pdf" safeSiteName)
-                return! Pdf.concatPdfs Pdf.GsDefault col outputAbsPath 
+                let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
+                return! Pdf.concatPdfs Pdf.GsDefault finalName col 
             }
 
 

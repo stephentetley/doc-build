@@ -137,7 +137,7 @@ let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
         ; SourceSubFolder = "photos"
         ; WorkingSubFolder = "photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" (safeName siteName) }
-    makePhotoBook props
+    optionalM (makePhotoBook props)
 
 let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
@@ -147,8 +147,8 @@ let genFinalDoc1 () : DocMonadWord<PdfDoc> =
         let! phodoDoc = genPhotos siteName
         let (col:PdfCollection) = 
             Collection.empty &^^ workSheet     &^^ phodoDoc
-        let! outputAbsPath = extendWorkingPath (sprintf "%s S3953 IS Barrier Final.pdf" sourceName)
-        return! Pdf.concatPdfs Pdf.GsDefault col outputAbsPath 
+        let finalName = sprintf "%s S3953 IS Barrier Final.pdf" sourceName |> safeName
+        return! Pdf.concatPdfs Pdf.GsDefault finalName col 
     }
 
 

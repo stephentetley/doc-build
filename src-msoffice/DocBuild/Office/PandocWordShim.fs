@@ -23,28 +23,29 @@ module PandocWordShim =
     open DocBuild.Office
 
     let asksCustomStyles () : DocMonad<'res, WordDoc option> = 
-        asks (fun env -> env.PandocOpts.CustomStylesDocx) >>= fun opt -> 
-        match opt with 
-        | None -> mreturn None 
-        | Some absPath -> getWordDoc absPath |>> Some
+        docMonad {
+            match! asks (fun env -> env.PandocOpts.CustomStylesDocx) with 
+            | None -> return None 
+            | Some fileName -> return! getIncludeWordDoc fileName |>> Some
+        }
 
 
     // ************************************************************************
     // Export to Pdf with Pandoc (and TeX)
 
 
-    let markdownToWordToPdfAs (outputAbsPath:string) 
+    let markdownToWordToPdfAs (outputPdfName:string) 
                               (src:MarkdownDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
         docMonad { 
-            let docAbsPath = Path.ChangeExtension(outputAbsPath, "docx")
-            let! doc = markdownToWordAs docAbsPath src
-            return! WordDocument.exportPdfAs outputAbsPath doc
+            let docName = Path.ChangeExtension(outputPdfName, "docx")
+            let! doc = markdownToWordAs docName src
+            return! WordDocument.exportPdfAs outputPdfName doc
          }
 
 
     let markdownToWordToPdf (src:MarkdownDoc)  : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
-        let outputFile = Path.ChangeExtension(src.AbsolutePath, "pdf")
-        markdownToWordToPdfAs outputFile src
+        let fileName = Path.ChangeExtension(src.FileName, "pdf")
+        markdownToWordToPdfAs fileName src
 
 
 
@@ -58,7 +59,7 @@ module PandocWordShim =
 
     type PhotoBookConfig = PhotoBook.PhotoBookConfig
 
-    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'res, PdfDoc option> =
+    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'res, PdfDoc> =
         PhotoBook.genPhotoBook markdownToWordToPdf config
 
     /// Prefix the Pdf with a title page.

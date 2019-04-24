@@ -62,22 +62,21 @@ module PowerPointDocument =
 
 
 
-    let exportPdfAs (outputAbsPath:string) 
+    let exportPdfAs (outputRelName:string) 
                     (src:PowerPointDoc) : DocMonad<#IPowerPointHandle,PdfDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let! pdfQuality = 
                 asks (fun env -> env.PrintOrScreen) |>> powerpointExportQuality
             let! ans = 
                 execPowerPoint <| fun app -> 
                     liftResult (powerPointExportAsPdf app pdfQuality src.AbsolutePath outputAbsPath)
-            return! getWorkingPdfDoc outputAbsPath
+            return! getPdfDoc outputAbsPath
         }
 
     /// Saves the file in the working directory.
     let exportPdf (src:PowerPointDoc) : DocMonad<#IPowerPointHandle,PdfDoc> = 
         docMonad { 
-            let! path1 = extendWorkingPath src.FileName
-            let outputAbsPath = Path.ChangeExtension(path1, "pdf")
-            return! exportPdfAs outputAbsPath src
+            let fileName = Path.ChangeExtension(src.FileName, "pdf")
+            return! exportPdfAs fileName src
         }

@@ -159,11 +159,10 @@ let genCoverSheet (sai:string)
 
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        do! askSourceDirectory () |>> fun o -> printfn "%s" (Internal.FilePaths.getPathName1 o)
+        do! askSourceDirectory () |>> fun o -> printfn "%s" (fileObjectName o)
         let! inputPath = optionFailM "no match" <| tryFindExactlyOneSourceFileMatching "*.docx" false
         let! wordDoc = getWordDoc inputPath
-        let! outpath1 = extendWorkingPath "install.pdf"
-        return! WordDocument.exportPdfAs outpath1 wordDoc
+        return! WordDocument.exportPdfAs "install.pdf" wordDoc
         }
      
 let build1 (phase:string) (saiMap:SaiMap) : DocMonadWord<PdfDoc> =        
@@ -174,8 +173,8 @@ let build1 (phase:string) (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
         let! cover = genCoverSheet saiNumber siteName phase
         let! scope = genInstallSheet ()
         let col1 = Collection.fromList [ cover; scope ]  
-        let! outputAbsPath = extendWorkingPath (sprintf "%s %s Final.pdf" sourceName phase)
-        return! Pdf.concatPdfs Pdf.GsDefault col1 outputAbsPath 
+        let finalName = sprintf "%s %s Final.pdf" sourceName phase |> safeName
+        return! Pdf.concatPdfs Pdf.GsDefault finalName col1 
     }
 
 

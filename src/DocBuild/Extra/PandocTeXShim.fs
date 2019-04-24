@@ -28,7 +28,7 @@ module PandocTeXShim =
     /// Make a 'photo book'.
     /// Use Pandoc to render to PDF via TeX.
     /// TeX must be installed and callable by Pandoc.
-    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'userRes, PdfDoc option> =
+    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'userRes, PdfDoc> =
         PhotoBook.genPhotoBook markdownToTeXToPdf config
 
     /// Prefix the Pdf with a title page.

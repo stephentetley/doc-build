@@ -64,25 +64,24 @@ module ExcelDocument =
 
 
     let exportPdfAs (fitWidth:bool)
-                    (outputAbsPath:string)
+                    (outputRelName:string)
                     (src:ExcelDoc) : DocMonad<#IExcelHandle,PdfDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let! pdfQuality = 
                 asks (fun env -> env.PrintOrScreen) |>> excelExportQuality
             let! _ = 
                 execExcel <| fun app -> 
                         liftResult (excelExportAsPdf app fitWidth pdfQuality src.AbsolutePath outputAbsPath)
-            return! getWorkingPdfDoc outputAbsPath
+            return! getPdfDoc outputAbsPath
         }
 
     /// Saves the file in the top-level working directory.
     let exportPdf (fitWidth:bool) 
                   (src:ExcelDoc) : DocMonad<#IExcelHandle,PdfDoc> = 
         docMonad { 
-            let! path1 = extendWorkingPath src.FileName
-            let outputAbsPath = Path.ChangeExtension(path1, "pdf")
-            return! exportPdfAs fitWidth outputAbsPath src
+            let fileName = Path.ChangeExtension(src.FileName, "pdf")
+            return! exportPdfAs fitWidth fileName src
         }
 
 
@@ -91,18 +90,18 @@ module ExcelDocument =
     // Find and replace
 
     let findReplaceAs (searches:SearchList) 
-                      (outputAbsPath:string) 
+                      (outputRelName:string) 
                       (src:ExcelDoc) : DocMonad<#IExcelHandle,ExcelDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let! ans = 
                 execExcel <| fun app -> 
                         liftResult (excelFindReplace app searches src.AbsolutePath outputAbsPath)
-            return! getWorkingExcelDoc outputAbsPath
+            return! getExcelDoc outputAbsPath
         }
 
 
 
     let findReplace (searches:SearchList) 
                     (src:ExcelDoc) : DocMonad<#IExcelHandle,ExcelDoc> = 
-        findReplaceAs searches src.AbsolutePath src
+        findReplaceAs searches src.FileName src

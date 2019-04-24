@@ -8,11 +8,9 @@ module Contents =
     open MarkdownDoc
     
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
 
     open DocBuild.Document
     open DocBuild.Document.Pdf
-    open DocBuild.Document.Markdown
 
     // We can render a preliminary version of contents to get its length,
     // or choose to render a certain number of items per page and know 
@@ -53,10 +51,7 @@ module Contents =
         docMonad {
             let! (infos:DocInfo list) = mapM getInfo col.Elements
             let mdDoc = genMarkdown config.PrologLength infos
-            let! outputAbsPath = extendWorkingPath config.RelativeOutputName
-            let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-            return! getWorkingMarkdownDoc outputAbsPath
-            
+            return! Markdown.saveMarkdown config.RelativeOutputName mdDoc           
         }
 
     let genTableOfContents (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)
@@ -64,10 +59,9 @@ module Contents =
                            (col:PdfCollection) : DocMonad<'userRes, PdfDoc> =
         docMonad {
             let config1 = { config with RelativeOutputName = "contents-zero.md" }
-            let! tocTemp = makeContents1 config col >>= render
+            let! tocTemp = makeContents1 config1 col >>= render
             let! pageCount = countPages tocTemp
             let config2 =  { config with PrologLength = config.PrologLength + pageCount }
-            let! final = makeContents1 config2 col >>= render
-            return final
+            return! makeContents1 config2 col >>= render
         }
 

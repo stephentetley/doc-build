@@ -123,8 +123,7 @@ let survey (siteName:string) (saiNumber:string) : DocMonadWord<WordDoc> =
     let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
     docMonad { 
         let! (template:WordDoc) = getIncludeWordDoc "TEMPLATE Survey.docx"
-        let! outpath = extendWorkingPath outputName
-        return! WordDocument.findReplaceAs searches outpath template
+        return! WordDocument.findReplaceAs searches outputName template
     }
 
 let hazards (siteName:string) (saiNumber:string) : DocMonadWord<WordDoc> = 
@@ -132,8 +131,7 @@ let hazards (siteName:string) (saiNumber:string) : DocMonadWord<WordDoc> =
     let searches : SearchList = [ ("#SAINUMBER", saiNumber); ("#SITENAME", siteName) ]
     docMonad { 
         let! (template:WordDoc) = getIncludeWordDoc "TEMPLATE Hazard Identification Check List.docx"
-        let! outpath = extendWorkingPath outputName
-        return! WordDocument.findReplaceAs searches outpath template
+        return! WordDocument.findReplaceAs searches outputName template
     }
 
 let ntrim (source:string) : string = 

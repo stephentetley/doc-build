@@ -16,29 +16,29 @@ module Jpeg =
     // image handle after an image file is opened. 
 
     /// Save in working directory (or a child of).
-    let autoOrientAs (outputAbsPath:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
+    let autoOrientAs (outputRelName:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let _ = ImageMagickPrim.imAutoOrient src.AbsolutePath outputAbsPath
-            return! getWorkingJpegDoc outputAbsPath
+            return! getJpegDoc outputAbsPath
         }
 
     /// Auto-orient overwriting the input file
     let autoOrient (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
-        autoOrientAs src.AbsolutePath src
+        autoOrientAs src.FileName src
 
 
     /// Save in working directory (or a child of).
-    let resizeForWordAs (outputAbsPath:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
+    let resizeForWordAs (outputRelName:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
         docMonad { 
-            do! assertIsWorkingPath outputAbsPath
+            let! outputAbsPath = extendWorkingPath outputRelName
             let _ = ImageMagickPrim.imOptimizeForMsWord src.AbsolutePath outputAbsPath
-            return! getWorkingJpegDoc outputAbsPath
+            return! getJpegDoc outputAbsPath
         }
 
     /// Resize for Word overwriting the input file
     let resizeForWord (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
-        resizeForWordAs src.AbsolutePath src
+        resizeForWordAs src.FileName src
 
 
 
