@@ -43,16 +43,16 @@ open MarkdownDoc.Pandoc
 #load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Internal\Shell.fs"
+#load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
+#load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
+#load "..\src\DocBuild\Base\Internal\PdftkPrim.fs"
+#load "..\src\DocBuild\Base\Internal\ImageMagickPrim.fs"
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Base\Skeletons.fs"
-#load "..\src\DocBuild\Raw\GhostscriptPrim.fs"
-#load "..\src\DocBuild\Raw\PandocPrim.fs"
-#load "..\src\DocBuild\Raw\PdftkPrim.fs"
-#load "..\src\DocBuild\Raw\ImageMagickPrim.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
@@ -70,7 +70,6 @@ open MarkdownDoc.Pandoc
 #load "..\src-msoffice\DocBuild\Office\PandocWordShim.fs"
 
 open DocBuild.Base
-open DocBuild.Base.DocMonad
 open DocBuild.Document
 open DocBuild.Document.Markdown
 open DocBuild.Office

@@ -8,9 +8,7 @@ namespace DocBuild.Document
 module Jpeg = 
 
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
-    open DocBuild.Raw
-
+    open DocBuild.Base.Internal
 
 
     // NOTE:

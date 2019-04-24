@@ -7,7 +7,7 @@ namespace DocBuild.Base
 [<AutoOpen>]
 module Skeletons = 
 
-    open DocBuild.Base.DocMonad
+    open DocBuild.Base
 
 
     let private getSourceSubdirectories () : DocMonad<'userRes,string list> = 

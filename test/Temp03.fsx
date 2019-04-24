@@ -20,7 +20,6 @@ open System
 #load "..\src\DocBuild\Base\FileOperations.fs"
 
 open DocBuild.Base
-open DocBuild.Base.DocMonad
 
 
 let WindowsEnv : DocBuildEnv = 

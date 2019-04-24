@@ -11,9 +11,6 @@ module Document =
     open System.IO
 
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
-
-
 
     /// Check the file exists and it's extension matches one of the supplied list.
     /// The path should be an absolute path.

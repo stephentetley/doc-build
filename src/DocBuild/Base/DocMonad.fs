@@ -7,6 +7,7 @@ namespace DocBuild.Base
 // Explicitly import this module:
 // open DocBuild.Base.DocMonad
 
+[<AutoOpen>]
 module DocMonad = 
 
     open System.IO

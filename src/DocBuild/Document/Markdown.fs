@@ -12,8 +12,8 @@ module Markdown =
     open MarkdownDoc
 
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
-    open DocBuild.Raw
+    open DocBuild.Base.Internal
+
 
     // ************************************************************************
     // Retrieve Custom styles

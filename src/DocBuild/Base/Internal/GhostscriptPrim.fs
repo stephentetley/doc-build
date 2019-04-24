@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Raw
+namespace DocBuild.Base.Internal
 
 
 [<RequireQualifiedAccess>]
@@ -10,8 +10,6 @@ module GhostscriptPrim =
     
 
     open SLFormat.CommandOptions
-
-    open DocBuild.Base
 
     
     /// -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite [-dPDFSETTINGS=/screen]

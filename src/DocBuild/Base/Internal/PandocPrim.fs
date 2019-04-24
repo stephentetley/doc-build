@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Raw
+namespace DocBuild.Base.Internal
 
 
 [<RequireQualifiedAccess>]
@@ -10,7 +10,6 @@ module PandocPrim =
     
     open SLFormat.CommandOptions
 
-    open DocBuild.Base
 
     // One for SLFormat...
     let group (cmds:CmdOpt list) : CmdOpt = 
@@ -41,9 +40,9 @@ module PandocPrim =
     /// Default pdfengine is pdflatex
     /// pandoc --from=markdown --pdf-engine=<pdfEngine> --standalone --output=="<outputFile>" "<inputFile>"
     let outputPdfCommand (pdfEngine:string option) 
-                          (extraOpts: CmdOpt list)
-                          (inputFile:string) 
-                          (outputFile:string)  : CmdOpt list = 
+                         (extraOpts: CmdOpt list)
+                         (inputFile:string) 
+                         (outputFile:string) : CmdOpt list = 
         let pdfEngineOpt = 
             match pdfEngine with
             | None -> argument "--pdf-engine" &= "pdflatex"

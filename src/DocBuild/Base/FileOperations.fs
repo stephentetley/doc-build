@@ -12,10 +12,8 @@ module FileOperations =
 
     open DocBuild.Base.Internal
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
 
-    /// TODO - idea of working directory is too complicated.
-    /// And we need a simple way to make temp files.
+    /// TODO - need to unify what file ops we actaully need
 
 
     let extendWorkingPath (relPath:string) : DocMonad<'userRes,string> = 

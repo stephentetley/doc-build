@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-namespace DocBuild.Raw
+namespace DocBuild.Base.Internal
 
 
 [<RequireQualifiedAccess>]
@@ -11,31 +11,29 @@ module ImageMagickPrim =
 
     open ImageMagick
 
-    open DocBuild.Base
+      
+    let isLandscape (info:MagickImageInfo) : bool = 
+        info.Width > info.Height
 
-   
+    let isPortrait (info:MagickImageInfo) : bool = 
+        info.Height > info.Width
 
-
-    // This may get orientation "wrong" for files when the picture 
-    // orientation is stored as an Exif tag.
-    let getOrientation (info:MagickImageInfo) : PageOrientation = 
-        if info.Width > info.Height then 
-            PageOrientation.Landscape 
-        else PageOrientation.Portrait
 
 
     // todo should have maxwidth, maxheight
-    let calculateNewPixelSize (info:MagickImageInfo) (maxWidth:int, maxHeight:int) : (int * int) = 
+    let calculateNewPixelSize (info:MagickImageInfo) 
+                              (maxWidth:int, maxHeight:int) : (int * int) = 
         let getScaling (maxi:int) (current:int) : float = 
             let maxd = float maxi
             let currentd = float current
             maxd / currentd
         let scale (i:int) (factor:float) : int = int (float i * factor)
-        match getOrientation info with
-        | Landscape -> 
+        if isLandscape info then
+            // Lanscape
             let scaling = getScaling maxWidth info.Width 
             (maxWidth, scale info.Height scaling)
-        | Portrait -> 
+        else
+            // Portrait
             let scaling = getScaling maxHeight info.Height 
             (scale info.Width scaling, maxHeight)
 

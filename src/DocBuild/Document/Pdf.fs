@@ -14,8 +14,8 @@ module Pdf =
     open SLFormat.CommandOptions
 
     open DocBuild.Base
-    open DocBuild.Base.DocMonad
-    open DocBuild.Raw
+    open DocBuild.Base.Internal
+   
 
     // ************************************************************************
     // Concatenation
@@ -63,6 +63,7 @@ module Pdf =
             inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputAbsPath inputs
         execGhostscript cmd
+
 
     /// Concatenate a collection of Pdfs into a single Pdf
     /// with Ghostscript.

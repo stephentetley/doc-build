@@ -2,16 +2,13 @@
 // License: BSD 3 Clause
 
 
-namespace DocBuild.Raw
+namespace DocBuild.Base.Internal
 
-
-// TODO
+// Note
 // Use pdftk for an alternative non-optimizing `pdf concat`.
 // It appears Ghostscript concat can be too aggressive with 
 // optimization.
 // We should only optimize on a final pass.
-
-
 
 [<RequireQualifiedAccess>]
 module PdftkPrim = 
@@ -20,7 +17,6 @@ module PdftkPrim =
     
     open SLFormat.CommandOptions
 
-    open DocBuild.Base
 
     /// <input1.pdf> <input2.pdf> ... cat output <output.pdf>
     let concatCommand (inputFiles:string list) 
@@ -44,7 +40,7 @@ module PdftkPrim =
 
     /// Seacrh for number of pages in a dump_data from Pdftk
     /// NumberOfPages: 3
-    let regexSearchNumberOfPages (dumpData:string) : Result<int,ErrMsg> = 
+    let regexSearchNumberOfPages (dumpData:string) : Result<int,string> = 
         let patt = @"NumberOfPages: (\d+)"
         let result = Regex.Match(dumpData, patt)
         if result.Success then 
