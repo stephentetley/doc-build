@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="DocBuild\Base\BaseDefinitions.fs" />
     <Compile Include="DocBuild\Base\FakeLikePrim.fs" />
     <Compile Include="DocBuild\Base\FilePaths.fs" />
     <Compile Include="DocBuild\Base\Common.fs" />

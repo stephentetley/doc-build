@@ -39,7 +39,6 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-#load "..\src\DocBuild\Base\BaseDefinitions.fs"
 #load "..\src\DocBuild\Base\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"

@@ -10,10 +10,23 @@ module Common =
     open System
     open System.IO
 
-    open DocBuild.Base
+
+    type PageOrientation = 
+        | Portrait 
+        | Landscape
 
 
 
+    type PrintQuality = 
+        | Screen
+        | Print
+
+
+    // ************************************************************************
+    // Find and replace
+
+
+    type SearchList = (string * string) list
 
 
     type ErrMsg = string
