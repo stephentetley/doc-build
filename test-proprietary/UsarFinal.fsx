@@ -132,7 +132,7 @@ let renderMarkdownFile (docTitle:string)
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! logoPath = includeJpegDoc "YW-logo.jpg"
+        let! logoPath = getIncludeJpegDoc "YW-logo.jpg"
         let config:CoversheetConfig = 
             { LogoPath = logoPath.AbsolutePath
               SaiNumber = saiNumber
@@ -140,7 +140,6 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
               Author = "S Tetley"
               Title = "AMP6 Ultrasonic Asset Replacement (Scheme code S3820)"
             }
-        let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet config "coversheet.md" 
         let! docx = Markdown.markdownToWord markdownFile 
         return! WordDocument.exportPdf docx |>> setTitle "Coversheet"
@@ -148,7 +147,7 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
 
 let genProjectScope () : DocMonadWord<PdfDoc> =  
     docMonad { 
-        let! (input:PdfDoc) = includePdfDoc "project-scope.pdf"
+        let! (input:PdfDoc) = getIncludePdfDoc "project-scope.pdf"
         return! copyToWorking input |>> setTitle "Project Scope"
     }
 
@@ -183,7 +182,7 @@ let sourceFileToTitle (siteName:string) (filePath:string) : string =
 let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> = 
     let title = sourceFileToTitle siteName absPath
     docMonad { 
-        let! doc = sourceWordDoc absPath
+        let! doc = getSourceWordDoc absPath
         let! pdf1 = WordDocument.exportPdf doc 
         return! prefixWithTitlePage title None pdf1 |>> setTitle title
     }
@@ -198,7 +197,7 @@ let processMarkdown (title:string)
             | Some name -> localSourceSubdirectory name ma
         let! inputs = contextM  <| findSomeSourceFilesMatching glob false
         return! mapM (fun path -> 
-                        sourceMarkdownDoc path >>= fun md1 ->
+                        getSourceMarkdownDoc path >>= fun md1 ->
                         copyToWorking md1 >>= fun md2 ->
                         renderMarkdownFile title md2) inputs
     }

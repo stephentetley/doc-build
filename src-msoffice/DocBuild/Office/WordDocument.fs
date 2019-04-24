@@ -81,7 +81,7 @@ module WordDocument =
             let! (ans:unit) = 
                 execWord <| fun app -> 
                     liftResult (wordExportAsPdf app paperSize pdfQuality src.AbsolutePath outputAbsPath)
-            return! workingPdfDoc outputAbsPath
+            return! getWorkingPdfDoc outputAbsPath
         }
 
     /// Saves the file in the top-level working directory.
@@ -105,7 +105,7 @@ module WordDocument =
             let! ans = 
                 execWord <| fun app -> 
                         liftResult (wordFindReplace app searches src.AbsolutePath outputAbsPath)
-            return! workingWordDoc outputAbsPath
+            return! getWorkingWordDoc outputAbsPath
         }
 
 

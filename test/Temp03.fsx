@@ -46,7 +46,7 @@ let test01 () =
     let sources = ["One.pdf"; "Two.pdf"; "Three.pdf"]
     let script = 
         docMonad { 
-            let! docs = Collection.fromList <&&> mapM workingPdfDoc sources
+            let! docs = Collection.fromList <&&> mapM getWorkingPdfDoc sources
             return docs
             }
     runDocMonadNoCleanup (makeResources ()) WindowsEnv script
@@ -64,8 +64,8 @@ let test04 () =
     let script = 
         docMonad { 
             let! docs = 
-                Collection.fromList <&&> mapM (workingPdfDoc) sources
-            let! last = workingPdfDoc "Three.pdf"
+                Collection.fromList <&&> mapM (getWorkingPdfDoc) sources
+            let! last = getWorkingPdfDoc "Three.pdf"
             return (docs &^^ last)
             }
     runDocMonadNoCleanup (makeResources ()) WindowsEnv script |> Result.map (fun col -> col.Elements)

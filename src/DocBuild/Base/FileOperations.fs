@@ -17,123 +17,108 @@ module FileOperations =
     /// TODO - idea of working directory is too complicated.
     /// And we need a simple way to make temp files.
 
-    /// Modify the file name, leave the directory path 
-    /// and the extension the same.
-    let modifyFileName (modify:string -> string) 
-                       (absPath:string) : string = 
-        let left = Path.GetDirectoryName absPath
-        let name = Path.GetFileNameWithoutExtension absPath
-        let name2 = 
-            if Path.HasExtension absPath then
-                let ext = Path.GetExtension absPath
-                modify name + ext
-            else
-                modify name
-        Path.Combine(left, name2)
 
-
-
-
-
-    let extendWorkingPath (relPath:string) : DocMonad<'res,string> = 
+    let extendWorkingPath (relPath:string) : DocMonad<'userRes,string> = 
         askWorkingDirectory () |>> fun root -> root </> relPath
 
-    let extendSourcePath (relPath:string) : DocMonad<'res,string> = 
+    let extendSourcePath (relPath:string) : DocMonad<'userRes,string> = 
         askSourceDirectory () |>> fun root -> root </> relPath
     
 
 
-    let isWorkingPath (absPath:string) : DocMonad<'res,bool> = 
+    let isWorkingPath (absPath:string) : DocMonad<'userRes,bool> = 
         askWorkingDirectory () |>> fun dir -> FilePaths.rootIsPrefix dir absPath
 
 
-    let isWorkingDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
+    let isWorkingDocument (doc:Document<'a>) : DocMonad<'userRes,bool> = 
         isWorkingPath doc.AbsolutePath
 
-    let isSourcePath (absPath:string) : DocMonad<'res,bool> = 
+    let isSourcePath (absPath:string) : DocMonad<'userRes,bool> = 
         askSourceDirectory () |>> fun dir -> FilePaths.rootIsPrefix dir absPath
         
 
-    let isSourceDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
+    let isSourceDocument (doc:Document<'a>) : DocMonad<'userRes,bool> = 
         isSourcePath doc.AbsolutePath
 
 
-    let isIncludePath (absPath:string) : DocMonad<'res,bool> = 
+    let isIncludePath (absPath:string) : DocMonad<'userRes,bool> = 
         askIncludeDirectories () |>> fun dirs -> 
         List.exists (fun dir -> FilePaths.rootIsPrefix dir absPath) dirs 
         
     
-    let isIncludeDocument (doc:Document<'a>) : DocMonad<'res,bool> = 
+    let isIncludeDocument (doc:Document<'a>) : DocMonad<'userRes,bool> = 
         isIncludePath doc.AbsolutePath
 
-    let assertIsWorkingPath (path:string) : DocMonad<'res, unit> = 
+
+
+    let assertIsWorkingPath (path:string) : DocMonad<'userRes, unit> = 
         assertM (sprintf "Not a working path - '%s'" path)
                 (isWorkingPath path)
 
-    let assertIsWorkingDocument (doc:Document<'a>) : DocMonad<'res, unit> = 
+    let assertIsWorkingDocument (doc:Document<'a>) : DocMonad<'userRes, unit> = 
         assertM (sprintf "Not a working Document - '%s'" doc.Title)
                 (isWorkingDocument doc)
 
-    let assertIsSourcePath (path:string) : DocMonad<'res, unit> = 
+    let assertIsSourcePath (path:string) : DocMonad<'userRes, unit> = 
         assertM (sprintf "Not a source path - '%s'" path)
                 (isSourcePath path)
 
-    let assertIsSourceDocument (doc:Document<'a>) : DocMonad<'res, unit> = 
+    let assertIsSourceDocument (doc:Document<'a>) : DocMonad<'userRes, unit> = 
         assertM (sprintf "Not a source Document - '%s'" doc.Title)
                 (isSourceDocument doc) 
 
 
-    let assertIsIncludePath (path:string) : DocMonad<'res, unit> = 
+    let assertIsIncludePath (path:string) : DocMonad<'userRes, unit> = 
         assertM (sprintf "Not an include path - '%s'" path)
                 (isIncludePath path)
 
-    let assertIsIncludeDocument (doc:Document<'a>) : DocMonad<'res, unit> = 
+    let assertIsIncludeDocument (doc:Document<'a>) : DocMonad<'userRes, unit> = 
         assertM (sprintf "Not an include Document - '%s'" doc.Title)
                 (isIncludeDocument doc) 
 
-    let getWorkingPathSuffix (absPath:string) : DocMonad<'res,string> = 
+    let getWorkingPathSuffix (absPath:string) : DocMonad<'userRes,string> = 
         docMonad { 
             do! assertIsWorkingPath absPath
             let! root = askWorkingDirectory ()
             return FilePaths.rightPathComplement root absPath
         }
             
-    let getWorkingDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+    let getWorkingDocPathSuffix (doc:Document<'a>) : DocMonad<'userRes,string> = 
         getWorkingPathSuffix doc.AbsolutePath
 
 
-    let getSourcePathSuffix (absPath:string) : DocMonad<'res,string> = 
+    let getSourcePathSuffix (absPath:string) : DocMonad<'userRes,string> = 
         docMonad { 
             do! assertIsSourcePath absPath
             let! root = askSourceDirectory ()
             return FilePaths.rightPathComplement root absPath
         }
 
-    let getSourceDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+    let getSourceDocPathSuffix (doc:Document<'a>) : DocMonad<'userRes,string> = 
         getSourcePathSuffix doc.AbsolutePath
 
-    //let getIncludePathSuffix (absPath:string) : DocMonad<'res,string> = 
+    //let getIncludePathSuffix (absPath:string) : DocMonad<'userRes,string> = 
     //    docMonad { 
     //        do! assertIsIncludePath absPath
     //        let! root = askIncludeDirectory ()
     //        return rightPathComplement root (FilePath(absPath))
     //    }
 
-    //let getIncludeDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> = 
+    //let getIncludeDocPathSuffix (doc:Document<'a>) : DocMonad<'userRes,string> = 
     //    getIncludePathSuffix doc.LocalPath
 
-    //let getPathSuffix (absPath:string) : DocMonad<'res,string> =
+    //let getPathSuffix (absPath:string) : DocMonad<'userRes,string> =
     //    getWorkingPathSuffix absPath 
     //        <||> getSourcePathSuffix absPath 
     //        <||> getIncludePathSuffix absPath 
 
-    //let getDocPathSuffix (doc:Document<'a>) : DocMonad<'res,string> =
+    //let getDocPathSuffix (doc:Document<'a>) : DocMonad<'userRes,string> =
     //    getWorkingDocPathSuffix doc 
     //        <||> getSourceDocPathSuffix doc
     //        <||> getIncludeDocPathSuffix doc
 
     /// Create a subdirectory in the Working directory.
-    let createWorkingFolder (subfolderName:string) : DocMonad<'res,unit> = 
+    let createWorkingFolder (subfolderName:string) : DocMonad<'userRes,unit> = 
         askWorkingDirectory () |>> fun cwd ->
         let absFolderName = cwd </> subfolderName
         if Directory.Exists(absFolderName) then
@@ -145,7 +130,7 @@ module FileOperations =
     ///// If the file is from Source or Include directories generate the name with 
     ///// the respective subfolder path from root.
     ///// Otherwise, generate the file name at the top level of Workgin.
-    //let generateWorkingFileName (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'res,string> = 
+    //let generateWorkingFileName (includeDirectoriesSuffix:bool) (absPath:string) : DocMonad<'userRes,string> = 
     //    docMonad { 
     //        let! suffix = 
     //            if includeDirectoriesSuffix then 
@@ -157,7 +142,7 @@ module FileOperations =
     /// Copy a file to working, returning the copy as a Document.
     /// If the file is from Source or Include directories copy with 
     /// the respective subfolder path from root.
-    let private copyFileToWorking (sourceAbsPath:string) : DocMonad<'res,Document<'a>> = 
+    let private copyFileToWorking (sourceAbsPath:string) : DocMonad<'userRes,Document<'a>> = 
         docMonad { 
             let name = FileInfo(sourceAbsPath).Name
             let! target = extendWorkingPath name
@@ -169,7 +154,7 @@ module FileOperations =
         }
 
     /// Copy a doc to the toplevel working directory.
-    let copyToWorking (doc:Document<'a>) : DocMonad<'res,Document<'a>> = 
+    let copyToWorking (doc:Document<'a>) : DocMonad<'userRes,Document<'a>> = 
         let title = doc.Title
         copyFileToWorking doc.AbsolutePath |>> setTitle title
 
@@ -177,7 +162,7 @@ module FileOperations =
 
 
     /// Rename a folder in the working drectory
-    let renameWorkingFolder (oldName:string) (newName:string) : DocMonad<'res,unit> = 
+    let renameWorkingFolder (oldName:string) (newName:string) : DocMonad<'userRes,unit> = 
         askWorkingDirectory () >>= fun cwd ->
         let oldPath = cwd </> oldName
         if Directory.Exists(oldPath) then
@@ -191,7 +176,7 @@ module FileOperations =
     /// Note - pattern is a simple glob 
     /// (the only wild cards are '?' and '*'), not a regex.
     let hasSourceFilesMatching (pattern:string) 
-                               (recurseIntoSubDirectories:bool) : DocMonad<'res, bool> = 
+                               (recurseIntoSubDirectories:bool) : DocMonad<'userRes, bool> = 
         let proc () = 
             askSourceDirectory () |>>  FakeLikePrim.hasFilesMatching pattern recurseIntoSubDirectories
         attemptM <| proc ()
@@ -203,7 +188,7 @@ module FileOperations =
     /// Uses glob pattern - the only wild cards are '?' and '*'
     /// Returns a list of absolute paths.
     let findAllSourceFilesMatching (pattern:string) 
-                                   (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
+                                   (recurseIntoSubDirectories:bool) : DocMonad<'userRes, string list> =
         let proc () = 
             askSourceDirectory () |>> FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories
         attemptM <| proc ()
@@ -212,7 +197,7 @@ module FileOperations =
     /// Uses glob pattern - the only wild cards are '?' and '*'
     /// Returns a list of absolute paths.
     let findSomeSourceFilesMatching (pattern:string) 
-                                    (recurseIntoSubDirectories:bool) : DocMonad<'res, string list> =
+                                    (recurseIntoSubDirectories:bool) : DocMonad<'userRes, string list> =
         let proc () = 
             askSourceDirectory () |>> FakeLikePrim.tryFindSomeFilesMatching pattern recurseIntoSubDirectories
         optionFailM "fail - findSomeSourceFilesMatching" <| proc ()
@@ -221,14 +206,14 @@ module FileOperations =
     /// Uses glob pattern - the only wild cards are '?' and '*'
     /// Returns a list of absolute paths.
     let tryFindExactlyOneSourceFileMatching (pattern:string) 
-                                   (recurseIntoSubDirectories:bool) : DocMonad<'res, string option> =
+                                   (recurseIntoSubDirectories:bool) : DocMonad<'userRes, string option> =
         let proc () = 
             askSourceDirectory () |>> FakeLikePrim.tryFindExactlyOneFileMatching pattern recurseIntoSubDirectories
         attemptM <| proc ()
 
 
     /// Create a subdirectory under the working folder.
-    let createWorkingSubdirectory (relPath:string) : DocMonad<'res,unit> = 
+    let createWorkingSubdirectory (relPath:string) : DocMonad<'userRes,unit> = 
         askWorkingDirectory () |>> fun cwd ->
         let path = cwd </> relPath 
         if Directory.Exists(path) then 
@@ -239,7 +224,7 @@ module FileOperations =
     /// Run an operation in a subdirectory of current working directory.
     /// Creates the subdirectory if it doesn't exist.
     let localWorkingSubdirectory (subdirectory:string) 
-                                 (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+                                 (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         docMonad {
             let! path = extendWorkingPath subdirectory
             let! _ = createWorkingSubdirectory subdirectory
@@ -249,7 +234,7 @@ module FileOperations =
     /// Run an operation with the Source directory restricted to the
     /// supplied subdirectory.
     let localSourceSubdirectory (subdirectory:string) 
-                                (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+                                (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         docMonad {
             let! path = extendSourcePath subdirectory
             return! local (fun env -> {env with SourceDirectory = path}) ma
@@ -259,7 +244,7 @@ module FileOperations =
 
     /// Consider this deprecated...
     let commonSubdirectory (subdirectory:string) 
-                           (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+                           (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         localWorkingSubdirectory subdirectory <| localSourceSubdirectory subdirectory ma
 
 

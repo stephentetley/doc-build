@@ -82,6 +82,7 @@ module Document =
 
     /// Warning - this allows random access to the file system, not
     /// just the "Working"; "Include" and "Source" folders
+    /// Condition - the document must exist.
     let getDocument (validFileExtensions:string list) 
                     (absPath:string) : DocMonad<'userRes,Document<'a>> = 
         docMonad { 
@@ -91,6 +92,7 @@ module Document =
         
 
     /// Gets a Document from the working directory.
+    /// Condition - the document must exist.
     let getWorkingDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'userRes,Document<'a>> = 
         docMonad { 
@@ -100,6 +102,7 @@ module Document =
 
 
     /// Gets a Document from the source directory.
+    /// Condition - the document must exist.
     let getSourceDocument (validFileExtensions:string list) 
                           (relativeName:string) : DocMonad<'userRes,Document<'a>> = 
         docMonad { 
@@ -107,8 +110,9 @@ module Document =
             return! getDocument validFileExtensions path 
             }
 
-
+    /// Gets a Document from the includes directories (searches directoties).
     /// Does not copies the source Document to working
+    /// Condition - the document must exist.
     let getIncludeDocument (validFileExtensions:string list) 
                            (relativeName:string) : DocMonad<'userRes,Document<'a>> = 
        docMonad { 
@@ -127,20 +131,23 @@ module Document =
     type PdfDoc = Document<PdfPhantom>
 
     /// Must have .pdf extension.
+    /// Condition - the document must exist.
     let getPdfDoc (absolutePath:string) : DocMonad<'userRes,PdfDoc> = 
         getDocument [".pdf"] absolutePath
 
     /// Must have .pdf extension.
-    let workingPdfDoc (relativeName:string) : DocMonad<'userRes,PdfDoc> = 
+    /// Condition - the document must exist.
+    let getWorkingPdfDoc (relativeName:string) : DocMonad<'userRes,PdfDoc> = 
         getWorkingDocument [".pdf"] relativeName
 
     /// Must have .pdf extension.
-    /// Writes a mutable copy to Working.
-    let sourcePdfDoc (relativeName:string) : DocMonad<'userRes,PdfDoc> = 
+    /// Condition - the document must exist.
+    let getSourcePdfDoc (relativeName:string) : DocMonad<'userRes,PdfDoc> = 
         getSourceDocument [".pdf"] relativeName
 
     /// Must have .pdf extension.
-    let includePdfDoc (relativeName:string) : DocMonad<'userRes,PdfDoc> = 
+    /// Condition - the document must exist.
+    let getIncludePdfDoc (relativeName:string) : DocMonad<'userRes,PdfDoc> = 
         getIncludeDocument [".pdf"] relativeName
 
 
@@ -152,21 +159,24 @@ module Document =
     type JpegDoc = Document<JpegPhantom>
     
     /// Must have .jpg or .jpeg extension.
+    /// Condition - the document must exist.
     let getJpegDoc (absolutePath:string) : DocMonad<'userRes,JpegDoc> = 
         getDocument [".jpg"; ".jpeg"] absolutePath
 
     /// Must have .jpg or .jpeg extension.
-    let workingJpegDoc (relativeName:string) : DocMonad<'userRes,JpegDoc> = 
+    /// Condition - the document must exist.
+    let getWorkingJpegDoc (relativeName:string) : DocMonad<'userRes,JpegDoc> = 
         getWorkingDocument [".jpg"; ".jpeg"] relativeName
 
 
     /// Must have .jpg or .jpeg extension.
-    /// Writes a mutable copy to Working.
-    let sourceJpegDoc (relativeName:string) : DocMonad<'userRes,JpegDoc> = 
+    /// Condition - the document must exist.
+    let getSourceJpegDoc (relativeName:string) : DocMonad<'userRes,JpegDoc> = 
         getSourceDocument [".jpg"; ".jpeg"] relativeName
     
     /// Must have .jpg or .jpeg extension.
-    let includeJpegDoc (relativeName:string) : DocMonad<'userRes,JpegDoc> = 
+    /// Condition - the document must exist.
+    let getIncludeJpegDoc (relativeName:string) : DocMonad<'userRes,JpegDoc> = 
         getIncludeDocument [".jpg"; ".jpeg"] relativeName
 
 
@@ -178,20 +188,23 @@ module Document =
     type MarkdownDoc = Document<MarkdownPhantom>
 
     /// Must have .md extension.
+    /// Condition - the document must exist.
     let getMarkdownDoc (absolutePath:string) : DocMonad<'userRes,MarkdownDoc> = 
         getDocument [".md"] absolutePath
 
     /// Must have .md extension.
-    let workingMarkdownDoc (relativeName:string) : DocMonad<'userRes,MarkdownDoc> = 
+    /// Condition - the document must exist.
+    let getWorkingMarkdownDoc (relativeName:string) : DocMonad<'userRes,MarkdownDoc> = 
         getWorkingDocument [".md"] relativeName 
 
     /// Must have .md extension.
-    /// Writes a mutable copy to Working.
-    let sourceMarkdownDoc (relativeName:string) : DocMonad<'userRes,MarkdownDoc> = 
+    /// Condition - the document must exist.
+    let getSourceMarkdownDoc (relativeName:string) : DocMonad<'userRes,MarkdownDoc> = 
         getSourceDocument [".md"] relativeName 
 
     /// Must have .md extension.
-    let includeMarkdownDoc (relativeName:string) : DocMonad<'userRes,MarkdownDoc> = 
+    /// Condition - the document must exist.
+    let getIncludeMarkdownDoc (relativeName:string) : DocMonad<'userRes,MarkdownDoc> = 
         getIncludeDocument [".md"] relativeName 
 
 
@@ -203,19 +216,23 @@ module Document =
     type WordDoc = Document<WordPhantom>
 
     /// Must have .doc or .docx extension.  
+    /// Condition - the document must exist.
     let getWordDoc (absolutePath:string) : DocMonad<'userRes,WordDoc> = 
         getDocument [".doc"; ".docx"] absolutePath
 
-    /// Must have .doc or .docx extension.    
-    let workingWordDoc (relativeName:string) : DocMonad<'userRes,WordDoc> = 
+    /// Must have .doc or .docx extension.
+    /// Condition - the document must exist.
+    let getWorkingWordDoc (relativeName:string) : DocMonad<'userRes,WordDoc> = 
         getWorkingDocument [".doc"; ".docx"] relativeName
 
-    /// Must have .doc or .docx extension.  
-    let sourceWordDoc (relativeName:string) : DocMonad<'userRes,WordDoc> = 
+    /// Must have .doc or .docx extension.
+    /// Condition - the document must exist.    
+    let getSourceWordDoc (relativeName:string) : DocMonad<'userRes,WordDoc> = 
         getSourceDocument [".doc"; ".docx"] relativeName
 
-    /// Must have .doc or .docx extension.    
-    let includeWordDoc (relativeName:string) : DocMonad<'userRes,WordDoc> = 
+    /// Must have .doc or .docx extension.
+    /// Condition - the document must exist.
+    let getIncludeWordDoc (relativeName:string) : DocMonad<'userRes,WordDoc> = 
         getIncludeDocument [".doc"; ".docx"] relativeName
 
 
@@ -226,22 +243,25 @@ module Document =
 
     type ExcelDoc = Document<ExcelPhantom>
 
-    /// Must have .xls or .xlsx or .xlsm extension.   
+    /// Must have .xls or .xlsx or .xlsm extension. 
+    /// Condition - the document must exist.    
     let getExcelDoc (absolutePath:string) : DocMonad<'userRes,ExcelDoc> = 
         getDocument [".xls"; ".xlsx"; ".xlsm"] absolutePath
 
     /// Must have .xls or .xlsx or .xlsm extension. 
-    let workingExcelDoc (relativeName:string) : DocMonad<'userRes,ExcelDoc> = 
+    /// Condition - the document must exist.
+    let getWorkingExcelDoc (relativeName:string) : DocMonad<'userRes,ExcelDoc> = 
         getWorkingDocument [".xls"; ".xlsx"; ".xlsm"] relativeName
 
 
     /// Must have .xls or .xlsx or .xlsm extension.
-    /// Writes a mutable copy to Working.  
-    let sourceExcelDoc (relativeName:string) : DocMonad<'userRes,ExcelDoc> = 
+    /// Condition - the document must exist.
+    let getSourceExcelDoc (relativeName:string) : DocMonad<'userRes,ExcelDoc> = 
         getSourceDocument [".xls"; ".xlsx"; ".xlsm"] relativeName
 
     /// Must have .xls or .xlsx or .xlsm extension. 
-    let includeExcelDoc (relativeName:string) : DocMonad<'userRes,ExcelDoc> = 
+    /// Condition - the document must exist.
+    let getIncludeExcelDoc (relativeName:string) : DocMonad<'userRes,ExcelDoc> = 
         getIncludeDocument [".xls"; ".xlsx"; ".xlsm"] relativeName
 
 
@@ -252,21 +272,24 @@ module Document =
 
     type PowerPointDoc = Document<PowerPointPhantom>
 
-    /// Must have .ppt or .pptx extension. 
+    /// Must have .ppt or .pptx extension.
+    /// Condition - the document must exist.    
     let getPowerPointDoc (absolutePath:string) : DocMonad<'userRes,PowerPointDoc> = 
         getDocument [".ppt"; ".pptx"] absolutePath
 
     /// Must have .ppt or .pptx extension.
-    let workingPowerPointDoc (relativeName:string) : DocMonad<'userRes,PowerPointDoc> = 
+    /// Condition - the document must exist.
+    let getWorkingPowerPointDoc (relativeName:string) : DocMonad<'userRes,PowerPointDoc> = 
         getWorkingDocument [".ppt"; ".pptx"] relativeName 
 
     /// Must have .ppt or .pptx extension.
-    /// Writes a mutable copy to Working.  
-    let sourcePowerPointDoc (relativeName:string) : DocMonad<'userRes,PowerPointDoc> = 
+    /// Condition - the document must exist.
+    let getSourcePowerPointDoc (relativeName:string) : DocMonad<'userRes,PowerPointDoc> = 
         getSourceDocument [".ppt"; ".pptx"] relativeName 
 
     /// Must have .ppt or .pptx extension.
-    let includePowerPointDoc (relativeName:string) : DocMonad<'userRes,PowerPointDoc> = 
+    /// Condition - the document must exist.
+    let getIncludePowerPointDoc (relativeName:string) : DocMonad<'userRes,PowerPointDoc> = 
         getIncludeDocument [".ppt"; ".pptx"] relativeName 
 
 
@@ -283,14 +306,16 @@ module Document =
 
 
     /// Must have .txt extension.
-    let workingTextDoc (relativeName:string) : DocMonad<'userRes,TextDoc> = 
+    /// Condition - the document must exist.
+    let getWorkingTextDoc (relativeName:string) : DocMonad<'userRes,TextDoc> = 
         getWorkingDocument [".txt"] relativeName 
 
     /// Must have .txt extension.
-    /// Writes a mutable copy to Working.  
-    let sourceTextDoc (relativeName:string) : DocMonad<'userRes,TextDoc> = 
+    /// Condition - the document must exist.
+    let getSourceTextDoc (relativeName:string) : DocMonad<'userRes,TextDoc> = 
         getSourceDocument [".txt"] relativeName 
 
     /// Must have .txt extension.
-    let includeTextDoc (relativeName:string) : DocMonad<'userRes,TextDoc> = 
+    /// Condition - the document must exist.
+    let getIncludeTextDoc (relativeName:string) : DocMonad<'userRes,TextDoc> = 
         getIncludeDocument [".txt"] relativeName 

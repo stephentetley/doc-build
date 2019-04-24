@@ -71,7 +71,7 @@ module PowerPointDocument =
             let! ans = 
                 execPowerPoint <| fun app -> 
                     liftResult (powerPointExportAsPdf app pdfQuality src.AbsolutePath outputAbsPath)
-            return! workingPdfDoc outputAbsPath
+            return! getWorkingPdfDoc outputAbsPath
         }
 
     /// Saves the file in the working directory.

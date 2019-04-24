@@ -26,7 +26,7 @@ module Markdown =
                 if isAbsolutePath path then 
                     return! getWordDoc path |>> Some
                 else
-                    return! includeWordDoc path |>> Some
+                    return! getIncludeWordDoc path |>> Some
         }
                     
     let private getCustomStylesPath () : DocMonad<'userRes, string option> = 
@@ -44,7 +44,7 @@ module Markdown =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let _ = markdown.Save outputAbsPath 
-            return! workingMarkdownDoc outputAbsPath
+            return! getWorkingMarkdownDoc outputAbsPath
         }
 
     // ************************************************************************
@@ -59,7 +59,7 @@ module Markdown =
             let command = 
                 PandocPrim.outputDocxCommand styles [] src.AbsolutePath outputAbsPath
             let! _ = execPandoc command
-            return! workingWordDoc outputAbsPath
+            return! getWorkingWordDoc outputAbsPath
          }
 
     /// Requires pandoc
@@ -83,7 +83,7 @@ module Markdown =
                 PandocPrim.outputPdfCommand pdfEngine [] src.AbsolutePath outputAbsPath
             printfn "// %s" (arguments command)
             let! _ = execPandoc command
-            return! workingPdfDoc outputAbsPath
+            return! getWorkingPdfDoc outputAbsPath
          }
 
 
@@ -104,7 +104,7 @@ module Markdown =
                source.Replace(searchText, replaceText)
             let final = List.fold action original searches
             let _ = File.WriteAllText(outputAbsPath, final)
-            return! workingMarkdownDoc outputAbsPath
+            return! getWorkingMarkdownDoc outputAbsPath
         }
 
 

@@ -95,7 +95,7 @@ module PhotoBook =
                 let mdDoc = photoBookMarkdown config.Title col.Elements
                 let! outputAbsPath = extendWorkingPath config.RelativeOutputName
                 let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-                return! workingMarkdownDoc outputAbsPath |>> Some
+                return! getWorkingMarkdownDoc outputAbsPath |>> Some
         }
 
     let genPhotoBook (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)

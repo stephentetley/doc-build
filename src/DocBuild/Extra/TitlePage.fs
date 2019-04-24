@@ -36,7 +36,7 @@ module TitlePage =
             let mdDoc = genMarkdown config.Title config.DocBody
             let! outputAbsPath = extendWorkingPath config.RelativeOutputName
             let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-            return! workingMarkdownDoc outputAbsPath
+            return! getWorkingMarkdownDoc outputAbsPath
         }
 
     let genPrefixWithTitlePage (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)

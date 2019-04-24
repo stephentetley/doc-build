@@ -144,7 +144,7 @@ let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> =
     let outputName = sprintf "%s cover.docx" (workRow.``Site Name`` |> safeName )
     let searches : SearchList = coverSeaches workRow
     docMonad { 
-        let! (template:WordDoc) = includeWordDoc "TEMPLATE MM3x-to-MMIM Cover Sheet.docx"
+        let! (template:WordDoc) = getIncludeWordDoc "TEMPLATE MM3x-to-MMIM Cover Sheet.docx"
         let! outpath = extendWorkingPath outputName
         let! wordFile = WordDocument.findReplaceAs searches outpath template
         return! WordDocument.exportPdf wordFile

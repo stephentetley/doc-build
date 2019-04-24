@@ -26,14 +26,14 @@ module Pdf =
     /// This produces large files than Ghostscipt with the option
     /// `/default`.
     let pdftkConcatPdfs (inputFiles:PdfCollection)
-                   (outputAbsPath:string) : DocMonad<'userRes,PdfDoc> = 
+                        (outputAbsPath:string) : DocMonad<'userRes,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let inputs = 
                 inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
             let cmd = PdftkPrim.concatCommand inputs outputAbsPath
             let! _ = execPdftk cmd
-            return! workingPdfDoc outputAbsPath
+            return! getWorkingPdfDoc outputAbsPath
         }
 
 
@@ -73,7 +73,7 @@ module Pdf =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! _ = ghostscriptConcat quality outputAbsPath inputFiles
-            return! workingPdfDoc outputAbsPath
+            return! getWorkingPdfDoc outputAbsPath
  
         }
 
@@ -123,7 +123,7 @@ module Pdf =
             let command = 
                 PdftkPrim.rotationCommand src.AbsolutePath directives outputAbsPath
             let! _ = execPdftk command
-            return! workingPdfDoc outputAbsPath
+            return! getWorkingPdfDoc outputAbsPath
         }
 
     /// Rezize for Word generating a new temp file

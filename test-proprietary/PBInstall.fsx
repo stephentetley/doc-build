@@ -145,7 +145,7 @@ let genCoverSheet (sai:string)
                   (siteName:string) 
                   (phase:string) : DocMonadWord<PdfDoc> = 
     docMonad {
-        let! logo = includeJpegDoc "YW-logo.jpg"
+        let! (logo:JpegDoc) = getIncludeJpegDoc "YW-logo.jpg"
         let md = coverSheetMarkdown sai siteName phase logo.AbsolutePath
         let! outpath1 = extendWorkingPath "cover.md"
         printfn "%O" md

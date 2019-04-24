@@ -78,12 +78,12 @@ let makeResources (userRes:'res) : AppResources<'res> =
 let demo01 () = 
     runDocMonadNoCleanup (makeResources ()) WindowsEnv <| 
         docMonad { 
-            let! p1 = workingPdfDoc "One.pdf"
-            let! p2 = workingPdfDoc "Two.pdf" 
-            let! p3 = workingPdfDoc "Three.pdf"
+            let! p1 = getWorkingPdfDoc "One.pdf"
+            let! p2 = getWorkingPdfDoc "Two.pdf" 
+            let! p3 = getWorkingPdfDoc "Three.pdf"
             let pdfs = Collection.fromList [p1;p2;p3]
-            let! outfile = workingPdfDoc "Concat.pdf"
-            let! _ = Pdf.concatPdfs Pdf.GsScreen pdfs outfile.AbsolutePath 
+            let! outfile = extendWorkingPath "Concat.pdf"
+            let! _ = Pdf.concatPdfs Pdf.GsScreen pdfs outfile 
             return ()
         }
 
@@ -91,7 +91,7 @@ let demo01 () =
 let demo02 () = 
     runDocMonadNoCleanup (makeResources ()) WindowsEnv <| 
         docMonad { 
-            let! p1 = workingPdfDoc "Concat.pdf"
+            let! p1 = getWorkingPdfDoc "Concat.pdf"
             let! pageCount = Pdf.countPages p1
             return pageCount
         }
@@ -102,7 +102,7 @@ let demo03 () =
     let resources = makeResources <| new WordDocument.WordHandle()
     runDocMonad resources WindowsEnv <| 
         docMonad { 
-            let! w1 = workingWordDoc "sample.docx" 
+            let! w1 = getWorkingWordDoc "sample.docx" 
             return! WordDocument.exportPdf w1 
         }
 
@@ -110,7 +110,7 @@ let demo04 () =
     let resources = makeResources <| new WordDocument.WordHandle()
     runDocMonad resources WindowsEnv <| 
         docMonad { 
-            let! w1 = sourceWordDoc "sample.docx" 
+            let! w1 = getSourceWordDoc "sample.docx" 
             return w1.AbsolutePath
         }
 

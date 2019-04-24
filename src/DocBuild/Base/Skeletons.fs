@@ -10,7 +10,7 @@ module Skeletons =
     open DocBuild.Base.DocMonad
 
 
-    let private getSourceChildren () : DocMonad<'res,string list> = 
+    let private getSourceSubdirectories () : DocMonad<'userRes,string list> = 
         let failMessage = fun _ -> "getSourceChildren directory error"
         docMonad { 
             let! source = askSourceDirectory ()
@@ -41,9 +41,9 @@ module Skeletons =
         }
 
     let private runSkeleton (skeletonOpts:SkeletonOptions) 
-                            (strategy: string -> DocMonad<'res,unit> -> DocMonad<'res,unit>)
-                            (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> =  
-        let processZ: DocMonad<'res, unit> = process1 |>> fun _ -> ()
+                            (strategy: string -> DocMonad<'userRes,unit> -> DocMonad<'userRes,unit>)
+                            (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> =  
+        let processZ: DocMonad<'userRes, unit> = process1 |>> fun _ -> ()
         let filterChildDirectories = 
             match skeletonOpts.DebugSelectSample with
             | None -> id
@@ -64,13 +64,13 @@ module Skeletons =
             | None -> mreturn ()
             | Some genMessage -> 
                 docMonad { 
-                    let! kid = askSourceDirectory () |>> Internal.FilePaths.getPathName1
+                    let! kid = askSourceDirectory () |>> fileObjectName
                     let message = genMessage kid
                     do (printfn "%s" message)
                     do! tellLine message
                     return ()
                 }
-        let proceedM (proc:DocMonad<'res,unit>) : DocMonad<'res, unit> = 
+        let proceedM (proc:DocMonad<'userRes,unit>) : DocMonad<'userRes, unit> = 
             docMonad { 
                 match! (optionalM proc) with
                 | None -> 
@@ -80,18 +80,19 @@ module Skeletons =
                         logStepFail () .>> throwError "Build step failed" |> ignore
                 | Some _ -> return ()
                 }
-        let processChildDirectory (ix:int) (count:int) : DocMonad<'res, unit> = 
+        let processChildDirectory (ix:int) (count:int) : DocMonad<'userRes, unit> = 
             docMonad { 
                 do! logStepBegin ix count
                 return! (proceedM processZ)
             }
 
-        getSourceChildren () >>= fun srcDirs -> 
+        getSourceSubdirectories () >>= fun srcDirs -> 
         let sources = filterChildDirectories srcDirs
         let count = List.length sources
         foriMz sources 
                (fun ix dir -> strategy dir (processChildDirectory (ix + 1) count))
 
+    /// dtodSourceChildren => manySourcesManyOutputs ?
 
     /// Processing skeleton.
     /// For every child source folder (one level down) run the
@@ -99,7 +100,7 @@ module Skeletons =
     /// Generate the results in a child folder of the same name under
     /// the working folder.
     let dtodSourceChildren (skeletonOpts:SkeletonOptions) 
-                           (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> = 
+                           (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory 
                                         (localWorkingSubdirectory childDirectory action)
@@ -110,7 +111,7 @@ module Skeletons =
     /// processing function on 'within' that folder. 
     /// Generate the results in the top level working folder.
     let dto1SourceChildren (skeletonOpts:SkeletonOptions) 
-                           (process1: DocMonad<'res,'a>) : DocMonad<'res, unit> = 
+                           (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory action
         runSkeleton skeletonOpts strategy process1

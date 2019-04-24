@@ -22,7 +22,7 @@ module Jpeg =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let _ = ImageMagickPrim.imAutoOrient src.AbsolutePath outputAbsPath
-            return! workingJpegDoc outputAbsPath
+            return! getWorkingJpegDoc outputAbsPath
         }
 
     /// Auto-orient overwriting the input file
@@ -35,7 +35,7 @@ module Jpeg =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let _ = ImageMagickPrim.imOptimizeForMsWord src.AbsolutePath outputAbsPath
-            return! workingJpegDoc outputAbsPath
+            return! getWorkingJpegDoc outputAbsPath
         }
 
     /// Resize for Word overwriting the input file

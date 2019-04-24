@@ -35,7 +35,7 @@ module FilePaths =
 
 
     /// Get the "child name".
-    /// This is oblivious as to whether the path points to a file or a folder.
+    /// This is oblivious as to whether the path represents to a file or a folder.
     let getPathName1 (path:string) : string = 
         if isDirectoryPath path then 
             Path.GetDirectoryName path

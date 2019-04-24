@@ -73,7 +73,7 @@ module ExcelDocument =
             let! _ = 
                 execExcel <| fun app -> 
                         liftResult (excelExportAsPdf app fitWidth pdfQuality src.AbsolutePath outputAbsPath)
-            return! workingPdfDoc outputAbsPath
+            return! getWorkingPdfDoc outputAbsPath
         }
 
     /// Saves the file in the top-level working directory.
@@ -98,7 +98,7 @@ module ExcelDocument =
             let! ans = 
                 execExcel <| fun app -> 
                         liftResult (excelFindReplace app searches src.AbsolutePath outputAbsPath)
-            return! workingExcelDoc outputAbsPath
+            return! getWorkingExcelDoc outputAbsPath
         }
 
 

@@ -55,7 +55,7 @@ module Contents =
             let mdDoc = genMarkdown config.PrologLength infos
             let! outputAbsPath = extendWorkingPath config.RelativeOutputName
             let! _ = Markdown.saveMarkdown outputAbsPath mdDoc
-            return! workingMarkdownDoc outputAbsPath
+            return! getWorkingMarkdownDoc outputAbsPath
             
         }
 

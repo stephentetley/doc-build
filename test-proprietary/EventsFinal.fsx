@@ -136,7 +136,7 @@ let renderMarkdownFile  (docTitle:string)
 
 let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! logoPath = includeJpegDoc "YW-logo.jpg"
+        let! logoPath = getIncludeJpegDoc "YW-logo.jpg"
         let config:CoversheetConfig = 
             { LogoPath = logoPath.AbsolutePath
               SaiNumber = saiNumber
@@ -144,7 +144,6 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
               Author = "S Tetley"
               Title = "T0975 - Event Duration Monitoring Phase 2 (EDM2)"
             }
-        let! (stylesheet:WordDoc option) = includeWordDoc "custom-reference1.docx" |>> Some
         let! markdownFile = coversheet config "coversheet.md" 
         let! docx = Markdown.markdownToWord markdownFile 
         return! WordDocument.exportPdf docx |>> setTitle "Coversheet"
@@ -181,7 +180,7 @@ let sourceFileToTitle (siteName:string) (filePath:string) : string =
 let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> = 
     let title = sourceFileToTitle siteName absPath
     docMonad { 
-        let! doc = sourceWordDoc absPath
+        let! doc = getSourceWordDoc absPath
         return! WordDocument.exportPdf doc |>> setTitle title
         }
 
