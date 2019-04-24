@@ -40,7 +40,7 @@ module Contents =
         { PrologLength: int
           RelativeOutputName: string }
 
-    let private getInfo (pdf:PdfDoc) : DocMonad<'res, DocInfo> =
+    let private getInfo (pdf:PdfDoc) : DocMonad<'userRes, DocInfo> =
         docMonad { 
             let! count = countPages pdf
             return { Title = pdf.Title; PageCount = count}        
@@ -49,7 +49,7 @@ module Contents =
     // TODO - render a dummy doc, to get length of contents
 
     let makeContents1 (config:ContentsConfig) 
-                      (col:PdfCollection) : DocMonad<'res, MarkdownDoc> =
+                      (col:PdfCollection) : DocMonad<'userRes, MarkdownDoc> =
         docMonad {
             let! (infos:DocInfo list) = mapM getInfo col.Elements
             let mdDoc = genMarkdown config.PrologLength infos
@@ -59,9 +59,9 @@ module Contents =
             
         }
 
-    let genTableOfContents (render: MarkdownDoc -> DocMonad<'res,PdfDoc>)
+    let genTableOfContents (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)
                            (config:ContentsConfig) 
-                           (col:PdfCollection) : DocMonad<'res, PdfDoc> =
+                           (col:PdfCollection) : DocMonad<'userRes, PdfDoc> =
         docMonad {
             let config1 = { config with RelativeOutputName = "contents-zero.md" }
             let! tocTemp = makeContents1 config col >>= render

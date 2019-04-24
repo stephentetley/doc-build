@@ -25,11 +25,11 @@ module DocMonad =
           PdfEngine: string option        /// usually "pdflatex"
         }
 
-    type Resources<'res> = 
+    type AppResources<'userRes> = 
         { PandocExe: string 
           GhostscriptExe: string
           PdftkExe: string 
-          UserResources: 'res
+          UserResources: 'userRes
         }
 
     /// PandocPdfEngine needs TeX installed
@@ -42,45 +42,45 @@ module DocMonad =
         }
 
 
-    /// DocMonad is parametric on 'res (user resources)
+    /// DocMonad is parametric on 'userRes (user resources)
     /// This allows a level of extensibility on the applications
     /// that DocMonad can run (e.g. Office apps Word, Excel)
 
     type IResourceFinalize =
         abstract RunFinalizer : unit
 
-    type DocMonad<'res,'a> = 
-        DocMonad of (StreamWriter -> Resources<'res> -> DocBuildEnv -> BuildResult<'a>)
+    type DocMonad<'userRes,'a> = 
+        DocMonad of (StreamWriter -> AppResources<'userRes> -> DocBuildEnv -> BuildResult<'a>)
 
-    let inline private apply1 (ma: DocMonad<'res,'a>) 
+    let inline private apply1 (ma: DocMonad<'userRes,'a>) 
                               (sw: StreamWriter)
-                              (res: Resources<'res>) 
+                              (res: AppResources<'userRes>) 
                               (env: DocBuildEnv) : BuildResult<'a>= 
         let (DocMonad f) = ma in f sw res env
 
-    let inline mreturn (x:'a) : DocMonad<'res,'a> = 
+    let inline mreturn (x:'a) : DocMonad<'userRes,'a> = 
         DocMonad <| fun _ _ _ -> Ok x
 
-    let inline private bindM (ma:DocMonad<'res,'a>) 
-                        (f :'a -> DocMonad<'res,'b>) : DocMonad<'res,'b> =
+    let inline private bindM (ma:DocMonad<'userRes,'a>) 
+                             (f :'a -> DocMonad<'userRes,'b>) : DocMonad<'userRes,'b> =
         DocMonad <| fun sw res env -> 
             match apply1 ma sw res env with
             | Error msg -> Error msg
             | Ok a -> apply1 (f a) sw res env
 
-    let inline private zeroM () : DocMonad<'res,'a> = 
+    let inline private zeroM () : DocMonad<'userRes,'a> = 
         DocMonad <| fun _ _ _ -> Error "zeroM"
 
     /// "First success"
-    let inline private combineM (ma:DocMonad<'res,'a>) 
-                                (mb:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let inline private combineM (ma:DocMonad<'userRes,'a>) 
+                                (mb:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         DocMonad <| fun sw res env -> 
             match apply1 ma sw res env with
             | Error msg -> apply1 mb sw res env
             | Ok a -> Ok a
 
 
-    let inline private  delayM (fn:unit -> DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let inline private delayM (fn:unit -> DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         bindM (mreturn ()) fn 
 
     type DocMonadBuilder() = 
@@ -99,7 +99,7 @@ module DocMonad =
     // Run
 
     /// This runs the finalizer on userResources
-    let runDocMonad (resources:Resources<#IResourceFinalize>) 
+    let runDocMonad (resources:AppResources<#IResourceFinalize>) 
                     (config:DocBuildEnv) 
                     (ma:DocMonad<#IResourceFinalize,'a>) : BuildResult<'a> = 
         let logPath = Path.Combine (config.WorkingDirectory, "doc-build.log")
@@ -108,23 +108,23 @@ module DocMonad =
         resources.UserResources.RunFinalizer |> ignore
         ans
 
-    let runDocMonadNoCleanup (resources:Resources<'res>) 
+    let runDocMonadNoCleanup (resources:AppResources<'userRes>) 
                              (config:DocBuildEnv) 
-                             (ma:DocMonad<'res,'a>) : BuildResult<'a> = 
+                             (ma:DocMonad<'userRes,'a>) : BuildResult<'a> = 
         let logPath = Path.Combine (config.WorkingDirectory, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
         apply1 ma sw resources config
         
-    let execDocMonad (resources:Resources<#IResourceFinalize>) 
+    let execDocMonad (resources:AppResources<#IResourceFinalize>) 
                      (config:DocBuildEnv) 
                      (ma:DocMonad<#IResourceFinalize,'a>) : 'a = 
         match runDocMonad resources config ma with
         | Ok a -> a
         | Error msg -> failwith msg
 
-    let execDocMonadNoCleanup (resources:Resources<'res>) 
-                     (config:DocBuildEnv) 
-                     (ma:DocMonad<'res,'a>) : 'a = 
+    let execDocMonadNoCleanup (resources:AppResources<'userRes>) 
+                              (config:DocBuildEnv) 
+                              (ma:DocMonad<'userRes,'a>) : 'a = 
         match runDocMonadNoCleanup resources config ma with
         | Ok a -> a
         | Error msg -> failwith msg
@@ -135,10 +135,10 @@ module DocMonad =
     // ****************************************************
     // Errors
 
-    let throwError (msg:string) : DocMonad<'res,'a> = 
+    let throwError (msg:string) : DocMonad<'userRes,'a> = 
         DocMonad <| fun _ _ _ -> Error msg
 
-    let swapError (msg:string) (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let swapError (msg:string) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         DocMonad <| fun sw res env ->
             match apply1 ma sw res env with
             | Error _ -> Error msg
@@ -150,17 +150,17 @@ module DocMonad =
     /// Execute an action that may throw an exception.
     /// Capture the exception with try ... with
     /// and return the answer or the expection message in the monad.
-    let attemptM (ma: DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let attemptM (ma: DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         DocMonad <| fun sw res env -> 
             try
                 apply1 ma sw res env
             with
             | ex -> Error (sprintf "attemptM: %s" ex.Message)
 
-    let liftAssert (failMsg:string) (condition:bool) : DocMonad<'res, unit> = 
+    let liftAssert (failMsg:string) (condition:bool) : DocMonad<'userRes, unit> = 
         if condition then mreturn () else throwError failMsg
 
-    let assertM (failMsg:string) (ma:DocMonad<'res, bool>) : DocMonad<'res, unit> = 
+    let assertM (failMsg:string) (ma:DocMonad<'userRes, bool>) : DocMonad<'userRes, unit> = 
         bindM ma <| fun condition -> 
             if condition then 
                 mreturn () 
@@ -169,7 +169,7 @@ module DocMonad =
     // ****************************************************
     // Logging
 
-    let tellLine (msg:string) : DocMonad<'res,unit> = 
+    let tellLine (msg:string) : DocMonad<'userRes,unit> = 
         DocMonad <| fun sw _  _ -> 
             sw.WriteLine msg
             Ok ()
@@ -177,14 +177,14 @@ module DocMonad =
     // ****************************************************
     // Reader
 
-    let ask () : DocMonad<'res,DocBuildEnv> = 
+    let ask () : DocMonad<'userRes,DocBuildEnv> = 
         DocMonad <| fun _ _ env -> Ok env
 
-    let asks (extract:DocBuildEnv -> 'a) : DocMonad<'res,'a> = 
+    let asks (extract:DocBuildEnv -> 'a) : DocMonad<'userRes,'a> = 
         DocMonad <| fun _ _ env -> Ok (extract env)
 
 
-    let private assertDirectory (failMsg:string) (path:string) : DocMonad<'res, string> = 
+    let private assertDirectory (failMsg:string) (path:string) : DocMonad<'userRes, string> = 
         docMonad { 
             do! liftAssert failMsg (Directory.Exists(path))
             return path
@@ -193,7 +193,7 @@ module DocMonad =
 
     /// Note - this asserts that the Working directory path represents a 
     /// folder not a file.
-    let askWorkingDirectory () : DocMonad<'res,string> = 
+    let askWorkingDirectory () : DocMonad<'userRes,string> = 
         docMonad { 
             let! dir = asks (fun env -> env.WorkingDirectory)
             return! assertDirectory "'Working' is not a directory" dir
@@ -202,7 +202,7 @@ module DocMonad =
 
     /// Note - this asserts that the Source directory path represents a 
     /// folder not a file.
-    let askSourceDirectory () : DocMonad<'res,string> = 
+    let askSourceDirectory () : DocMonad<'userRes,string> = 
         docMonad { 
             let! dir = asks (fun env -> env.SourceDirectory) 
             return! assertDirectory "'Source' is not a directory" dir
@@ -213,28 +213,28 @@ module DocMonad =
 
     /// Note - this asserts that the Include directory path represents a 
     /// folder not a file.
-    let askIncludeDirectories () : DocMonad<'res,string list> = 
+    let askIncludeDirectories () : DocMonad<'userRes,string list> = 
         asks (fun env -> env.IncludeDirectories)
 
     /// Use with caution.
     /// Generally you might only want to update the 
     /// working directory
     let local (update:DocBuildEnv -> DocBuildEnv) 
-              (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+              (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         DocMonad <| fun sw res env -> 
             apply1 ma sw res (update env)
 
 
-    let getResources () : DocMonad<'res,Resources<'res>> = 
+    let getResources () : DocMonad<'userRes, AppResources<'userRes>> = 
         DocMonad <| fun _ res _ -> Ok res
 
-    let getsResources (extract:Resources<'res> -> 'a) : DocMonad<'res,'a> = 
+    let getsResources (extract:AppResources<'userRes> -> 'a) : DocMonad<'userRes,'a> = 
         DocMonad <| fun _ res _ -> Ok (extract res)
 
-    let getUserResources () : DocMonad<'res,'res> = 
+    let getUserResources () : DocMonad<'userRes,'userRes> = 
         getsResources (fun res -> res.UserResources)
 
-    let getsUserResources (extract:'res -> 'a) : DocMonad<'res,'a> = 
+    let getsUserResources (extract:'userRes -> 'a) : DocMonad<'userRes,'a> = 
         docMonad { 
             let! res = getUserResources ()
             return (extract res)
@@ -246,14 +246,14 @@ module DocMonad =
     // ****************************************************
     // Lift operations
 
-    let liftResult (answer:BuildResult<'a>) : DocMonad<'res,'a> = 
+    let liftResult (answer:BuildResult<'a>) : DocMonad<'userRes,'a> = 
         DocMonad <| fun _ _ _ -> answer
 
     /// Run an F# 'action' that may fail (and throw an exception).
     /// Catch exceptions with try...with and return them as Error
     /// within the DocBuild monad.
     let liftAction (errorGen: exn -> string) 
-                   (action: unit -> 'a) : DocMonad<'res, 'a> = 
+                   (action: unit -> 'a) : DocMonad<'userRes, 'a> = 
         try
             action () |> mreturn
         with
@@ -263,9 +263,9 @@ module DocMonad =
     // Monadic operations
 
 
-    let whenM (cond:DocMonad<'res,bool>) 
+    let whenM (cond:DocMonad<'userRes,bool>) 
               (failMsg:string) 
-              (successOp:unit -> DocMonad<'res,'a>) = 
+              (successOp:unit -> DocMonad<'userRes,'a>) = 
         docMonad { 
             let! ans = cond
             if ans then 
@@ -275,7 +275,7 @@ module DocMonad =
             } 
 
     /// fmap 
-    let fmapM (fn:'a -> 'b) (ma:DocMonad<'res,'a>) : DocMonad<'res,'b> = 
+    let fmapM (fn:'a -> 'b) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
         DocMonad <| fun sw res env -> 
            match apply1 ma sw res env with
            | Error msg -> Error msg
@@ -283,12 +283,12 @@ module DocMonad =
 
 
     // liftM (which is fmap)
-    let liftM (fn:'a -> 'x) (ma:DocMonad<'res,'a>) : DocMonad<'res,'x> = 
+    let liftM (fn:'a -> 'x) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'x> = 
         fmapM fn ma
 
     let liftM2 (fn:'a -> 'b -> 'x) 
-               (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) : DocMonad<'res,'x> = 
+               (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) : DocMonad<'userRes,'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -296,9 +296,9 @@ module DocMonad =
         }
 
     let liftM3 (fn:'a -> 'b -> 'c -> 'x) 
-               (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) : DocMonad<'res,'x> = 
+               (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) : DocMonad<'userRes,'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -307,10 +307,10 @@ module DocMonad =
         }
 
     let liftM4 (fn:'a -> 'b -> 'c -> 'd -> 'x) 
-               (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) 
-               (md:DocMonad<'res,'d>) : DocMonad<'res,'x> = 
+               (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) 
+               (md:DocMonad<'userRes,'d>) : DocMonad<'userRes,'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -321,11 +321,11 @@ module DocMonad =
 
 
     let liftM5 (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'x) 
-               (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) 
-               (md:DocMonad<'res,'d>) 
-               (me:DocMonad<'res,'e>) : DocMonad<'res,'x> = 
+               (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) 
+               (md:DocMonad<'userRes,'d>) 
+               (me:DocMonad<'userRes,'e>) : DocMonad<'userRes,'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -336,12 +336,12 @@ module DocMonad =
         }
 
     let liftM6 (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x) 
-               (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) 
-               (md:DocMonad<'res,'d>) 
-               (me:DocMonad<'res,'e>) 
-               (mf:DocMonad<'res,'f>) : DocMonad<'res,'x> = 
+               (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) 
+               (md:DocMonad<'userRes,'d>) 
+               (me:DocMonad<'userRes,'e>) 
+               (mf:DocMonad<'userRes,'f>) : DocMonad<'userRes,'x> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -353,78 +353,78 @@ module DocMonad =
         }
 
 
-    let tupleM2 (ma:DocMonad<'res,'a>) 
-                (mb:DocMonad<'res,'b>) : DocMonad<'res,'a * 'b> = 
+    let tupleM2 (ma:DocMonad<'userRes,'a>) 
+                (mb:DocMonad<'userRes,'b>) : DocMonad<'userRes,'a * 'b> = 
         liftM2 (fun a b -> (a,b)) ma mb
 
-    let tupleM3 (ma:DocMonad<'res,'a>) 
-                (mb:DocMonad<'res,'b>) 
-                (mc:DocMonad<'res,'c>) : DocMonad<'res,'a * 'b * 'c> = 
+    let tupleM3 (ma:DocMonad<'userRes,'a>) 
+                (mb:DocMonad<'userRes,'b>) 
+                (mc:DocMonad<'userRes,'c>) : DocMonad<'userRes,'a * 'b * 'c> = 
         liftM3 (fun a b c -> (a,b,c)) ma mb mc
 
-    let tupleM4 (ma:DocMonad<'res,'a>) 
-                (mb:DocMonad<'res,'b>) 
-                (mc:DocMonad<'res,'c>) 
-                (md:DocMonad<'res,'d>) : DocMonad<'res,'a * 'b * 'c * 'd> = 
+    let tupleM4 (ma:DocMonad<'userRes,'a>) 
+                (mb:DocMonad<'userRes,'b>) 
+                (mc:DocMonad<'userRes,'c>) 
+                (md:DocMonad<'userRes,'d>) : DocMonad<'userRes,'a * 'b * 'c * 'd> = 
         liftM4 (fun a b c d -> (a,b,c,d)) ma mb mc md
 
-    let tupleM5 (ma:DocMonad<'res,'a>) 
-                (mb:DocMonad<'res,'b>) 
-                (mc:DocMonad<'res,'c>) 
-                (md:DocMonad<'res,'d>) 
-                (me:DocMonad<'res,'e>) : DocMonad<'res,'a * 'b * 'c * 'd * 'e> = 
+    let tupleM5 (ma:DocMonad<'userRes,'a>) 
+                (mb:DocMonad<'userRes,'b>) 
+                (mc:DocMonad<'userRes,'c>) 
+                (md:DocMonad<'userRes,'d>) 
+                (me:DocMonad<'userRes,'e>) : DocMonad<'userRes,'a * 'b * 'c * 'd * 'e> = 
         liftM5 (fun a b c d e -> (a,b,c,d,e)) ma mb mc md me
 
-    let tupleM6 (ma:DocMonad<'res,'a>) 
-                (mb:DocMonad<'res,'b>) 
-                (mc:DocMonad<'res,'c>) 
-                (md:DocMonad<'res,'d>) 
-                (me:DocMonad<'res,'e>) 
-                (mf:DocMonad<'res,'f>) : DocMonad<'res,'a * 'b * 'c * 'd * 'e * 'f> = 
+    let tupleM6 (ma:DocMonad<'userRes,'a>) 
+                (mb:DocMonad<'userRes,'b>) 
+                (mc:DocMonad<'userRes,'c>) 
+                (md:DocMonad<'userRes,'d>) 
+                (me:DocMonad<'userRes,'e>) 
+                (mf:DocMonad<'userRes,'f>) : DocMonad<'userRes,'a * 'b * 'c * 'd * 'e * 'f> = 
         liftM6 (fun a b c d e f -> (a,b,c,d,e,f)) ma mb mc md me mf
 
-    let pipeM2 (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (fn:'a -> 'b -> 'x) : DocMonad<'res,'x> = 
+    let pipeM2 (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (fn:'a -> 'b -> 'x) : DocMonad<'userRes,'x> = 
         liftM2 fn ma mb
 
-    let pipeM3 (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) 
-               (fn:'a -> 'b -> 'c -> 'x) : DocMonad<'res,'x> = 
+    let pipeM3 (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) 
+               (fn:'a -> 'b -> 'c -> 'x) : DocMonad<'userRes,'x> = 
         liftM3 fn ma mb mc
 
-    let pipeM4 (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) 
-               (md:DocMonad<'res,'d>) 
-               (fn:'a -> 'b -> 'c -> 'd -> 'x) : DocMonad<'res,'x> = 
+    let pipeM4 (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) 
+               (md:DocMonad<'userRes,'d>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'x) : DocMonad<'userRes,'x> = 
         liftM4 fn ma mb mc md
 
-    let pipeM5 (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) 
-               (md:DocMonad<'res,'d>) 
-               (me:DocMonad<'res,'e>) 
-               (fn:'a -> 'b -> 'c -> 'd -> 'e ->'x) : DocMonad<'res,'x> = 
+    let pipeM5 (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) 
+               (md:DocMonad<'userRes,'d>) 
+               (me:DocMonad<'userRes,'e>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'e ->'x) : DocMonad<'userRes,'x> = 
         liftM5 fn ma mb mc md me
 
-    let pipeM6 (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'b>) 
-               (mc:DocMonad<'res,'c>) 
-               (md:DocMonad<'res,'d>) 
-               (me:DocMonad<'res,'e>) 
-               (mf:DocMonad<'res,'f>) 
-               (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x) : DocMonad<'res,'x> = 
+    let pipeM6 (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'b>) 
+               (mc:DocMonad<'userRes,'c>) 
+               (md:DocMonad<'userRes,'d>) 
+               (me:DocMonad<'userRes,'e>) 
+               (mf:DocMonad<'userRes,'f>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x) : DocMonad<'userRes,'x> = 
         liftM6 fn ma mb mc md me mf
 
     /// Left biased choice, if ``ma`` succeeds return its result, otherwise try ``mb``.
-    let altM (ma:DocMonad<'res,'a>) (mb:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let altM (ma:DocMonad<'userRes,'a>) (mb:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         combineM ma mb
 
 
     /// Haskell Applicative's (<*>)
-    let apM (mf:DocMonad<'res,'a ->'b>) (ma:DocMonad<'res,'a>) : DocMonad<'res,'b> = 
+    let apM (mf:DocMonad<'userRes,'a ->'b>) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
         docMonad { 
             let! fn = mf
             let! a = ma
@@ -435,7 +435,7 @@ module DocMonad =
 
     /// Perform two actions in sequence. 
     /// Ignore the results of the second action if both succeed.
-    let seqL (ma:DocMonad<'res,'a>) (mb:DocMonad<'res,'b>) : DocMonad<'res,'a> = 
+    let seqL (ma:DocMonad<'userRes,'a>) (mb:DocMonad<'userRes,'b>) : DocMonad<'userRes,'a> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -444,7 +444,7 @@ module DocMonad =
 
     /// Perform two actions in sequence. 
     /// Ignore the results of the first action if both succeed.
-    let seqR (ma:DocMonad<'res,'a>) (mb:DocMonad<'res,'b>) : DocMonad<'res,'b> = 
+    let seqR (ma:DocMonad<'userRes,'a>) (mb:DocMonad<'userRes,'b>) : DocMonad<'userRes,'b> = 
         docMonad { 
             let! a = ma
             let! b = mb
@@ -454,7 +454,7 @@ module DocMonad =
 
     /// Optionally run a computation. 
     /// If the build fails return None otherwise retun Some<'a>.
-    let optionalM (ma:DocMonad<'res,'a>) : DocMonad<'res,'a option> = 
+    let optionalM (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a option> = 
         DocMonad <| fun sw res env ->
             match apply1 ma sw res env with
             | Error _ -> Ok None
@@ -462,16 +462,16 @@ module DocMonad =
 
 
     let optionFailM (errMsg:string)
-                    (ma:DocMonad<'res,'a option>) : DocMonad<'res,'a> = 
+                    (ma:DocMonad<'userRes,'a option>) : DocMonad<'userRes,'a> = 
         bindM ma (fun opt -> 
                     match opt with
                     | Some ans -> mreturn ans
                     | None -> throwError errMsg)
 
 
-    let kleisliL (mf:'a -> DocMonad<'res,'b>)
-                 (mg:'b -> DocMonad<'res,'c>)
-                 (source:'a) : DocMonad<'res,'c> = 
+    let kleisliL (mf:'a -> DocMonad<'userRes,'b>)
+                 (mg:'b -> DocMonad<'userRes,'c>)
+                 (source:'a) : DocMonad<'userRes,'c> = 
         docMonad { 
             let! b = mf source
             let! c = mg b
@@ -479,9 +479,9 @@ module DocMonad =
         }
 
     /// Flipped kleisliL
-    let kleisliR (mf:'b -> DocMonad<'res,'c>)
-                 (mg:'a -> DocMonad<'res,'b>)
-                 (source:'a) : DocMonad<'res,'c> = 
+    let kleisliR (mf:'b -> DocMonad<'userRes,'c>)
+                 (mg:'a -> DocMonad<'userRes,'b>)
+                 (source:'a) : DocMonad<'userRes,'c> = 
         docMonad { 
             let! b = mg source
             let! c = mf b
@@ -493,7 +493,8 @@ module DocMonad =
     // Execute 'builtin' processes 
     // (Respective applications must be installed)
 
-    let private getProcessOptions (findExe:Resources<'res> -> string) : DocMonad<'res,ProcessOptions> = 
+    let private getProcessOptions 
+                    (findExe:AppResources<'userRes> -> string) : DocMonad<'userRes,ProcessOptions> = 
         docMonad { 
             let! exe = getsResources findExe
             let! cwd = askWorkingDirectory ()
@@ -501,21 +502,21 @@ module DocMonad =
                    ; ExecutableName = exe}
         }
     
-    let private shellExecute (findExe:Resources<'res> -> string)
-                             (args:CmdOpt list) : DocMonad<'res,string> = 
+    let private shellExecute (findExe:AppResources<'userRes> -> string)
+                             (args:CmdOpt list) : DocMonad<'userRes,string> = 
         docMonad { 
             let! options = getProcessOptions findExe
             let! ans = liftResult <| executeProcess options (arguments args)
             return ans
             }
         
-    let execGhostscript (args:CmdOpt list) : DocMonad<'res,string> = 
+    let execGhostscript (args:CmdOpt list) : DocMonad<'userRes,string> = 
         shellExecute (fun res -> res.GhostscriptExe) args
 
-    let execPandoc (args:CmdOpt list) : DocMonad<'res,string> = 
+    let execPandoc (args:CmdOpt list) : DocMonad<'userRes,string> = 
         shellExecute (fun res -> res.PandocExe) args
 
-    let execPdftk (args:CmdOpt list) : DocMonad<'res,string> = 
+    let execPdftk (args:CmdOpt list) : DocMonad<'userRes,string> = 
         shellExecute (fun res -> res.PdftkExe) args
 
     // ****************************************************
@@ -523,8 +524,8 @@ module DocMonad =
 
 
     /// Implemented in CPS 
-    let mapM (mf: 'a -> DocMonad<'res,'b>) 
-             (source:'a list) : DocMonad<'res,'b list> = 
+    let mapM (mf: 'a -> DocMonad<'userRes,'b>) 
+             (source:'a list) : DocMonad<'userRes,'b list> = 
         DocMonad <| fun sw res env -> 
             let rec work ac ys fk sk = 
                 match ys with
@@ -539,12 +540,12 @@ module DocMonad =
 
     /// Flipped mapM
     let forM (source:'a list) 
-             (mf: 'a -> DocMonad<'res,'b>) : DocMonad<'res,'b list> = 
+             (mf: 'a -> DocMonad<'userRes,'b>) : DocMonad<'userRes,'b list> = 
         mapM mf source
 
     /// Forgetful mapM
-    let mapMz (mf: 'a -> DocMonad<'res,'b>) 
-              (source:'a list) : DocMonad<'res,unit> = 
+    let mapMz (mf: 'a -> DocMonad<'userRes,'b>) 
+              (source:'a list) : DocMonad<'userRes,unit> = 
         DocMonad <| fun sw res env -> 
             let rec work ys cont = 
                 match ys with
@@ -557,13 +558,13 @@ module DocMonad =
 
     /// Flipped mapMz
     let forMz (source:'a list) 
-              (mf: 'a -> DocMonad<'res,'b>) : DocMonad<'res,unit> = 
+              (mf: 'a -> DocMonad<'userRes,'b>) : DocMonad<'userRes,unit> = 
         mapMz mf source
 
 
     /// Implemented in CPS 
-    let mapiM (mf:int -> 'a -> DocMonad<'res,'b>) 
-              (source:'a list) : DocMonad<'res,'b list> = 
+    let mapiM (mf:int -> 'a -> DocMonad<'userRes,'b>) 
+              (source:'a list) : DocMonad<'userRes,'b list> = 
         DocMonad <| fun sw res env -> 
             let rec work ac n ys fk sk = 
                 match ys with
@@ -578,12 +579,12 @@ module DocMonad =
 
     /// Flipped mapMi
     let foriM (source:'a list) 
-              (mf: int -> 'a -> DocMonad<'res,'b>)  : DocMonad<'res,'b list> = 
+              (mf: int -> 'a -> DocMonad<'userRes,'b>)  : DocMonad<'userRes,'b list> = 
         mapiM mf source
 
     /// Forgetful mapiM
-    let mapiMz (mf: int -> 'a -> DocMonad<'res,'b>) 
-              (source:'a list) : DocMonad<'res,unit> = 
+    let mapiMz (mf: int -> 'a -> DocMonad<'userRes,'b>) 
+              (source:'a list) : DocMonad<'userRes,unit> = 
         DocMonad <| fun sw res env -> 
             let rec work n ys cont = 
                 match ys with
@@ -596,12 +597,12 @@ module DocMonad =
 
     /// Flipped mapiMz
     let foriMz (source:'a list) 
-               (mf: int -> 'a -> DocMonad<'res,'b>) : DocMonad<'res,unit> = 
+               (mf: int -> 'a -> DocMonad<'userRes,'b>) : DocMonad<'userRes,unit> = 
         mapiMz mf source
 
 
     /// Implemented in CPS 
-    let firstOfM (actions: DocMonad<'res,'a> list) : DocMonad<'res,'a> = 
+    let firstOfM (actions: DocMonad<'userRes,'a> list) : DocMonad<'userRes,'a> = 
         DocMonad <| fun sw res env -> 
             let rec work ops fk sk = 
                 match ops with
@@ -620,11 +621,11 @@ module DocMonad =
     // Errors
 
     /// Operator for swapError
-    let ( <?&> ) (msg:string) (ma:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let ( <?&> ) (msg:string) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         swapError msg ma
 
     /// Operator for flip swapError
-    let ( <&?> ) (ma:DocMonad<'res,'a>) (msg:string) : DocMonad<'res,'a> = 
+    let ( <&?> ) (ma:DocMonad<'userRes,'a>) (msg:string) : DocMonad<'userRes,'a> = 
         swapError msg ma
 
 
@@ -632,64 +633,64 @@ module DocMonad =
     // Monadic operations
 
     /// Bind operator
-    let ( >>= ) (ma:DocMonad<'res,'a>) 
-              (fn:'a -> DocMonad<'res,'b>) : DocMonad<'res,'b> = 
+    let ( >>= ) (ma:DocMonad<'userRes,'a>) 
+              (fn:'a -> DocMonad<'userRes,'b>) : DocMonad<'userRes,'b> = 
         docMonad.Bind(ma,fn)
 
     /// Flipped Bind operator
-    let ( =<< ) (fn:'a -> DocMonad<'res,'b>) 
-              (ma:DocMonad<'res,'a>) : DocMonad<'res,'b> = 
+    let ( =<< ) (fn:'a -> DocMonad<'userRes,'b>) 
+              (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
         docMonad.Bind(ma,fn)
 
 
     /// Operator for fmap.
-    let ( |>> ) (ma:DocMonad<'res,'a>) (fn:'a -> 'b) : DocMonad<'res,'b> = 
+    let ( |>> ) (ma:DocMonad<'userRes,'a>) (fn:'a -> 'b) : DocMonad<'userRes,'b> = 
         fmapM fn ma
 
     /// Flipped fmap.
-    let ( <<| ) (fn:'a -> 'b) (ma:DocMonad<'res,'a>) : DocMonad<'res,'b> = 
+    let ( <<| ) (fn:'a -> 'b) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
         fmapM fn ma
 
     /// Operator for altM
-    let ( <||> ) (ma:DocMonad<'res,'a>) 
-               (mb:DocMonad<'res,'a>) : DocMonad<'res,'a> = 
+    let ( <||> ) (ma:DocMonad<'userRes,'a>) 
+               (mb:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         altM ma mb 
 
 
     /// Operator for apM
-    let ( <**> ) (ma:DocMonad<'res,'a -> 'b>) 
-               (mb:DocMonad<'res,'a>) : DocMonad<'res,'b> = 
+    let ( <**> ) (ma:DocMonad<'userRes,'a -> 'b>) 
+               (mb:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
         apM ma mb
 
     /// Operator for fmapM
-    let ( <&&> ) (fn:'a -> 'b) (ma:DocMonad<'res,'a>) : DocMonad<'res,'b> = 
+    let ( <&&> ) (fn:'a -> 'b) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
         fmapM fn ma
 
 
 
     /// Operator for seqL
-    let (.>>) (ma:DocMonad<'res,'a>) 
-              (mb:DocMonad<'res,'b>) : DocMonad<'res,'a> = 
+    let (.>>) (ma:DocMonad<'userRes,'a>) 
+              (mb:DocMonad<'userRes,'b>) : DocMonad<'userRes,'a> = 
         seqL ma mb
 
     /// Operator for seqR
-    let (>>.) (ma:DocMonad<'res,'a>) 
-              (mb:DocMonad<'res,'b>) : DocMonad<'res,'b> = 
+    let (>>.) (ma:DocMonad<'userRes,'a>) 
+              (mb:DocMonad<'userRes,'b>) : DocMonad<'userRes,'b> = 
         seqR ma mb
 
 
 
     /// Operator for kleisliL
-    let (>=>) (mf : 'a -> DocMonad<'res,'b>)
-              (mg : 'b -> DocMonad<'res,'c>)
-              (source:'a) : DocMonad<'res,'c> = 
+    let (>=>) (mf : 'a -> DocMonad<'userRes,'b>)
+              (mg : 'b -> DocMonad<'userRes,'c>)
+              (source:'a) : DocMonad<'userRes,'c> = 
         kleisliL mf mg source
 
 
     /// Operator for kleisliR
-    let (<=<) (mf : 'b -> DocMonad<'res,'c>)
-              (mg : 'a -> DocMonad<'res,'b>)
-              (source:'a) : DocMonad<'res,'c> = 
+    let (<=<) (mf : 'b -> DocMonad<'userRes,'c>)
+              (mg : 'a -> DocMonad<'userRes,'b>)
+              (source:'a) : DocMonad<'userRes,'c> = 
         kleisliR mf mg source
 
 

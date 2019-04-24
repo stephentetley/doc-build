@@ -42,7 +42,7 @@ let paradox () =
     printfn "fullname: %s" fullname
     let dirname = Path.GetDirectoryName fullname
     printfn "dirname: %s" dirname
-    isDirectoryPath dirname
+    FilePaths.isDirectoryPath dirname
 
 let test04 () = 
     // Not relevant to handling file paths...

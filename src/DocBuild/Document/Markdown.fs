@@ -18,7 +18,7 @@ module Markdown =
     // ************************************************************************
     // Retrieve Custom styles
     
-    let getCustomStyles () : DocMonad<'res, WordDoc option> = 
+    let getCustomStyles () : DocMonad<'userRes, WordDoc option> = 
         docMonad { 
             match! asks(fun env -> env.PandocOpts.CustomStylesDocx)  with
             | None -> return None
@@ -29,7 +29,7 @@ module Markdown =
                     return! includeWordDoc path |>> Some
         }
                     
-    let private getCustomStylesPath () : DocMonad<'res, string option> = 
+    let private getCustomStylesPath () : DocMonad<'userRes, string option> = 
         getCustomStyles () 
             |>> Option.map (fun (doc:WordDoc) -> doc.AbsolutePath)
 
@@ -40,7 +40,7 @@ module Markdown =
 
     /// Output a Markdown doc to file.
     let saveMarkdown (outputAbsPath:string) 
-                     (markdown:Markdown) : DocMonad<'res,MarkdownDoc> = 
+                     (markdown:Markdown) : DocMonad<'userRes,MarkdownDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let _ = markdown.Save outputAbsPath 
@@ -52,7 +52,7 @@ module Markdown =
 
     /// Requires pandoc
     let markdownToWordAs (outputAbsPath:string) 
-                         (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
+                         (src:MarkdownDoc) : DocMonad<'userRes,WordDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! styles = getCustomStylesPath () 
@@ -63,7 +63,7 @@ module Markdown =
          }
 
     /// Requires pandoc
-    let markdownToWord (src:MarkdownDoc) : DocMonad<'res,WordDoc> =
+    let markdownToWord (src:MarkdownDoc) : DocMonad<'userRes,WordDoc> =
         let outputFile = Path.ChangeExtension(src.AbsolutePath, "docx")
         markdownToWordAs outputFile src
 
@@ -75,7 +75,7 @@ module Markdown =
     ///  Specific TeX backend is set in DocBuildEnv, generally you 
     /// should use "pdflatex".
     let markdownToTeXToPdfAs (outputAbsPath:string) 
-                             (src:MarkdownDoc) : DocMonad<'res,PdfDoc> =
+                             (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! pdfEngine = asks (fun env -> env.PandocOpts.PdfEngine)       
@@ -87,7 +87,7 @@ module Markdown =
          }
 
 
-    let markdownToTeXToPdf (src:MarkdownDoc) : DocMonad<'res,PdfDoc> =
+    let markdownToTeXToPdf (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
         let outputFile = Path.ChangeExtension(src.AbsolutePath, "pdf")
         markdownToTeXToPdfAs outputFile src
 
@@ -96,7 +96,7 @@ module Markdown =
 
     let findReplaceAs (searches:SearchList) 
                       (outputAbsPath:string) 
-                      (src:MarkdownDoc) : DocMonad<'res,MarkdownDoc> = 
+                      (src:MarkdownDoc) : DocMonad<'userRes,MarkdownDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let original = File.ReadAllText(src.AbsolutePath)
@@ -109,5 +109,5 @@ module Markdown =
 
 
     let findReplace (searches:SearchList)
-                    (src:MarkdownDoc) : DocMonad<'res,MarkdownDoc> = 
+                    (src:MarkdownDoc) : DocMonad<'userRes,MarkdownDoc> = 
         findReplaceAs searches src.AbsolutePath src

@@ -121,7 +121,7 @@ let WindowsEnv : DocBuildEnv =
         }
     }
 
-let makeResources (userRes:'res) : Resources<'res> = 
+let makeResources (userRes:'userRes) : AppResources<'userRes> = 
     { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"
       PandocExe = @"pandoc" 

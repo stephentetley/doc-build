@@ -18,7 +18,7 @@ module PandocTeXShim =
     /// Use Pandoc to render to PDF via TeX.
     /// TeX must be installed and callable by Pandoc.
     let makeTableOfContents (config:ContentsConfig) 
-                            (col:PdfCollection) : DocMonad<'res, PdfDoc> =
+                            (col:PdfCollection) : DocMonad<'userRes, PdfDoc> =
         Contents.genTableOfContents markdownToTeXToPdf config col
 
 
@@ -28,7 +28,7 @@ module PandocTeXShim =
     /// Make a 'photo book'.
     /// Use Pandoc to render to PDF via TeX.
     /// TeX must be installed and callable by Pandoc.
-    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'res, PdfDoc option> =
+    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'userRes, PdfDoc option> =
         PhotoBook.genPhotoBook markdownToTeXToPdf config
 
     /// Prefix the Pdf with a title page.
@@ -36,5 +36,5 @@ module PandocTeXShim =
     /// TeX must be installed and callable by Pandoc.
     let prefixWithTitlePage (title:string) 
                             (body: Markdown option) 
-                            (pdf:PdfDoc) : DocMonad<'res, PdfDoc> =
+                            (pdf:PdfDoc) : DocMonad<'userRes, PdfDoc> =
         TitlePage.genPrefixWithTitlePage markdownToTeXToPdf title body pdf

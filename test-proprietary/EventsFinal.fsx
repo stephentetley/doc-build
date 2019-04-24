@@ -112,7 +112,7 @@ let WindowsEnv : DocBuildEnv =
       PrintOrScreen = PrintQuality.Screen
       }
 
-let WindowsWordResources () : Resources<WordDocument.WordHandle> = 
+let WindowsWordResources () : AppResources<WordDocument.WordHandle> = 
     let userRes = new WordDocument.WordHandle()
     { GhostscriptExe = @"C:\programs\gs\gs9.15\bin\gswin64c.exe"
       PdftkExe = @"pdftk"

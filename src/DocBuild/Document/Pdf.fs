@@ -26,7 +26,7 @@ module Pdf =
     /// This produces large files than Ghostscipt with the option
     /// `/default`.
     let pdftkConcatPdfs (inputFiles:PdfCollection)
-                   (outputAbsPath:string) : DocMonad<'res,PdfDoc> = 
+                   (outputAbsPath:string) : DocMonad<'userRes,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let inputs = 
@@ -58,7 +58,7 @@ module Pdf =
 
     let private ghostscriptConcat (quality:GsQuality)
                                   (outputAbsPath:string) 
-                                  (inputFiles:PdfCollection) : DocMonad<'res,string> = 
+                                  (inputFiles:PdfCollection) : DocMonad<'userRes,string> = 
         let inputs = 
             inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputAbsPath inputs
@@ -69,7 +69,7 @@ module Pdf =
     /// The result is output in the working directory.
     let concatPdfs (quality:GsQuality)
                    (inputFiles:PdfCollection)
-                   (outputAbsPath:string) : DocMonad<'res,PdfDoc> = 
+                   (outputAbsPath:string) : DocMonad<'userRes,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let! _ = ghostscriptConcat quality outputAbsPath inputFiles
@@ -117,7 +117,7 @@ module Pdf =
     /// outputName is relatuive to Working directory.
     let extractRotationsAs (directives:RotationDirective list)
                            (outputAbsPath:string) 
-                           (src:PdfDoc) : DocMonad<'res,PdfDoc> = 
+                           (src:PdfDoc) : DocMonad<'userRes,PdfDoc> = 
         docMonad { 
             do! assertIsWorkingPath outputAbsPath
             let command = 
@@ -128,7 +128,7 @@ module Pdf =
 
     /// Rezize for Word generating a new temp file
     let extractRotations (directives:RotationDirective list) 
-                         (src:PdfDoc) : DocMonad<'res,PdfDoc> = 
+                         (src:PdfDoc) : DocMonad<'userRes,PdfDoc> = 
         extractRotationsAs directives src.AbsolutePath src
 
 
@@ -141,7 +141,7 @@ module Pdf =
     // ************************************************************************
     // Page count
 
-    let countPages (inputfile:PdfDoc) : DocMonad<'res,int> = 
+    let countPages (inputfile:PdfDoc) : DocMonad<'userRes,int> = 
         docMonad { 
             let command = PdftkPrim.dumpDataCommand inputfile.AbsolutePath
             let! stdout = execPdftk command
@@ -149,5 +149,5 @@ module Pdf =
         }
 
 
-    let sumPages (col:PdfCollection) : DocMonad<'res,int> = 
+    let sumPages (col:PdfCollection) : DocMonad<'userRes,int> = 
         mapM countPages col.Elements |>> List.sum
