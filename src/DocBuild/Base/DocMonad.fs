@@ -148,18 +148,23 @@ module DocMonad =
 
 
 
-    /// Execute an action that may throw an exception.
-    /// Capture the exception with try ... with
-    /// and return the answer or the expection message in the monad.
-    let attemptM (ma: DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
-        DocMonad <| fun sw res env -> 
-            try
-                apply1 ma sw res env
-            with
-            | ex -> Error (sprintf "attemptM: %s" ex.Message)
+ 
 
     let liftAssert (failMsg:string) (condition:bool) : DocMonad<'userRes, unit> = 
         if condition then mreturn () else docError failMsg
+
+    let liftOption (failMsg:string) (opt:'a option) : DocMonad<'userRes, 'a> = 
+        match opt with
+        | Some a -> mreturn a 
+        | None -> docError failMsg
+
+    let liftOperation (failMsg:string) 
+                      (operation: unit -> 'a) : DocMonad<'userRes, 'a> = 
+            try
+                operation () |> mreturn
+            with
+            | ex -> docError failMsg
+
 
     let assertM (failMsg:string) (ma:DocMonad<'userRes, bool>) : DocMonad<'userRes, unit> = 
         bindM ma <| fun condition -> 
@@ -167,10 +172,17 @@ module DocMonad =
                 mreturn () 
             else docError failMsg
 
-    let liftOption (failMsg:string) (opt:'a option) : DocMonad<'userRes, 'a> = 
-        match opt with
-        | Some a -> mreturn a 
-        | None -> docError failMsg
+    /// Execute an action that may throw an exception.
+    /// Capture the exception with try ... with
+    /// and return the answer or the expection message in the monad.
+    let attemptM (exnMsg:string) 
+                 (ma: DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
+        DocMonad <| fun sw res env -> 
+             try
+                 apply1 ma sw res env
+             with
+             | ex -> Error exnMsg
+
 
     // ****************************************************
     // Logging
