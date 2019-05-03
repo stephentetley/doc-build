@@ -93,9 +93,9 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory  = @"G:\work\Projects\events2\point-blue\batch3_to_build\output"
-      SourceDirectory   = @"G:\work\Projects\events2\point-blue\batch3_to_build\input"
-      IncludeDirectories = [ @"G:\work\Projects\events2\point-blue\batch3_to_build\include" ]
+    { WorkingDirectory  = @"G:\work\Projects\events2\point-blue\output"
+      SourceDirectory   = @"G:\work\Projects\events2\point-blue\batch4_to_build"
+      IncludeDirectories = [ @"G:\work\Projects\events2\point-blue\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
@@ -128,6 +128,8 @@ let coverSheetMarkdown (sai:string)
             h1 (text "T0877 Hawkeye 2 to Point Blue Asset Replacement (Phase 1)")
         | "T0942" -> 
             h1 (text "T0942 Hawkeye 2 to Point Blue Asset Replacement (Phase 2)")
+        | "T0975" -> 
+            h1 (text "T0975 Event Duration Monitoring")
         | _ -> 
             h1 (text "Error unknown Phase")
     concatMarkdown
@@ -152,7 +154,6 @@ let genCoverSheet (sai:string)
         let! (logo:JpegDoc) = getIncludeJpegDoc "YW-logo.jpg"
         let md = coverSheetMarkdown sai siteName phase logo.AbsolutePath
         let! outpath1 = extendWorkingPath "cover.md"
-        printfn "%O" md
         let! mdDoc = saveMarkdown outpath1 md
         return! markdownToWordToPdf mdDoc
     }
@@ -169,7 +170,7 @@ let build1 (phase:string) (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
     docMonad { 
         let! sourceName = askSourceDirectory () |>> fileObjectName
         let  siteName = getSiteName sourceName
-        let! saiNumber = getSaiNumber saiMap siteName |> liftOption "No SAI Number"
+        let! saiNumber = liftOption "No SAI Number" <| getSaiNumber saiMap siteName
         let! cover = genCoverSheet saiNumber siteName phase
         let! scope = genInstallSheet ()
         let col1 = Collection.fromList [ cover; scope ]  
@@ -192,5 +193,21 @@ let main () =
         <| docMonad { 
                 do! buildPhase "T0877" saiMap
                 do! buildPhase "T0942" saiMap
+                do! buildPhase "T0975" saiMap
                 return () 
             }
+
+
+/// Have been observing a strange error where we see "zeroM" as the fail msg
+/// rather than what is sent to "docError".
+/// This doesn't provoke it...
+let dummy01 () = 
+    let resources = WindowsWordResources ()
+    let saiMap : SaiMap = buildSaiMap () 
+    runDocMonad resources WindowsEnv 
+        <| docMonad { 
+            let! saiCode    = liftOption "No SAI Number" <| getSaiNumber saiMap "UNKNOWN"
+            let! goodNumber = liftOption "Error not expected" (Some 1)
+            let! badNumber  = liftOption "Another Error" None
+            return sprintf "%s-%i-%i" saiCode goodNumber badNumber
+        }

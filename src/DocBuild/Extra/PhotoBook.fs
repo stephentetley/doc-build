@@ -99,6 +99,6 @@ module PhotoBook =
         docMonad { 
             match! makePhotoBook config with
             | Some md -> return! render md
-            | None -> return! throwError "makePhotoBook failed"
+            | None -> return! docError "makePhotoBook failed"
         }
 

@@ -136,7 +136,7 @@ module DocMonad =
     // ****************************************************
     // Errors
 
-    let throwError (msg:string) : DocMonad<'userRes,'a> = 
+    let docError (msg:string) : DocMonad<'userRes,'a> = 
         DocMonad <| fun _ _ _ -> Error msg
 
     let swapError (msg:string) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
@@ -159,18 +159,18 @@ module DocMonad =
             | ex -> Error (sprintf "attemptM: %s" ex.Message)
 
     let liftAssert (failMsg:string) (condition:bool) : DocMonad<'userRes, unit> = 
-        if condition then mreturn () else throwError failMsg
+        if condition then mreturn () else docError failMsg
 
     let assertM (failMsg:string) (ma:DocMonad<'userRes, bool>) : DocMonad<'userRes, unit> = 
         bindM ma <| fun condition -> 
             if condition then 
                 mreturn () 
-            else throwError failMsg
+            else docError failMsg
 
     let liftOption (failMsg:string) (opt:'a option) : DocMonad<'userRes, 'a> = 
         match opt with
         | Some a -> mreturn a 
-        | None -> throwError failMsg
+        | None -> docError failMsg
 
     // ****************************************************
     // Logging
@@ -263,7 +263,7 @@ module DocMonad =
         try
             action () |> mreturn
         with
-        | ex -> throwError (errorGen ex)   
+        | ex -> docError (errorGen ex)   
 
     // ****************************************************
     // Monadic operations
@@ -277,7 +277,7 @@ module DocMonad =
             if ans then 
                 let! res = successOp ()
                 return res
-            else throwError failMsg |> ignore
+            else docError failMsg |> ignore
             } 
 
     /// fmap 
@@ -472,7 +472,7 @@ module DocMonad =
         bindM ma (fun opt -> 
                     match opt with
                     | Some ans -> mreturn ans
-                    | None -> throwError errMsg)
+                    | None -> docError errMsg)
 
 
     let kleisliL (mf:'a -> DocMonad<'userRes,'b>)

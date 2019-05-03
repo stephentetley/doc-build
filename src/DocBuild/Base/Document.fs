@@ -22,8 +22,8 @@ module Document =
             let testExtension (ext:string) : bool = String.Equals(extension, ext, StringComparison.CurrentCultureIgnoreCase)
             if List.exists testExtension validFileExtensions then 
                 mreturn ()
-            else throwError <| sprintf "Not a %O file: '%s'" validFileExtensions absPath
-        else throwError <| sprintf "Could not find file: '%s'" absPath 
+            else docError <| sprintf "Not a %O file: '%s'" validFileExtensions absPath
+        else docError <| sprintf "Could not find file: '%s'" absPath 
 
 
     let isAbsolutePath (filePath:string) : bool = 

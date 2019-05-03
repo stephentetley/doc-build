@@ -77,7 +77,7 @@ module Skeletons =
                     if skeletonOpts.ContinueOnFail then 
                         return ()
                     else 
-                        logStepFail () .>> throwError "Build step failed" |> ignore
+                        logStepFail () .>> docError "Build step failed" |> ignore
                 | Some _ -> return ()
                 }
         let processChildDirectory (ix:int) (count:int) : DocMonad<'userRes, unit> = 

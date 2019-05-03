@@ -168,7 +168,7 @@ module FileOperations =
             Directory.Move(oldPath, newPath)
             mreturn ()
         else
-            throwError (sprintf "renameWorkingFolder - folder does not exist '%s'" oldPath)
+            docError (sprintf "renameWorkingFolder - folder does not exist '%s'" oldPath)
 
     /// Has one or more matches. 
     /// Note - pattern is a simple glob 
