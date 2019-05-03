@@ -131,6 +131,12 @@ module DocMonad =
         | Error msg -> failwith msg
 
 
+    /// fmap 
+    let fmapM (fn:'a -> 'b) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
+        DocMonad <| fun sw res env -> 
+           match apply1 ma sw res env with
+           | Error msg -> Error msg
+           | Ok a -> Ok (fn a)
 
 
     // ****************************************************
@@ -146,7 +152,8 @@ module DocMonad =
             | Ok a -> Ok a
 
 
-
+    let ( <?> ) (ma:DocMonad<'userRes,'a>) (msg:string) : DocMonad<'userRes,'a> = 
+        swapError msg ma
 
  
 
@@ -172,6 +179,18 @@ module DocMonad =
                 mreturn () 
             else docError failMsg
 
+    let optionM (defaultValue:'a) 
+                (ma:DocMonad<'userRes, 'a>) : DocMonad<'userRes, 'a> = 
+        combineM ma (mreturn defaultValue)
+
+    /// Optionally run a computation. 
+    /// If the build fails return None otherwise retun Some<'a>.
+    let optionMaybeM (ma:DocMonad<'userRes, 'a>) : DocMonad<'userRes, 'a option> = 
+        combineM (fmapM Some ma)  (mreturn None)
+
+
+    let optionalM (ma:DocMonad<'userRes, 'a>) : DocMonad<'userRes, unit> = 
+        combineM (fmapM ignore ma) (mreturn ())
 
 
     // ****************************************************
@@ -282,12 +301,7 @@ module DocMonad =
             else docError failMsg |> ignore
             } 
 
-    /// fmap 
-    let fmapM (fn:'a -> 'b) (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'b> = 
-        DocMonad <| fun sw res env -> 
-           match apply1 ma sw res env with
-           | Error msg -> Error msg
-           | Ok a -> Ok (fn a)
+
 
 
     // liftM (which is fmap)
@@ -460,17 +474,11 @@ module DocMonad =
         }
 
 
-    /// Optionally run a computation. 
-    /// If the build fails return None otherwise retun Some<'a>.
-    let optionalM (ma:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a option> = 
-        DocMonad <| fun sw res env ->
-            match apply1 ma sw res env with
-            | Error _ -> Ok None
-            | Ok a -> Ok (Some a)
 
 
-    let optionFailM (errMsg:string)
-                    (ma:DocMonad<'userRes,'a option>) : DocMonad<'userRes,'a> = 
+
+    let optionToFailM (errMsg:string)
+                      (ma:DocMonad<'userRes,'a option>) : DocMonad<'userRes,'a> = 
         bindM ma (fun opt -> 
                     match opt with
                     | Some ans -> mreturn ans

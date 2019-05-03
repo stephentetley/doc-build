@@ -38,7 +38,7 @@ let buildSaiMap () : SaiMap =
 
 let getSaiNumber (saiMap:SaiMap) (siteName:string) : string option = 
     match Map.tryFind siteName saiMap with
-    | None -> printfn "Could not find SAI for %s" siteName ; None
+    | None -> printfn "Could not find SAI for '%s'" siteName ; None
     | Some ans -> Some ans
 
 

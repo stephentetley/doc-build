@@ -84,7 +84,7 @@ module PhotoBook =
     let makePhotoBook (config:PhotoBookConfig) : DocMonad<'userRes,MarkdownDoc option> =
         docMonad {
             let! jpegs = 
-                optionalM (copyJpegs config.SourceSubFolder config.WorkingSubFolder 
+                optionMaybeM (copyJpegs config.SourceSubFolder config.WorkingSubFolder 
                             >>= optimizeJpegs)
             match jpegs with
             | None -> return None

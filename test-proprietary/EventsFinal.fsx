@@ -100,8 +100,8 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
-      SourceDirectory =  @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
+    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output"
+      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\CSO_SPS"
       IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\input\include" ]
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
@@ -193,11 +193,11 @@ let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> =
     }
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionalM 
+    optionMaybeM
         <| (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Survey Photos")
 
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionalM 
+    optionMaybeM 
         <| (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
         
 
@@ -239,8 +239,8 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
         let! cover = genCoversheet siteName saiNumber
         let! surveys = processSurveys siteName
         let! oSurveyPhotos = genSurveyPhotos siteName
-        let! calibrations = processUSCalibrations siteName
-        let! rtuInstalls = processRTUInstalls siteName
+        let! calibrations = processUSCalibrations siteName <||> mreturn []
+        let! rtuInstalls = processRTUInstalls siteName <||> mreturn []
         let! oWorksPhotos = genSiteWorkPhotos siteName
         let col1 = Collection.empty  
                         &^^ surveys 
@@ -262,5 +262,4 @@ let main () =
     let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()
     runDocMonad resources WindowsEnv 
-        <| foreachSourceIndividualOutput defaultSkeletonOptions 
-                                         (foreachSourceIndividualOutput defaultSkeletonOptions (build1 saiMap))
+        <| foreachSourceIndividualOutput defaultSkeletonOptions (build1 saiMap)

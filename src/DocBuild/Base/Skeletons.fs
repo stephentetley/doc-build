@@ -72,7 +72,7 @@ module Skeletons =
                 }
         let proceedM (proc:DocMonad<'userRes,unit>) : DocMonad<'userRes, unit> = 
             docMonad { 
-                match! (optionalM proc) with
+                match! (optionMaybeM proc) with
                 | None -> 
                     if skeletonOpts.ContinueOnFail then 
                         return ()
