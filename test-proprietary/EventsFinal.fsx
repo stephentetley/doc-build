@@ -71,7 +71,6 @@ open FSharp.Interop.Excel
 open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Office
-open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
 #load "Proprietary.fs"
@@ -149,14 +148,14 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
     }
 
 
-let surveyPhotosConfig (siteName:string) : PhotoBookConfig = 
+let surveyPhotosConfig (siteName:string) : PandocWordShim.PhotoBookConfig = 
     { Title = sprintf "%s Survey Photos" siteName
       SourceSubFolder = "1.Survey" </> "PHOTOS"
       WorkingSubFolder = "Survey_Photos"
       RelativeOutputName = "survey_photos.md"
     }
               
-let siteWorksPhotosConfig (siteName:string) : PhotoBookConfig = 
+let siteWorksPhotosConfig (siteName:string) : PandocWordShim.PhotoBookConfig = 
     { Title = sprintf "%s Site Work Photos" siteName
       SourceSubFolder = "2.Site_Work" </> "PHOTOS"
       WorkingSubFolder =  "Site_Work_Photos"
@@ -195,19 +194,19 @@ let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> =
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     optionalM 
-        <| (makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Survey Photos")
+        <| (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Survey Photos")
 
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     optionalM 
-        <| (makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
+        <| (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
         
 
 
 let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
-    let config : ContentsConfig = 
+    let config : PandocWordShim.ContentsConfig = 
         { PrologLength = 1
           RelativeOutputName = "contents.md" }
-    makeTableOfContents config pdfs
+    PandocWordShim.makeTableOfContents config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 
@@ -220,11 +219,15 @@ let processSiteWork (siteName:string) (glob:string) : DocMonadWord<PdfDoc list> 
         return! mapM (wordDocToPdf siteName) inputs
     }
 
-let processRTUInstalls (siteName:string) : DocMonadWord<PdfDoc list> = 
-    processSiteWork siteName "*RTU Install*.doc*"
+
 
 let processUSCalibrations (siteName:string) : DocMonadWord<PdfDoc list> = 
     processSiteWork siteName "*US Calib*.doc*"
+
+
+let processRTUInstalls (siteName:string) : DocMonadWord<PdfDoc list> = 
+    processSiteWork siteName "*RTU Install*.doc*"
+
 
 
 

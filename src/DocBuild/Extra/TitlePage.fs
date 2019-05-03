@@ -51,8 +51,5 @@ module TitlePage =
         }
 
 
-    let prefixWithTitlePageWithTeX (title:string) 
-                                   (body: Markdown option) 
-                                   (pdf:PdfDoc) : DocMonad<'userRes,PdfDoc> =
-        genPrefixWithTitlePage markdownToTeXToPdf title body pdf
+
         

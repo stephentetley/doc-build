@@ -172,16 +172,6 @@ module DocMonad =
                 mreturn () 
             else docError failMsg
 
-    /// Execute an action that may throw an exception.
-    /// Capture the exception with try ... with
-    /// and return the answer or the expection message in the monad.
-    let attemptM (exnMsg:string) 
-                 (ma: DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
-        DocMonad <| fun sw res env -> 
-             try
-                 apply1 ma sw res env
-             with
-             | ex -> Error exnMsg
 
 
     // ****************************************************

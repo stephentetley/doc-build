@@ -8,7 +8,6 @@ namespace DocBuild.Document
 module Markdown = 
 
     open System.IO
-    open SLFormat.CommandOptions
     open MarkdownDoc
 
     open DocBuild.Base
@@ -68,28 +67,7 @@ module Markdown =
         markdownToWordAs outputName src
 
 
-    // ************************************************************************
-    // Export to Pdf with Pandoc (and TeX)
 
-
-    ///  Specific TeX backend is set in DocBuildEnv, generally you 
-    /// should use "pdflatex".
-    let markdownToTeXToPdfAs (outputRelName:string) 
-                             (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
-        docMonad { 
-            let! outputAbsPath = extendWorkingPath outputRelName
-            let! pdfEngine = asks (fun env -> env.PandocOpts.PdfEngine)       
-            let command = 
-                PandocPrim.outputPdfCommand pdfEngine [] src.AbsolutePath outputAbsPath
-            printfn "// %s" (arguments command)
-            let! _ = execPandoc command
-            return! getPdfDoc outputAbsPath
-         }
-
-
-    let markdownToTeXToPdf (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
-        let outputName = Path.ChangeExtension(src.AbsolutePath, "pdf") |> Path.GetFileName
-        markdownToTeXToPdfAs outputName src
 
     // ************************************************************************
     // Find and replace
