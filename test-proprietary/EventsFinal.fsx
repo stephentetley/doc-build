@@ -183,13 +183,27 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
         }
 
 // May have multiple surveys...
-let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
+let surveys (siteName:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
                 <| findAllSourceFilesMatching "*Survey*.doc*" false
         return! mapM (wordDocToPdf siteName) inputs
-        
+    }
+
+let surveyNotes (siteName:string) : DocMonadWord<PdfDoc list> = 
+    docMonad {
+        let! inputs = 
+            localSourceSubdirectory "1.Survey" 
+                <| findAllSourceFilesMatching "*.md" false
+        return! mapM (fun src -> getMarkdownDoc src >>= PandocWordShim.markdownToPdf) inputs
+    }
+
+let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
+    docMonad {
+        match! surveys siteName with
+        | [] -> return! surveyNotes siteName
+        | pdfs -> return pdfs
     }
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
@@ -211,7 +225,7 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
 /// May have multiple documents
 /// Get doc files matching glob 
 // (run twice for Calibrations and RTU installs)
-let processSiteWork (siteName:string) (glob:string) : DocMonadWord<PdfDoc list> = 
+let siteWork (siteName:string) (glob:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work" 
@@ -220,16 +234,42 @@ let processSiteWork (siteName:string) (glob:string) : DocMonadWord<PdfDoc list> 
     }
 
 
+let siteWorkNotes (siteName:string) : DocMonadWord<PdfDoc list> = 
+    docMonad {
+        let! inputs = 
+            localSourceSubdirectory "2.Site_work"  
+                <| findAllSourceFilesMatching "*.md" false
+        return! mapM (fun src -> getMarkdownDoc src >>= PandocWordShim.markdownToPdf) inputs
+    }
+
+
 
 let processUSCalibrations (siteName:string) : DocMonadWord<PdfDoc list> = 
-    processSiteWork siteName "*US Calib*.doc*"
+    siteWork siteName "*US Calib*.doc*"
 
 
 let processRTUInstalls (siteName:string) : DocMonadWord<PdfDoc list> = 
-    processSiteWork siteName "*RTU Install*.doc*"
+    siteWork siteName "*RTU Install*.doc*"
 
 
 
+let processSiteWork (siteName:string) : DocMonadWord<PdfDoc list> = 
+    docMonad {
+        let! xs = processUSCalibrations siteName
+        let! ys = processRTUInstalls siteName
+        match (xs @ ys) with
+        | [] -> return! siteWorkNotes siteName
+        | pdfs -> return pdfs
+    }
+
+let exnIfEmpty (msg:string) (xs:'a list) : DocMonadWord<'a list> = 
+    docMonad { 
+        match xs with
+        | [] ->    
+            do! tellLine msg 
+            return! docError msg
+        | _ -> return xs
+    }
 
 let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> = 
     docMonad {
@@ -237,16 +277,14 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
         let  siteName = getSiteName sourceName
         let! saiNumber = getSaiNumber saiMap siteName |> liftOption "No SAI Number"
         let! cover = genCoversheet siteName saiNumber
-        let! surveys = processSurveys siteName
-        let! oSurveyPhotos = genSurveyPhotos siteName
-        let! calibrations = processUSCalibrations siteName <||> mreturn []
-        let! rtuInstalls = processRTUInstalls siteName <||> mreturn []
+        let! surveys = processSurveys siteName >>= exnIfEmpty "No surveys"
+        let! oSurveyPhotos = genSurveyPhotos siteName 
+        let! siteWorks = processSiteWork siteName >>= exnIfEmpty "No site work"
         let! oWorksPhotos = genSiteWorkPhotos siteName
         let col1 = Collection.empty  
                         &^^ surveys 
                         &^^ oSurveyPhotos 
-                        &^^ calibrations 
-                        &^^ rtuInstalls
+                        &^^ siteWorks
                         &^^ oWorksPhotos
         let! contents = genContents col1
         let colAll = cover ^^& contents ^^& col1
@@ -261,5 +299,6 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
 let main () = 
     let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()
+    let stepM = ignoreM (build1 saiMap) <|> mreturn ()
     runDocMonad resources WindowsEnv 
-        <| foreachSourceIndividualOutput defaultSkeletonOptions (build1 saiMap)
+        <| foreachSourceIndividualOutput defaultSkeletonOptions stepM

@@ -193,6 +193,8 @@ module DocMonad =
         combineM (fmapM ignore ma) (mreturn ())
 
 
+
+
     // ****************************************************
     // Logging
 
@@ -668,7 +670,7 @@ module DocMonad =
         fmapM fn ma
 
     /// Operator for altM
-    let ( <||> ) (ma:DocMonad<'userRes,'a>) 
+    let ( <|> ) (ma:DocMonad<'userRes,'a>) 
                (mb:DocMonad<'userRes,'a>) : DocMonad<'userRes,'a> = 
         altM ma mb 
 
@@ -697,17 +699,20 @@ module DocMonad =
 
 
     /// Operator for kleisliL
-    let (>=>) (mf : 'a -> DocMonad<'userRes,'b>)
+    let ( >=> ) (mf : 'a -> DocMonad<'userRes,'b>)
               (mg : 'b -> DocMonad<'userRes,'c>)
               (source:'a) : DocMonad<'userRes,'c> = 
         kleisliL mf mg source
 
 
     /// Operator for kleisliR
-    let (<=<) (mf : 'b -> DocMonad<'userRes,'c>)
+    let ( <=< ) (mf : 'b -> DocMonad<'userRes,'c>)
               (mg : 'a -> DocMonad<'userRes,'b>)
               (source:'a) : DocMonad<'userRes,'c> = 
         kleisliR mf mg source
 
 
+
+    let ignoreM (ma:DocMonad<'userRes, 'a>) : DocMonad<'userRes, unit> = 
+        ma |>> ignore
 
