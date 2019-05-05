@@ -56,16 +56,14 @@ module PhotoBook =
         | [] -> h1 (text title)
 
     
-    let internal copyJpegs (sourceSubdirectory:string)
-                           (workingSubdirectory:string) : DocMonad<'userRes, JpegCollection> =
+    let internal copyJpegs (sourceSubdirectory:string) : DocMonad<'userRes, JpegCollection> =
         docMonad { 
             let! xs = 
                 localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
             let! ys = 
                 localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpeg" false
-            let! srcJpegs = mapM getJpegDoc (xs @ ys)
-            let! jpegs = 
-                localWorkingSubdirectory workingSubdirectory (mapM copyToWorking srcJpegs)
+            let! srcJpegs = mapM getJpegDoc (xs @ ys) |>> List.sortBy (fun doc -> doc.FileName)
+            let! jpegs = mapM copyToWorking srcJpegs
             return (Collection.fromList jpegs)
         }
 
@@ -76,16 +74,16 @@ module PhotoBook =
 
     type PhotoBookConfig = 
         { Title: string
-          SourceSubFolder: string
-          WorkingSubFolder: string
+          SourceSubdirectory: string
+          WorkingSubdirectory: string
           RelativeOutputName: string }
 
     /// Check for empty & handle missing source folder.
     let makePhotoBook (config:PhotoBookConfig) : DocMonad<'userRes,MarkdownDoc option> =
         docMonad {
             let! jpegs = 
-                optionMaybeM (copyJpegs config.SourceSubFolder config.WorkingSubFolder 
-                            >>= optimizeJpegs)
+                localWorkingSubdirectory config.WorkingSubdirectory <|
+                    optionMaybeM (copyJpegs config.SourceSubdirectory >>= optimizeJpegs)
             match jpegs with
             | None -> return None
             | Some col when col.Elements.IsEmpty -> return None

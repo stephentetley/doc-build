@@ -50,6 +50,13 @@ module Document =
         val private DocAbsPath: string
         val private DocTitle : string
 
+        interface IComparable<Document<'a>> with
+            member x.CompareTo(other) =
+                (* sorts by name, then age *)
+                compare x.DocAbsPath other.DocAbsPath
+                
+
+
         /// Title will be the file name, with directory information removed.
         new (absPath:string) = 
             { DocAbsPath = absPath; DocTitle = FileInfo(absPath).Name }

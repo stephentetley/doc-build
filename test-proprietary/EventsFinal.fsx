@@ -102,7 +102,7 @@ type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output"
       SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\CSO_SPS"
-      IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\input\include" ]
+      IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\include" ]
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
           PdfEngine = Some "pdflatex"
@@ -150,15 +150,15 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
 
 let surveyPhotosConfig (siteName:string) : PandocWordShim.PhotoBookConfig = 
     { Title = sprintf "%s Survey Photos" siteName
-      SourceSubFolder = "1.Survey" </> "PHOTOS"
-      WorkingSubFolder = "Survey_Photos"
+      SourceSubdirectory = "1.Survey" </> "PHOTOS"
+      WorkingSubdirectory = "Survey_Photos"
       RelativeOutputName = "survey_photos.md"
     }
               
 let siteWorksPhotosConfig (siteName:string) : PandocWordShim.PhotoBookConfig = 
     { Title = sprintf "%s Site Work Photos" siteName
-      SourceSubFolder = "2.Site_Work" </> "PHOTOS"
-      WorkingSubFolder =  "Site_Work_Photos"
+      SourceSubdirectory = "2.Site_Work" </> "PHOTOS"
+      WorkingSubdirectory =  "Site_Work_Photos"
       RelativeOutputName = "site_works_photos.md"
     }
 
@@ -194,7 +194,7 @@ let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> =
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     optionMaybeM
-        <| (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Survey Photos")
+        <| (PandocWordShim.makePhotoBook (surveyPhotosConfig siteName) |>> setTitle "Survey Photos")
 
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
     optionMaybeM 
