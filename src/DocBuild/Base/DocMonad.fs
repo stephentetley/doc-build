@@ -165,12 +165,23 @@ module DocMonad =
         | Some a -> mreturn a 
         | None -> docError failMsg
 
+
+
+
     let liftOperation (failMsg:string) 
                       (operation: unit -> 'a) : DocMonad<'userRes, 'a> = 
             try
                 operation () |> mreturn
             with
             | ex -> docError failMsg
+
+
+    let liftOperationResult (failMsg:string) (operation: unit -> Result<'a, string>) : DocMonad<'userRes, 'a> = 
+        docMonad { 
+            match! liftOperation failMsg operation with
+            | Ok a -> return a
+            | Error msg -> return! docError msg
+        }
 
 
     let assertM (failMsg:string) (ma:DocMonad<'userRes, bool>) : DocMonad<'userRes, unit> = 

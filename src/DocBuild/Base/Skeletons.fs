@@ -37,7 +37,7 @@ module Skeletons =
                     sprintf "%i of %i: %s" ix count childFolderName
           GenStepFailMessage = Some <| sprintf "%s failed"
           DebugSelectSample = None
-          ContinueOnFail = false
+          ContinueOnFail = true
         }
 
     let private runSkeleton (skeletonOpts:SkeletonOptions) 

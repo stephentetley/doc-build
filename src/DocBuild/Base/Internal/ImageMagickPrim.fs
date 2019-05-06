@@ -39,22 +39,29 @@ module ImageMagickPrim =
 
 
 
-    let imAutoOrient (infile:string) (outfile:string) : unit = 
-        use (img:MagickImage) = new MagickImage(infile)
-        img.AutoOrient () // May have Exif rotation problems...
-        img.Write outfile
+    let imAutoOrient (infile:string) (outfile:string) : Result<unit, string> = 
+        try 
+            use (img:MagickImage) = new MagickImage(infile)
+            img.AutoOrient () // May have Exif rotation problems...
+            img.Write outfile
+            Ok ()
+        with
+        | exn -> Error (sprintf "imAutoOrient: %s" exn.Message)
 
 
     /// Note - this is for inclusion in a Word document.
     /// It seems it is a good size for a Markdown doc too.
-    let imOptimizeForMsWord (infile:string) (outfile:string) : unit = 
-        let info = new MagickImageInfo(infile)
-        use (img:MagickImage) = new MagickImage(infile)
-        let (newWidth,newHeight) = calculateNewPixelSize info (600,540)   // To check
-        img.Density <- new Density(72.0, 72.0, DensityUnit.PixelsPerInch)
-        img.Resize(new MagickGeometry(width=newWidth, height=newHeight))
-        img.Write outfile
-
+    let imOptimizeForMsWord (infile:string) (outfile:string) : Result<unit, string> = 
+        try 
+            let info = new MagickImageInfo(infile)
+            use (img:MagickImage) = new MagickImage(infile)
+            let (newWidth,newHeight) = calculateNewPixelSize info (600,540)   // To check
+            img.Density <- new Density(72.0, 72.0, DensityUnit.PixelsPerInch)
+            img.Resize(new MagickGeometry(width=newWidth, height=newHeight))
+            img.Write outfile
+            Ok ()
+        with
+        | exn -> Error (sprintf "imAutoOrient: %s" exn.Message)
 
 
 

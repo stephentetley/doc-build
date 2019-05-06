@@ -19,7 +19,9 @@ module Jpeg =
     let autoOrientAs (outputRelName:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
-            let _ = ImageMagickPrim.imAutoOrient src.AbsolutePath outputAbsPath
+            let! _ = 
+                liftOperationResult "ImageMagick auto orient error" 
+                    <| fun _ -> ImageMagickPrim.imAutoOrient src.AbsolutePath outputAbsPath
             return! getJpegDoc outputAbsPath
         }
 
@@ -32,7 +34,9 @@ module Jpeg =
     let resizeForWordAs (outputRelName:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
-            let _ = ImageMagickPrim.imOptimizeForMsWord src.AbsolutePath outputAbsPath
+            let! _ = 
+                liftOperationResult "ImageMagick resize error" 
+                    <| fun _ -> ImageMagickPrim.imOptimizeForMsWord src.AbsolutePath outputAbsPath
             return! getJpegDoc outputAbsPath
         }
 
