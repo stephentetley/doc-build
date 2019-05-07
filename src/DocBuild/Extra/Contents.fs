@@ -61,7 +61,6 @@ module Contents =
             let config1 = { config with RelativeOutputName = "contents-zero.md" }
             let! tocTemp = makeContents1 config1 col >>= render
             let! newPrologLength = countPages tocTemp |>> (fun i -> i + config.PrologLength)
-            printfn "newPrologLength : %i"  newPrologLength
             let config2 =  { config with PrologLength = newPrologLength }
             let! tocFinal = makeContents1 config2 col
             return! render tocFinal

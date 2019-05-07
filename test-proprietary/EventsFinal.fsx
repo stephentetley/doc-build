@@ -184,11 +184,12 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
 
 // May have multiple surveys...
 let surveys (siteName:string) : DocMonadWord<PdfDoc list> = 
+    let title1 = sprintf "%s Survey" siteName
     docMonad {
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
                 <| findAllSourceFilesMatching "*Survey*.doc*" false
-        return! mapM (wordDocToPdf siteName) inputs
+        return! mapM (PandocWordShim.prefixWithTitlePage title1 None <=< wordDocToPdf siteName) inputs
     }
 
 let surveyNotes (siteName:string) : DocMonadWord<PdfDoc list> = 
@@ -225,12 +226,13 @@ let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
 /// May have multiple documents
 /// Get doc files matching glob 
 // (run twice for Calibrations and RTU installs)
-let siteWork (siteName:string) (glob:string) : DocMonadWord<PdfDoc list> = 
+let siteWork (siteName:string) (glob:string, title1:string) : DocMonadWord<PdfDoc list> = 
+    let title2 = sprintf "%s %s" siteName title1
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work" 
                 <| findAllSourceFilesMatching glob false
-        return! mapM (wordDocToPdf siteName) inputs
+        return! mapM (PandocWordShim.prefixWithTitlePage title2 None <=< wordDocToPdf siteName) inputs
     }
 
 
@@ -245,11 +247,11 @@ let siteWorkNotes (siteName:string) : DocMonadWord<PdfDoc list> =
 
 
 let processUSCalibrations (siteName:string) : DocMonadWord<PdfDoc list> = 
-    siteWork siteName "*US Calib*.doc*"
+    siteWork siteName ("*US Calib*.doc*", "Ultrasonic Calibration")
 
 
 let processRTUInstalls (siteName:string) : DocMonadWord<PdfDoc list> = 
-    siteWork siteName "*RTU Install*.doc*"
+    siteWork siteName ("*RTU Install*.doc*", "RTU Outstation Installation")
 
 
 
