@@ -23,7 +23,7 @@ module PandocTeXShim =
     /// The specific TeX backend is set in DocBuildEnv, generally you 
     /// should use "pdflatex".
     let markdownToPdfAs (outputRelName:string) 
-                        (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
+                        (src:MarkdownDoc) : DocMonad<PdfDoc, 'userRes> =
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! pdfEngine = asks (fun env -> env.PandocOpts.PdfEngine)       
@@ -35,7 +35,7 @@ module PandocTeXShim =
          }
 
 
-    let markdownToPdf (src:MarkdownDoc) : DocMonad<'userRes,PdfDoc> =
+    let markdownToPdf (src:MarkdownDoc) : DocMonad<PdfDoc, 'userRes> =
         let outputName = Path.ChangeExtension(src.AbsolutePath, "pdf") |> Path.GetFileName
         markdownToPdfAs outputName src
 
@@ -46,7 +46,7 @@ module PandocTeXShim =
     /// Use Pandoc to render to PDF via TeX.
     /// TeX must be installed and callable by Pandoc.
     let makeTableOfContents (config:ContentsConfig) 
-                            (col:PdfCollection) : DocMonad<'userRes, PdfDoc> =
+                            (col:PdfCollection) : DocMonad<PdfDoc, 'userRes> =
         Contents.genTableOfContents markdownToPdf config col
 
 
@@ -56,7 +56,7 @@ module PandocTeXShim =
     /// Make a 'photo book'.
     /// Use Pandoc to render to PDF via TeX.
     /// TeX must be installed and callable by Pandoc.
-    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'userRes, PdfDoc> =
+    let makePhotoBook (config:PhotoBookConfig) : DocMonad<PdfDoc, 'userRes> =
         PhotoBook.genPhotoBook markdownToPdf config
 
     /// Prefix the Pdf with a title page.
@@ -64,5 +64,5 @@ module PandocTeXShim =
     /// TeX must be installed and callable by Pandoc.
     let prefixWithTitlePage (title:string) 
                             (body: Markdown option) 
-                            (pdf:PdfDoc) : DocMonad<'userRes, PdfDoc> =
+                            (pdf:PdfDoc) : DocMonad<PdfDoc, 'userRes> =
         TitlePage.genPrefixWithTitlePage markdownToPdf title body pdf

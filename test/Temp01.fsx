@@ -149,7 +149,7 @@ let traverse01a () =
                 do printfn "%i" i
                 return "ans"
                 }
-        else throwError "large"
+        else docError "large"
     runDocMonadNoCleanup (makeResources ()) WindowsEnv <| 
         mapMz operation [1;2;3;4]
 
@@ -170,7 +170,7 @@ let traverse02a () =
                 do printfn "%i" i
                 return i.ToString()
                 }
-        else throwError "large"
+        else docError "large"
     runDocMonadNoCleanup (makeResources ()) WindowsEnv <| 
         mapM operation [1;2;3;4]
 
@@ -190,7 +190,7 @@ let traverse03a () =
                 do printfn "ix=%i val='%s'" i s
                 return (i + int s)
                 }
-        else throwError "large"
+        else docError "large"
     runDocMonadNoCleanup (makeResources ()) WindowsEnv <| 
         mapiM operation ["1";"2";"3";"4"]
 

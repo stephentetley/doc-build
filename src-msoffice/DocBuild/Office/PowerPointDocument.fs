@@ -45,7 +45,7 @@ module PowerPointDocument =
     and IPowerPointHandle =
         abstract PowerPointAppHandle : PowerPointHandle
 
-    let execPowerPoint (mf: PowerPoint.Application -> DocMonad<#IPowerPointHandle,'a>) : DocMonad<#IPowerPointHandle,'a> = 
+    let execPowerPoint (mf: PowerPoint.Application -> DocMonad<'a, #IPowerPointHandle>) : DocMonad<'a, #IPowerPointHandle> = 
         docMonad { 
             let! userRes = getUserResources ()
             let powerPointHandle = userRes.PowerPointAppHandle
@@ -63,7 +63,7 @@ module PowerPointDocument =
 
 
     let exportPdfAs (outputRelName:string) 
-                    (src:PowerPointDoc) : DocMonad<#IPowerPointHandle,PdfDoc> = 
+                    (src:PowerPointDoc) : DocMonad<PdfDoc, #IPowerPointHandle> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! pdfQuality = 
@@ -75,7 +75,7 @@ module PowerPointDocument =
         }
 
     /// Saves the file in the working directory.
-    let exportPdf (src:PowerPointDoc) : DocMonad<#IPowerPointHandle,PdfDoc> = 
+    let exportPdf (src:PowerPointDoc) : DocMonad<PdfDoc, #IPowerPointHandle> = 
         docMonad { 
             let fileName = Path.ChangeExtension(src.FileName, "pdf")
             return! exportPdfAs fileName src

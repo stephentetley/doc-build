@@ -10,7 +10,7 @@ module Skeletons =
     open DocBuild.Base
 
 
-    let private getSourceSubdirectories () : DocMonad<'userRes,string list> = 
+    let private getSourceSubdirectories () : DocMonad<string list, 'userRes> = 
         docMonad { 
             let! source = askSourceDirectory ()
             let! (kids: System.IO.DirectoryInfo[]) = 
@@ -40,9 +40,9 @@ module Skeletons =
         }
 
     let private runSkeleton (skeletonOpts:SkeletonOptions) 
-                            (strategy: string -> DocMonad<'userRes,unit> -> DocMonad<'userRes,unit>)
-                            (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> =  
-        let processZ: DocMonad<'userRes, unit> = process1 |>> fun _ -> ()
+                            (strategy: string -> DocMonad<unit, 'userRes> -> DocMonad<unit, 'userRes>)
+                            (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> =  
+        let processZ: DocMonad<unit, 'userRes> = process1 |>> fun _ -> ()
         let filterChildDirectories = 
             match skeletonOpts.DebugSelectSample with
             | None -> id
@@ -69,7 +69,7 @@ module Skeletons =
                     do! tellLine message
                     return ()
                 }
-        let proceedM (proc:DocMonad<'userRes,unit>) : DocMonad<'userRes, unit> = 
+        let proceedM (proc:DocMonad<unit, 'userRes>) : DocMonad<unit, 'userRes> = 
             docMonad { 
                 match! (optionMaybeM proc) with
                 | None -> 
@@ -79,7 +79,7 @@ module Skeletons =
                         logStepFail () .>> docError "Build step failed" |> ignore
                 | Some _ -> return ()
                 }
-        let processChildDirectory (ix:int) (count:int) : DocMonad<'userRes, unit> = 
+        let processChildDirectory (ix:int) (count:int) : DocMonad<unit, 'userRes> = 
             docMonad { 
                 do! logStepBegin ix count
                 return! (proceedM processZ)
@@ -98,7 +98,7 @@ module Skeletons =
     /// Generate the results in a child folder of the same name under
     /// the working folder.
     let foreachSourceIndividualOutput (skeletonOpts:SkeletonOptions) 
-                                      (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
+                                      (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory 
                                         (localWorkingSubdirectory childDirectory action)
@@ -109,7 +109,7 @@ module Skeletons =
     /// processing function on 'within' that folder. 
     /// Generate the results in the top level working folder.
     let foreachSourceCommonOutput (skeletonOpts:SkeletonOptions) 
-                                  (process1: DocMonad<'userRes,'a>) : DocMonad<'userRes, unit> = 
+                                  (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> = 
         let strategy = fun childDirectory action -> 
                 localSourceSubdirectory childDirectory action
         runSkeleton skeletonOpts strategy process1

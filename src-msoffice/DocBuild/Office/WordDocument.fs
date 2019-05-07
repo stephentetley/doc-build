@@ -54,7 +54,7 @@ module WordDocument =
         abstract WordAppHandle : WordHandle
         abstract PaperSizeForWord : Word.WdPaperSize option with get, set
 
-    let execWord (mf: Word.Application -> DocMonad<#IWordHandle,'a>) : DocMonad<#IWordHandle,'a> = 
+    let execWord (mf: Word.Application -> DocMonad<'a, #IWordHandle>) : DocMonad<'a, #IWordHandle> = 
         docMonad { 
             let! userRes = getUserResources ()
             let wordHandle = userRes.WordAppHandle
@@ -73,7 +73,7 @@ module WordDocument =
     /// TODO - because we only want output in the working directory
     /// it would be better to supply just a file name...
     let exportPdfAs (outputRelName:string)
-                    (src:WordDoc) : DocMonad<#IWordHandle,PdfDoc> = 
+                    (src:WordDoc) : DocMonad<PdfDoc, #IWordHandle> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! userRes = getUserResources ()
@@ -87,7 +87,7 @@ module WordDocument =
         }
 
     /// Saves the file in the top-level working directory.
-    let exportPdf (src:WordDoc) : DocMonad<#IWordHandle,PdfDoc> = 
+    let exportPdf (src:WordDoc) : DocMonad<PdfDoc, #IWordHandle> = 
         docMonad { 
             let fileName = Path.ChangeExtension(src.FileName, "pdf")
             return! exportPdfAs fileName src
@@ -100,7 +100,7 @@ module WordDocument =
 
     let findReplaceAs (searches:SearchList) 
                       (outputRelName:string) 
-                      (src:WordDoc) : DocMonad<#IWordHandle,WordDoc> = 
+                      (src:WordDoc) : DocMonad<WordDoc, #IWordHandle> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! ans = 
@@ -111,5 +111,5 @@ module WordDocument =
 
 
 
-    let findReplace (searches:SearchList) (src:WordDoc) : DocMonad<#IWordHandle,WordDoc> = 
+    let findReplace (searches:SearchList) (src:WordDoc) : DocMonad<WordDoc, #IWordHandle> = 
         findReplaceAs searches src.FileName src 

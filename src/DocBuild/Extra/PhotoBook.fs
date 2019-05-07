@@ -16,7 +16,7 @@ module PhotoBook =
 
 
 
-    let optimizeJpeg (image:JpegDoc) : DocMonad<'userRes,JpegDoc> =
+    let optimizeJpeg (image:JpegDoc) : DocMonad<JpegDoc, 'userRes> =
         autoOrient image >>= resizeForWord
 
     let unixLikePath (path:string) : string = 
@@ -56,7 +56,7 @@ module PhotoBook =
         | [] -> h1 (text title)
 
     
-    let internal copyJpegs (sourceSubdirectory:string) : DocMonad<'userRes, JpegCollection> =
+    let internal copyJpegs (sourceSubdirectory:string) : DocMonad<JpegCollection, 'userRes> =
         docMonad { 
             let! xs = 
                 localSourceSubdirectory sourceSubdirectory <| findAllSourceFilesMatching "*.jpg" false
@@ -67,7 +67,7 @@ module PhotoBook =
             return (Collection.fromList jpegs)
         }
 
-    let internal optimizeJpegs (jpegs:JpegCollection) : DocMonad<'userRes, JpegCollection> =
+    let internal optimizeJpegs (jpegs:JpegCollection) : DocMonad<JpegCollection, 'userRes> =
         mapM optimizeJpeg jpegs.Elements |>> Collection.fromList
 
 
@@ -79,7 +79,7 @@ module PhotoBook =
           RelativeOutputName: string }
 
     /// Check for empty & handle missing source folder.
-    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'userRes,MarkdownDoc option> =
+    let makePhotoBook (config:PhotoBookConfig) : DocMonad<MarkdownDoc option, 'userRes> =
         docMonad {
             let! jpegs = 
                 localWorkingSubdirectory config.WorkingSubdirectory <|
@@ -92,8 +92,8 @@ module PhotoBook =
                 return! Markdown.saveMarkdown config.RelativeOutputName mdDoc |>> Some
         }
 
-    let genPhotoBook (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)
-                     (config:PhotoBookConfig) : DocMonad<'userRes, PdfDoc> =
+    let genPhotoBook (render: MarkdownDoc -> DocMonad<PdfDoc, 'userRes>)
+                     (config:PhotoBookConfig) : DocMonad<PdfDoc, 'userRes> =
         docMonad { 
             match! makePhotoBook config with
             | Some md -> return! render md

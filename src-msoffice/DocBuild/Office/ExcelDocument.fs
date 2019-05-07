@@ -44,7 +44,7 @@ module ExcelDocument =
     and IExcelHandle =
         abstract ExcelAppHandle : ExcelHandle
 
-    let execExcel (mf: Excel.Application -> DocMonad<#IExcelHandle,'a>) : DocMonad<#IExcelHandle,'a> = 
+    let execExcel (mf: Excel.Application -> DocMonad<'a, #IExcelHandle>) : DocMonad<'a, #IExcelHandle> = 
         docMonad { 
             let! userRes = getUserResources ()
             let excelHandle = userRes.ExcelAppHandle
@@ -65,7 +65,7 @@ module ExcelDocument =
 
     let exportPdfAs (fitWidth:bool)
                     (outputRelName:string)
-                    (src:ExcelDoc) : DocMonad<#IExcelHandle,PdfDoc> = 
+                    (src:ExcelDoc) : DocMonad<PdfDoc, #IExcelHandle> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! pdfQuality = 
@@ -78,7 +78,7 @@ module ExcelDocument =
 
     /// Saves the file in the top-level working directory.
     let exportPdf (fitWidth:bool) 
-                  (src:ExcelDoc) : DocMonad<#IExcelHandle,PdfDoc> = 
+                  (src:ExcelDoc) : DocMonad<PdfDoc, #IExcelHandle> = 
         docMonad { 
             let fileName = Path.ChangeExtension(src.FileName, "pdf")
             return! exportPdfAs fitWidth fileName src
@@ -91,7 +91,7 @@ module ExcelDocument =
 
     let findReplaceAs (searches:SearchList) 
                       (outputRelName:string) 
-                      (src:ExcelDoc) : DocMonad<#IExcelHandle,ExcelDoc> = 
+                      (src:ExcelDoc) : DocMonad<ExcelDoc, #IExcelHandle> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! ans = 
@@ -103,5 +103,5 @@ module ExcelDocument =
 
 
     let findReplace (searches:SearchList) 
-                    (src:ExcelDoc) : DocMonad<#IExcelHandle,ExcelDoc> = 
+                    (src:ExcelDoc) : DocMonad<ExcelDoc, #IExcelHandle> = 
         findReplaceAs searches src.FileName src

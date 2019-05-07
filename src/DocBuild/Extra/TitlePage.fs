@@ -31,16 +31,16 @@ module TitlePage =
           RelativeOutputName: string }
 
 
-    let makeTitlePage (config:TitlePageConfig) : DocMonad<'userRes, MarkdownDoc> =
+    let makeTitlePage (config:TitlePageConfig) : DocMonad<MarkdownDoc, 'userRes> =
         docMonad {
             let mdDoc = genMarkdown config.Title config.DocBody
             return! Markdown.saveMarkdown config.RelativeOutputName mdDoc
         }
 
-    let genPrefixWithTitlePage (render: MarkdownDoc -> DocMonad<'userRes,PdfDoc>)
+    let genPrefixWithTitlePage (render: MarkdownDoc -> DocMonad<PdfDoc, 'userRes>)
                                (title:string) 
                                (body: Markdown option) 
-                               (pdf:PdfDoc) : DocMonad<'userRes,PdfDoc> =
+                               (pdf:PdfDoc) : DocMonad<PdfDoc, 'userRes> =
         docMonad {
             // TODO this is imperminent, need an easy genfile function
             let temp = "title.temp.md"    

@@ -22,7 +22,7 @@ module PandocWordShim =
     
     open DocBuild.Office
 
-    let asksCustomStyles () : DocMonad<'res, WordDoc option> = 
+    let asksCustomStyles () : DocMonad< WordDoc option, 'res> = 
         docMonad {
             match! asks (fun env -> env.PandocOpts.CustomStylesDocx) with 
             | None -> return None 
@@ -35,7 +35,7 @@ module PandocWordShim =
 
     /// This uses MS Word as to render in intermediate docx file to Pdf.
     let markdownToPdfAs (outputPdfName:string) 
-                        (src:MarkdownDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
+                        (src:MarkdownDoc) : DocMonad<PdfDoc, #WordDocument.IWordHandle> =
         docMonad { 
             let docName = Path.ChangeExtension(outputPdfName, "docx")
             let! doc = markdownToWordAs docName src
@@ -43,7 +43,7 @@ module PandocWordShim =
          }
 
     /// This uses MS Word as to render in intermediate docx file to Pdf.
-    let markdownToPdf (src:MarkdownDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
+    let markdownToPdf (src:MarkdownDoc) : DocMonad<PdfDoc, #WordDocument.IWordHandle> =
         let fileName = Path.ChangeExtension(src.FileName, "pdf")
         markdownToPdfAs fileName src
 
@@ -54,18 +54,18 @@ module PandocWordShim =
     /// Make a title page PDF.
     /// Render to docx then use Word to render to PDF.
     let makeTableOfContents (config:ContentsConfig) 
-                            (col:PdfCollection) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
+                            (col:PdfCollection) : DocMonad<PdfDoc, #WordDocument.IWordHandle> =
         Contents.genTableOfContents markdownToPdf config col 
 
     type PhotoBookConfig = PhotoBook.PhotoBookConfig
 
-    let makePhotoBook (config:PhotoBookConfig) : DocMonad<'res, PdfDoc> =
+    let makePhotoBook (config:PhotoBookConfig) : DocMonad<PdfDoc, 'res> =
         PhotoBook.genPhotoBook markdownToPdf config
 
     /// Prefix the Pdf with a title page.
     /// Render to docx then use Word to render to PDF.
     let prefixWithTitlePage (title:string) 
                                     (body: Markdown option) 
-                                    (pdf:PdfDoc) : DocMonad<#WordDocument.IWordHandle,PdfDoc> =
+                                    (pdf:PdfDoc) : DocMonad<PdfDoc, #WordDocument.IWordHandle> =
         TitlePage.genPrefixWithTitlePage markdownToPdf title body pdf
 

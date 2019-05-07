@@ -16,7 +16,7 @@ module Jpeg =
     // image handle after an image file is opened. 
 
     /// Save in working directory (or a child of).
-    let autoOrientAs (outputRelName:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
+    let autoOrientAs (outputRelName:string) (src:JpegDoc) : DocMonad<JpegDoc, 'userRes> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! _ = 
@@ -26,12 +26,12 @@ module Jpeg =
         }
 
     /// Auto-orient overwriting the input file
-    let autoOrient (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
+    let autoOrient (src:JpegDoc) : DocMonad<JpegDoc, 'userRes> = 
         autoOrientAs src.FileName src
 
 
     /// Save in working directory (or a child of).
-    let resizeForWordAs (outputRelName:string) (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
+    let resizeForWordAs (outputRelName:string) (src:JpegDoc) : DocMonad<JpegDoc, 'userRes> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
             let! _ = 
@@ -41,7 +41,7 @@ module Jpeg =
         }
 
     /// Resize for Word overwriting the input file
-    let resizeForWord (src:JpegDoc) : DocMonad<'userRes,JpegDoc> = 
+    let resizeForWord (src:JpegDoc) : DocMonad<JpegDoc, 'userRes> = 
         resizeForWordAs src.FileName src
 
 

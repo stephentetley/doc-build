@@ -132,12 +132,12 @@ module TypedCollection =
 
 
     /// All files must have .pdf extension
-    let fromPdfList (pdfs:PdfDoc list) : DocMonad<'userRes,PdfCollection> = 
+    let fromPdfList (pdfs:PdfDoc list) : DocMonad<PdfCollection, 'userRes> = 
         Collection.fromList pdfs |> mreturn
 
 
     type JpegCollection = Collection.Collection<JpegPhantom>
 
     /// All files must have .pdf extension
-    let fromJpegList (jpegs:JpegDoc list) : DocMonad<'userRes,JpegCollection> = 
+    let fromJpegList (jpegs:JpegDoc list) : DocMonad<JpegCollection, 'userRes> = 
         Collection.fromList jpegs |> mreturn
