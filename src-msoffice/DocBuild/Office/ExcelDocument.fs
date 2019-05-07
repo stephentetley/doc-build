@@ -72,7 +72,7 @@ module ExcelDocument =
                 asks (fun env -> env.PrintOrScreen) |>> excelExportQuality
             let! _ = 
                 execExcel <| fun app -> 
-                        liftResult (excelExportAsPdf app fitWidth pdfQuality src.AbsolutePath outputAbsPath)
+                        liftOperationResult "exportPdfAs" (fun _ -> excelExportAsPdf app fitWidth pdfQuality src.AbsolutePath outputAbsPath)
             return! getPdfDoc outputAbsPath
         }
 
@@ -96,7 +96,7 @@ module ExcelDocument =
             let! outputAbsPath = extendWorkingPath outputRelName
             let! ans = 
                 execExcel <| fun app -> 
-                        liftResult (excelFindReplace app searches src.AbsolutePath outputAbsPath)
+                        liftOperationResult "findReplaceAs" (fun _ -> excelFindReplace app searches src.AbsolutePath outputAbsPath)
             return! getExcelDoc outputAbsPath
         }
 

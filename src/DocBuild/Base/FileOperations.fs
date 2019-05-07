@@ -203,12 +203,14 @@ module FileOperations =
     /// Uses glob pattern - the only wild cards are '?' and '*'
     /// Returns a list of absolute paths.
     let findSomeSourceFilesMatching (pattern:string) 
-                                    (recurseIntoSubDirectories:bool) : DocMonad<'userRes, (string list) option> =
+                                    (recurseIntoSubDirectories:bool) : DocMonad<'userRes, string list> =
         let find1 src = 
             FakeLikePrim.tryFindSomeFilesMatching pattern recurseIntoSubDirectories src
         docMonad { 
-              let! source = askSourceDirectory ()
-              return! liftOperation "findSomeSourceFilesMatching fail" (fun _ -> find1 source)
+            let! source = askSourceDirectory ()
+            match! liftOperation "no matches" (fun _ -> find1 source) with
+            | None -> return! docError "no matches"
+            | Some xs -> return xs
         }
 
     /// Search file matching files in the SourceDirectory.

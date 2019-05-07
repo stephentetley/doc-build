@@ -71,7 +71,6 @@ open FSharp.Interop.Excel
 open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Office
-open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
 #load "Proprietary.fs"
@@ -151,17 +150,17 @@ let genProjectScope () : DocMonadWord<PdfDoc> =
         return! copyToWorking input |>> setTitle "Project Scope"
     }
 
-let surveyPhotosConfig (siteName:string) : PhotoBookConfig = 
+let surveyPhotosConfig (siteName:string) : PandocWordShim.PhotoBookConfig = 
     { Title = sprintf "%s Survey Photos" siteName
-      SourceSubFolder = "1.Survey" </> "PHOTOS"
-      WorkingSubFolder = "Survey_Photos"
+      SourceSubdirectory = "1.Survey" </> "PHOTOS"
+      WorkingSubdirectory = "Survey_Photos"
       RelativeOutputName = "survey_photos.md"
     }
               
-let siteWorksPhotosConfig (siteName:string) : PhotoBookConfig = 
+let siteWorksPhotosConfig (siteName:string) : PandocWordShim.PhotoBookConfig = 
     { Title = sprintf "%s Install Photos" siteName
-      SourceSubFolder = "2.Site_Work" </> "PHOTOS"
-      WorkingSubFolder =  "Site_Work_Photos"
+      SourceSubdirectory = "2.Site_Work" </> "PHOTOS"
+      WorkingSubdirectory =  "Site_Work_Photos"
       RelativeOutputName = "site_works_photos.md"
     }
 
@@ -184,7 +183,7 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     docMonad { 
         let! doc = getSourceWordDoc absPath
         let! pdf1 = WordDocument.exportPdf doc 
-        return! prefixWithTitlePage title None pdf1 |>> setTitle title
+        return! PandocWordShim.prefixWithTitlePage title None pdf1 |>> setTitle title
     }
 
 let processMarkdown (title:string)
@@ -195,7 +194,7 @@ let processMarkdown (title:string)
             match subfolder with 
             | None -> ma
             | Some name -> localSourceSubdirectory name ma
-        let! inputs = contextM  <| findSomeSourceFilesMatching glob false
+        let! inputs = contextM (findSomeSourceFilesMatching glob false) 
         return! mapM (fun path -> 
                         getSourceMarkdownDoc path >>= fun md1 ->
                         copyToWorking md1 >>= fun md2 ->
@@ -215,20 +214,20 @@ let processSurveySheets (siteName:string) : DocMonadWord<PdfDoc list> =
 
 let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
     processSurveySheets siteName 
-        <||> processMarkdown "Survey Info" (Some "1.Survey") "*.md"
+        <|> processMarkdown "Survey Info" (Some "1.Survey") "*.md"
 
 let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionalM (makePhotoBook (surveyPhotosConfig siteName) |>> setTitle "Survey Photos")
+    optionMaybeM (PandocWordShim.makePhotoBook (surveyPhotosConfig siteName) |>> setTitle "Survey Photos")
 
 let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionalM (makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
+    optionMaybeM (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
 
 
 let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
-    let config : ContentsConfig = 
+    let config : PandocWordShim.ContentsConfig = 
         { PrologLength = 2
           RelativeOutputName = "contents.md" }
-    makeTableOfContents config pdfs
+    PandocWordShim.makeTableOfContents config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 
@@ -242,7 +241,7 @@ let processInstallSheets (siteName:string) : DocMonadWord<PdfDoc list> =
 
 let processInstalls(siteName:string) : DocMonadWord<PdfDoc list> = 
     processInstallSheets siteName 
-        <||> processMarkdown "Installation Info" (Some "2.Site_work") "*.md"
+        <|> processMarkdown "Installation Info" (Some "2.Site_work") "*.md"
 
 
 let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> = 

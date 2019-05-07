@@ -70,7 +70,7 @@ module PowerPointDocument =
                 asks (fun env -> env.PrintOrScreen) |>> powerpointExportQuality
             let! ans = 
                 execPowerPoint <| fun app -> 
-                    liftResult (powerPointExportAsPdf app pdfQuality src.AbsolutePath outputAbsPath)
+                    liftOperationResult "exportPdfAs" (fun _ -> powerPointExportAsPdf app pdfQuality src.AbsolutePath outputAbsPath)
             return! getPdfDoc outputAbsPath
         }
 

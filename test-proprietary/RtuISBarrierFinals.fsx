@@ -72,7 +72,6 @@ open DocBuild.Base
 open DocBuild.Base.DocMonad
 open DocBuild.Document
 open DocBuild.Office
-open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
 open ExcelProviderHelper
@@ -127,17 +126,17 @@ let sourceWordDocToPdf (fileGlob:string) : DocMonadWord<PdfDoc option> =
     
 
 let genSiteWorks () : DocMonadWord<PdfDoc> = 
-    optionFailM "No Site Works document" 
-                (sourceWordDocToPdf "*Site Works*.doc*")
+    optionToFailM "No Site Works document" 
+                  (sourceWordDocToPdf "*Site Works*.doc*")
                 
 
 let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    let props : PhotoBookConfig = 
+    let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Site Photos"
-        ; SourceSubFolder = "photos"
-        ; WorkingSubFolder = "photos"
+        ; SourceSubdirectory = "photos"
+        ; WorkingSubdirectory = "photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" (safeName siteName) }
-    optionalM (makePhotoBook props)
+    optionMaybeM (PandocWordShim.makePhotoBook props)
 
 let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
     docMonad { 

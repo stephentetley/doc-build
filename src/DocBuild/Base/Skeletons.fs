@@ -11,11 +11,10 @@ module Skeletons =
 
 
     let private getSourceSubdirectories () : DocMonad<'userRes,string list> = 
-        let failMessage = fun _ -> "getSourceChildren directory error"
         docMonad { 
             let! source = askSourceDirectory ()
             let! (kids: System.IO.DirectoryInfo[]) = 
-                liftAction failMessage <| fun _ -> System.IO.DirectoryInfo(source).GetDirectories() 
+                liftOperation "getSourceSubdirectories" <| fun _ -> System.IO.DirectoryInfo(source).GetDirectories() 
             return (kids |> Array.map (fun info -> info.Name) |> Array.toList)
         }
 

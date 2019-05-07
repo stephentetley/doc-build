@@ -72,7 +72,6 @@ open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Document.Markdown
 open DocBuild.Office
-open DocBuild.Office.PandocWordShim
 
 
 #load "ExcelProviderHelper.fs"
@@ -94,7 +93,7 @@ Environment.SetEnvironmentVariable("PATH",
 
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory  = @"G:\work\Projects\events2\point-blue\output"
-      SourceDirectory   = @"G:\work\Projects\events2\point-blue\batch4_to_build"
+      SourceDirectory   = @"G:\work\Projects\events2\point-blue\batch4a_to_build"
       IncludeDirectories = [ @"G:\work\Projects\events2\point-blue\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -155,13 +154,13 @@ let genCoverSheet (sai:string)
         let md = coverSheetMarkdown sai siteName phase logo.AbsolutePath
         let! outpath1 = extendWorkingPath "cover.md"
         let! mdDoc = saveMarkdown outpath1 md
-        return! markdownToWordToPdf mdDoc
+        return! PandocWordShim.markdownToPdf mdDoc
     }
 
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
         do! askSourceDirectory () |>> fun o -> printfn "%s" (fileObjectName o)
-        let! inputPath = optionFailM "no match" <| tryFindExactlyOneSourceFileMatching "*.docx" false
+        let! inputPath = optionToFailM "no install sheet" <| tryFindExactlyOneSourceFileMatching "*.docx" false
         let! wordDoc = getWordDoc inputPath
         return! WordDocument.exportPdfAs "install.pdf" wordDoc
         }
@@ -191,8 +190,8 @@ let main () =
     let saiMap : SaiMap = buildSaiMap () 
     runDocMonad resources WindowsEnv 
         <| docMonad { 
-                do! buildPhase "T0877" saiMap
-                do! buildPhase "T0942" saiMap
+                // do! buildPhase "T0877" saiMap
+                // do! buildPhase "T0942" saiMap
                 do! buildPhase "T0975" saiMap
                 return () 
             }

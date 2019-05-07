@@ -70,7 +70,6 @@ open FSharp.Interop.Excel
 open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Office
-open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
 open ExcelProviderHelper
@@ -169,28 +168,28 @@ let genSurvey (row:WorkRow) :DocMonadWord<PdfDoc option> =
     
 
 let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> = 
-    optionFailM "No Site Works document" 
+    optionToFailM "No Site Works document" 
                 (sourceWordDocToPdf "2.Installs" "*Works*.doc*" row)
                 
 
 let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
     let name1 = safeName row.``Site Name``
-    let props : PhotoBookConfig = 
+    let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Survey Photos"
-        ; SourceSubFolder = "1.Surveys" </> name1 </> "photos"
-        ; WorkingSubFolder = "survey_photos"
+        ; SourceSubdirectory = "1.Surveys" </> name1 </> "photos"
+        ; WorkingSubdirectory = "survey_photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
-    optionalM (makePhotoBook props)
+    optionMaybeM (PandocWordShim.makePhotoBook props)
 
 
 let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
     let name1 = safeName row.``Site Name``
-    let props : PhotoBookConfig = 
+    let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Install Photos"
-        ; SourceSubFolder  = "2.Install" </> name1 </> "photos"
-        ; WorkingSubFolder = "install_photos"
+        ; SourceSubdirectory  = "2.Install" </> name1 </> "photos"
+        ; WorkingSubdirectory = "install_photos"
         ; RelativeOutputName= sprintf "%s install photos.md" name1 }
-    optionalM (makePhotoBook props)
+    optionMaybeM (PandocWordShim.makePhotoBook props)
     
 
 let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> = 

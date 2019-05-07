@@ -82,7 +82,7 @@ module WordDocument =
                 asks (fun env -> env.PrintOrScreen) |>> wordExportQuality
             let! (ans:unit) = 
                 execWord <| fun app -> 
-                    liftResult (wordExportAsPdf app paperSize pdfQuality src.AbsolutePath outputAbsPath)
+                    liftOperationResult "exportAsPdf" (fun _ -> wordExportAsPdf app paperSize pdfQuality src.AbsolutePath outputAbsPath)
             return! getPdfDoc outputAbsPath
         }
 
@@ -105,7 +105,7 @@ module WordDocument =
             let! outputAbsPath = extendWorkingPath outputRelName
             let! ans = 
                 execWord <| fun app -> 
-                        liftResult (wordFindReplace app searches src.AbsolutePath outputAbsPath)
+                        liftOperationResult "findReplaceAs" (fun _ -> wordFindReplace app searches src.AbsolutePath outputAbsPath)
             return! getWordDoc outputAbsPath
         }
 

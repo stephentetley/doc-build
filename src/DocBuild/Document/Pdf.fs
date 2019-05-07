@@ -146,7 +146,7 @@ module Pdf =
         docMonad { 
             let command = PdftkPrim.dumpDataCommand inputfile.AbsolutePath
             let! stdout = execPdftk command
-            return! liftResult (PdftkPrim.regexSearchNumberOfPages stdout)
+            return! liftOperationResult "countPages" (fun _ -> PdftkPrim.regexSearchNumberOfPages stdout)
         }
 
 

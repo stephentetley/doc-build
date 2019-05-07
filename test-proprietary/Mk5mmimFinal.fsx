@@ -73,7 +73,6 @@ open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Document.Markdown
 open DocBuild.Office
-open DocBuild.Office.PandocWordShim
 
 
 #load "ExcelProviderHelper.fs"
@@ -117,7 +116,7 @@ type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
         do! askSourceDirectory () |>> fun path -> printfn "%s" (fileObjectName path)
-        let! inputPath = optionFailM "no match" <| tryFindExactlyOneSourceFileMatching "*Site*Works*.docx" false
+        let! inputPath = optionToFailM "no match" <| tryFindExactlyOneSourceFileMatching "*Site*Works*.docx" false
         let! wordDoc = getWordDoc inputPath
         return! WordDocument.exportPdf wordDoc
         }

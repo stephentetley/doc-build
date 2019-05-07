@@ -283,21 +283,7 @@ module DocMonad =
             
 
 
-    // ****************************************************
-    // Lift operations
-
-    let liftResult (answer:BuildResult<'a>) : DocMonad<'userRes,'a> = 
-        DocMonad <| fun _ _ _ -> answer
-
-    /// Run an F# 'action' that may fail (and throw an exception).
-    /// Catch exceptions with try...with and return them as Error
-    /// within the DocBuild monad.
-    let liftAction (errorGen: exn -> string) 
-                   (action: unit -> 'a) : DocMonad<'userRes, 'a> = 
-        try
-            action () |> mreturn
-        with
-        | ex -> docError (errorGen ex)   
+ 
 
     // ****************************************************
     // Monadic operations
@@ -535,7 +521,9 @@ module DocMonad =
                              (args:CmdOpt list) : DocMonad<'userRes,string> = 
         docMonad { 
             let! options = getProcessOptions findExe
-            let! ans = liftResult <| executeProcess options (arguments args)
+            let! ans = 
+                liftOperationResult "shellExecute" 
+                    <| fun _ -> executeProcess options (arguments args)
             return ans
             }
         
