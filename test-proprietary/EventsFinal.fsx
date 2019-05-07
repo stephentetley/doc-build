@@ -197,7 +197,10 @@ let surveyNotes (siteName:string) : DocMonadWord<PdfDoc list> =
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
                 <| findAllSourceFilesMatching "*.md" false
-        return! mapM (fun src -> getMarkdownDoc src >>= PandocWordShim.markdownToPdf) inputs
+        return! mapM (fun path -> getMarkdownDoc path 
+                                    >>= PandocWordShim.markdownToPdf 
+                                    |>> setTitle "Survey Info") 
+                    inputs
     }
 
 let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> = 
@@ -241,7 +244,10 @@ let siteWorkNotes (siteName:string) : DocMonadWord<PdfDoc list> =
         let! inputs = 
             localSourceSubdirectory "2.Site_work"  
                 <| findAllSourceFilesMatching "*.md" false
-        return! mapM (fun src -> getMarkdownDoc src >>= PandocWordShim.markdownToPdf) inputs
+        return! mapM (fun path -> getMarkdownDoc path 
+                                    >>= PandocWordShim.markdownToPdf 
+                                    |>> setTitle "Site Work Info")
+                inputs
     }
 
 
