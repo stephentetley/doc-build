@@ -97,7 +97,7 @@ Environment.SetEnvironmentVariable("PATH",
 
 let (docxCustomReference:string) = @"custom-reference1.docx"
 
-type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
+type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output"

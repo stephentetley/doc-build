@@ -99,7 +99,7 @@ let makeDoc (config:CoversheetConfig) : Markdown =
            ]
 
 let coversheet (config:CoversheetConfig)
-               (outputRelName:string) : DocMonad<'res,MarkdownDoc> = 
+               (outputRelName:string) : DocMonad<MarkdownDoc, 'res> = 
     docMonad {         
         let markdown = makeDoc config
         return! Markdown.saveMarkdown outputRelName markdown

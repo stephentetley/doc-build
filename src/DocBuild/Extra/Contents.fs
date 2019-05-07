@@ -28,8 +28,8 @@ module Contents =
                   infos
             |> snd
 
-    let private genMarkdown (start:int) (infos:DocInfo list) : Markdown = 
-        h1 (text "Contents") ^@^ contentsTable start infos 
+    let private genMarkdown (prologLength:int) (infos:DocInfo list) : Markdown = 
+        h1 (text "Contents") ^@^ contentsTable (prologLength+1) infos 
 
 
     /// Prolog size is the number of pages in any coversheet 
@@ -60,8 +60,10 @@ module Contents =
         docMonad {
             let config1 = { config with RelativeOutputName = "contents-zero.md" }
             let! tocTemp = makeContents1 config1 col >>= render
-            let! pageCount = countPages tocTemp
-            let config2 =  { config with PrologLength = config.PrologLength + pageCount }
-            return! makeContents1 config2 col >>= render
+            let! newPrologLength = countPages tocTemp |>> (fun i -> i + config.PrologLength)
+            printfn "newPrologLength : %i"  newPrologLength
+            let config2 =  { config with PrologLength = newPrologLength }
+            let! tocFinal = makeContents1 config2 col
+            return! render tocFinal
         }
 

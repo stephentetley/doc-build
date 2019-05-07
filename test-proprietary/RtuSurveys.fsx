@@ -101,7 +101,7 @@ let WindowsWordResources () : AppResources<WordDocument.WordHandle> =
       UserResources = userRes
     }
 
-type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
+type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 type SurveyTable = 
     ExcelFile< 

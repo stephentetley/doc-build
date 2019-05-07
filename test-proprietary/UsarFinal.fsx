@@ -93,7 +93,7 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 
-type DocMonadWord<'a> = DocMonad<WordDocument.WordHandle,'a>
+type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory      = @"G:\work\Projects\usar\final-docs\small_stw_mopup\output"
