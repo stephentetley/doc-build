@@ -101,7 +101,7 @@ type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output"
-      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\CSO_SPS"
+      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\STW"
       IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\include" ]
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"

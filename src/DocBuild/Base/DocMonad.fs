@@ -524,7 +524,7 @@ module DocMonad =
             let! options = getProcessOptions findExe
             let! ans = 
                 liftOperationResult "shellExecute" 
-                    <| fun _ -> executeProcess options (arguments args)
+                    <| fun _ -> executeProcess options (CommandOptions.arguments args)
             return ans
             }
         
