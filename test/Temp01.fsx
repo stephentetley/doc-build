@@ -20,14 +20,13 @@ open System.Text.RegularExpressions
 #r @"Magick.NET-Q8-AnyCPU.dll"
 
 // SLFormat & MarkdownDoc (not on nuget.org)
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190313\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
 #r @"SLFormat.dll"
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190508\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
 #load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
-#load "..\src\DocBuild\Base\Internal\Shell.fs"
 #load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PdftkPrim.fs"

@@ -15,8 +15,6 @@ module DocMonad =
     open SLFormat.CommandOptions
 
     open DocBuild.Base
-    open DocBuild.Base.Internal.Shell
-
 
 
     /// If CustomStylesDocx is not an abs path, it will be looked for
@@ -509,6 +507,11 @@ module DocMonad =
     // Execute 'builtin' processes 
     // (Respective applications must be installed)
 
+    type private ProcessOptions = 
+        { WorkingDirectory: string 
+          ExecutableName: string 
+        }
+
     let private getProcessOptions 
                     (findExe:AppResources<'userRes> -> string) : DocMonad<ProcessOptions, 'userRes> = 
         docMonad { 
@@ -524,8 +527,10 @@ module DocMonad =
             let! options = getProcessOptions findExe
             let! ans = 
                 liftOperationResult "shellExecute" 
-                    <| fun _ -> executeProcess options (CommandOptions.arguments args)
-            return ans
+                    <| fun _ -> SimpleInvoke.runProcess options.WorkingDirectory 
+                                                        options.ExecutableName
+                                                            args
+            return ans.StdOut
             }
         
     let execGhostscript (args:CmdOpt list) : DocMonad<string, 'userRes> = 
