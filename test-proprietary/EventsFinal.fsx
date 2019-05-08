@@ -301,9 +301,6 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
     }
 
 
-
-
-
 let main () = 
     let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()

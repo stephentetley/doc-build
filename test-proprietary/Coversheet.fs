@@ -77,7 +77,7 @@ let controlTable (author:string) : Markdown =
     let row1 = 
         List.map makeCell ["1.0"; author; nowstring; "For EDMS"]
     let row2 = [ParaElement.empty; ParaElement.empty; ParaElement.empty; ParaElement.empty]
-    gridTable columnSpecs (Some headers) [row1;row2] 
+    gridTable columnSpecs (Some headers) [row1; row2] 
 
 type CoversheetConfig = 
     { LogoPath: string
