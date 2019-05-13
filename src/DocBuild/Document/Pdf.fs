@@ -68,6 +68,8 @@ module Pdf =
     /// Concatenate a collection of Pdfs into a single Pdf
     /// with Ghostscript.
     /// The result is output in the working directory.
+    /// Ghostscript is perhaps more tolerant of 'incorrect' PDF
+    /// files than PDFtk.
     let concatPdfs (quality:GsQuality)
                    (outputRelName:string)
                    (inputFiles:PdfCollection) : DocMonad<PdfDoc, 'userRes> = 

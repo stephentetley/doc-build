@@ -100,7 +100,7 @@ type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output"
-      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\STW"
+      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\TODO"
       IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\include" ]
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
@@ -219,9 +219,9 @@ let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
         
 
 
-let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
+let genContents (prologLength:int) (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
     let config : PandocWordShim.ContentsConfig = 
-        { PrologLength = 1
+        { PrologLength = prologLength
           RelativeOutputName = "contents.md" }
     PandocWordShim.makeTableOfContents config pdfs
 
@@ -293,7 +293,8 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
                         &^^ oSurveyPhotos 
                         &^^ siteWorks
                         &^^ oWorksPhotos
-        let! contents = genContents col1
+        let! prologLength = Pdf.countPages cover
+        let! contents = genContents prologLength col1
         let colAll = cover ^^& contents ^^& col1
         let finalName = sprintf "%s Final.pdf" sourceName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName colAll 

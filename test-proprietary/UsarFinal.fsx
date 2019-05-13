@@ -95,8 +95,8 @@ Environment.SetEnvironmentVariable("PATH",
 type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory      = @"G:\work\Projects\usar\final-docs\small_stw_mopup\output"
-      SourceDirectory       = @"G:\work\Projects\usar\final-docs\small_stw_mopup\input"
+    { SourceDirectory       = @"G:\work\Projects\usar\final-docs\NSWC_mop_up_2\input"
+      WorkingDirectory      = @"G:\work\Projects\usar\final-docs\NSWC_mop_up_2\output"
       IncludeDirectories    = [ @"G:\work\Projects\usar\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -143,11 +143,22 @@ let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> =
         return! WordDocument.exportPdf docx |>> setTitle "Coversheet"
     }
 
+    
+let genContents (prologLength:int) (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
+    let config : PandocWordShim.ContentsConfig = 
+        { PrologLength = prologLength
+          RelativeOutputName = "contents.md" }
+    PandocWordShim.makeTableOfContents config pdfs
+
 let genProjectScope () : DocMonadWord<PdfDoc> =  
     docMonad { 
         let! (input:PdfDoc) = getIncludePdfDoc "project-scope.pdf"
         return! copyToWorking input |>> setTitle "Project Scope"
     }
+
+
+
+
 
 let surveyPhotosConfig (siteName:string) : PandocWordShim.PhotoBookConfig = 
     { Title = sprintf "%s Survey Photos" siteName
@@ -222,11 +233,6 @@ let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> =
     optionMaybeM (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
 
 
-let genContents (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
-    let config : PandocWordShim.ContentsConfig = 
-        { PrologLength = 2
-          RelativeOutputName = "contents.md" }
-    PandocWordShim.makeTableOfContents config pdfs
 
 /// May have multiple documents
 /// Get doc files matching glob 
@@ -260,7 +266,8 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
                         &^^ oSurveyPhotos 
                         &^^ ultras
                         &^^ oWorksPhotos
-        let! contents = genContents col1
+        let! prologLength = Pdf.countPages cover
+        let! contents = genContents prologLength col1
         let allDocs = cover ^^& contents ^^& col1
         let finalName = sprintf "%s Final.pdf" sourceName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName allDocs 

@@ -41,6 +41,3 @@ let getSaiNumber (saiMap:SaiMap) (siteName:string) : string option =
     | None -> printfn "Could not find SAI for '%s'" siteName ; None
     | Some ans -> Some ans
 
-
-
-    
