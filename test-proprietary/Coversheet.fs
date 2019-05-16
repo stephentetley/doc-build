@@ -43,9 +43,10 @@ let logo (includePath:string) : Markdown =
 let title1 (titleText:string) : Markdown = h1 (text titleText)
     
 
-let title2 (sai:string) (name:string) : Markdown = 
-    h2 (text sai ^+^ text name)
-
+let title2 (sai:string option) (name:string) : Markdown = 
+    match sai with
+    | None -> h2 (text name)
+    | Some code -> h2 (text code ^+^ text name)
 
 
 let contents (workItems:string list) : Markdown = 
@@ -81,7 +82,7 @@ let controlTable (author:string) : Markdown =
 
 type CoversheetConfig = 
     { LogoPath: string
-      SaiNumber: string 
+      SaiNumber: string option 
       SiteName: string  
       Author:string 
       Title: string }

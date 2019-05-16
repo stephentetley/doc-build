@@ -91,16 +91,13 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 
-//let inputRoot   = @"G:\work\Projects\events2\final-docs\input\CSO_SPS"
-//let outputRoot  = @"G:\work\Projects\events2\final-docs\output\CSO_SPS"
-
 let (docxCustomReference:string) = @"custom-reference1.docx"
 
 type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output"
-      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\TODO"
+    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\MANHOLES"
+      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\MANHOLES"
       IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\include" ]
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
@@ -131,7 +128,7 @@ let renderMarkdownFile  (docTitle:string)
         return! WordDocument.exportPdf docx |>> setTitle docTitle
     }
 
-let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
+let genCoversheet (siteName:string) (saiNumber:string option) : DocMonadWord<PdfDoc> = 
     docMonad { 
         let! logoPath = getIncludeJpegDoc "YW-logo.jpg"
         let config:CoversheetConfig = 
@@ -282,7 +279,7 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
     docMonad {
         let! sourceName = askSourceDirectory () |>> fileObjectName
         let  siteName = getSiteName sourceName
-        let! saiNumber = getSaiNumber saiMap siteName |> liftOption "No SAI Number"
+        let saiNumber = getSaiNumber saiMap siteName
         let! cover = genCoversheet siteName saiNumber
         let! surveys = processSurveys siteName >>= exnIfEmpty "No surveys"
         let! oSurveyPhotos = genSurveyPhotos siteName 
