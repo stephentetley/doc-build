@@ -128,7 +128,7 @@ let renderMarkdownFile (docTitle:string)
         return! WordDocument.exportPdf docx |>> setTitle docTitle
     }
 
-let genCoversheet (siteName:string) (saiNumber:string) : DocMonadWord<PdfDoc> = 
+let genCoversheet (siteName:string) (saiNumber:string option) : DocMonadWord<PdfDoc> = 
     docMonad { 
         let! logoPath = getIncludeJpegDoc "YW-logo.jpg"
         let config:CoversheetConfig = 
@@ -253,7 +253,7 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
     docMonad {
         let! sourceName = askSourceDirectory () |>> fileObjectName
         let  siteName = getSiteName sourceName
-        let! saiNumber = getSaiNumber saiMap siteName |> liftOption "No SAI Number"
+        let saiNumber = getSaiNumber saiMap siteName
         let! cover = genCoversheet siteName saiNumber
         let! scope = genProjectScope ()
         let! surveys = processSurveys siteName

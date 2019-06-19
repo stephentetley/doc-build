@@ -11,6 +11,7 @@ module Document =
     open System.IO
 
     open DocBuild.Base
+    open DocBuild.Base.Internal
 
     /// Check the file exists and it's extension matches one of the supplied list.
     /// The path should be an absolute path.
@@ -76,12 +77,41 @@ module Document =
             with get () : string = 
                 FileInfo(x.DocAbsPath).Name
 
+        member x.Extension
+            with get () : string = 
+                FileInfo(x.DocAbsPath).Extension
+
                 
     /// Set the document Title - title is the name of the document
     /// that might be used by some other process, e.g. to generate
     /// a table of contents.
     let setTitle (title:string) (doc:Document<'a>) : Document<'a> = 
         new Document<'a>(absPath=doc.AbsolutePath, title=title)
+
+
+    let private isWorkingPath (absPath:string) : DocMonad<bool, 'userRes> = 
+        askWorkingDirectory () |>> fun dir -> FilePaths.rootIsPrefix dir absPath
+
+
+    let isWorkingDocument (doc:Document<'a>) : DocMonad<bool, 'userRes> = 
+        isWorkingPath doc.AbsolutePath
+
+
+    let renameDocument (relativeName:string) 
+                       (doc:Document<'a>) : DocMonad<Document<'a>, 'userRes> = 
+        docMonad { 
+            match! isWorkingDocument doc with
+            | false -> return! docError "Rename failed document not in workingdirectory."
+            | true -> 
+                let title = doc.Title
+                let extension = doc.Extension
+                let path1 = Path.GetDirectoryName(doc.AbsolutePath)
+                let dest = Path.Combine(path1, relativeName)
+
+                /// Should gaurd this...
+                File.Move(sourceFileName = doc.AbsolutePath, destFileName = dest)
+                return Document(absPath = dest, title = title)
+        }
 
 
     /// Warning - this allows random access to the file system, not
