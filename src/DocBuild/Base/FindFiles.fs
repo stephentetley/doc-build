@@ -10,12 +10,12 @@ module FindFiles =
     open System.IO
 
 
-    let exactlyOne (source : 'a list) : 'a option = 
+    let tryExactlyOne (source : 'a list) : 'a option = 
         match source with
         | [a] -> Some a
         | _ -> None
 
-    let atLeastOne (source : 'a list) : option<'a list> = 
+    let tryAtLeastOne (source : 'a list) : option<'a list> = 
         match source with
         | [] -> None
         | xs -> Some xs

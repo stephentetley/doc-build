@@ -39,7 +39,6 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
@@ -153,7 +152,7 @@ let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMona
     localSourceSubdirectory (subdirectory) 
         <| docMonad { 
             printfn "<<<<<"
-            let! input = exactlyOne <<| findSourceFilesMatching fileGlob false 
+            let! input = tryExactlyOne <<| findSourceFilesMatching fileGlob false 
             printfn ">>>>>"
             match input with
             | None -> return None
