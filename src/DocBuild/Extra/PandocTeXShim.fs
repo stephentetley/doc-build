@@ -3,7 +3,7 @@
 
 namespace DocBuild.Extra
 
-[<RequireQualifiedAccess>]
+
 module PandocTeXShim = 
 
     open System.IO
@@ -29,7 +29,7 @@ module PandocTeXShim =
             let! pdfEngine = asks (fun env -> env.PandocOpts.PdfEngine)       
             let command = 
                 PandocPrim.outputPdfCommand pdfEngine [] src.AbsolutePath outputAbsPath
-            printfn "// %s" (arguments command)
+            
             let! _ = execPandoc command
             return! getPdfDoc outputAbsPath
          }

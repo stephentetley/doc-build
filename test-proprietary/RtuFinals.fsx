@@ -70,6 +70,7 @@ open FSharp.Interop.Excel
 open DocBuild.Base
 open DocBuild.Document
 open DocBuild.Office
+open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
 open ExcelProviderHelper
@@ -212,13 +213,20 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
         let! oSurveyPhotos = genSurveyPhotos row
         let! oWorksPhotos = genWorkPhotos row
 
-        let (col:PdfCollection) = 
-            Collection.singleton cover 
+        let (col1:PdfCollection) = 
+            Collection.empty 
                 &^^ oSurvey     &^^ oSurveyPhotos
                 &^^ works       &^^ oWorksPhotos
 
+        let! prologLength = Pdf.countPages cover
+        let contentsConfig : ContentsConfig  = 
+            { PrologLength = prologLength 
+              RelativeOutputName = "Contents.pdf" }
+        let! contents = makeTableOfContents contentsConfig col1
+
+        let col2 = cover ^^& contents ^^& col1
         let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
-        return! Pdf.concatPdfs Pdf.GsDefault finalName col 
+        return! Pdf.concatPdfs Pdf.GsDefault finalName col2 
     }
 
 
@@ -226,6 +234,6 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
 let main () = 
     let sites : WorkItems = readWorkSpeadsheet () 
     let resources = WindowsWordResources ()
-    let options = { defaultSkeletonOptions with TestingSample = TakeDirectories 5 }
+    let options = defaultSkeletonOptions // { defaultSkeletonOptions with TestingSample = TakeDirectories 5 }
     runDocMonad resources WindowsEnv 
         <| foreachSourceDirectory options (build1 sites)

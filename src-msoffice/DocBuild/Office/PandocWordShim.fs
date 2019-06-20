@@ -4,7 +4,7 @@
 
 namespace DocBuild.Office
 
-[<RequireQualifiedAccess>]
+
 module PandocWordShim = 
 
     open System.IO
