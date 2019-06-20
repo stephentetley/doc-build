@@ -222,10 +222,10 @@ module DocMonad =
         DocMonad <| fun _ _ env -> Ok (extract env)
 
 
-    let private assertDirectory (failMsg:string) 
+    let private assertDirectory (failMsg:string -> string) 
                                 (path:string) : DocMonad<string, 'userRes> = 
         docMonad { 
-            do! liftAssert failMsg (Directory.Exists(path))
+            do! liftAssert (failMsg path) (Directory.Exists(path))
             return path
             }
 
@@ -235,7 +235,7 @@ module DocMonad =
     let askWorkingDirectory () : DocMonad<string, 'userRes> = 
         docMonad { 
             let! dir = asks (fun env -> env.WorkingDirectory)
-            return! assertDirectory "'Working' is not a directory" dir
+            return! assertDirectory (sprintf "'Working' is not a directory: %s") dir
             }
 
 
@@ -244,7 +244,7 @@ module DocMonad =
     let askSourceDirectory () : DocMonad<string, 'userRes> = 
         docMonad { 
             let! dir = asks (fun env -> env.SourceDirectory) 
-            return! assertDirectory "'Source' is not a directory" dir
+            return! assertDirectory (sprintf "'Source' is not a directory: %s") dir
         }
 
 

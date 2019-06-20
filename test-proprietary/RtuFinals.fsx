@@ -85,8 +85,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\year4-batch2"
-      SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\year4-batch2"
+    { WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\year4-rtu-batch2"
+      SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\Year4-RTU-Batch02"
       IncludeDirectories = [ @"G:\work\Projects\rtu\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -109,7 +109,7 @@ type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 type WorkTable = 
     ExcelFile< 
-        FileName = @"G:\work\Projects\rtu\final-docs\input\year4-batch2\year4-docs.xlsx",
+        FileName = @"G:\work\Projects\rtu\final-docs\input\Year4-RTU-Batch02\year4-docs-lookups.xlsx",
         ForceString = true >
 
 type WorkRow = WorkTable.Row
@@ -148,7 +148,7 @@ let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> =
     }
 
 let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMonadWord<PdfDoc option> = 
-    let subdirectory = folder1 </> (row.``Site Name`` |> safeName ) 
+    let subdirectory =  (row.``Site Name`` |> safeName ) </> folder1
     localSourceSubdirectory (subdirectory) 
         <| docMonad { 
             printfn "<<<<<"
@@ -163,19 +163,19 @@ let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMona
 
 
 let genSurvey (row:WorkRow) :DocMonadWord<PdfDoc option> = 
-    sourceWordDocToPdf "1.Surveys" "*urvey*.doc*" row
+    sourceWordDocToPdf "1.Survey" "*urvey*.doc*" row
     
 
 let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> = 
     optionToFailM "No Site Works document" 
-                (sourceWordDocToPdf "2.Installs" "*Works*.doc*" row)
+                (sourceWordDocToPdf "2.Site_work" "*Works*.doc*" row)
                 
 
 let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
     let name1 = safeName row.``Site Name``
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Survey Photos"
-        ; SourceSubdirectory = "1.Surveys" </> name1 </> "photos"
+        ; SourceSubdirectory = name1 </> "1.Survey" </> "photos"
         ; WorkingSubdirectory = "survey_photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
     optionMaybeM (PandocWordShim.makePhotoBook props)
@@ -185,7 +185,7 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
     let name1 = safeName row.``Site Name``
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Install Photos"
-        ; SourceSubdirectory  = "2.Install" </> name1 </> "photos"
+        ; SourceSubdirectory  = name1 </> "2.Site_work" </> "photos"
         ; WorkingSubdirectory = "install_photos"
         ; RelativeOutputName= sprintf "%s install photos.md" name1 }
     optionMaybeM (PandocWordShim.makePhotoBook props)
@@ -217,7 +217,7 @@ let isLike (pattern:string) (source:string) =
 
 let main () = 
     let sites = readWorkSpeadsheet () 
-                    |> List.filter (fun row -> isLike "OWTHORNE" row.``Site Name``)
+                    // |> List.filter (fun row -> isLike "OWTHORNE" row.``Site Name``)
     printfn "%i Sites" (List.length sites)
     let resources = WindowsWordResources ()
     runDocMonad resources WindowsEnv 
