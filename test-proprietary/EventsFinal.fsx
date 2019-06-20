@@ -303,4 +303,4 @@ let main () =
     let saiMap = buildSaiMap ()
     let stepM = ignoreM (build1 saiMap) <|> mreturn ()
     runDocMonad resources WindowsEnv 
-        <| foreachSourceIndividualOutput defaultSkeletonOptions stepM
+        <| foreachSourceDirectory defaultSkeletonOptions stepM

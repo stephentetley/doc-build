@@ -154,4 +154,4 @@ let genFinalDoc1 () : DocMonadWord<PdfDoc> =
 let main () = 
     let res = WindowsWordResources ()
     runDocMonad res WindowsEnv 
-        <| foreachSourceIndividualOutput defaultSkeletonOptions (genFinalDoc1 ())
+        <| foreachSourceDirectory defaultSkeletonOptions (genFinalDoc1 ())

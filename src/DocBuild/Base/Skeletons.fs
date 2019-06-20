@@ -24,14 +24,16 @@ module Skeletons =
     type SkeletonStepFailMessage = string -> string
 
     type SkeletonOptions = 
-        { GenStepBeginMessage: SkeletonStepBeginMessage option
-          GenStepFailMessage: SkeletonStepFailMessage option
-          DebugSelectSample: (string list -> string list) option
-          ContinueOnFail: bool
+        { CreateWorkingSubdirectory : bool 
+          GenStepBeginMessage : SkeletonStepBeginMessage option
+          GenStepFailMessage : SkeletonStepFailMessage option
+          DebugSelectSample : (string list -> string list) option
+          ContinueOnFail : bool
         }
 
     let defaultSkeletonOptions:SkeletonOptions = 
-        { GenStepBeginMessage = Some 
+        { CreateWorkingSubdirectory = true 
+          GenStepBeginMessage = Some 
             <| fun ix count childFolderName -> 
                     sprintf "%i of %i: %s" ix count childFolderName
           GenStepFailMessage = Some <| sprintf "%s failed"
@@ -39,10 +41,26 @@ module Skeletons =
           ContinueOnFail = true
         }
 
-    let private runSkeleton (skeletonOpts:SkeletonOptions) 
-                            (strategy: string -> DocMonad<unit, 'userRes> -> DocMonad<unit, 'userRes>)
-                            (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> =  
+    /// Processing skeleton.
+    /// For every child source folder (one level down) run the
+    /// processing function on 'within' that folder. 
+    /// With the option ``CreateWorkingSubdirectory = true`` 
+    /// a subdirectory in be created in Working with the name 
+    /// of the source (child) directory, and all output files 
+    /// will be written there.
+    let foreachSourceDirectory (skeletonOpts:SkeletonOptions) 
+                               (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> =  
         let ignoreM : DocMonad<unit, 'userRes> = process1 |>> fun _ -> ()
+
+        let strategy = 
+            if skeletonOpts.CreateWorkingSubdirectory then 
+                fun childDirectory action -> 
+                    localSourceSubdirectory childDirectory 
+                                            (localWorkingSubdirectory childDirectory action)
+            else
+                fun childDirectory action -> 
+                    localSourceSubdirectory childDirectory action
+
         let filterChildDirectories = 
             match skeletonOpts.DebugSelectSample with
             | None -> id
@@ -91,25 +109,3 @@ module Skeletons =
         foriMz sources 
                (fun ix dir -> strategy dir (processChildDirectory (ix + 1) count))
 
-    
-    /// Processing skeleton.
-    /// For every child source folder (one level down) run the
-    /// processing function on 'within' that folder. 
-    /// Generate the results in a child folder of the same name under
-    /// the working folder.
-    let foreachSourceIndividualOutput (skeletonOpts:SkeletonOptions) 
-                                      (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> = 
-        let strategy = fun childDirectory action -> 
-                localSourceSubdirectory childDirectory 
-                                        (localWorkingSubdirectory childDirectory action)
-        runSkeleton skeletonOpts strategy process1
-
-    /// Processing skeleton.
-    /// For every child source folder (one level down) run the
-    /// processing function on 'within' that folder. 
-    /// Generate the results in the top level working folder.
-    let foreachSourceCommonOutput (skeletonOpts:SkeletonOptions) 
-                                  (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> = 
-        let strategy = fun childDirectory action -> 
-                localSourceSubdirectory childDirectory action
-        runSkeleton skeletonOpts strategy process1

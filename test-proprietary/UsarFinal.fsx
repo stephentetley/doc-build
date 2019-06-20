@@ -280,6 +280,6 @@ let main () =
     let resources = WindowsWordResources ()
     (resources.UserResources :> WordDocument.IWordHandle).PaperSizeForWord <- Some Word.WdPaperSize.wdPaperA4
     runDocMonad resources WindowsEnv 
-        <| foreachSourceIndividualOutput defaultSkeletonOptions 
+        <| foreachSourceDirectory defaultSkeletonOptions 
                 (build1 saiMap)
 

@@ -132,4 +132,4 @@ let build1 () : DocMonadWord<PdfDoc> =
 let main () = 
     let res = WindowsWordResources ()
     runDocMonad res WindowsEnv 
-        <| foreachSourceIndividualOutput defaultSkeletonOptions (build1 ())
+        <| foreachSourceDirectory defaultSkeletonOptions (build1 ())

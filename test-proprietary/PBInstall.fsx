@@ -181,7 +181,7 @@ let build1 (phase:string) (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
 let buildPhase (phase:string) (saiMap:SaiMap) : DocMonadWord<unit> =
     localSourceSubdirectory phase 
         << localWorkingSubdirectory phase
-        <| foreachSourceIndividualOutput defaultSkeletonOptions (build1 phase saiMap)
+        <| foreachSourceDirectory defaultSkeletonOptions (build1 phase saiMap)
 
 
 let main () = 
