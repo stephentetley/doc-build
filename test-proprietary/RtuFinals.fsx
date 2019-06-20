@@ -151,28 +151,34 @@ let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> =
         return! WordDocument.exportPdf wordFile
     }
 
-let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMonadWord<PdfDoc option> = 
-    let subdirectory =  (row.``Site Name`` |> safeName ) </> folder1
-    localSourceSubdirectory (subdirectory) 
+
+/// Folder1 either "1.Survey" or "2.Site_work"
+let sourceWordDocToPdf (folder1:string) (fileGlob:string) : DocMonadWord<PdfDoc> = 
+    localSourceSubdirectory (folder1) 
         <| docMonad { 
-            printfn "<<<<<"
-            let! input = tryExactlyOne <<| findSourceFilesMatching fileGlob false 
-            printfn ">>>>>"
-            match input with
-            | None -> return None
-            | Some infile ->
-                let! doc = getWordDoc infile
-                return! (WordDocument.exportPdf doc |>> Some)
+            let! input = assertExactlyOne =<< findSourceFilesMatching fileGlob false 
+            let! doc = getWordDoc input
+            return! WordDocument.exportPdf doc
         }
 
+let processMarkdown1 (title : string)
+                     (sourceSubfolder : string)
+                     (glob : string) : DocMonadWord<PdfDoc> = 
+    docMonad {
+        let! input = 
+            localSourceSubdirectory sourceSubfolder
+                <| (assertExactlyOne =<< findSourceFilesMatching glob false)
+        let! md = getSourceMarkdownDoc input
+        return! renderMarkdownDoc title md
+    }
 
-let genSurvey (row:WorkRow) :DocMonadWord<PdfDoc option> = 
-    sourceWordDocToPdf "1.Survey" "*urvey*.doc*" row
-    
+let genSurvey () :DocMonadWord<PdfDoc> = 
+    sourceWordDocToPdf "1.Survey" "*urvey*.doc*"
+        <|> processMarkdown1 "Survey" "1.Survey" "*.md"
 
-let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> = 
-    optionToFailM "No Site Works document" 
-                  (sourceWordDocToPdf "2.Site_work" "*Works*.doc*" row)
+let genSiteWorks () :DocMonadWord<PdfDoc> = 
+    sourceWordDocToPdf "2.Site_work" "*Site*Works*.doc*"
+        <|> processMarkdown1 "Site Work" "2.Site_work" "*.md"
                 
 
 let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
@@ -201,8 +207,8 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
         let  safeSiteName = name1 |> safeName
         let! row = liftOption "Could Not find row" (Map.tryFind name1 dict)
         let! cover = genCover row 
-        let! oSurvey = genSurvey row
-        let! works = genSiteWorks row
+        let! oSurvey = genSurvey ()
+        let! works = genSiteWorks ()
         let! oSurveyPhotos = genSurveyPhotos row
         let! oWorksPhotos = genWorkPhotos row
 
@@ -215,9 +221,6 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
         return! Pdf.concatPdfs Pdf.GsDefault finalName col 
     }
 
-
-let isLike (pattern:string) (source:string) = 
-    Regex.IsMatch(input=source, pattern=pattern)
 
 
 let main () = 

@@ -158,15 +158,14 @@ let genCoverSheet (sai:string)
 
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        do! askSourceDirectory () |>> fun o -> printfn "%s" (fileObjectName o)
-        let! inputPath = assertSingleton =<< findSourceFilesMatching "*.docx" false
+        let! inputPath = assertExactlyOne =<< findSourceFilesMatching "*.docx" false
         let! wordDoc = getWordDoc inputPath
         return! WordDocument.exportPdfAs "install.pdf" wordDoc
         }
      
 let build1 (phase:string) (saiMap:SaiMap) : DocMonadWord<PdfDoc> =        
     docMonad { 
-        let! sourceName = askSourceDirectory () |>> fileObjectName
+        let! sourceName = sourceDirectoryName () 
         let  siteName = getSiteName sourceName
         let! saiNumber = liftOption "No SAI Number" <| getSaiNumber saiMap siteName
         let! cover = genCoverSheet saiNumber siteName phase

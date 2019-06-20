@@ -201,7 +201,7 @@ module DocMonad =
         | _ -> mreturn source
 
 
-    let assertSingleton (source : 'a list) : DocMonad<'a, 'userRes> = 
+    let assertExactlyOne (source : 'a list) : DocMonad<'a, 'userRes> = 
         match source with
         | [a] -> mreturn a
         | [] -> docError "assertSingleton - empty"

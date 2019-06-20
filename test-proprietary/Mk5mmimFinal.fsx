@@ -116,7 +116,7 @@ type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
         do! askSourceDirectory () |>> fun path -> printfn "%s" (fileObjectName path)
-        let! inputPath = assertSingleton =<< findSourceFilesMatching "*Site*Works*.docx" false
+        let! inputPath = assertExactlyOne =<< findSourceFilesMatching "*Site*Works*.docx" false
         let! wordDoc = getWordDoc inputPath
         return! WordDocument.exportPdf wordDoc
         }

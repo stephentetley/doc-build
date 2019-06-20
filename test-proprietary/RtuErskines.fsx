@@ -120,7 +120,7 @@ let genSiteWorks () : DocMonadWord<PdfDoc> =
 
 let build1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
-        let! sourceName =  askSourceDirectory () |>> fileObjectName
+        let! sourceName =  sourceDirectoryName ()
         let siteName = sourceName |> sourceToSiteName
         let! workSheet = genSiteWorks ()
         let finalName = sprintf "%s Erskine Battery Assert Replacement.pdf" sourceName |> safeName

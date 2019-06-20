@@ -57,8 +57,6 @@ module Skeletons =
     /// will be written there.
     let foreachSourceDirectory (skeletonOpts:SkeletonOptions) 
                                (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> =  
-        let ignoreM : DocMonad<unit, 'userRes> = process1 |>> fun _ -> ()
-
         let strategy = 
             if skeletonOpts.CreateWorkingSubdirectory then 
                 fun childDirectory action -> 
@@ -110,7 +108,7 @@ module Skeletons =
         let processChildDirectory (ix:int) (count:int) : DocMonad<unit, 'userRes> = 
             docMonad { 
                 do! logStepBegin ix count
-                return! (proceedM ignoreM)
+                return! proceedM (ignoreM process1)
             }
 
         getSourceSubdirectories () >>= fun srcDirs -> 
