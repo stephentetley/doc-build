@@ -50,6 +50,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\Collection.fs"
 #load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
+#load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
 #load "..\src\DocBuild\Document\Markdown.fs"
@@ -114,14 +115,17 @@ type WorkTable =
 
 type WorkRow = WorkTable.Row
 
+type WorkItems = Map<string, WorkRow>
 
-let readWorkSpeadsheet () : WorkRow list = 
+let readWorkSpeadsheet () : WorkItems = 
     let helper = 
         { new IExcelProviderHelper<WorkTable,WorkRow>
           with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
     excelReadRowsAsList helper (new WorkTable())
+        |> List.map (fun row -> (safeName row.``Site Name``, row))
+        |> Map.ofList
 
 let renderMarkdownDoc (docTitle:string)
                       (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
@@ -191,24 +195,25 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
     optionMaybeM (PandocWordShim.makePhotoBook props)
     
 
-let build1 (row : WorkRow) : DocMonadWord<PdfDoc> = 
-    let safeSiteName = row.``Site Name`` |> safeName
-    localWorkingSubdirectory (safeSiteName) 
-        <| docMonad { 
-                let! cover = genCover row 
-                let! oSurvey = genSurvey row
-                let! works = genSiteWorks row
-                let! oSurveyPhotos = genSurveyPhotos row
-                let! oWorksPhotos = genWorkPhotos row
+let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> = 
+    docMonad { 
+        let! name1 = sourceDirectoryName ()
+        let  safeSiteName = name1 |> safeName
+        let! row = liftOption "Could Not find row" (Map.tryFind name1 dict)
+        let! cover = genCover row 
+        let! oSurvey = genSurvey row
+        let! works = genSiteWorks row
+        let! oSurveyPhotos = genSurveyPhotos row
+        let! oWorksPhotos = genWorkPhotos row
 
-                let (col:PdfCollection) = 
-                    Collection.singleton cover 
-                        &^^ oSurvey     &^^ oSurveyPhotos
-                        &^^ works       &^^ oWorksPhotos
+        let (col:PdfCollection) = 
+            Collection.singleton cover 
+                &^^ oSurvey     &^^ oSurveyPhotos
+                &^^ works       &^^ oWorksPhotos
 
-                let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
-                return! Pdf.concatPdfs Pdf.GsDefault finalName col 
-            }
+        let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
+        return! Pdf.concatPdfs Pdf.GsDefault finalName col 
+    }
 
 
 let isLike (pattern:string) (source:string) = 
@@ -216,9 +221,8 @@ let isLike (pattern:string) (source:string) =
 
 
 let main () = 
-    let sites = readWorkSpeadsheet () 
-                    // |> List.filter (fun row -> isLike "OWTHORNE" row.``Site Name``)
-    printfn "%i Sites" (List.length sites)
+    let sites : WorkItems = readWorkSpeadsheet () 
     let resources = WindowsWordResources ()
+    let options = { defaultSkeletonOptions with TestingSample = TakeDirectories 5 }
     runDocMonad resources WindowsEnv 
-        <| forMz sites build1
+        <| foreachSourceDirectory options (build1 sites)

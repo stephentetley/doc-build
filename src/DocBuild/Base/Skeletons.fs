@@ -7,6 +7,8 @@ namespace DocBuild.Base
 [<AutoOpen>]
 module Skeletons = 
 
+    open System.IO
+
     open DocBuild.Base
 
 
@@ -19,6 +21,11 @@ module Skeletons =
         }
 
 
+    type TestingSample = 
+        | NoTestingProcesssAll
+        | FilterDirectoryNames of filterCondition : (string -> bool)
+        | TakeDirectories of count : int
+
     type SkeletonStepBeginMessage = int -> int -> string -> string
 
     type SkeletonStepFailMessage = string -> string
@@ -27,7 +34,7 @@ module Skeletons =
         { CreateWorkingSubdirectory : bool 
           GenStepBeginMessage : SkeletonStepBeginMessage option
           GenStepFailMessage : SkeletonStepFailMessage option
-          DebugSelectSample : (string list -> string list) option
+          TestingSample : TestingSample
           ContinueOnFail : bool
         }
 
@@ -37,7 +44,7 @@ module Skeletons =
             <| fun ix count childFolderName -> 
                     sprintf "%i of %i: %s" ix count childFolderName
           GenStepFailMessage = Some <| sprintf "%s failed"
-          DebugSelectSample = None
+          TestingSample = NoTestingProcesssAll
           ContinueOnFail = true
         }
 
@@ -61,10 +68,13 @@ module Skeletons =
                 fun childDirectory action -> 
                     localSourceSubdirectory childDirectory action
 
-        let filterChildDirectories = 
-            match skeletonOpts.DebugSelectSample with
-            | None -> id
-            | Some fn -> fn
+        let sampleChildDirectories (children : string list) : string list= 
+            match skeletonOpts.TestingSample with
+            | NoTestingProcesssAll -> children
+            | FilterDirectoryNames test -> 
+                List.filter (fun path -> test (DirectoryInfo(path).Name)) children
+            | TakeDirectories count -> List.take count children
+
         let logStepBegin (ix:int) (count:int) = 
             match skeletonOpts.GenStepBeginMessage with
             | None -> mreturn ()
@@ -104,7 +114,7 @@ module Skeletons =
             }
 
         getSourceSubdirectories () >>= fun srcDirs -> 
-        let sources = filterChildDirectories srcDirs
+        let sources = sampleChildDirectories srcDirs
         let count = List.length sources
         foriMz sources 
                (fun ix dir -> strategy dir (processChildDirectory (ix + 1) count))

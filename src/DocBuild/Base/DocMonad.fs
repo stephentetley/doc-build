@@ -267,8 +267,11 @@ module DocMonad =
             return! assertDirectory (sprintf "'Source' is not a directory: %s") dir
         }
 
-
-
+    let sourceDirectoryName () : DocMonad<string, 'userRes> =  
+        docMonad { 
+            let! path = askSourceDirectory ()
+            return DirectoryInfo(path).Name
+        }
 
     /// Note - this asserts that the Include directory path represents a 
     /// folder not a file.
