@@ -42,7 +42,7 @@ module Skeletons =
     let private runSkeleton (skeletonOpts:SkeletonOptions) 
                             (strategy: string -> DocMonad<unit, 'userRes> -> DocMonad<unit, 'userRes>)
                             (process1: DocMonad<'a, 'userRes>) : DocMonad<unit, 'userRes> =  
-        let processZ: DocMonad<unit, 'userRes> = process1 |>> fun _ -> ()
+        let ignoreM : DocMonad<unit, 'userRes> = process1 |>> fun _ -> ()
         let filterChildDirectories = 
             match skeletonOpts.DebugSelectSample with
             | None -> id
@@ -82,7 +82,7 @@ module Skeletons =
         let processChildDirectory (ix:int) (count:int) : DocMonad<unit, 'userRes> = 
             docMonad { 
                 do! logStepBegin ix count
-                return! (proceedM processZ)
+                return! (proceedM ignoreM)
             }
 
         getSourceSubdirectories () >>= fun srcDirs -> 

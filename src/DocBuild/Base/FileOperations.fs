@@ -170,60 +170,8 @@ module FileOperations =
         else
             docError (sprintf "renameWorkingFolder - folder does not exist '%s'" oldPath)
 
-    /// Has one or more matches. 
-    /// Note - pattern is a simple glob 
-    /// (the only wild cards are '?' and '*'), not a regex.
-    let hasSourceFilesMatching (pattern:string) 
-                               (recurseIntoSubDirectories:bool) : DocMonad<bool, 'userRes> = 
-        
-        let find1 (src:string) : bool = 
-            FakeLikePrim.hasFilesMatching pattern recurseIntoSubDirectories src
-        docMonad { 
-            let! source = askSourceDirectory ()
-            return! liftOperation "hasFilesMatching error" (fun () -> find1 source)
-        }
 
 
-
- 
-    /// Search file matching files in the SourceDirectory.
-    /// Uses glob pattern - the only wild cards are '?' and '*'
-    /// Returns a list of absolute paths.
-    let findAllSourceFilesMatching (pattern:string) 
-                                   (recurseIntoSubDirectories:bool) : DocMonad<string list, 'userRes> =
-        let find1 (src:string) = 
-            FakeLikePrim.findAllFilesMatching pattern recurseIntoSubDirectories src
-        docMonad { 
-            let! source = askSourceDirectory ()
-            return! liftOperation "findAllFilesMatching error" (fun _ -> find1 source)
-        }
-
-
-    /// Search file matching files in the SourceDirectory.
-    /// Uses glob pattern - the only wild cards are '?' and '*'
-    /// Returns a list of absolute paths.
-    let findSomeSourceFilesMatching (pattern:string) 
-                                    (recurseIntoSubDirectories:bool) : DocMonad<string list, 'userRes> =
-        let find1 src = 
-            FakeLikePrim.tryFindSomeFilesMatching pattern recurseIntoSubDirectories src
-        docMonad { 
-            let! source = askSourceDirectory ()
-            match! liftOperation "no matches" (fun _ -> find1 source) with
-            | None -> return! docError "no matches"
-            | Some xs -> return xs
-        }
-
-    /// Search file matching files in the SourceDirectory.
-    /// Uses glob pattern - the only wild cards are '?' and '*'
-    /// Returns a list of absolute paths.
-    let tryFindExactlyOneSourceFileMatching (pattern:string) 
-                                   (recurseIntoSubDirectories:bool) : DocMonad<string option, 'userRes> =
-        let find1 src = 
-            FakeLikePrim.tryFindExactlyOneFileMatching pattern recurseIntoSubDirectories src
-        docMonad { 
-            let! source = askSourceDirectory ()
-            return! liftOperation "tryFindExactlyOneSourceFileMatching" (fun _ -> find1 source)
-        }
 
 
     /// Create a subdirectory under the working folder.
@@ -245,6 +193,12 @@ module FileOperations =
             return! local (fun env -> {env with WorkingDirectory = path}) ma
         }
             
+    let optLocalWorkingSubdirectory (optSubdirectory : string option) 
+                                    (action : DocMonad<'a, 'userRes>) : DocMonad<'a, 'userRes> = 
+        match optSubdirectory with
+        | None -> action
+        | Some subdir -> localWorkingSubdirectory subdir action
+
     /// Run an operation with the Source directory restricted to the
     /// supplied subdirectory.
     let localSourceSubdirectory (subdirectory:string) 
@@ -253,5 +207,17 @@ module FileOperations =
             let! path = extendSourcePath subdirectory
             return! local (fun env -> {env with SourceDirectory = path}) ma
         }
+
+
+    /// Run an operation with the Source directory restricted to the
+    /// supplied subdirectory (if Some). If none run the action with 
+    /// the current source directory.
+    let optLocalSourceSubdirectory (optSubdirectory : string option) 
+                                   (ma:DocMonad<'a, 'userRes>) : DocMonad<'a, 'userRes> = 
+        match optSubdirectory with
+        | None -> ma
+        | Some subdir -> localSourceSubdirectory subdir ma
+
+
 
 

@@ -118,7 +118,7 @@ let genSiteWorks () : DocMonadWord<PdfDoc> =
                 
 
 
-let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
+let build1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
         let! sourceName =  askSourceDirectory () |>> fileObjectName
         let siteName = sourceName |> sourceToSiteName
@@ -132,4 +132,4 @@ let genFinalDoc1 () : DocMonadWord<PdfDoc> =
 let main () = 
     let res = WindowsWordResources ()
     runDocMonad res WindowsEnv 
-        <| foreachSourceIndividualOutput defaultSkeletonOptions (genFinalDoc1 ())
+        <| foreachSourceIndividualOutput defaultSkeletonOptions (build1 ())

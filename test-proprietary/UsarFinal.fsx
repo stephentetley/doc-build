@@ -197,14 +197,11 @@ let wordDocToPdf (siteName:string) (absPath:string) : DocMonadWord<PdfDoc> =
     }
 
 let processMarkdown (title:string)
-                    (subfolder: string option)
+                    (sourceSubfolder: string option)
                     (glob:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
-        let contextM ma = 
-            match subfolder with 
-            | None -> ma
-            | Some name -> localSourceSubdirectory name ma
-        let! inputs = contextM (findSomeSourceFilesMatching glob false) 
+        let! inputs = optLocalSourceSubdirectory sourceSubfolder 
+                                        (findSomeSourceFilesMatching glob false) 
         return! mapM (fun path -> 
                         getSourceMarkdownDoc path >>= fun md1 ->
                         copyToWorking md1 >>= fun md2 ->

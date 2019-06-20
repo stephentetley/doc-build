@@ -49,6 +49,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
+#load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
@@ -152,7 +153,7 @@ let sourceWordDocToPdf (folder1:string) (fileGlob:string) (row:WorkRow) :DocMona
     localSourceSubdirectory (subdirectory) 
         <| docMonad { 
             printfn "<<<<<"
-            let! input = tryFindExactlyOneSourceFileMatching fileGlob false
+            let! input = exactlyOne <<| findSourceFilesMatching fileGlob false 
             printfn ">>>>>"
             match input with
             | None -> return None
@@ -168,7 +169,7 @@ let genSurvey (row:WorkRow) :DocMonadWord<PdfDoc option> =
 
 let genSiteWorks (row:WorkRow) :DocMonadWord<PdfDoc> = 
     optionToFailM "No Site Works document" 
-                (sourceWordDocToPdf "2.Site_work" "*Works*.doc*" row)
+                  (sourceWordDocToPdf "2.Site_work" "*Works*.doc*" row)
                 
 
 let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
@@ -191,7 +192,7 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> =
     optionMaybeM (PandocWordShim.makePhotoBook props)
     
 
-let genFinal (row:WorkRow) :DocMonadWord<PdfDoc> = 
+let build1 (row : WorkRow) : DocMonadWord<PdfDoc> = 
     let safeSiteName = row.``Site Name`` |> safeName
     localWorkingSubdirectory (safeSiteName) 
         <| docMonad { 
@@ -221,4 +222,4 @@ let main () =
     printfn "%i Sites" (List.length sites)
     let resources = WindowsWordResources ()
     runDocMonad resources WindowsEnv 
-        <| forMz sites genFinal
+        <| forMz sites build1
