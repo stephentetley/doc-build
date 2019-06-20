@@ -24,7 +24,7 @@ open System
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190508\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
+
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
@@ -34,6 +34,7 @@ open System
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
+#load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
 #load "..\src\DocBuild\Document\Jpeg.fs"
@@ -115,15 +116,15 @@ let demo05 () =
     let resources = makeResources <| new WordDocument.WordHandle()
     runDocMonad resources WindowsEnv <| 
         docMonad { 
-            return! findAllSourceFilesMatching "*.pdf" true
+            return! findSourceFilesMatching "*.pdf" true
         }
 
-let demo06 () = 
-    let resources = makeResources <| new WordDocument.WordHandle()
-    runDocMonad resources WindowsEnv <| 
-        assertIsSourcePath @"D:\coding\fsharp\doc-build\data\Concat.pdf"
+//let demo06 () = 
+//    let resources = makeResources <| new WordDocument.WordHandle()
+//    runDocMonad resources WindowsEnv <| 
+//        assertIsSourcePath @"D:\coding\fsharp\doc-build\data\Concat.pdf"
 
-let demo06a () = 
+let demo06 () = 
     let resources = makeResources <| new WordDocument.WordHandle()
     runDocMonad resources WindowsEnv <| 
         (askSourceDirectory () |>> fun (src:string) -> Internal.FilePaths.pathToSegments src)

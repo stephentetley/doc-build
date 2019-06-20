@@ -10,12 +10,13 @@ open System
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190508\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
+
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Common.fs"
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
+#load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 
 open DocBuild.Base

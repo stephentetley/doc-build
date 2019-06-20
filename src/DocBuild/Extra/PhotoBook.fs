@@ -63,7 +63,7 @@ module PhotoBook =
             let! ys = 
                 localSourceSubdirectory sourceSubdirectory <| findSourceFilesMatching "*.jpeg" false
             let! srcJpegs = mapM getJpegDoc (xs @ ys) |>> List.sortBy (fun doc -> doc.FileName)
-            let! jpegs = mapM copyToWorking srcJpegs
+            let! jpegs = mapM copyDocumentToWorking srcJpegs
             return (Collection.fromList jpegs)
         }
 

@@ -39,7 +39,6 @@ open FSharp.Interop.Excel
 open MarkdownDoc
 open MarkdownDoc.Pandoc
 
-#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
@@ -49,6 +48,7 @@ open MarkdownDoc.Pandoc
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
+#load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
@@ -159,7 +159,7 @@ let genCoverSheet (sai:string)
 let genInstallSheet () : DocMonadWord<PdfDoc> = 
     docMonad { 
         do! askSourceDirectory () |>> fun o -> printfn "%s" (fileObjectName o)
-        let! inputPath = optionToFailM "no install sheet" <| tryFindExactlyOneSourceFileMatching "*.docx" false
+        let! inputPath = assertSingleton =<< findSourceFilesMatching "*.docx" false
         let! wordDoc = getWordDoc inputPath
         return! WordDocument.exportPdfAs "install.pdf" wordDoc
         }

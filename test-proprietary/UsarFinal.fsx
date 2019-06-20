@@ -39,7 +39,7 @@ open FSharp.Interop.Excel
 #I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190508\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
-#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
+
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
@@ -49,6 +49,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
+#load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
@@ -153,7 +154,7 @@ let genContents (prologLength:int) (pdfs:PdfCollection) : DocMonadWord<PdfDoc> =
 let genProjectScope () : DocMonadWord<PdfDoc> =  
     docMonad { 
         let! (input:PdfDoc) = getIncludePdfDoc "project-scope.pdf"
-        return! copyToWorking input |>> setTitle "Project Scope"
+        return! copyDocumentToWorking input |>> setTitle "Project Scope"
     }
 
 
@@ -200,11 +201,14 @@ let processMarkdown (title:string)
                     (sourceSubfolder: string option)
                     (glob:string) : DocMonadWord<PdfDoc list> = 
     docMonad {
-        let! inputs = optLocalSourceSubdirectory sourceSubfolder 
-                                        (findSomeSourceFilesMatching glob false) 
+        let! inputs = 
+            match sourceSubfolder with
+            | Some subdir -> localSourceSubdirectory subdir 
+                                        (findSourceFilesMatching glob false) 
+            | None -> findSourceFilesMatching glob false
         return! mapM (fun path -> 
                         getSourceMarkdownDoc path >>= fun md1 ->
-                        copyToWorking md1 >>= fun md2 ->
+                        copyDocumentToWorking md1 >>= fun md2 ->
                         renderMarkdownFile title md2) inputs
     }
 
@@ -215,7 +219,7 @@ let processSurveySheets (siteName:string) : DocMonadWord<PdfDoc list> =
     docMonad {
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
-                <| findSomeSourceFilesMatching "*Survey*.doc*" false
+                <| (assertNonEmpty =<< findSourceFilesMatching "*Survey*.doc*" false)
         return! mapM (wordDocToPdf siteName) inputs
     }
 
@@ -237,7 +241,7 @@ let processInstallSheets (siteName:string) : DocMonadWord<PdfDoc list> =
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work"
-                    <| findSomeSourceFilesMatching "*Install*.doc*" false
+                    <| (assertNonEmpty =<< findSourceFilesMatching "*Install*.doc*" false)
         return! mapM (wordDocToPdf siteName) inputs
     }
 

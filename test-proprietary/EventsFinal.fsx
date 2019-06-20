@@ -39,7 +39,6 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
@@ -49,6 +48,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
+#load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
@@ -184,7 +184,7 @@ let surveys (siteName:string) : DocMonadWord<PdfDoc list> =
     docMonad {
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
-                <| findAllSourceFilesMatching "*Survey*.doc*" false
+                <| findSourceFilesMatching "*Survey*.doc*" false
         return! mapM (PandocWordShim.prefixWithTitlePage title1 None <=< wordDocToPdf siteName) inputs
     }
 
@@ -192,7 +192,7 @@ let surveyNotes (siteName:string) : DocMonadWord<PdfDoc list> =
     docMonad {
         let! inputs = 
             localSourceSubdirectory "1.Survey" 
-                <| findAllSourceFilesMatching "*.md" false
+                <| findSourceFilesMatching "*.md" false
         return! mapM (fun path -> getMarkdownDoc path 
                                     >>= PandocWordShim.markdownToPdf 
                                     |>> setTitle "Survey Info") 
@@ -230,7 +230,7 @@ let siteWork (siteName:string) (glob:string, title1:string) : DocMonadWord<PdfDo
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work" 
-                <| findAllSourceFilesMatching glob false
+                <| findSourceFilesMatching glob false
         return! mapM (PandocWordShim.prefixWithTitlePage title2 None <=< wordDocToPdf siteName) inputs
     }
 
@@ -239,7 +239,7 @@ let siteWorkNotes (siteName:string) : DocMonadWord<PdfDoc list> =
     docMonad {
         let! inputs = 
             localSourceSubdirectory "2.Site_work"  
-                <| findAllSourceFilesMatching "*.md" false
+                <| findSourceFilesMatching "*.md" false
         return! mapM (fun path -> getMarkdownDoc path 
                                     >>= PandocWordShim.markdownToPdf 
                                     |>> setTitle "Site Work Info")

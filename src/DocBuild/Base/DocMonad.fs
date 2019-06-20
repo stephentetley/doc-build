@@ -188,6 +188,26 @@ module DocMonad =
                 mreturn () 
             else docError failMsg
 
+
+    let assertEmpty (source : 'a list) : DocMonad<unit, 'userRes> = 
+        match source with
+        | [] -> mreturn ()
+        | _ -> docError "assertEmpty - non empty"
+       
+
+    let assertNonEmpty (source : 'a list) : DocMonad<'a list, 'userRes> = 
+        match source with
+        | [] -> docError "assertNonEmpty - empty"
+        | _ -> mreturn source
+
+
+    let assertSingleton (source : 'a list) : DocMonad<'a, 'userRes> = 
+        match source with
+        | [a] -> mreturn a
+        | [] -> docError "assertSingleton - empty"
+        | _ -> docError "assertSingleton - more than 1 item"
+
+
     let optionM (defaultValue:'a) 
                 (ma:DocMonad<'a, 'userRes>) : DocMonad<'a, 'userRes> = 
         combineM ma (mreturn defaultValue)
@@ -254,6 +274,8 @@ module DocMonad =
     /// folder not a file.
     let askIncludeDirectories () : DocMonad<string list, 'userRes> = 
         asks (fun env -> env.IncludeDirectories)
+
+
 
     /// Use with caution.
     /// Generally you might only want to update the 

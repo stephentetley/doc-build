@@ -39,7 +39,6 @@ open FSharp.Interop.Excel
 #r @"MarkdownDoc.dll"
 
 
-#load "..\src\DocBuild\Base\Internal\FakeLikePrim.fs"
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
 #load "..\src\DocBuild\Base\Internal\GhostscriptPrim.fs"
 #load "..\src\DocBuild\Base\Internal\PandocPrim.fs"
@@ -49,6 +48,7 @@ open FSharp.Interop.Excel
 #load "..\src\DocBuild\Base\DocMonad.fs"
 #load "..\src\DocBuild\Base\Document.fs"
 #load "..\src\DocBuild\Base\Collection.fs"
+#load "..\src\DocBuild\Base\FindFiles.fs"
 #load "..\src\DocBuild\Base\FileOperations.fs"
 #load "..\src\DocBuild\Base\Skeletons.fs"
 #load "..\src\DocBuild\Document\Pdf.fs"
@@ -114,7 +114,7 @@ let sourceToSiteName (sourceName:string) : string =
 
 let sourceWordDocToPdf (fileGlob:string) : DocMonadWord<PdfDoc option> = 
     docMonad { 
-        match! tryFindExactlyOneSourceFileMatching fileGlob false with
+        match! tryExactlyOne <<| findSourceFilesMatching fileGlob false with
         | None -> return None
         | Some infile ->
             let! doc = getWordDoc infile
