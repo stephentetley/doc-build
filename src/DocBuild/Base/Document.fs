@@ -65,8 +65,8 @@ module Document =
         new (absPath:string, title:string) = 
             { DocAbsPath = Some absPath; DocTitle = title }
 
-        new ((), title:string) = 
-            { DocAbsPath = None; DocTitle = title }
+        static member empty = 
+            new Document<'a> (absPath = None, title = "empty")
 
 
         member x.Title 
@@ -127,6 +127,19 @@ module Document =
                 File.Move(sourceFileName = absPath, destFileName = dest)
                 return Document(absPath = dest, title = title)
         }
+
+
+    let mandatory (docbuild : DocMonad<Document<'a>, 'userRes>) : DocMonad<Document<'a>, 'userRes> = 
+        docMonad { 
+            let! doc = docbuild
+            match doc.AbsolutePath with
+            | None -> return! docError "mandatory"
+            | Some _ -> return doc
+        }
+
+
+    let nonMandatory (docbuild : DocMonad<Document<'a>, 'userRes>) : DocMonad<Document<'a>, 'userRes> = 
+       docbuild <|> mreturn Document.empty
 
 
     /// Warning - this allows random access to the file system, not

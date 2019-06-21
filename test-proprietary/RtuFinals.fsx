@@ -189,7 +189,7 @@ let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc> =
         ; SourceSubdirectory = name1 </> "1.Survey" </> "photos"
         ; WorkingSubdirectory = "survey_photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
-    PandocWordShim.makePhotoBook props
+    PandocWordShim.makePhotoBook props 
 
 
 let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc> = 
@@ -199,7 +199,7 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc> =
         ; SourceSubdirectory  = name1 </> "2.Site_work" </> "photos"
         ; WorkingSubdirectory = "install_photos"
         ; RelativeOutputName= sprintf "%s install photos.md" name1 }
-    PandocWordShim.makePhotoBook props
+    PandocWordShim.makePhotoBook props 
     
 
 let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> = 
@@ -209,9 +209,9 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
         let! row = liftOption "Could Not find row" (Map.tryFind name1 dict)
         let! cover = genCover row 
         let! survey = genSurvey ()
+        let! surveyPhotos = nonMandatory <| genSurveyPhotos row
         let! siteWorks = genSiteWorks ()
-        let! surveyPhotos = genSurveyPhotos row
-        let! worksPhotos = genWorkPhotos row
+        let! worksPhotos = nonMandatory <| genWorkPhotos row
 
         let (col1:PdfCollection) = 
             Collection.ofList [ survey; surveyPhotos; siteWorks; worksPhotos]
@@ -226,7 +226,6 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
         let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName col2 
     }
-
 
 
 let main () = 

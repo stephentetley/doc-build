@@ -5,6 +5,8 @@ namespace DocBuild.Extra
 
 module Contents = 
 
+    open System.IO
+
     open MarkdownDoc
     
     open DocBuild.Base
@@ -44,14 +46,15 @@ module Contents =
             return { Title = pdf.Title; PageCount = count}        
         }
 
-    // TODO - render a dummy doc, to get length of contents
 
-    let makeContents1 (config:ContentsConfig) 
-                      (col:PdfCollection) : DocMonad<MarkdownDoc, 'userRes> =
+
+    let makeContents1 (config : ContentsConfig) 
+                      (col : PdfCollection) : DocMonad<MarkdownDoc, 'userRes> =
         docMonad {
             let! (infos:DocInfo list) = mapM getInfo col.Documents
+            let mdOutputName = Path.ChangeExtension(config.RelativeOutputName, "md")
             let mdDoc = genMarkdown config.PrologLength infos
-            return! Markdown.saveMarkdown config.RelativeOutputName mdDoc           
+            return! Markdown.saveMarkdown mdOutputName mdDoc           
         }
 
     let genTableOfContents (render: MarkdownDoc -> DocMonad<PdfDoc, 'userRes>)
