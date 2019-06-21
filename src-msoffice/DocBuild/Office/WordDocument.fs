@@ -72,25 +72,28 @@ module WordDocument =
 
     /// TODO - because we only want output in the working directory
     /// it would be better to supply just a file name...
-    let exportPdfAs (outputRelName:string)
-                    (src:WordDoc) : DocMonad<PdfDoc, #IWordHandle> = 
+    let exportPdfAs (outputRelName : string)
+                    (source : WordDoc) : DocMonad<PdfDoc, #IWordHandle> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
+            let! sourcePath = getDocumentPath source
             let! userRes = getUserResources ()
             let paperSize = userRes.PaperSizeForWord
             let! pdfQuality = 
                 asks (fun env -> env.PrintOrScreen) |>> wordExportQuality
             let! (ans:unit) = 
                 execWord <| fun app -> 
-                    liftOperationResult "exportAsPdf" (fun _ -> wordExportAsPdf app paperSize pdfQuality src.AbsolutePath outputAbsPath)
+                    liftOperationResult "exportAsPdf" 
+                        (fun _ -> wordExportAsPdf app paperSize pdfQuality sourcePath outputAbsPath)
             return! getPdfDoc outputAbsPath
         }
 
     /// Saves the file in the top-level working directory.
-    let exportPdf (src:WordDoc) : DocMonad<PdfDoc, #IWordHandle> = 
+    let exportPdf (source:WordDoc) : DocMonad<PdfDoc, #IWordHandle> = 
         docMonad { 
-            let fileName = Path.ChangeExtension(src.FileName, "pdf")
-            return! exportPdfAs fileName src
+            let! sourceName = getDocumentFileName source
+            let fileName = Path.ChangeExtension(sourceName, "pdf")
+            return! exportPdfAs fileName source
         }
 
 
@@ -100,16 +103,22 @@ module WordDocument =
 
     let findReplaceAs (searches:SearchList) 
                       (outputRelName:string) 
-                      (src:WordDoc) : DocMonad<WordDoc, #IWordHandle> = 
+                      (source:WordDoc) : DocMonad<WordDoc, #IWordHandle> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
+            let! sourcePath = getDocumentPath source
             let! ans = 
                 execWord <| fun app -> 
-                        liftOperationResult "findReplaceAs" (fun _ -> wordFindReplace app searches src.AbsolutePath outputAbsPath)
+                        liftOperationResult "findReplaceAs" 
+                            (fun _ -> wordFindReplace app searches sourcePath outputAbsPath)
             return! getWordDoc outputAbsPath
         }
 
 
 
-    let findReplace (searches:SearchList) (src:WordDoc) : DocMonad<WordDoc, #IWordHandle> = 
-        findReplaceAs searches src.FileName src 
+    let findReplace (searches : SearchList) 
+                    (source : WordDoc) : DocMonad<WordDoc, #IWordHandle> = 
+        docMonad { 
+            let! sourceName = getDocumentFileName source
+            return! findReplaceAs searches sourceName source 
+        }

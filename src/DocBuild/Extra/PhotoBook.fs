@@ -47,11 +47,11 @@ module PhotoBook =
 
 
     let private photoBookMarkdown (title:string) 
-                                  (imagePaths: JpegDoc list) : Markdown = 
-        match imagePaths with
-        | x :: xs -> 
-            let page1 = makePage1 title x.AbsolutePath x.Title
-            let rest = xs |> List.map (fun x -> makePageRest title x.AbsolutePath x.Title) 
+                                  (imageInfos: (string * string) list) : Markdown = 
+        match imageInfos with
+        | (imgPath, imgTitle) :: xs -> 
+            let page1 = makePage1 title imgPath imgTitle
+            let rest = xs |> List.map (fun (p,t) -> makePageRest title p t) 
             concatMarkdown (page1 :: rest)
         | [] -> h1 (text title)
 
@@ -64,11 +64,11 @@ module PhotoBook =
                 localSourceSubdirectory sourceSubdirectory <| findSourceFilesMatching "*.jpeg" false
             let! srcJpegs = mapM getJpegDoc (xs @ ys) |>> List.sortBy (fun doc -> doc.FileName)
             let! jpegs = mapM copyDocumentToWorking srcJpegs
-            return (Collection.fromList jpegs)
+            return (Collection.ofList jpegs)
         }
 
     let internal optimizeJpegs (jpegs:JpegCollection) : DocMonad<JpegCollection, 'userRes> =
-        mapM optimizeJpeg jpegs.Elements |>> Collection.fromList
+        mapM optimizeJpeg jpegs.Documents |>> Collection.ofList
 
 
 
@@ -86,9 +86,15 @@ module PhotoBook =
                     optionMaybeM (copyJpegs config.SourceSubdirectory >>= optimizeJpegs)
             match jpegs with
             | None -> return None
-            | Some col when col.Elements.IsEmpty -> return None
+            | Some col when col.Documents.IsEmpty -> return None
             | Some col -> 
-                let mdDoc = photoBookMarkdown config.Title col.Elements
+                let imageInfos = 
+                    let select (doc : JpegDoc) = 
+                        match doc.AbsolutePath with
+                        | None -> None
+                        | Some path -> Some (path, doc.Title)
+                    col.Documents |> List.choose select
+                let mdDoc = photoBookMarkdown config.Title imageInfos
                 return! Markdown.saveMarkdown config.RelativeOutputName mdDoc |>> Some
         }
 

@@ -37,8 +37,10 @@ let changeSlashes (path:string) : string =
 
 
 /// @"include/YW-logo.jpg"
-let logo (includePath:string) : Markdown = 
-    markdownText (inlineImage "" includePath None)
+let logo (includePath:string option) : Markdown = 
+    match includePath with
+    | None -> nbsp2
+    | Some path -> markdownText (inlineImage "" path None)
 
 let title1 (titleText:string) : Markdown = h1 (text titleText)
     
@@ -81,7 +83,7 @@ let controlTable (author:string) : Markdown =
     gridTable columnSpecs (Some headers) [row1; row2] 
 
 type CoversheetConfig = 
-    { LogoPath: string
+    { LogoPath: string option
       SaiNumber: string option 
       SiteName: string  
       Author:string 

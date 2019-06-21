@@ -5,6 +5,8 @@ namespace DocBuild.Extra
 
 module TitlePage = 
 
+    open System.IO
+
     open MarkdownDoc
     
     open DocBuild.Base
@@ -40,14 +42,15 @@ module TitlePage =
     let genPrefixWithTitlePage (render: MarkdownDoc -> DocMonad<PdfDoc, 'userRes>)
                                (title:string) 
                                (body: Markdown option) 
-                               (pdf:PdfDoc) : DocMonad<PdfDoc, 'userRes> =
+                               (source : PdfDoc) : DocMonad<PdfDoc, 'userRes> =
         docMonad {
             // TODO this is imperminent, need an easy genfile function
             let temp = "title.temp.md"    
             let! md = makeTitlePage { Title = title; DocBody = body; RelativeOutputName = temp }
             let! title = render md
-            let outName = modifyFileName (fun s -> s + "+title") pdf.FileName 
-            return! pdftkConcatPdfs outName (Collection.fromList [title; pdf]) |>> setTitle pdf.Title
+            let! sourceName = getDocumentFileName source
+            let outName = modifyFileName (fun s -> s + "+title") sourceName 
+            return! pdftkConcatPdfs outName (Collection.ofList [title; source]) |>> setTitle source.Title
         }
 
 

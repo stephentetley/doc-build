@@ -45,41 +45,43 @@ module Document =
     // We use a Phantom type parameter rather than a struct wrapper so 
     // we aren't duplicating the API for each Doc type.
 
-
     /// Work with string for file paths. System.Uri is unusable.
+    //type DocBody = 
+    //    { DocAbsPath: string
+    //      DocTitle: string }
+
+    
     type Document<'a> = 
-        val private DocAbsPath: string
-        val private DocTitle : string
-
-        interface IComparable<Document<'a>> with
-            member x.CompareTo(other) =
-                (* sorts by name, then age *)
-                compare x.DocAbsPath other.DocAbsPath
-                
-
+        val private DocAbsPath : string option
+        val private DocTitle : string                        
+        
+        internal new (absPath:string option, title:string) = 
+            { DocAbsPath = absPath; DocTitle = title }
 
         /// Title will be the file name, with directory information removed.
         new (absPath:string) = 
-            { DocAbsPath = absPath; DocTitle = FileInfo(absPath).Name }
+            { DocAbsPath = Some absPath; DocTitle = FileInfo(absPath).Name }
         
-            
         new (absPath:string, title:string) = 
-            { DocAbsPath = absPath; DocTitle = title }
+            { DocAbsPath = Some absPath; DocTitle = title }
+
+        new ((), title:string) = 
+            { DocAbsPath = None; DocTitle = title }
 
 
         member x.Title 
             with get () : string = x.DocTitle
 
         member x.AbsolutePath
-            with get () : string = x.DocAbsPath
+            with get () : string option = x.DocAbsPath
 
         member x.FileName
-            with get () : string = 
-                FileInfo(x.DocAbsPath).Name
+            with get () : string option = 
+                x.AbsolutePath |> Option.map (fun path -> FileInfo(path).Name)
 
         member x.Extension
-            with get () : string = 
-                FileInfo(x.DocAbsPath).Extension
+            with get () : string option = 
+                x.AbsolutePath |> Option.map (fun path -> FileInfo(path).Extension)
 
                 
     /// Set the document Title - title is the name of the document
@@ -93,8 +95,21 @@ module Document =
         askWorkingDirectory () |>> fun dir -> FilePaths.rootIsPrefix dir absPath
 
 
-    let isWorkingDocument (doc:Document<'a>) : DocMonad<bool, 'userRes> = 
-        isWorkingPath doc.AbsolutePath
+    let isWorkingDocument (doc : Document<'a>) : DocMonad<bool, 'userRes> = 
+        match doc.AbsolutePath with
+        | Some path -> isWorkingPath path
+        | None -> mreturn false
+
+    let getDocumentPath (doc : Document<'a>) : DocMonad<string, 'userRes> = 
+        match doc.AbsolutePath with
+        | Some path -> mreturn path
+        | None -> docError "Invalid Document"
+
+    let getDocumentFileName (doc : Document<'a>) : DocMonad<string, 'userRes> = 
+        match doc.FileName with
+        | Some name -> mreturn name
+        | None -> docError "Invalid Document"
+
 
 
     let renameDocument (relativeName:string) 
@@ -105,11 +120,11 @@ module Document =
             | true -> 
                 let title = doc.Title
                 let extension = doc.Extension
-                let path1 = Path.GetDirectoryName(doc.AbsolutePath)
-                let dest = Path.Combine(path1, relativeName)
+                let! absPath = getDocumentPath doc
+                let dest = Path.Combine(absPath, relativeName)
 
                 /// Should gaurd this...
-                File.Move(sourceFileName = doc.AbsolutePath, destFileName = dest)
+                File.Move(sourceFileName = absPath, destFileName = dest)
                 return Document(absPath = dest, title = title)
         }
 
@@ -121,7 +136,7 @@ module Document =
                     (absPath:string) : DocMonad<Document<'a>, 'userRes> = 
         docMonad { 
             do! assertExistingFile validFileExtensions absPath
-            return Document(absPath)
+            return Document(absPath = absPath)
             }
         
 

@@ -30,7 +30,7 @@ module Markdown =
                     
     let private getCustomStylesPath () : DocMonad<string option, 'userRes> = 
         getCustomStyles () 
-            |>> Option.map (fun (doc:WordDoc) -> doc.AbsolutePath)
+            |>> Option.bind (fun (doc:WordDoc) -> doc.AbsolutePath)
 
 
 
@@ -50,21 +50,28 @@ module Markdown =
     // Export
 
     /// Requires pandoc
-    let markdownToWordAs (outputRelName:string) 
-                         (src:MarkdownDoc) : DocMonad<WordDoc, 'userRes> =
+    let markdownToWordAs (outputRelName : string) 
+                         (source : MarkdownDoc) : DocMonad<WordDoc, 'userRes> =
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
+            let! sourcePath = getDocumentPath source
             let! styles = getCustomStylesPath () 
             let command = 
-                PandocPrim.outputDocxCommand styles [] src.AbsolutePath outputAbsPath
+                PandocPrim.outputDocxCommand styles [] sourcePath outputAbsPath
             let! _ = execPandoc command
             return! getWordDoc outputAbsPath
          }
 
     /// Requires pandoc
-    let markdownToWord (src:MarkdownDoc) : DocMonad<WordDoc, 'userRes> =
-        let outputName = Path.ChangeExtension(src.AbsolutePath, "docx") |> Path.GetFileName
-        markdownToWordAs outputName src
+    let markdownToWord (source : MarkdownDoc) : DocMonad<WordDoc, 'userRes> =
+        docMonad { 
+            let! sourceName = getDocumentFileName source
+            let outputName = Path.ChangeExtension(sourceName, "docx") |> Path.GetFileName
+            return! markdownToWordAs outputName source
+        }
+        
+        
+        
 
 
 
@@ -72,12 +79,13 @@ module Markdown =
     // ************************************************************************
     // Find and replace
 
-    let findReplaceAs (searches:SearchList) 
-                      (outputRelName:string) 
-                      (src:MarkdownDoc) : DocMonad<MarkdownDoc, 'userRes> = 
+    let findReplaceAs (searches : SearchList) 
+                      (outputRelName : string) 
+                      (source : MarkdownDoc) : DocMonad<MarkdownDoc, 'userRes> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
-            let original = File.ReadAllText(src.AbsolutePath)
+            let! sourcePath = getDocumentPath source
+            let original = File.ReadAllText(sourcePath)
             let action (source:string) (searchText:string, replaceText:string) = 
                source.Replace(searchText, replaceText)
             let final = List.fold action original searches
@@ -86,6 +94,9 @@ module Markdown =
         }
 
 
-    let findReplace (searches:SearchList)
-                    (src:MarkdownDoc) : DocMonad<MarkdownDoc, 'userRes> = 
-        findReplaceAs searches src.FileName src
+    let findReplace (searches : SearchList)
+                    (source : MarkdownDoc) : DocMonad<MarkdownDoc, 'userRes> = 
+        docMonad { 
+            let! sourceName = getDocumentFileName source
+            return! findReplaceAs searches sourceName source
+        }

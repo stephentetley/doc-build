@@ -29,8 +29,7 @@ module Pdf =
                         (inputFiles:PdfCollection) : DocMonad<PdfDoc, 'userRes> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
-            let inputs = 
-                inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
+            let inputs = inputFiles.DocumentPaths
             let cmd = PdftkPrim.concatCommand inputs outputAbsPath
             let! _ = execPdftk cmd
             return! getPdfDoc outputAbsPath
@@ -59,8 +58,7 @@ module Pdf =
     let private ghostscriptConcat (quality:GsQuality)
                                   (outputAbsPath:string) 
                                   (inputFiles:PdfCollection) : DocMonad<string, 'userRes> = 
-        let inputs = 
-            inputFiles.Elements |> List.map (fun d -> d.AbsolutePath)
+        let inputs = inputFiles.DocumentPaths
         let cmd = GhostscriptPrim.concatCommand quality.QualityArgs outputAbsPath inputs
         execGhostscript cmd
 
@@ -120,19 +118,23 @@ module Pdf =
     /// outputName is relatuive to Working directory.
     let extractRotationsAs (directives:RotationDirective list)
                            (outputRelName:string) 
-                           (src:PdfDoc) : DocMonad<PdfDoc, 'userRes> = 
+                           (source : PdfDoc) : DocMonad<PdfDoc, 'userRes> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
+            let! sourcePath = getDocumentPath source
             let command = 
-                PdftkPrim.rotationCommand src.AbsolutePath directives outputAbsPath
+                PdftkPrim.rotationCommand sourcePath directives outputAbsPath
             let! _ = execPdftk command
             return! getPdfDoc outputAbsPath
         }
 
-    /// Rezize for Word generating a new temp file
-    let extractRotations (directives:RotationDirective list) 
-                         (src:PdfDoc) : DocMonad<PdfDoc, 'userRes> = 
-        extractRotationsAs directives src.FileName src
+    /// Resize for Word generating a new temp file
+    let extractRotations (directives : RotationDirective list) 
+                         (source : PdfDoc) : DocMonad<PdfDoc, 'userRes> = 
+        docMonad { 
+            let! sourceName = getDocumentFileName source
+            return! extractRotationsAs directives sourceName source
+        }
 
 
 
@@ -144,13 +146,15 @@ module Pdf =
     // ************************************************************************
     // Page count
 
-    let countPages (inputfile:PdfDoc) : DocMonad<int, 'userRes> = 
+    let countPages (source:PdfDoc) : DocMonad<int, 'userRes> = 
         docMonad { 
-            let command = PdftkPrim.dumpDataCommand inputfile.AbsolutePath
+            let! sourcePath = getDocumentPath source
+            let command = PdftkPrim.dumpDataCommand sourcePath
             let! stdout = execPdftk command
             return! liftOperationResult "countPages" (fun _ -> PdftkPrim.regexSearchNumberOfPages stdout)
         }
+        <|> mreturn 0
 
 
     let sumPages (col:PdfCollection) : DocMonad<int, 'userRes> = 
-        mapM countPages col.Elements |>> List.sum
+        mapM countPages col.Documents |>> List.sum

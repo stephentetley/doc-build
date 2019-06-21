@@ -227,11 +227,13 @@ let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> =
     processSurveySheets siteName 
         <|> processMarkdown "Survey Info" (Some "1.Survey") "*.md"
 
-let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionMaybeM (PandocWordShim.makePhotoBook (surveyPhotosConfig siteName) |>> setTitle "Survey Photos")
+let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc> = 
+    PandocWordShim.makePhotoBook (surveyPhotosConfig siteName) 
+        |>> setTitle "Survey Photos"
 
-let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionMaybeM (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
+let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc> = 
+    PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) 
+        |>> setTitle "Site Work Photos"
 
 
 
@@ -253,23 +255,25 @@ let processInstalls(siteName:string) : DocMonadWord<PdfDoc list> =
 let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> = 
     docMonad {
         let! sourceName = askSourceDirectory () |>> fileObjectName
-        let  siteName = getSiteName sourceName
+        let siteName = getSiteName sourceName
         let saiNumber = getSaiNumber saiMap siteName
         let! cover = genCoversheet siteName saiNumber
         let! scope = genProjectScope ()
         let! surveys = processSurveys siteName
-        let! oSurveyPhotos = genSurveyPhotos siteName
+        let! surveyPhotos = genSurveyPhotos siteName
         let! ultras = processInstalls siteName
-        let! oWorksPhotos = genSiteWorkPhotos siteName
-        let col1 = Collection.empty  
-                        &^^ scope
-                        &^^ surveys 
-                        &^^ oSurveyPhotos 
-                        &^^ ultras
-                        &^^ oWorksPhotos
+        let! worksPhotos = genSiteWorkPhotos siteName
+        let (col1 : PdfCollection) =  
+            Collection.concat
+                 [ Collection.singleton scope
+                 ; Collection.ofList surveys 
+                 ; Collection.singleton surveyPhotos 
+                 ; Collection.ofList ultras
+                 ; Collection.singleton worksPhotos
+                 ]
         let! prologLength = Pdf.countPages cover
         let! contents = genContents prologLength col1
-        let allDocs = cover ^^& contents ^^& col1
+        let allDocs = cover ^^ contents ^^ col1
         let finalName = sprintf "%s Final.pdf" sourceName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName allDocs 
     }

@@ -49,7 +49,7 @@ module Contents =
     let makeContents1 (config:ContentsConfig) 
                       (col:PdfCollection) : DocMonad<MarkdownDoc, 'userRes> =
         docMonad {
-            let! (infos:DocInfo list) = mapM getInfo col.Elements
+            let! (infos:DocInfo list) = mapM getInfo col.Documents
             let mdDoc = genMarkdown config.PrologLength infos
             return! Markdown.saveMarkdown config.RelativeOutputName mdDoc           
         }

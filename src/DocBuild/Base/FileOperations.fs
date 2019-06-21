@@ -52,8 +52,11 @@ module FileOperations =
 
     /// Copy a doc to the toplevel working directory.
     let copyDocumentToWorking (doc:Document<'a>) : DocMonad<Document<'a>, 'userRes> = 
-        let title = doc.Title
-        copyFileToWorking doc.AbsolutePath |>> setTitle title
+        docMonad { 
+            let title = doc.Title
+            let! absPath = getDocumentPath doc
+            return! copyFileToWorking absPath |>> setTitle title
+        }
 
 
 

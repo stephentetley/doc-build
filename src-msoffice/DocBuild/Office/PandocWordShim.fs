@@ -43,9 +43,12 @@ module PandocWordShim =
          }
 
     /// This uses MS Word as to render in intermediate docx file to Pdf.
-    let markdownToPdf (src:MarkdownDoc) : DocMonad<PdfDoc, #WordDocument.IWordHandle> =
-        let fileName = Path.ChangeExtension(src.FileName, "pdf")
-        markdownToPdfAs fileName src
+    let markdownToPdf (source : MarkdownDoc) : DocMonad<PdfDoc, #WordDocument.IWordHandle> =
+        docMonad {
+            let! sourceName = getDocumentFileName source
+            let fileName = Path.ChangeExtension(sourceName, "pdf")
+            return! markdownToPdfAs fileName source
+        }
 
 
 
