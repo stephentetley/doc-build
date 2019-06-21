@@ -305,7 +305,10 @@ module DocMonad =
         }
 
             
-
+    let localUserResources (update:'userRes -> 'userRes) 
+                           (ma:DocMonad<'a, 'userRes>) : DocMonad<'a, 'userRes> = 
+        DocMonad <| fun sw res env -> 
+            apply1 ma sw { res with UserResources = update res.UserResources } env
 
  
 

@@ -39,7 +39,7 @@ module WordPrim =
                 doc.PageSetup.PaperSize <- sz
             doc.ExportAsFixedFormat ( OutputFileName = outputFile
                                     , ExportFormat = Word.WdExportFormat.wdExportFormatPDF
-                                    , OptimizeFor = quality)
+                                    , OptimizeFor = quality )
             doc.Close (SaveChanges = refobj false)
             Ok ()
         with

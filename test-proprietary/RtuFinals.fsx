@@ -139,7 +139,9 @@ let renderMarkdownDoc (docTitle:string)
 let coverSeaches (row:WorkRow) : SearchList = 
     [ ("#SAINUM", row.``Sai Number``)
     ; ("#SITENAME", row.``Site Name``) 
-    ; ("#YEAR", row.``Year ``) ]
+    ; ("#YEAR", row.``Year ``)
+    ; ("#DATE", DateTime.Today.ToString(format = "dd/MM/yyyy") )
+    ]
 
 
 let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> = 
@@ -155,12 +157,17 @@ let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> =
 
 /// Folder1 either "1.Survey" or "2.Site_work"
 let sourceWordDocToPdf (folder1:string) (fileGlob:string) : DocMonadWord<PdfDoc> = 
-    localSourceSubdirectory (folder1) 
+    let updateRes handle = 
+        (handle :> WordDocument.IWordHandle).PaperSizeForWord <- None
+        handle
+    
+    localUserResources (updateRes)
+        << localSourceSubdirectory (folder1) 
         <| docMonad { 
-            let! input = assertExactlyOne =<< findSourceFilesMatching fileGlob false 
-            let! doc = getWordDoc input
-            return! WordDocument.exportPdf doc
-        }
+                let! input = assertExactlyOne =<< findSourceFilesMatching fileGlob false 
+                let! doc = getWordDoc input
+                return! WordDocument.exportPdf doc
+            }
 
 let processMarkdown1 (title : string)
                      (sourceSubfolder : string)
@@ -208,23 +215,16 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
         let  safeSiteName = name1 |> safeName
         let! row = liftOption "Could Not find row" (Map.tryFind name1 dict)
         let! cover = genCover row 
-        let! survey = genSurvey ()
+        let! survey = mandatory <| genSurvey ()
         let! surveyPhotos = nonMandatory <| genSurveyPhotos row
-        let! siteWorks = genSiteWorks ()
+        let! siteWorks = mandatory <| genSiteWorks ()
         let! worksPhotos = nonMandatory <| genWorkPhotos row
 
         let (col1:PdfCollection) = 
-            Collection.ofList [ survey; surveyPhotos; siteWorks; worksPhotos]
+            Collection.ofList [ cover; survey; surveyPhotos; siteWorks; worksPhotos]
 
-        let! prologLength = Pdf.countPages cover
-        let contentsConfig : ContentsConfig  = 
-            { PrologLength = prologLength 
-              RelativeOutputName = "Contents.pdf" }
-        let! contents = makeTableOfContents contentsConfig col1
-
-        let col2 = cover ^^ contents ^^ col1
         let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
-        return! Pdf.concatPdfs Pdf.GsDefault finalName col2 
+        return! Pdf.concatPdfs Pdf.GsDefault finalName col1
     }
 
 
