@@ -129,22 +129,21 @@ let genSiteWorks () : DocMonadWord<PdfDoc> =
                   (sourceWordDocToPdf "*Site Works*.doc*")
                 
 
-let genPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
+let genPhotos (siteName:string) : DocMonadWord<PdfDoc> = 
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Site Photos"
         ; SourceSubdirectory = "photos"
         ; WorkingSubdirectory = "photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" (safeName siteName) }
-    optionMaybeM (PandocWordShim.makePhotoBook props)
+    PandocWordShim.makePhotoBook props
 
 let genFinalDoc1 () : DocMonadWord<PdfDoc> = 
     docMonad { 
         let! sourceName =  askSourceDirectory () |>> fileObjectName
         let siteName = sourceName |> sourceToSiteName
         let! workSheet = genSiteWorks ()
-        let! phodoDoc = genPhotos siteName
-        let (col:PdfCollection) = 
-            Collection.empty &^^ workSheet     &^^ phodoDoc
+        let! photoDoc = genPhotos siteName
+        let (col:PdfCollection) = Collection.ofList [ workSheet; photoDoc ]
         let finalName = sprintf "%s S3953 IS Barrier Final.pdf" sourceName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName col 
     }

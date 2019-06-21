@@ -182,24 +182,24 @@ let genSiteWorks () :DocMonadWord<PdfDoc> =
         <|> processMarkdown1 "Site Work" "2.Site_work" "*.md"
                 
 
-let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
+let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc> = 
     let name1 = safeName row.``Site Name``
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Survey Photos"
         ; SourceSubdirectory = name1 </> "1.Survey" </> "photos"
         ; WorkingSubdirectory = "survey_photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
-    optionMaybeM (PandocWordShim.makePhotoBook props)
+    PandocWordShim.makePhotoBook props
 
 
-let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc option> = 
+let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc> = 
     let name1 = safeName row.``Site Name``
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Install Photos"
         ; SourceSubdirectory  = name1 </> "2.Site_work" </> "photos"
         ; WorkingSubdirectory = "install_photos"
         ; RelativeOutputName= sprintf "%s install photos.md" name1 }
-    optionMaybeM (PandocWordShim.makePhotoBook props)
+    PandocWordShim.makePhotoBook props
     
 
 let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> = 
@@ -208,15 +208,13 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
         let  safeSiteName = name1 |> safeName
         let! row = liftOption "Could Not find row" (Map.tryFind name1 dict)
         let! cover = genCover row 
-        let! oSurvey = genSurvey ()
-        let! works = genSiteWorks ()
-        let! oSurveyPhotos = genSurveyPhotos row
-        let! oWorksPhotos = genWorkPhotos row
+        let! survey = genSurvey ()
+        let! siteWorks = genSiteWorks ()
+        let! surveyPhotos = genSurveyPhotos row
+        let! worksPhotos = genWorkPhotos row
 
         let (col1:PdfCollection) = 
-            Collection.empty 
-                &^^ oSurvey     &^^ oSurveyPhotos
-                &^^ works       &^^ oWorksPhotos
+            Collection.ofList [ survey; surveyPhotos; siteWorks; worksPhotos]
 
         let! prologLength = Pdf.countPages cover
         let contentsConfig : ContentsConfig  = 
@@ -224,7 +222,7 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
               RelativeOutputName = "Contents.pdf" }
         let! contents = makeTableOfContents contentsConfig col1
 
-        let col2 = cover ^^& contents ^^& col1
+        let col2 = cover ^^ contents ^^ col1
         let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName col2 
     }

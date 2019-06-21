@@ -119,7 +119,7 @@ let getSiteName (sourceName:string) : string =
 let coverSheetMarkdown (sai:string) 
                        (siteName:string) 
                        (phase:string) 
-                       (logoPath:string) : Markdown = 
+                       (logoPath:string option) : Markdown = 
     let title = 
         match phase with
         | "T0877" -> 
@@ -130,8 +130,12 @@ let coverSheetMarkdown (sai:string)
             h1 (text "T0975 Event Duration Monitoring")
         | _ -> 
             h1 (text "Error unknown Phase")
+    let logo = 
+        match logoPath with
+        | None -> nbsp
+        | Some path -> markdownText (inlineImage "" path None)
     concatMarkdown
-        <|  [ markdownText (inlineImage "" logoPath None)
+        <|  [ logo
             ; nbsp ; nbsp
             ; title
             ; nbsp ; nbsp
@@ -170,7 +174,7 @@ let build1 (phase:string) (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
         let! saiNumber = liftOption "No SAI Number" <| getSaiNumber saiMap siteName
         let! cover = genCoverSheet saiNumber siteName phase
         let! scope = genInstallSheet ()
-        let col1 = Collection.fromList [ cover; scope ]  
+        let col1 = Collection.ofList [ cover; scope ]  
         let finalName = sprintf "%s %s Final.pdf" sourceName phase |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName col1 
     }

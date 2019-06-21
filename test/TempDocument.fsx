@@ -79,7 +79,7 @@ let demo01 () =
             let! p1 = getWorkingPdfDoc "One.pdf"
             let! p2 = getWorkingPdfDoc "Two.pdf" 
             let! p3 = getWorkingPdfDoc "Three.pdf"
-            let pdfs = Collection.fromList [p1;p2;p3]
+            let pdfs = Collection.ofList [p1;p2;p3]
             let! _ = Pdf.concatPdfs Pdf.GsScreen "Concat.pdf" pdfs 
             return ()
         }

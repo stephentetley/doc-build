@@ -206,13 +206,13 @@ let processSurveys (siteName:string) : DocMonadWord<PdfDoc list> =
         | pdfs -> return pdfs
     }
 
-let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionMaybeM
-        <| (PandocWordShim.makePhotoBook (surveyPhotosConfig siteName) |>> setTitle "Survey Photos")
+let genSurveyPhotos (siteName:string) : DocMonadWord<PdfDoc> = 
+    PandocWordShim.makePhotoBook (surveyPhotosConfig siteName) 
+        |>> setTitle "Survey Photos"
 
-let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc option> = 
-    optionMaybeM 
-        <| (PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) |>> setTitle "Site Work Photos")
+let genSiteWorkPhotos (siteName:string) : DocMonadWord<PdfDoc> = 
+    PandocWordShim.makePhotoBook (siteWorksPhotosConfig siteName) 
+        |>> setTitle "Site Work Photos"
         
 
 
@@ -282,17 +282,18 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
         let saiNumber = getSaiNumber saiMap siteName
         let! cover = genCoversheet siteName saiNumber
         let! surveys = processSurveys siteName >>= exnIfEmpty "No surveys"
-        let! oSurveyPhotos = genSurveyPhotos siteName 
+        let! surveyPhotos = genSurveyPhotos siteName 
         let! siteWorks = processSiteWork siteName >>= exnIfEmpty "No site work"
-        let! oWorksPhotos = genSiteWorkPhotos siteName
-        let col1 = Collection.empty  
-                        &^^ surveys 
-                        &^^ oSurveyPhotos 
-                        &^^ siteWorks
-                        &^^ oWorksPhotos
+        let! worksPhotos = genSiteWorkPhotos siteName
+        let col1 = Collection.concat  
+                        [ Collection.ofList surveys 
+                        ; Collection.singleton surveyPhotos 
+                        ; Collection.ofList siteWorks
+                        ; Collection.singleton worksPhotos
+                        ]
         let! prologLength = Pdf.countPages cover
         let! contents = genContents prologLength col1
-        let colAll = cover ^^& contents ^^& col1
+        let colAll = cover ^^ contents ^^ col1
         let finalName = sprintf "%s Final.pdf" sourceName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName colAll 
     }
