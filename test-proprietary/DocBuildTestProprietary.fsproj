@@ -16,6 +16,7 @@
     <None Include="EventsFinal.fsx" />
     <None Include="Mk5mmimFinal.fsx" />
     <None Include="PBInstall.fsx" />
+    <None Include="RtuFirmwareUpgrade.fsx" />
     <None Include="RtuErskines.fsx" />
     <None Include="RtuISBarrierFinals.fsx" />
     <None Include="RtuSurveys.fsx" />

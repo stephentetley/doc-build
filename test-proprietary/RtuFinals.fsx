@@ -231,6 +231,6 @@ let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> =
 let main () = 
     let sites : WorkItems = readWorkSpeadsheet () 
     let resources = WindowsWordResources ()
-    let options = { defaultSkeletonOptions with TestingSample = TakeDirectories 5 }
+    let options = defaultSkeletonOptions // { defaultSkeletonOptions with TestingSample = TakeDirectories 5 }
     runDocMonad resources WindowsEnv 
         <| foreachSourceDirectory options (build1 sites)
