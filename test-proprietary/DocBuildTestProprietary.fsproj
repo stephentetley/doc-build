@@ -14,9 +14,10 @@
     <Compile Include="Proprietary.fs" />
     <Compile Include="Coversheet.fs" />
     <None Include="EventsFinal.fsx" />
-    <None Include="Mk5mmimFinal.fsx" />
     <None Include="PBInstall.fsx" />
     <None Include="RtuFirmwareUpgrade.fsx" />
+    <None Include="RtuMk3Mk4Upgrade.fsx" />
+    <None Include="RtuMk5MmimReplacement.fsx" />
     <None Include="RtuErskines.fsx" />
     <None Include="RtuISBarrierFinals.fsx" />
     <None Include="RtuSurveys.fsx" />
