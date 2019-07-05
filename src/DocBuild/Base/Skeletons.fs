@@ -97,13 +97,14 @@ module Skeletons =
                 }
         let proceedM (proc:DocMonad<unit, 'userRes>) : DocMonad<unit, 'userRes> = 
             docMonad { 
-                match! (optionMaybeM proc) with
-                | None -> 
+                match! (captureM proc) with
+                | Error msg -> 
                     if skeletonOpts.ContinueOnFail then 
+                        do! logStepFail () 
                         return ()
                     else 
                         logStepFail () .>> docError "Build step failed" |> ignore
-                | Some _ -> return ()
+                | Ok _ -> return ()
                 }
         let processChildDirectory (ix:int) (count:int) : DocMonad<unit, 'userRes> = 
             docMonad { 

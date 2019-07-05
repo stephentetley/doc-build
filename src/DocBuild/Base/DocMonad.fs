@@ -154,6 +154,12 @@ module DocMonad =
         swapError msg ma
 
  
+    /// Reify the result of a action, so you can see the error if it fails.
+    let captureM (action : DocMonad<'a, 'userRes>) : DocMonad<Result<'a, ErrMsg>, 'userRes> = 
+         DocMonad <| fun sw res env -> 
+             match apply1 action sw res env with
+             | Error msg -> Ok (Error msg)
+             | Ok a -> Ok (Ok a)
 
     let liftAssert (failMsg:string) (condition:bool) : DocMonad<unit, 'userRes> = 
         if condition then mreturn () else docError failMsg
@@ -207,6 +213,9 @@ module DocMonad =
         | [] -> docError "assertSingleton - empty"
         | _ -> docError "assertSingleton - more than 1 item"
 
+
+
+    /// Sort names of these...
 
     let optionM (defaultValue:'a) 
                 (ma:DocMonad<'a, 'userRes>) : DocMonad<'a, 'userRes> = 

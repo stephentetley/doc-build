@@ -111,19 +111,25 @@ module Document =
         | None -> docError "Invalid Document"
 
 
-
+    /// If a document exists with the same target name, it will be overwritten.
     let renameDocument (relativeName:string) 
                        (doc:Document<'a>) : DocMonad<Document<'a>, 'userRes> = 
+        let fileMove src dest = 
+            if File.Exists(dest) then
+                File.Delete(dest)
+            else ()
+            File.Move(sourceFileName = src, destFileName = dest)
+
         docMonad { 
             match! isWorkingDocument doc with
-            | false -> return! docError "Rename failed document not in working directory."
+            | false -> return! docError "Rename failed - document not in working directory."
             | true -> 
                 let title = doc.Title
                 let extension = doc.Extension
                 let! absPath = getDocumentPath doc
                 let directory = Path.GetDirectoryName(absPath)
                 let dest = Path.Combine(directory, relativeName)
-                do! liftOperation "IO error - File.Move" (fun _ -> File.Move(sourceFileName = absPath, destFileName = dest))
+                do! liftOperation "IO error - File.Move" (fun _ -> fileMove absPath dest)
                 return Document(absPath = dest, title = title)
         }
 
