@@ -75,8 +75,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { SourceDirectory   = @"G:\work\Projects\rtu\Erskines\edms-final-docs\input\finals_batch4_source"
-      WorkingDirectory  = @"G:\work\Projects\rtu\Erskines\edms-final-docs\output\batch04_june2019"
+    { SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\erskines_finals_batch5"
+      WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\erskines_finals_batch5"
       IncludeDirectories = []
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -110,8 +110,6 @@ let sourceWordDocToPdf (fileGlob:string) : DocMonadWord<PdfDoc option> =
     }
 
 
-    
-
 let genSiteWorks () : DocMonadWord<PdfDoc> = 
     optionToFailM "No Site Works document" 
                   (sourceWordDocToPdf "*Site Works*.doc*")
@@ -123,8 +121,8 @@ let build1 () : DocMonadWord<PdfDoc> =
         let! sourceName =  sourceDirectoryName ()
         let siteName = sourceName |> sourceToSiteName
         let! workSheet = genSiteWorks ()
-        let finalName = sprintf "%s Erskine Battery Assert Replacement.pdf" sourceName |> safeName
-        return! renameDocument finalName workSheet
+        let finalName = sprintf "%s S3953 Erskine Battery Replacement.pdf" siteName |> safeName
+        return! renameDocument finalName workSheet        
     }
 
 

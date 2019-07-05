@@ -116,15 +116,14 @@ module Document =
                        (doc:Document<'a>) : DocMonad<Document<'a>, 'userRes> = 
         docMonad { 
             match! isWorkingDocument doc with
-            | false -> return! docError "Rename failed document not in workingdirectory."
+            | false -> return! docError "Rename failed document not in working directory."
             | true -> 
                 let title = doc.Title
                 let extension = doc.Extension
                 let! absPath = getDocumentPath doc
-                let dest = Path.Combine(absPath, relativeName)
-
-                /// Should gaurd this...
-                File.Move(sourceFileName = absPath, destFileName = dest)
+                let directory = Path.GetDirectoryName(absPath)
+                let dest = Path.Combine(directory, relativeName)
+                do! liftOperation "IO error - File.Move" (fun _ -> File.Move(sourceFileName = absPath, destFileName = dest))
                 return Document(absPath = dest, title = title)
         }
 
