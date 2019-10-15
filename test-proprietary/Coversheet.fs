@@ -6,7 +6,7 @@
 
 module Coversheet
 
-open MarkdownDoc
+open MarkdownDoc.Markdown
 open MarkdownDoc.Pandoc
 
 open DocBuild.Base
@@ -28,7 +28,7 @@ let safeName (input:string) : string =
 // Build a document
 
 
-let nbsp2 : Markdown = nbsp ^@^ nbsp
+let nbsp2 : Markdown = nbsp ^!^ nbsp
 
 let doubleQuote (s:string) : string = sprintf "\"%s\"" s
 
@@ -52,7 +52,7 @@ let title2 (sai:string option) (name:string) : Markdown =
 
 
 let contents (workItems:string list) : Markdown = 
-    h3 (text "Contents") ^@^ markdown (unorderedList (List.map (paraText << text) workItems))
+    h3 (text "Contents") ^!!^ unorderedList (List.map (markdownText << text) workItems)
 
 let documentControl : Markdown = 
     h3 (text "Document Control")
@@ -70,17 +70,17 @@ let controlTable (author:string) : Markdown =
 
     let nowstring = System.DateTime.Now.ToShortDateString()
 
-    let makeHeaderCell (s:string) : ParaElement = 
-        text s |> doubleAsterisks |> paraText
+    let makeHeaderCell (s:string) : Markdown = 
+        text s |> doubleAsterisks |> markdownText
 
-    let makeCell (s:string) : ParaElement = text s |> paraText
+    let makeCell (s:string) : Markdown = text s |> markdownText
 
     let headers = 
         List.map makeHeaderCell ["Revision"; "Prepared By"; "Date"; "Comments"]
     let row1 = 
         List.map makeCell ["1.0"; author; nowstring; "For EDMS"]
-    let row2 = [ParaElement.empty; ParaElement.empty; ParaElement.empty; ParaElement.empty]
-    gridTable columnSpecs (Some headers) [row1; row2] 
+    let row2 = List.replicate 4 emptyMarkdown
+    makeTable columnSpecs headers [row1; row2] |> gridTable
 
 type CoversheetConfig = 
     { LogoPath: string option
@@ -90,7 +90,7 @@ type CoversheetConfig =
       Title: string }
 
 let makeDoc (config:CoversheetConfig) : Markdown = 
-    concatMarkdown
+    vcat
         <| [ logo config.LogoPath
            ; nbsp2
            ; title1 config.Title

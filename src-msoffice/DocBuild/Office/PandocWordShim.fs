@@ -13,7 +13,7 @@ module PandocWordShim =
     // has to be qualified.
     open Microsoft.Office.Interop
 
-    open MarkdownDoc
+    open MarkdownDoc.Markdown
 
     open DocBuild.Base
     open DocBuild.Base.DocMonad

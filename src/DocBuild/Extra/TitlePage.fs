@@ -7,7 +7,7 @@ module TitlePage =
 
     open System.IO
 
-    open MarkdownDoc
+    open MarkdownDoc.Markdown
     
     open DocBuild.Base
     open DocBuild.Base.DocMonad
@@ -22,7 +22,7 @@ module TitlePage =
         let d1 = h1 (text title)
         match body with
         | None -> d1
-        | Some d2 -> d1 ^@^ d2
+        | Some d2 -> d1 ^!!^ d2
 
 
 

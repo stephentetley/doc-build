@@ -8,7 +8,7 @@ namespace DocBuild.Document
 module Markdown = 
 
     open System.IO
-    open MarkdownDoc
+    open MarkdownDoc.Markdown
 
     open DocBuild.Base
     open DocBuild.Base.Internal
@@ -42,7 +42,7 @@ module Markdown =
                      (markdown:Markdown) : DocMonad<MarkdownDoc, 'userRes> = 
         docMonad { 
             let! outputAbsPath = extendWorkingPath outputRelName
-            let _ = markdown.Save outputAbsPath 
+            let _ = writeMarkdown 180 markdown outputAbsPath 
             return! getMarkdownDoc outputAbsPath
         }
 

@@ -564,9 +564,11 @@ module DocMonad =
             let! options = getProcessOptions findExe
             let! ans = 
                 liftOperationResult "shellExecute" 
-                    <| fun _ -> SimpleInvoke.runProcess options.WorkingDirectory 
-                                                        options.ExecutableName
-                                                            args
+                    <| fun _ -> 
+                        match SimpleInvoke.runProcess (Some options.WorkingDirectory) options.ExecutableName args with
+                        | SimpleInvoke.Answer x -> Ok x
+                        | SimpleInvoke.SysExn ex -> Error ex.Message
+
             return ans.StdOut
             }
         

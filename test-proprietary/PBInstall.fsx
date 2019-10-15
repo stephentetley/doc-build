@@ -32,11 +32,11 @@ open FSharp.Interop.Excel
 
 
 // SLFormat & MarkdownDoc (not on nuget.org)
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190721\lib\netstandard2.0"
 #r @"SLFormat.dll"
-#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190508\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20191014\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
-open MarkdownDoc
+open MarkdownDoc.Markdown
 open MarkdownDoc.Pandoc
 
 #load "..\src\DocBuild\Base\Internal\FilePaths.fs"
@@ -92,7 +92,7 @@ Environment.SetEnvironmentVariable("PATH",
 
 let WindowsEnv : DocBuildEnv = 
     { WorkingDirectory  = @"G:\work\Projects\events2\point-blue\output"
-      SourceDirectory   = @"G:\work\Projects\events2\point-blue\batch4a_to_build"
+      SourceDirectory   = @"G:\work\Projects\events2\point-blue\batch4b_to_build"
       IncludeDirectories = [ @"G:\work\Projects\events2\point-blue\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -134,7 +134,7 @@ let coverSheetMarkdown (sai:string)
         match logoPath with
         | None -> nbsp
         | Some path -> markdownText (inlineImage "" path None)
-    concatMarkdown
+    vcat
         <|  [ logo
             ; nbsp ; nbsp
             ; title
@@ -146,7 +146,7 @@ let coverSheetMarkdown (sai:string)
             ; markdownText (doubleAsterisks (text "OnSite") ^+^ text "Installation and Commmissioning")
             ; nbsp ; nbsp
             ; h2 (text "Contents")
-            ; markdown (unorderedList [paraText (text "Point Blue Installation / Commissioning Form")])
+            ; unorderedList [markdownText (text "Point Blue Installation / Commissioning Form")]
             ]
 
 let genCoverSheet (sai:string) 

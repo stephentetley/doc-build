@@ -7,7 +7,7 @@ module Contents =
 
     open System.IO
 
-    open MarkdownDoc
+    open MarkdownDoc.Markdown
     
     open DocBuild.Base
 
@@ -24,14 +24,14 @@ module Contents =
 
     let private contentsTable (start:int) (infos:DocInfo list) : Markdown = 
         List.fold (fun (i,ac) (info:DocInfo) -> 
-                        let d1 = ac ^@^ h2 (text info.Title ^+^ text "..." ^+^ formatted "%i" i)
+                        let d1 = ac ^!!^ h2 (text info.Title ^+^ text "..." ^+^ formatted "%i" i)
                         (i + info.PageCount, d1))
-                  (start, Markdown.empty)
+                  (start, emptyMarkdown)
                   infos
             |> snd
 
     let private genMarkdown (prologLength:int) (infos:DocInfo list) : Markdown = 
-        h1 (text "Contents") ^@^ contentsTable (prologLength+1) infos 
+        h1 (text "Contents") ^!!^ contentsTable (prologLength+1) infos 
 
 
     /// Prolog size is the number of pages in any coversheet 

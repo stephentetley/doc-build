@@ -5,7 +5,7 @@ namespace DocBuild.Extra
 
 module PhotoBook = 
 
-    open MarkdownDoc
+    open MarkdownDoc.Markdown
     open MarkdownDoc.Pandoc
 
     open DocBuild.Base
@@ -25,7 +25,7 @@ module PhotoBook =
     let private makePage1 (title:string) 
                           (imagePath:string) 
                           (imageName:string) : Markdown = 
-        concatMarkdown
+        vcat
             <| [ h1 (text title)
                ; nbsp       // should be Markdown...
                ; markdownText <| inlineImage "" imagePath None
@@ -37,7 +37,7 @@ module PhotoBook =
     let private makePageRest (title:string) 
                              (imagePath:string) 
                              (imageName:string) : Markdown = 
-        concatMarkdown 
+        vcat 
             <| [ openxmlPagebreak
                ; h2 (text title)
                ; nbsp       // should be Markdown...
@@ -52,7 +52,7 @@ module PhotoBook =
         | (imgPath, imgTitle) :: xs -> 
             let page1 = makePage1 title imgPath imgTitle
             let rest = xs |> List.map (fun (p,t) -> makePageRest title p t) 
-            concatMarkdown (page1 :: rest)
+            vcat (page1 :: rest)
         | [] -> h1 (text title)
 
     

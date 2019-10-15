@@ -5,9 +5,9 @@
 open System
 
 // SLFormat & MarkdownDoc (not on nuget.org)
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190721\lib\netstandard2.0"
 #r @"SLFormat.dll"
-#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20190508\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\markdowndoc\1.0.1-alpha-20191014\lib\netstandard2.0"
 #r @"MarkdownDoc.dll"
 
 
@@ -45,15 +45,15 @@ let test01 () =
     let sources = ["One.pdf"; "Two.pdf"; "Three.pdf"]
     let script = 
         docMonad { 
-            let! docs = Collection.fromList <&&> mapM getWorkingPdfDoc sources
+            let! docs = Collection.fromPdfList <&&> mapM getWorkingPdfDoc sources
             return docs
             }
     runDocMonadNoCleanup (makeResources ()) WindowsEnv script
        
     
-let test02 () = 
-    test01 () 
-        |> Result.map (fun col -> col.Elements)
+//let test02 () = 
+//    test01 () 
+//        |> Result.map (fun col -> col.Documents)
 
 
 
@@ -63,11 +63,11 @@ let test04 () =
     let script = 
         docMonad { 
             let! docs = 
-                Collection.fromList <&&> mapM (getWorkingPdfDoc) sources
+                Collection.fromPdfList =<< mapM (getWorkingPdfDoc) sources
             let! last = getWorkingPdfDoc "Three.pdf"
-            return (docs &^^ last)
+            return (last ^^ docs)
             }
-    runDocMonadNoCleanup (makeResources ()) WindowsEnv script |> Result.map (fun col -> col.Elements)
+    runDocMonadNoCleanup (makeResources ()) WindowsEnv script |> Result.map (fun col -> col.Documents)
 
 
 let test05a () = 
