@@ -81,7 +81,7 @@ module Skeletons =
                    let! kid = askSourceDirectory () |>> Internal.FilePaths.getPathName1
                    let message = genMessage ix count kid 
                    do (printfn "%s" message)
-                   do! tellLine message
+                   do! logMessage message
                    return ()
                 }
         let logStepFail () = 
@@ -92,7 +92,7 @@ module Skeletons =
                     let! kid = askSourceDirectory () |>> fileObjectName
                     let message = genMessage kid
                     do (printfn "%s" message)
-                    do! tellLine message
+                    do! logMessage message
                     return ()
                 }
         let proceedM (proc:DocMonad<unit, 'userRes>) : DocMonad<unit, 'userRes> = 

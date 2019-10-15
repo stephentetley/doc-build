@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <PackageReference Include="ExcelProvider" Version="1.0.1" />
-    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190322" />
   </ItemGroup>
 
   <ItemGroup>

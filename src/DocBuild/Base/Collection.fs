@@ -57,6 +57,12 @@ module Collection =
         static member singleton (doc : Document<'a>) : Collection<'a> = 
             Collection [doc]
 
+        static member ofOption (odoc : Document<'a> option) : Collection<'a> = 
+            match odoc with
+            | Some doc -> Collection [doc]
+            | None -> Collection []
+
+
     let ( ^^ ) (doc : Document<'a> ) (col : Collection<'a>) : Collection<'a> = 
         match col with
         | Collection(xs) -> Collection (doc :: xs)

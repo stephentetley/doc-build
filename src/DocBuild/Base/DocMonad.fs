@@ -54,7 +54,7 @@ module DocMonad =
     let inline private apply1 (ma: DocMonad<'a, 'userRes>) 
                               (sw: StreamWriter)
                               (res: AppResources<'userRes>) 
-                              (env: DocBuildEnv) : BuildResult<'a>= 
+                              (env: DocBuildEnv) : Result<'a,ErrMsg>= 
         let (DocMonad f) = ma in f sw res env
 
     let inline mreturn (x:'a) : DocMonad<'a, 'userRes> = 
@@ -100,7 +100,7 @@ module DocMonad =
     /// This runs the finalizer on userResources
     let runDocMonad (resources:AppResources<#IResourceFinalize>) 
                     (config:DocBuildEnv) 
-                    (ma:DocMonad<'a, #IResourceFinalize>) : BuildResult<'a> = 
+                    (ma:DocMonad<'a, #IResourceFinalize>) : Result<'a, ErrMsg> = 
         let logPath = Path.Combine (config.WorkingDirectory, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
         let ans = apply1 ma sw resources config
@@ -109,7 +109,7 @@ module DocMonad =
 
     let runDocMonadNoCleanup (resources:AppResources<'userRes>) 
                              (config:DocBuildEnv) 
-                             (ma:DocMonad<'a, 'userRes>) : BuildResult<'a> = 
+                             (ma:DocMonad<'a, 'userRes>) : Result<'a, ErrMsg> = 
         let logPath = Path.Combine (config.WorkingDirectory, "doc-build.log")
         use sw = new StreamWriter(path = logPath)
         apply1 ma sw resources config
@@ -236,7 +236,7 @@ module DocMonad =
     // ****************************************************
     // Logging
 
-    let tellLine (msg:string) : DocMonad<unit, 'userRes> = 
+    let logMessage (msg:string) : DocMonad<unit, 'userRes> = 
         DocMonad <| fun sw _  _ -> 
             sw.WriteLine msg
             Ok ()
@@ -290,10 +290,10 @@ module DocMonad =
 
 
     /// Use with caution.
-    /// Generally you might only want to update the 
+    /// Generally you would only want to update the 
     /// working directory
-    let local (update:DocBuildEnv -> DocBuildEnv) 
-              (ma:DocMonad<'a, 'userRes>) : DocMonad<'a, 'userRes> = 
+    let local (update : DocBuildEnv -> DocBuildEnv) 
+              (ma : DocMonad<'a, 'userRes>) : DocMonad<'a, 'userRes> = 
         DocMonad <| fun sw res env -> 
             apply1 ma sw res (update env)
 

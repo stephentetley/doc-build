@@ -95,9 +95,18 @@ let (docxCustomReference:string) = @"custom-reference1.docx"
 
 type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
-let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = @"G:\work\Projects\events2\final-docs\output\MANHOLES"
-      SourceDirectory =  @"G:\work\Projects\events2\Site Work Sorted\MANHOLES"
+
+let inputDirectory : string = 
+    @"G:\work\Projects\events2\final-docs\input\docs-to-build-20191015"
+
+let outputDirectory : string = 
+    @"G:\work\Projects\events2\final-docs\output\docs-20191015"
+
+
+
+let EventDocEnv : DocBuildEnv = 
+    { SourceDirectory = inputDirectory
+      WorkingDirectory = outputDirectory
       IncludeDirectories = [ @"G:\work\Projects\events2\final-docs\include" ]
       PandocOpts = 
         { CustomStylesDocx = Some "custom-reference1.docx"
@@ -121,12 +130,6 @@ let getSiteName (sourceName:string) : string =
 
 
 
-let renderMarkdownFile  (docTitle:string)
-                       (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
-    docMonad {
-        let! docx = Markdown.markdownToWord  markdown
-        return! WordDocument.exportPdf docx |>> setTitle docTitle
-    }
 
 let genCoversheet (siteName:string) (saiNumber:string option) : DocMonadWord<PdfDoc> = 
     docMonad { 
@@ -270,7 +273,7 @@ let exnIfEmpty (msg:string) (xs:'a list) : DocMonadWord<'a list> =
     docMonad { 
         match xs with
         | [] ->    
-            do! tellLine msg 
+            do! logMessage msg 
             return! docError msg
         | _ -> return xs
     }
@@ -282,14 +285,14 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
         let saiNumber = getSaiNumber saiMap siteName
         let! cover = genCoversheet siteName saiNumber
         let! surveys = processSurveys siteName >>= exnIfEmpty "No surveys"
-        let! surveyPhotos = genSurveyPhotos siteName 
+        let! surveyPhotos = optionMaybeM <| genSurveyPhotos siteName 
         let! siteWorks = processSiteWork siteName >>= exnIfEmpty "No site work"
-        let! worksPhotos = genSiteWorkPhotos siteName
+        let! worksPhotos = optionMaybeM <| genSiteWorkPhotos siteName
         let col1 = Collection.concat  
                         [ Collection.ofList surveys 
-                        ; Collection.singleton surveyPhotos 
+                        ; Collection.ofOption surveyPhotos 
                         ; Collection.ofList siteWorks
-                        ; Collection.singleton worksPhotos
+                        ; Collection.ofOption worksPhotos
                         ]
         let! prologLength = Pdf.countPages cover
         let! contents = genContents prologLength col1
@@ -303,5 +306,5 @@ let main () =
     let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()
     let stepM = ignoreM (build1 saiMap) <|> mreturn ()
-    runDocMonad resources WindowsEnv 
+    runDocMonad resources EventDocEnv 
         <| foreachSourceDirectory defaultSkeletonOptions stepM
