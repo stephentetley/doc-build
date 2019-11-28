@@ -90,7 +90,7 @@ type CoversheetConfig =
       Title: string }
 
 let makeDoc (config:CoversheetConfig) : Markdown = 
-    vcat
+    vsep
         <| [ logo config.LogoPath
            ; nbsp2
            ; title1 config.Title

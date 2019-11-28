@@ -93,9 +93,9 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory = @"G:\work\Projects\rtu\mk5-mmim-replacement\finals\output"
-      SourceDirectory =  @"G:\work\Projects\rtu\mk5-mmim-replacement\finals\input\batch1"
-      IncludeDirectories = [ @"G:\work\Projects\rtu\mk5-mmim-replacement\finals" ]
+    { SourceDirectory =  @"G:\work\Projects\rtu\mk5-mmims\finals\input\batch3"
+      WorkingDirectory = @"G:\work\Projects\rtu\mk5-mmims\finals\output"
+      IncludeDirectories = []
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
         { CustomStylesDocx = None
