@@ -97,10 +97,10 @@ type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
 
 let inputDirectory : string = 
-    @"G:\work\Projects\events2\final-docs\input\docs-to-build-20191015"
+    @"G:\work\Projects\events2\final-docs\input\docs-to-build-20191213"
 
 let outputDirectory : string = 
-    @"G:\work\Projects\events2\final-docs\output\docs-20191015"
+    @"G:\work\Projects\events2\final-docs\output\docs-20191213"
 
 
 
@@ -282,7 +282,7 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
     docMonad {
         let! sourceName = askSourceDirectory () |>> fileObjectName
         let  siteName = getSiteName sourceName
-        let saiNumber = getSaiNumber saiMap siteName
+        let  saiNumber = getSaiNumber saiMap siteName
         let! cover = genCoversheet siteName saiNumber
         let! surveys = processSurveys siteName >>= exnIfEmpty "No surveys"
         let! surveyPhotos = optionMaybeM <| genSurveyPhotos siteName 
@@ -301,10 +301,18 @@ let build1 (saiMap:SaiMap) : DocMonadWord<PdfDoc> =
         return! Pdf.concatPdfs Pdf.GsDefault finalName colAll 
     }
 
+let softFail () : DocMonadWord<unit> = 
+    docMonad {
+        let! sourceName = askSourceDirectory () |>> fileObjectName
+        let  siteName = getSiteName sourceName
+        do! logMessage (sprintf "Building %s failed" siteName)
+        return ()
+     }
+
 
 let main () = 
     let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()
-    let stepM = ignoreM (build1 saiMap) <|> mreturn ()
+    let stepM = ignoreM (build1 saiMap) <|> softFail ()
     runDocMonad resources EventDocEnv 
         <| foreachSourceDirectory defaultSkeletonOptions stepM

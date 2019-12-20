@@ -170,14 +170,19 @@ module DocMonad =
         | None -> docError failMsg
 
 
+    let liftAction (operation: unit -> 'a) : DocMonad<'a, 'userRes> = 
+        try
+            operation () |> mreturn
+        with
+        | ex -> docError "action failed"
 
 
     let liftOperation (failMsg:string) 
                       (operation: unit -> 'a) : DocMonad<'a, 'userRes> = 
-            try
-                operation () |> mreturn
-            with
-            | ex -> docError failMsg
+        try
+            operation () |> mreturn
+        with
+        | ex -> docError failMsg
 
 
     let liftOperationResult (failMsg:string) (operation: unit -> Result<'a, string>) : DocMonad<'a, 'userRes> = 
@@ -187,6 +192,9 @@ module DocMonad =
             | Error msg -> return! docError msg
         }
 
+
+    let consolePrint (s : string) : DocMonad<unit, 'userRes> = 
+        liftAction (fun () -> printfn "%s" s)
 
     let assertM (failMsg:string) (ma:DocMonad<bool, 'userRes>) : DocMonad<unit, 'userRes> = 
         bindM ma <| fun condition -> 
@@ -238,6 +246,7 @@ module DocMonad =
 
     let logMessage (msg:string) : DocMonad<unit, 'userRes> = 
         DocMonad <| fun sw _  _ -> 
+            printfn "### %s" msg
             sw.WriteLine msg
             Ok ()
 
@@ -606,7 +615,7 @@ module DocMonad =
         mapM mf source
 
     /// Forgetful mapM
-    let mapMz (mf: 'a -> DocMonad<'b, 'userRes>) 
+    let iterM (mf: 'a -> DocMonad<'b, 'userRes>) 
               (source:'a list) : DocMonad<unit, 'userRes> = 
         DocMonad <| fun sw res env -> 
             let rec work ys cont = 
@@ -621,7 +630,7 @@ module DocMonad =
     /// Flipped mapMz
     let forMz (source:'a list) 
               (mf: 'a -> DocMonad<'b, 'userRes>) : DocMonad<unit, 'userRes> = 
-        mapMz mf source
+        iterM mf source
 
 
     /// Implemented in CPS 
