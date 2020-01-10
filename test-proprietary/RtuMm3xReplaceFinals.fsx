@@ -73,7 +73,9 @@ open DocBuild.Office
 open DocBuild.Office.PandocWordShim
 
 #load "ExcelProviderHelper.fs"
+#load "Proprietary.fs"
 open ExcelProviderHelper
+open Proprietary
 
 // ImageMagick Dll loader.
 // A hack to get over Dll loading error due to the 
@@ -87,8 +89,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\year4-rtu-batch2"
-      SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\Year4-RTU-Batch02"
+    { WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\y5-mm3x-replacements-batch1"
+      SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\y5-mm3x-replacements-batch1"
       IncludeDirectories = [ @"G:\work\Projects\rtu\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -108,25 +110,8 @@ let WindowsWordResources () : AppResources<WordDocument.WordHandle> =
 
 type DocMonadWord<'a> = DocMonad<'a, WordDocument.WordHandle>
 
-
-type WorkTable = 
-    ExcelFile< 
-        FileName = @"G:\work\Projects\rtu\final-docs\input\Year4-RTU-Batch02\year4-docs-lookups.xlsx",
-        ForceString = true >
-
-type WorkRow = WorkTable.Row
-
-type WorkItems = Map<string, WorkRow>
-
-let readWorkSpeadsheet () : WorkItems = 
-    let helper = 
-        { new IExcelProviderHelper<WorkTable,WorkRow>
-          with member this.ReadTableRows table = table.Data 
-               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
-         
-    excelReadRowsAsList helper (new WorkTable())
-        |> List.map (fun row -> (safeName row.``Site Name``, row))
-        |> Map.ofList
+let getSiteName (sourceName:string) : string = 
+    sourceName.Replace("_", "/")
 
 let renderMarkdownDoc (docTitle:string)
                       (markdown:MarkdownDoc) : DocMonadWord<PdfDoc> =
@@ -136,17 +121,17 @@ let renderMarkdownDoc (docTitle:string)
     }
 
 
-let coverSeaches (row:WorkRow) : SearchList = 
-    [ ("#SAINUM", row.``Sai Number``)
-    ; ("#SITENAME", row.``Site Name``) 
-    ; ("#YEAR", row.``Year ``)
+let coverSeaches (saiNumber: String) (siteName: string) (year: string) : SearchList = 
+    [ ("#SAINUM", saiNumber)
+    ; ("#SITENAME", siteName) 
+    ; ("#YEAR", year)
     ; ("#DATE", DateTime.Today.ToString(format = "dd/MM/yyyy") )
     ]
 
 
-let genCover (workRow:WorkRow) : DocMonadWord<PdfDoc> = 
-    let outputName = sprintf "%s cover.docx" (workRow.``Site Name`` |> safeName )
-    let searches : SearchList = coverSeaches workRow
+let genCover (saiNumber: String) (siteName: string) (year: string)  : DocMonadWord<PdfDoc> = 
+    let outputName = sprintf "%s cover.docx" (siteName |> safeName )
+    let searches : SearchList = coverSeaches saiNumber siteName year
     docMonad { 
         let! (template:WordDoc) = getIncludeWordDoc "TEMPLATE MM3x-to-MMIM Cover Sheet.docx"
         let! outpath = extendWorkingPath outputName
@@ -189,8 +174,8 @@ let genSiteWorks () :DocMonadWord<PdfDoc> =
         <|> processMarkdown1 "Site Work" "2.Site_work" "*.md"
                 
 
-let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc> = 
-    let name1 = safeName row.``Site Name``
+let genSurveyPhotos (siteName: String) : DocMonadWord<PdfDoc> = 
+    let name1 = safeName siteName
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Survey Photos"
         ; SourceSubdirectory = name1 </> "1.Survey" </> "photos"
@@ -199,8 +184,8 @@ let genSurveyPhotos (row:WorkRow) : DocMonadWord<PdfDoc> =
     PandocWordShim.makePhotoBook props 
 
 
-let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc> = 
-    let name1 = safeName row.``Site Name``
+let genSiteWorkPhotos (siteName: String) : DocMonadWord<PdfDoc> = 
+    let name1 = safeName siteName
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Install Photos"
         ; SourceSubdirectory  = name1 </> "2.Site_work" </> "photos"
@@ -209,28 +194,31 @@ let genWorkPhotos (row:WorkRow) : DocMonadWord<PdfDoc> =
     PandocWordShim.makePhotoBook props 
     
 
-let build1 (dict : WorkItems) : DocMonadWord<PdfDoc> = 
+let build1 (saiMap:SaiMap) (year: string) : DocMonadWord<PdfDoc> = 
     docMonad { 
         let! name1 = sourceDirectoryName ()
-        let  safeSiteName = name1 |> safeName
-        let! row = liftOption "Could Not find row" (Map.tryFind name1 dict)
-        let! cover = genCover row 
+        let  siteName = getSiteName name1
+        let! saiNumber = liftOption "sai not found" <| getSaiNumber saiMap siteName
+
+        let! cover = genCover saiNumber siteName year
         let! survey = mandatory <| genSurvey ()
-        let! surveyPhotos = nonMandatory <| genSurveyPhotos row
+        let! surveyPhotos = nonMandatory <| genSurveyPhotos siteName
         let! siteWorks = mandatory <| genSiteWorks ()
-        let! worksPhotos = nonMandatory <| genWorkPhotos row
+        let! worksPhotos = nonMandatory <| genSiteWorkPhotos siteName
 
         let (col1:PdfCollection) = 
             Collection.ofList [ cover; survey; surveyPhotos; siteWorks; worksPhotos]
 
-        let finalName = sprintf "%s Final.pdf" safeSiteName |> safeName
+        let finalName = sprintf "%s Final.pdf" siteName |> safeName
         return! Pdf.concatPdfs Pdf.GsDefault finalName col1
     }
 
+// work type = "MM3X to MK5 MMIM Asset Replacement"
 
 let main () = 
-    let sites : WorkItems = readWorkSpeadsheet () 
     let resources = WindowsWordResources ()
+    let saiMap = buildSaiMap ()
+    let year = "Year 5"
     let options = defaultSkeletonOptions // { defaultSkeletonOptions with TestingSample = TakeDirectories 5 }
     runDocMonad resources WindowsEnv 
-        <| foreachSourceDirectory options (build1 sites)
+        <| foreachSourceDirectory options (build1 saiMap year)
