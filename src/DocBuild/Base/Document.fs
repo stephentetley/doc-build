@@ -134,11 +134,13 @@ module Document =
         }
 
 
-    let mandatory (docbuild : DocMonad<Document<'a>, 'userRes>) : DocMonad<Document<'a>, 'userRes> = 
+    let mandatory (failMsg: string) (docbuild : DocMonad<Document<'a>, 'userRes>) : DocMonad<Document<'a>, 'userRes> = 
         docMonad { 
             let! doc = docbuild
             match doc.AbsolutePath with
-            | None -> return! docError "mandatory"
+            | None -> 
+                do! logMessage (sprintf "mandatory failed: %s" failMsg)
+                return! docError "mandatory"
             | Some _ -> return doc
         }
 

@@ -21,7 +21,7 @@
     <None Include="RtuErskines.fsx" />
     <None Include="RtuISBarrierFinals.fsx" />
     <None Include="RtuSurveys.fsx" />
-    <None Include="RtuFinals.fsx" />
+    <None Include="RtuMm3xReplaceFinals.fsx" />
     <None Include="UsarFinal.fsx" />
   </ItemGroup>
 

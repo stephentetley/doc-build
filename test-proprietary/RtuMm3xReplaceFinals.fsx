@@ -89,8 +89,8 @@ Environment.SetEnvironmentVariable("PATH",
 
 
 let WindowsEnv : DocBuildEnv = 
-    { WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\y5-mm3x-replacements-batch1"
-      SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\y5-mm3x-replacements-batch1"
+    { SourceDirectory   = @"G:\work\Projects\rtu\final-docs\input\y5-mm3x-replacements-batch1"
+      WorkingDirectory  = @"G:\work\Projects\rtu\final-docs\output\y5-mm3x-replacements-batch1"
       IncludeDirectories = [ @"G:\work\Projects\rtu\final-docs\include" ]
       PrintOrScreen = PrintQuality.Screen
       PandocOpts = 
@@ -178,7 +178,7 @@ let genSurveyPhotos (siteName: String) : DocMonadWord<PdfDoc> =
     let name1 = safeName siteName
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Survey Photos"
-        ; SourceSubdirectory = name1 </> "1.Survey" </> "photos"
+        ; SourceSubdirectory = "1.Survey" </> "photos"
         ; WorkingSubdirectory = "survey_photos"
         ; RelativeOutputName = sprintf "%s survey photos.md" name1 }
     PandocWordShim.makePhotoBook props 
@@ -188,7 +188,7 @@ let genSiteWorkPhotos (siteName: String) : DocMonadWord<PdfDoc> =
     let name1 = safeName siteName
     let props : PandocWordShim.PhotoBookConfig = 
         { Title = "Install Photos"
-        ; SourceSubdirectory  = name1 </> "2.Site_work" </> "photos"
+        ; SourceSubdirectory  = "2.Site_work" </> "photos"
         ; WorkingSubdirectory = "install_photos"
         ; RelativeOutputName= sprintf "%s install photos.md" name1 }
     PandocWordShim.makePhotoBook props 
@@ -201,9 +201,9 @@ let build1 (saiMap:SaiMap) (year: string) : DocMonadWord<PdfDoc> =
         let! saiNumber = liftOption "sai not found" <| getSaiNumber saiMap siteName
 
         let! cover = genCover saiNumber siteName year
-        let! survey = mandatory <| genSurvey ()
+        let! survey = mandatory "Survey" <| genSurvey ()
         let! surveyPhotos = nonMandatory <| genSurveyPhotos siteName
-        let! siteWorks = mandatory <| genSiteWorks ()
+        let! siteWorks = mandatory "Site Work" <| genSiteWorks ()
         let! worksPhotos = nonMandatory <| genSiteWorkPhotos siteName
 
         let (col1:PdfCollection) = 
@@ -218,7 +218,8 @@ let build1 (saiMap:SaiMap) (year: string) : DocMonadWord<PdfDoc> =
 let main () = 
     let resources = WindowsWordResources ()
     let saiMap = buildSaiMap ()
-    let year = "Year 5"
+    let yearName = "Year 5"
     let options = defaultSkeletonOptions // { defaultSkeletonOptions with TestingSample = TakeDirectories 5 }
     runDocMonad resources WindowsEnv 
-        <| foreachSourceDirectory options (build1 saiMap year)
+        <| foreachSourceDirectory options (build1 saiMap yearName)
+
